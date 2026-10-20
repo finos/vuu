@@ -1,7 +1,9 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Locator } from "@playwright/test";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { PlaywrightPageObject } from "./PlaywrightPageObject";
+import { PwComponent } from "./PwComponent";
+import { PwContextMenu } from "./PwContextMenu";
 import { PwTableHeaderCell } from "./PwTableHeaderCell";
+import { byDataIcon, byId, cssAttributeValue } from "./selector-utils";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
@@ -18,49 +20,22 @@ const xpathStringLiteral = (value: string) => {
   return `concat('${value.split("'").join(`', "'", '`)}')`;
 };
 
-// escape a value for use inside a double-quoted CSS attribute selector
-const cssAttributeValue = (value: string) =>
-  Array.from(value, (character) => {
-    const code = character.charCodeAt(0);
-    return character === '"' || character === "\\" || code < 32 || code === 127
-      ? `\\${code.toString(16)} `
-      : character;
-  }).join("");
-
-const byDataIcon = (iconName: string) =>
-  `[data-icon="${cssAttributeValue(iconName)}"]`;
-
-export class PwTable extends PlaywrightPageObject {
+export class PwTable extends PwComponent {
   protected readonly defaultCssSelector = ".vuuTable";
 
-  /**
-   * @param page the Playwright page
-   * @param cssSelector optional selector for the Table, overrides defaultCssSelector
-   */
-  constructor(
-    page: Page,
-    private readonly cssSelector?: string,
-  ) {
-    super(page);
-  }
-
-  get #locator(): Locator {
-    return this.page.locator(this.cssSelector ?? this.defaultCssSelector);
-  }
-
   get contentContainer() {
-    return this.#locator.locator(".vuuTable-contentContainer");
+    return this.locator.locator(".vuuTable-contentContainer");
   }
 
   get scrollbarContainer() {
-    return this.#locator.locator(".vuuTable-scrollbarContainer");
+    return this.locator.locator(".vuuTable-scrollbarContainer");
   }
 
   /**
    * row Locator by aria-index
    */
   row(row: number) {
-    return this.#locator.locator(`[aria-rowindex="${row}"]`);
+    return this.locator.locator(`[aria-rowindex="${row}"]`);
   }
 
   /**
@@ -95,7 +70,7 @@ export class PwTable extends PlaywrightPageObject {
    * });
    */
   async columnNames(): Promise<string[]> {
-    return this.#locator
+    return this.locator
       .locator(".vuuTableHeaderCell .vuuTableHeaderCell-label")
       .allTextContents();
   }
@@ -111,7 +86,7 @@ export class PwTable extends PlaywrightPageObject {
    * });
    */
   async rowCount(): Promise<number> {
-    const ariaRowCount = await this.#locator
+    const ariaRowCount = await this.locator
       .getByRole("table")
       .getAttribute("aria-rowcount");
     if (ariaRowCount === null) {
@@ -149,7 +124,7 @@ export class PwTable extends PlaywrightPageObject {
    * });
    */
   cellsWithIcon(iconName: string): Locator {
-    return this.#locator
+    return this.locator
       .getByRole("cell")
       .filter({ has: this.page.locator(byDataIcon(iconName)) });
   }
@@ -157,8 +132,37 @@ export class PwTable extends PlaywrightPageObject {
   headerCell(columnName: string): PwTableHeaderCell {
     return new PwTableHeaderCell(
       this.page,
-      `${this.cssSelector ?? this.defaultCssSelector} >> .vuuTableHeaderCell[data-column-name="${cssAttributeValue(columnName)}"]`,
+      this.locator.locator(
+        `.vuuTableHeaderCell[data-column-name="${cssAttributeValue(columnName)}"]`,
+      ),
     );
+  }
+
+  /**
+   * Right click a cell to invoke the context menu. Resolves once the menu is
+   * visible. Rejects if no context menu is shown.
+   *
+   * @param columnName name of the column
+   * @param ariaRowIndex 1-based aria row index, including headers (with one header, the first data row is 2)
+   *
+   * @example
+   * test("shows cell menu", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   const menu = await table.showContextMenu("ric", 2);
+   *   expect(await menu.menuItem("Copy text").isEnabled()).toBe(true);
+   * });
+   */
+  async showContextMenu(
+    columnName: string,
+    ariaRowIndex: number,
+  ): Promise<PwContextMenu> {
+    const cell = await this.cell(columnName, ariaRowIndex);
+    await cell.click({ button: "right" });
+    // Sub menus are not yet open, so the only context menu is the one just opened.
+    // Bind to it by id so later sub menus are not matched.
+    const menu = await new PwContextMenu(this.page).isReady();
+    const menuId = await menu.locator.getAttribute("id");
+    return menuId ? new PwContextMenu(this.page, byId(menuId)) : menu;
   }
 
   /**
@@ -177,11 +181,11 @@ export class PwTable extends PlaywrightPageObject {
   locateCell(row: number, columnName: string): Promise<Locator>;
   locateCell(rowOrText: number | string, column?: number | string) {
     if (typeof rowOrText === "number" && typeof column === "number") {
-      return this.#locator.locator(
+      return this.locator.locator(
         `[aria-rowindex="${rowOrText}"] > [aria-colindex="${column}"]`,
       );
     } else if (typeof rowOrText === "number" && typeof column === "string") {
-      const columnHeader = this.#locator
+      const columnHeader = this.locator
         .locator(`xpath=.//*[@data-column-name=${xpathStringLiteral(column)}]`)
         .first();
       return columnHeader.getAttribute("aria-colindex").then((ariaColIndex) => {
@@ -190,12 +194,12 @@ export class PwTable extends PlaywrightPageObject {
             `PwTable, locateCell, column "${column}" does not have an aria-colindex`,
           );
         }
-        return this.#locator.locator(
+        return this.locator.locator(
           `[aria-rowindex="${rowOrText}"] > [aria-colindex="${ariaColIndex}"]`,
         );
       });
     } else if (typeof rowOrText === "string") {
-      return this.#locator.getByRole("cell", { name: rowOrText });
+      return this.locator.getByRole("cell", { name: rowOrText });
     }
   }
 
@@ -219,10 +223,6 @@ export class PwTable extends PlaywrightPageObject {
         await expect(input).toHaveValue(value);
       }
     }
-  }
-
-  async assertVisible() {
-    return expect(this.#locator).toBeVisible();
   }
 
   private getCellText(
@@ -374,7 +374,7 @@ export class PwTable extends PlaywrightPageObject {
     const renderedRowCount =
       to - from + leadingBufferedRows + trailingBufferedRows;
 
-    await expect(this.#locator.getByRole("row")).toHaveCount(
+    await expect(this.locator.getByRole("row")).toHaveCount(
       renderedRowCount + headerCount,
     );
 
@@ -384,23 +384,23 @@ export class PwTable extends PlaywrightPageObject {
     const lastRenderedRow = to + headerCount + trailingBufferedRows;
 
     await expect(
-      this.#locator.getByRole("row").locator(byAriaRowIndex(firstRenderedRow)),
+      this.locator.getByRole("row").locator(byAriaRowIndex(firstRenderedRow)),
     ).toBeVisible();
     await expect(
-      this.#locator.getByRole("row").locator(byAriaRowIndex(lastVisibleRow)),
+      this.locator.getByRole("row").locator(byAriaRowIndex(lastVisibleRow)),
     ).toBeVisible();
 
     if (trailingBufferedRows > 0) {
       await expect(
-        this.#locator
+        this.locator
           .getByRole("row")
           .locator(byAriaRowIndex(lastVisibleRow + 1)),
       ).not.toBeInViewport();
       await expect(
-        this.#locator.getByRole("row").locator(byAriaRowIndex(lastRenderedRow)),
+        this.locator.getByRole("row").locator(byAriaRowIndex(lastRenderedRow)),
       ).not.toBeInViewport();
       await expect(
-        this.#locator
+        this.locator
           .getByRole("row")
           .locator(byAriaRowIndex(lastRenderedRow + 1)),
       ).not.toBeAttached();

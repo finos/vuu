@@ -11,6 +11,7 @@ import { MenuActionHandler } from "./ContextMenuProvider";
 
 export interface ContextMenuItemBase {
   className?: string;
+  disabled?: boolean;
   icon?: string;
   label: string;
   location?: string;
@@ -26,8 +27,7 @@ export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
 }
 
 export type ContextMenuItemDescriptor =
-  | ContextMenuLeafItemDescriptor
-  | ContextMenuGroupItemDescriptor;
+  ContextMenuLeafItemDescriptor | ContextMenuGroupItemDescriptor;
 
 export const isGroupMenuItemDescriptor = (
   menuItem?: ContextMenuItemDescriptor,
@@ -55,7 +55,7 @@ export const menuItemsFromMenuDescriptors = (
     isGroupMenuItemDescriptor(menuItem) ? (
       <Menu key={index}>
         <MenuTrigger>
-          <MenuItem>{menuItem.label}</MenuItem>
+          <MenuItem disabled={menuItem.disabled}>{menuItem.label}</MenuItem>
         </MenuTrigger>
         <MenuPanel className="vuuContextMenuPanel">
           {menuItem.children.map(fromDescriptor)}
@@ -66,6 +66,7 @@ export const menuItemsFromMenuDescriptors = (
         key={index}
         className={menuItem.className}
         data-icon={menuItem.icon}
+        disabled={menuItem.disabled}
         onClick={() => menuActionHandler(menuItem.id, menuItem.options)}
       >
         {menuItem.label}
