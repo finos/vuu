@@ -1,4 +1,3 @@
-
 .vuuBackgroundCell {
   --background-animation-duration: 10s;
   color: var(--vuuBackgroundCell-color, var(--salt-content-primary-foreground));
@@ -43,25 +42,113 @@
   background-color: transparent;
 }
 
-.vuuBackgroundCell-backgroundOnly.up1,
+/* Hot cells (changing faster than they can usefully flash): a steady tint
+   in the direction of the latest move, no animation */
+.vuuBackgroundCell-backgroundOnly.vuuBackgroundCell-hotUp,
+.vuuBackgroundCell-arrowBackground.vuuBackgroundCell-hotUp {
+  background-color: var(--vuuBackgroundCell-hotUp-background, color-mix(in srgb, var(--salt-sentiment-positive-foreground-informative) 30%, transparent));
+}
+
+.vuuBackgroundCell-backgroundOnly.vuuBackgroundCell-hotDown,
+.vuuBackgroundCell-arrowBackground.vuuBackgroundCell-hotDown {
+  background-color: var(--vuuBackgroundCell-hotDown-background, color-mix(in srgb, var(--salt-sentiment-negative-foreground-informative) 30%, transparent));
+}
+
+/* A hot cell that has gone quiet: its pale tint fades out, no bold flash.
+   Background-only cells fade the overlay's opacity (compositor), the
+   arrow-background style animates the background, which is rare enough. */
+.vuuBackgroundCell-backgroundOnly.vuuBackgroundCell-coolUp
+  > .vuuBackgroundCell-flash {
+  background-color: var(--vuuBackgroundCell-hotUp-background, color-mix(in srgb, var(--salt-sentiment-positive-foreground-informative) 30%, transparent));
+  animation: vuucoolup var(--vuuBackgroundCell-cool-duration, 2s);
+}
+
+.vuuBackgroundCell-backgroundOnly.vuuBackgroundCell-coolDown
+  > .vuuBackgroundCell-flash {
+  background-color: var(--vuuBackgroundCell-hotDown-background, color-mix(in srgb, var(--salt-sentiment-negative-foreground-informative) 30%, transparent));
+  animation: vuucooldown var(--vuuBackgroundCell-cool-duration, 2s);
+}
+
+.vuuBackgroundCell-arrowBackground.vuuBackgroundCell-coolUp {
+  animation: vuucoolbgup var(--vuuBackgroundCell-cool-duration, 2s);
+}
+
+.vuuBackgroundCell-arrowBackground.vuuBackgroundCell-coolDown {
+  animation: vuucoolbgdown var(--vuuBackgroundCell-cool-duration, 2s);
+}
+
+.vuuBackgroundCell-hotUp > .vuuBackgroundCell-arrow {
+  color: var(--salt-sentiment-positive-foreground-informative);
+}
+
+.vuuBackgroundCell-hotDown > .vuuBackgroundCell-arrow {
+  color: var(--salt-sentiment-negative-foreground-informative);
+}
+
+/* Background-only flash: the colour sits on an overlay below the value whose
+   opacity fades. Opacity animations run on the compositor, background-color
+   animations need main thread work every frame. The value text is white for
+   the first third of the fade, switched with a step timing function so it
+   needs no per-frame work either. */
+.vuuBackgroundCell-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vuuBackgroundCell-backgroundOnly.up1 > .vuuBackgroundCell-flash,
+.vuuBackgroundCell-backgroundOnly.up2 > .vuuBackgroundCell-flash {
+  background-color: var(--salt-sentiment-positive-foreground-informative);
+}
+
+.vuuBackgroundCell-backgroundOnly.down1 > .vuuBackgroundCell-flash,
+.vuuBackgroundCell-backgroundOnly.down2 > .vuuBackgroundCell-flash {
+  background-color: var(--salt-sentiment-negative-foreground-informative);
+}
+
+/* a distinct animation name per direction class, so a class change restarts the fade */
+.vuuBackgroundCell-backgroundOnly.up1 > .vuuBackgroundCell-flash {
+  animation: vuuflashup1 var(--background-animation-duration);
+}
+.vuuBackgroundCell-backgroundOnly.up2 > .vuuBackgroundCell-flash {
+  animation: vuuflashup2 var(--background-animation-duration);
+}
+.vuuBackgroundCell-backgroundOnly.down1 > .vuuBackgroundCell-flash {
+  animation: vuuflashdown1 var(--background-animation-duration);
+}
+.vuuBackgroundCell-backgroundOnly.down2 > .vuuBackgroundCell-flash {
+  animation: vuuflashdown2 var(--background-animation-duration);
+}
+
+.vuuBackgroundCell-backgroundOnly.up1 > .vuuBackgroundCell-value {
+  animation: vuuflashtextup1 var(--background-animation-duration);
+}
+.vuuBackgroundCell-backgroundOnly.up2 > .vuuBackgroundCell-value {
+  animation: vuuflashtextup2 var(--background-animation-duration);
+}
+.vuuBackgroundCell-backgroundOnly.down1 > .vuuBackgroundCell-value {
+  animation: vuuflashtextdown1 var(--background-animation-duration);
+}
+.vuuBackgroundCell-backgroundOnly.down2 > .vuuBackgroundCell-value {
+  animation: vuuflashtextdown2 var(--background-animation-duration);
+}
+
 .vuuBackgroundCell-arrowBackground.up1 {
   animation-duration: var(--background-animation-duration);
   animation-name: vuubgup1;
 }
 
-.vuuBackgroundCell-backgroundOnly.up2,
 .vuuBackgroundCell-arrowBackground.up2 {
   animation-duration: var(--background-animation-duration);
   animation-name: vuubgup2;
 }
 
-.vuuBackgroundCell-backgroundOnly.down1,
 .vuuBackgroundCell-arrowBackground.down1 {
   animation-duration: var(--background-animation-duration);
   animation-name: vuubgdown1;
 }
 
-.vuuBackgroundCell-backgroundOnly.down2,
 .vuuBackgroundCell-arrowBackground.down2 {
   animation-duration: var(--background-animation-duration);
   animation-name: vuubgdown2;
