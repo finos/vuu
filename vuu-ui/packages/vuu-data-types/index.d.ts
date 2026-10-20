@@ -660,10 +660,6 @@ export declare type SessionDataSourceOverrides = {
   table?: VuuTable;
 };
 
-export declare type UndoRowChangeResult = {
-  wasInsertedRow?: boolean;
-};
-
 export interface DataSourceBase<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
 > extends IEventEmitter<DataSourceEvents>,
