@@ -278,7 +278,9 @@ test.describe("Vuu Table benchmarks", () => {
           );
         }
         console.log(
-          `${scenario.id} [${server.label}]`,
+          "%s [%s] %s",
+          scenario.id,
+          server.label,
           JSON.stringify(record.summary),
         );
       }
