@@ -7,7 +7,9 @@ const DECIMALS_AUTO = -1;
 /**
  * Formats with the default locale and options, the same output as
  * Number.prototype.toLocaleString(), which sets up locale formatting on
- * every call and is about 30x slower.
+ * every call and is about 30x slower. The locale is read once, when this
+ * module loads, so a change to the default locale at runtime is not picked
+ * up until the page is reloaded.
  */
 const integerFormat = new Intl.NumberFormat();
 const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER.toString();
