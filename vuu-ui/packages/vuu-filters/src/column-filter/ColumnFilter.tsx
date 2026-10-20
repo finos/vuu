@@ -1,13 +1,14 @@
 import {
   SegmentedButtonGroup,
   type SegmentedButtonGroupProps,
+  useForkRef,
 } from "@salt-ds/core";
 import {
   DataItemEditControlProps,
   getDataItemEditControl,
 } from "@vuu-ui/vuu-data-react";
 import cx from "clsx";
-import { ForwardedRef, forwardRef, useMemo } from "react";
+import { ForwardedRef, forwardRef, useMemo, useRef } from "react";
 import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -18,6 +19,7 @@ import {
   isBetweenOperator,
   withDateTimePattern,
 } from "@vuu-ui/vuu-utils";
+import { OperatorPicker } from "../filter-clause/operator-picker/OperatorPicker";
 
 const classBase = "vuuColumnFilter";
 
@@ -49,12 +51,16 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     className,
     column,
     defaultValue,
+    defaultOperator,
     extendedFilterOptions,
     labels,
     onColumnFilterChange,
     onColumnRangeFilterChange,
     onCommit: onCommitProp,
-    operator = "=",
+    onOperatorChange,
+    operator: operatorProp,
+    operators: operatorsProp,
+    showOperatorPicker = false,
     pattern,
     table,
     value: valueProp,
@@ -64,6 +70,8 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
   }: ColumnFilterProps,
   forwardRef: ForwardedRef<HTMLDivElement>,
 ) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const ref = useForkRef(rootRef, forwardRef);
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-filter-editor",
@@ -81,18 +89,30 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     [column, date, time],
   );
 
-  const { InputProps, InputPropsRange, isInvalid, onCommit, onCommitRange } =
-    useColumnFilter({
-      InputProps: InputPropsProp,
-      column: controlDescriptor,
-      defaultValue,
-      extendedFilterOptions,
-      onColumnFilterChange,
-      onColumnRangeFilterChange,
-      onCommit: onCommitProp,
-      operator,
-      value: valueProp,
-    });
+  const {
+    InputProps,
+    InputPropsRange,
+    isInvalid,
+    onCommit,
+    onCommitRange,
+    operator,
+    operators,
+    onOperatorSelect,
+  } = useColumnFilter({
+    InputProps: InputPropsProp,
+    column: controlDescriptor,
+    defaultValue,
+    defaultOperator,
+    extendedFilterOptions,
+    onColumnFilterChange,
+    onColumnRangeFilterChange,
+    onCommit: onCommitProp,
+    onOperatorChange,
+    operator: operatorProp,
+    operators: operatorsProp,
+    showOperatorPicker,
+    value: valueProp,
+  });
 
   return (
     <SegmentedButtonGroup
@@ -100,9 +120,29 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       className={cx(classBase, className, {
         [`${classBase}-invalid`]: isInvalid,
         [`${classBase}-toggle`]: variant === "toggle",
+        [`${classBase}-withOperator`]: showOperatorPicker,
       })}
-      ref={forwardRef}
+      ref={ref}
     >
+      {operators ? (
+        <OperatorPicker
+          aria-label={`${column.label ?? column.name} operator`}
+          className={`${classBase}-operator`}
+          disabled={InputProps?.disabled}
+          readOnly={InputProps?.readOnly}
+          operators={operators}
+          onSelect={(event, operator) => {
+            onOperatorSelect(event, operator);
+            requestAnimationFrame(() => {
+              rootRef.current
+                ?.querySelector<HTMLInputElement>("input:not(:disabled)")
+                ?.focus();
+            });
+          }}
+          value={operator}
+          variant="dropdown"
+        />
+      ) : null}
       {getDataItemEditControl({
         InputProps,
         TypeaheadProps,

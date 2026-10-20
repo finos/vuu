@@ -235,7 +235,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     }
   }
 
-  get value() {
+  get value(): TimeValue {
     return this.#value;
   }
 
@@ -243,9 +243,10 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
    * Setting the value this way invokes 'controlled' mode. Value
    * will be normalised to the configured precision.
    */
-  set value(value: TimeValue) {
+  set value(value: TimeValue | "") {
     this.#controlled = true;
-    const normalisedValue = this.normalise(value);
+    const normalisedValue =
+      value === "" ? this.zeroValue : this.normalise(value);
     if (normalisedValue !== undefined && normalisedValue !== this.#value) {
       this.#value = normalisedValue;
       if (this.isFocused) {
@@ -453,6 +454,11 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   click() {
     if (this.#input) {
       this.#isFocused = true;
+      if (this.#input.value === "") {
+        this.setValue(this.zeroValue);
+        this.selectFirst();
+        return;
+      }
       const { start, end } = this.getSelection();
       if (start === null) {
         this.selectFirst();
@@ -476,9 +482,12 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   focus = () => {
     if (this.#input) {
       this.#isFocused = true;
-
+      if (this.#input.value === "") {
+        this.setValue(this.zeroValue);
+      }
+      this.selectFirst();
       requestAnimationFrame(() => {
-        this.selectFirst();
+        this.restoreSelection();
       });
     }
   };

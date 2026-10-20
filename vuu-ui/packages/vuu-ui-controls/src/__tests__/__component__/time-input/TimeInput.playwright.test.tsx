@@ -88,6 +88,27 @@ test.describe("TimeInput", () => {
   });
 
   test.describe("focus management", () => {
+    for (const milliseconds of [false, true]) {
+      test(`empty ${milliseconds ? "millisecond" : "second"} input initializes with hours selected on focus`, async ({
+        mount,
+      }) => {
+        const component = await mount("UiControls/TimeInput/TestTimeInput", {
+          milliseconds,
+        });
+        const input = component.locator(".vuuTimeInput");
+        await input.click();
+        await expect(input).toBeFocused();
+        await expect(input).toHaveValue(
+          milliseconds ? "00:00:00.000" : "00:00:00",
+        );
+        await expect(input).toHaveSelection(0, 2);
+        await input.press("1");
+        await expect(input).toHaveValue(
+          milliseconds ? "10:00:00.000" : "10:00:00",
+        );
+      });
+    }
+
     test.describe("WHEN focus enters control via keyboard, forwards", () => {
       test("THEN control is focused and hours are selected", async ({
         mount,
@@ -306,17 +327,17 @@ test.describe("TimeInput", () => {
       await expect(timeinput).toHaveSelection(0, 2);
     });
 
-    test("Enter does not commit when no value has been entered", async ({
+    test("Enter commits the zero time initialized on focus", async ({
       mount,
     }) => {
       const component = await mount("UiControls/TimeInput/TestTimeInput");
       const timeinput = component.locator(".vuuTimeInput");
       await timeinput.focus();
-      await expect(timeinput).toHaveValue("");
+      await expect(timeinput).toHaveValue("00:00:00");
       await timeinput.press("Enter");
       await expect(
         component.getByTestId("time-input-commit-values"),
-      ).toHaveValue(JSON.stringify([]));
+      ).toHaveValue(JSON.stringify(["00:00:00"]));
     });
 
     test("focus via Shift+Tab selects hours", async ({ mount }) => {
