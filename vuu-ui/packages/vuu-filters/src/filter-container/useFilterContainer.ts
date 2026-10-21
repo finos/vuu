@@ -17,6 +17,8 @@ import { FilterAggregator } from "../FilterAggregator";
 
 export interface ColumnFilterContextProps {
   filterContainerInstalled: boolean;
+  filter?: FilterContainerFilter;
+  getFilter?: () => FilterContainerFilter | undefined;
   filterProviderKey?: string;
   onChange?: ColumnFilterChangeHandler;
   onCommit?: ColumnFilterCommitHandler;
@@ -40,7 +42,8 @@ export function useFilterContext(
 export function useFilterContext(
   column: ColumnDescriptor,
   throwIfNoContainer: true,
-): Required<ColumnFilterContextProps>;
+): Required<Omit<ColumnFilterContextProps, "filter">> &
+  Pick<ColumnFilterContextProps, "filter">;
 export function useFilterContext(
   column: ColumnDescriptor,
   throwIfNoContainer = false,
@@ -48,6 +51,8 @@ export function useFilterContext(
   const ctx = useContext(ColumnFilterContext);
   if (ctx) {
     return {
+      filter: ctx.filter,
+      getFilter: ctx.getFilter,
       filterProviderKey: ctx.filterProviderKey,
       register: ctx.register,
       getValue: ctx.getValue,
@@ -90,6 +95,10 @@ export const useFilterContainer = ({
   const filterAggregator = useMemo(
     () => new FilterAggregator(filter),
     [filter],
+  );
+  const getFilter = useCallback(
+    () => filterAggregator.filter,
+    [filterAggregator],
   );
 
   const register = useCallback(
@@ -189,6 +198,8 @@ export const useFilterContainer = ({
 
   return {
     filterContainerInstalled: true,
+    filter,
+    getFilter,
     filterProviderKey,
     onChange: handleInputChange,
     onCommit: handleCommit,

@@ -1,21 +1,23 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import cx from "clsx";
-import { getInstanceByDom, init } from "echarts";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useChartContextMenu } from "./useChartContextMenu";
-import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
-import { useChartSelection } from "./useChartSelection";
-import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import {
   MeasuredContainer,
   type MeasuredContainerProps,
   type MeasuredSize,
 } from "@vuu-ui/vuu-ui-controls";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
+import cx from "clsx";
+import { type ECharts, getInstanceByDom, init } from "echarts";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useChartContextMenu } from "./useChartContextMenu";
+import { type ChartOptionsProps, useChartOptions } from "./useChartOptions";
+import { useChartSelection } from "./useChartSelection";
 
 import chartCss from "./Chart.css";
 
 const classBase = "vuuChart";
+
+type EChartsHostElement = HTMLDivElement & { echartsInstance?: ECharts };
 
 type OptionSettings = {
   notMerge: boolean;
@@ -35,7 +37,7 @@ type ChartSettings = {
 
 export interface ChartProps
   extends ChartOptionsProps,
-  Omit<MeasuredContainerProps, "children" | "onResize"> {
+    Omit<MeasuredContainerProps, "children" | "onResize"> {
   chartSettings?: Partial<ChartSettings>;
   optionSettings?: OptionSettings;
   /**
@@ -117,15 +119,18 @@ export const Chart = ({
     }
 
     const chart = init(chartElement, null, chartSettings);
+    // Expose the ECharts instance on the host element, so test helpers
+    // (PwChart) can map data points to pixel positions.
+    (chartElement as EChartsHostElement).echartsInstance = chart;
 
     chart.on("contextmenu", onContextMenu);
     chart.on("click", onClick);
     chart.on("mouseover", onMouseOver);
     chart.on("mouseout", onMouseOut);
 
-
     return () => {
       chart?.dispose();
+      delete (chartElement as EChartsHostElement).echartsInstance;
     };
   }, [
     chartElement,

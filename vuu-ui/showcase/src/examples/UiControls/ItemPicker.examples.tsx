@@ -203,3 +203,29 @@ export const MisconfiguredMaxSelection = () => {
     />
   );
 };
+
+export const LabelsDifferFromNames = () => {
+  const allItems: ItemDescriptor[] = useMemo(
+    () => [
+      { name: "stopPrice", label: "Stop Price" },
+      { name: "sepRuleID", label: "SMP Rule ID" }, // label and name differ
+      { name: "strikePrice", label: "Strike Price" },
+      { name: "side", label: "Side" },
+      { name: "settlementType" }, // No label
+      { name: "price", label: "Price" },
+      { name: "volume", label: "QTY" }, // label and name differ
+    ],
+    [],
+  );
+
+  const selectedItems = useMemo(() => [], []);
+
+  return (
+    <StatefulParent
+      allItems={allItems}
+      initialSelectedItems={selectedItems}
+      itemTypeName={"column"}
+    />
+  );
+};
+

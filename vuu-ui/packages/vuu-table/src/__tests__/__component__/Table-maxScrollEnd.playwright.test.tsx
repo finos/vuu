@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 test.describe("Table maxScrollEnd", () => {
   test("pressing End stops at row 500 and shows scroll limit notice", async ({
@@ -9,7 +9,7 @@ test.describe("Table maxScrollEnd", () => {
   }) => {
     await mount("Table/Modules/TEST/MaxScrollEndTable");
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
 
     let cell = table.locateCell(2, 1);
     await cell.click();

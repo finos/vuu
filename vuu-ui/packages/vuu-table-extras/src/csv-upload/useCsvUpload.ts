@@ -16,8 +16,10 @@ import {
   createUploadError,
   hasFileParseErrors,
   isCsvParseError,
+  mapCsvHeaders,
   mergeValidationWithParseErrors,
   toErrorMessage,
+  type CsvHeaderMapping,
 } from "./parse/csv-upload-utils";
 import type {
   CsvUploadErrorResult,
@@ -30,7 +32,9 @@ import { useImportSchema } from "./session/useImportSchema";
 import { useImportSession } from "./session/useImportSession";
 
 export interface CsvUploadHookProps {
+  /** The target Vuu DataSource to upload CSV data into. */
   dataSource: DataSource;
+  /** Import mode: `"direct"` commits immediately; `"preview"` emits session for caller review. Defaults to `"direct"`. */
   importMode?: "direct" | "preview";
   /**
    * Schema of the import table, where it differs from the target table. Used to validate
@@ -40,33 +44,59 @@ export interface CsvUploadHookProps {
   importSchema?: TableSchema;
   /** Expected import table, used to validate the session table returned by the server. */
   importTable?: VuuTable;
+  /** Maximum number of data rows permitted in the CSV. Defaults to `10000`. */
   maxRows?: number;
+  /** Callback fired when the import session ends (by save, discard, or failure). */
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
+  /** Callback fired when the staged session DataSource is ready for preview. */
   onImportSessionReady?: (dataSource: DataSource) => void;
+  /** Callback fired when an error occurs, or with `undefined` when errors clear. */
   onError?: (result: CsvUploadErrorResult | undefined) => void;
+  /** Callback fired after a successful import commit with the normalized table data. */
   onImported?: (result: CsvUploadImportedResult) => void;
+  /** In preview mode, callback fired when Import is triggered with the live EditSession. */
   onPreview?: (result: CsvUploadPreviewResult) => void;
+  /** Callback fired when a dropped or selected file begins processing. */
   onProcessingStarted?: () => void;
+  /** Options passed to the CSV parser (e.g., requireQuotedValues, customHeaders, hasHeaderRow). */
   parseOptions?: CsvParseOptions;
+  /** Optional custom header columns to use instead of reading headers from the CSV file. */
+  customHeaders?: string[];
+  /** Whether the CSV contains a header row. Defaults to true. When false and customHeaders is provided, row 0 is treated as data. */
+  hasHeaderRow?: boolean;
+  /** Optional mapping or resolver function from CSV header column names to schema column names. */
+  headerMapping?: CsvHeaderMapping;
   /** Default column values applied to every addRow call. Pass a stable reference — a new object triggers EditSession recreation. */
   rowDefaults?: RowDefaultDataItemValues;
+  /** Custom per-column validation functions. */
   validators?: Record<string, CsvColumnValidator>;
 }
 
 export type UseCsvUploadReturn = {
+  /** True when the CSV passed validation, rows staged without server errors, and import can be committed. */
   canImport: boolean;
+  /** Discards the current edit session and resets upload state. */
   cancelImport: () => Promise<void>;
+  /** Commits the staged session (in direct mode) or fires onPreview (in preview mode). */
   importData: () => Promise<boolean>;
+  /** True while the import commit is in progress. */
   isImporting: boolean;
+  /** True while parsing the CSV and staging rows on the server. */
   isProcessingFile: boolean;
+  /** Event handler for file drop zone elements. */
   onDrop: (_event: React.DragEvent<HTMLDivElement>, files: File[]) => void;
+  /** Event handler for file input change elements. */
   onTriggerChange: (
     _event: React.ChangeEvent<HTMLInputElement>,
     files: File[],
   ) => void;
+  /** Active session table descriptor from the server. */
   sessionTable: CsvUploadSessionTable | undefined;
+  /** Active table schema used for validation. */
   schema: TableSchema | undefined;
+  /** Current validation result including parsed rows and errors. */
   validation: CsvValidationResult | undefined;
+  /** Active error result, if any. */
   error: CsvUploadErrorResult | undefined;
 };
 
@@ -83,6 +113,9 @@ export const useCsvUpload = ({
   onProcessingStarted,
   maxRows,
   parseOptions,
+  customHeaders,
+  hasHeaderRow,
+  headerMapping,
   rowDefaults,
   validators,
 }: CsvUploadHookProps): UseCsvUploadReturn => {
@@ -172,11 +205,17 @@ export const useCsvUpload = ({
         throw Error("CsvUpload requires dataSource.table to be defined.");
       }
 
+      const effectiveParseOptions: CsvParseOptions = {
+        ...parseOptions,
+        ...(customHeaders !== undefined ? { customHeaders } : {}),
+        ...(hasHeaderRow !== undefined ? { hasHeaderRow } : {}),
+      };
+
       const fileContents = await file.text();
       if (operationId !== operationIdRef.current) {
         return;
       }
-      const parsedCsv = parseCsv(fileContents, parseOptions);
+      let parsedCsv = parseCsv(fileContents, effectiveParseOptions);
       if (parsedCsv.error && hasFileParseErrors(parsedCsv.error)) {
         setValidation(undefined);
         handleError({
@@ -189,6 +228,13 @@ export const useCsvUpload = ({
           },
         });
         return;
+      }
+
+      if (headerMapping) {
+        parsedCsv = {
+          ...parsedCsv,
+          header: mapCsvHeaders(parsedCsv.header, headerMapping),
+        };
       }
 
       const schemaValidation = validateCsvAgainstSchema(parsedCsv, schema, {

@@ -13,6 +13,7 @@ import {
   getTypedValueForDescriptor,
   isAndFilter,
   isBetweenFilter,
+  isBetweenOperator,
   isExtendedFilter,
   isMultiClauseFilter,
   isSingleValueFilter,
@@ -147,10 +148,13 @@ const singleValueOps: SingleValueFilterClauseOp[] = [
   "starts",
   "ends",
 ];
-const asSingleValueOp = (op: string): SingleValueFilterClauseOp =>
-  singleValueOps.includes(op as SingleValueFilterClauseOp)
-    ? (op as SingleValueFilterClauseOp)
-    : "=";
+const asSingleValueOp = (op: string): SingleValueFilterClauseOp => {
+  const operator = singleValueOps.find((candidate) => candidate === op);
+  if (operator === undefined) {
+    throw Error(`[FilterAggregator] unsupported single-value operator ${op}`);
+  }
+  return operator;
+};
 
 /**
  * Manages a filter that can be updated one clause at a time.
@@ -207,11 +211,11 @@ export class FilterAggregator {
       );
       if (value1 !== undefined && value2 !== undefined) {
         this.#filters.set(column.name, {
-              op: "and",
-              filters: [
+          op: "and",
+          filters: [
             createClause(isInclusive ? ">=" : ">", value1),
             createClause(isInclusive ? "<=" : "<", value2),
-              ],
+          ],
         } as FilterContainerFilter);
       } else if (value1 !== undefined) {
         this.#filters.set(column.name, createClause("=", value1));
@@ -233,10 +237,12 @@ export class FilterAggregator {
         // an empty temporal value clears the filter
         this.#filters.delete(column.name);
       } else {
-        // Only temporal filters honour op, others always use '='
         this.#filters.set(
           column.name,
-          createClause(temporalInfo ? asSingleValueOp(op) : "=", typedValue),
+          createClause(
+            isBetweenOperator(op) ? "=" : asSingleValueOp(op),
+            typedValue,
+          ),
         );
       }
     }

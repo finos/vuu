@@ -39,6 +39,9 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | `maxRows` | `number` | Maximum number of data rows permitted in the CSV. Defaults to `25000`. |
 | `open` | `boolean` | Controls dialog open state. When provided the component is fully controlled; when omitted it manages open state internally. |
 | `dialogTitle` | `string` | Dialog header text. Defaults to `"Import CSV"`. |
+| `customHeaders` | `string[]` | Optional custom column headers to use instead of reading headers from the CSV file. |
+| `hasHeaderRow` | `boolean` | Whether the CSV file contains a header row. Defaults to `true`. When `false` and `customHeaders` is provided, line 0 is treated as data. |
+| `headerMapping` | `Record<string, string> \| ((header: string) => string)` | Optional mapping or transform function from CSV header names to target table schema column names. |
 | `parseOptions` | `CsvParseOptions` | Options passed to the CSV parser (see [Parse Options](#parse-options)). |
 | `onProcessingStarted` | `() => void` | Fired when a file starts being parsed and validated. |
 | `onImportSessionReady` | `(dataSource: DataSource) => void` | Fired when the server-side session is fully hydrated and a session `DataSource` is available for preview. |
@@ -220,8 +223,52 @@ type CsvParseOptions = {
   requireQuotedValues?: boolean;
   // When true, any value containing the delimiter must be quoted or
   // the row is rejected with UNQUOTED_VALUE.
+  customHeaders?: string[];
+  // Optional custom header columns to use.
+  hasHeaderRow?: boolean;
+  // Whether the CSV file contains a header row. Defaults to true.
 };
 ```
+
+---
+
+## Custom Headers and Header Mapping
+
+If the CSV does not contain a header row, or if the CSV columns use external / display names that differ from schema column names, you can provide `customHeaders`, `hasHeaderRow`, and/or `headerMapping`:
+
+### Headerless CSV
+
+When uploading a CSV without a header row where all lines are data:
+
+```tsx
+<CsvUpload
+  dataSource={dataSource}
+  customHeaders={["id", "name", "price"]}
+  hasHeaderRow={false}
+  onImported={handleImported}
+/>
+```
+
+### Header Mapping
+
+When uploading a CSV with column names that need to be mapped to internal schema columns:
+
+```tsx
+<CsvUpload
+  dataSource={dataSource}
+  headerMapping={{
+    "Identifier": "id",
+    "Description": "name",
+    "Unit Price": "price",
+  }}
+  onImported={handleImported}
+/>
+```
+
+After headers are resolved or mapped, they are automatically validated against `tableSchema` (or `importSchema`), ensuring:
+- All resolved columns exist in the table schema (raising `UNKNOWN_COLUMN` if invalid).
+- The table key column is present (raising `MISSING_KEY_COLUMN` if missing).
+- Data cells are coerced and validated according to the schema's column definitions.
 
 ---
 

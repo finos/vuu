@@ -3,6 +3,15 @@ import { RoundingRule } from "@vuu-ui/vuu-table-types";
 const PUNCTUATION_STR = String.fromCharCode(8200);
 const DIGIT_STR = String.fromCharCode(8199);
 const DECIMALS_AUTO = -1;
+
+/**
+ * Formats with the default locale and options, the same output as
+ * Number.prototype.toLocaleString(), which sets up locale formatting on
+ * every call and is about 30x slower. The locale is read once, when this
+ * module loads, so a change to the default locale at runtime is not picked
+ * up until the page is reloaded.
+ */
+const integerFormat = new Intl.NumberFormat();
 const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER.toString();
 const MAX_INTEGER_DIGITS = MAX_SAFE_INTEGER.length;
 
@@ -139,7 +148,7 @@ export function roundDecimal(
     part1 === "-0"
       ? "-0"
       : useLocaleString
-        ? parseFloat(part1).toLocaleString()
+        ? integerFormat.format(parseFloat(part1))
         : part1;
 
   if (align === Align.Left && alignOnDecimals) {
@@ -209,8 +218,8 @@ export function roundScaledDecimal(
         ? "-0"
         : useLocaleString
           ? exceedsMaxSafeInteger(value)
-            ? BigInt(part1).toLocaleString()
-            : parseFloat(part1).toLocaleString()
+            ? integerFormat.format(BigInt(part1))
+            : integerFormat.format(parseFloat(part1))
           : part1;
 
   if (align === Align.Left && alignOnDecimals) {

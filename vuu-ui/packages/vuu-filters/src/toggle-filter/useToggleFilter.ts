@@ -1,5 +1,6 @@
 import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import type {
+  DataSource,
   DataSourceConfigChangeHandler,
   DataSourceFilter,
   TableSchemaTable,
@@ -35,6 +36,14 @@ const hasFilterOnColumn = (
 export interface ToggleFilterHookProps {
   column: string;
   /**
+   * Typeahead is used to determine which toggle values have matching
+   * data. Set disableTypeahead to opt out of this check, all values
+   * will then be treated as available. Typeahead only supports string
+   * lookups, so it is always disabled if the serverDataType of column
+   * (from the DataSource tableSchema) is anything other than string.
+   */
+  disableTypeahead?: boolean;
+  /**
    * table must be provided to enable validation
    * of values using server data.
    */
@@ -54,6 +63,20 @@ export interface ToggleFilterHookResult {
 }
 
 /**
+ * Typeahead only supports string columns. If the column type is not known
+ * (tableSchema not yet available) we assume string.
+ */
+const isNonStringColumn = (
+  dataSource: DataSource | undefined,
+  column: string,
+) => {
+  const serverDataType = dataSource?.tableSchema?.columns.find(
+    (col) => col.name === column,
+  )?.serverDataType;
+  return serverDataType !== undefined && serverDataType !== "string";
+};
+
+/**
  * Determines which toggle values have matching data, using typeahead
  * against the DataSource. Typeahead respects the filter applied to the
  * DataSource, so while a filter on this column is in effect, results
@@ -63,6 +86,7 @@ export interface ToggleFilterHookResult {
  */
 export const useToggleFilter = ({
   column,
+  disableTypeahead = false,
   table,
   values,
 }: ToggleFilterHookProps): ToggleFilterHookResult => {
@@ -85,9 +109,11 @@ export const useToggleFilter = ({
 
   const checkAvailability = useCallback(() => {
     if (
+      disableTypeahead ||
       tableModule === undefined ||
       tableName === undefined ||
-      dataSource === undefined
+      dataSource === undefined ||
+      isNonStringColumn(dataSource, column)
     ) {
       return;
     }
@@ -106,7 +132,14 @@ export const useToggleFilter = ({
       assertValid(valuesRef.current, suggestions);
       setTypeaheadValues(suggestions);
     });
-  }, [column, dataSource, getSuggestions, tableModule, tableName]);
+  }, [
+    column,
+    dataSource,
+    disableTypeahead,
+    getSuggestions,
+    tableModule,
+    tableName,
+  ]);
 
   useEffect(() => {
     checkAvailability();
@@ -133,6 +166,14 @@ export const useToggleFilter = ({
       };
     }
   }, [checkAvailability, dataSource]);
+
+  useEffect(() => {
+    if (disableTypeahead) {
+      // discard any result from a check made before typeahead was disabled
+      requestIdRef.current += 1;
+      setTypeaheadValues(undefined);
+    }
+  }, [disableTypeahead]);
 
   return useMemo<ToggleFilterHookResult>(() => {
     if (typeaheadValues === undefined) {

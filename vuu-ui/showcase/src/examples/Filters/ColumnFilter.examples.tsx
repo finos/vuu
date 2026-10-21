@@ -5,6 +5,7 @@ import type {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
   ColumnFilterValue,
+  ColumnFilterOp,
   FilterContainerFilter,
 } from "@vuu-ui/vuu-filter-types";
 import {
@@ -16,6 +17,8 @@ import {
   FilterContainerColumnFilter,
   FilterContainerColumnFilterProps,
   FilterAppliedHandler,
+  FilterProvider,
+  useSavedFilters,
 } from "@vuu-ui/vuu-filters";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceProvider, filterAsQuery, useData } from "@vuu-ui/vuu-utils";
@@ -53,6 +56,197 @@ type ColumnFilterPassthroughProps = Partial<
 type FilterContainerPassthroughProps = Partial<
   Pick<FilterContainerProps, "onFilterApplied" | "onFilterCleared">
 >;
+
+type OperatorExampleProps = Pick<
+  ColumnFilterProps,
+  "InputProps" | "defaultOperator" | "operators" | "defaultValue"
+> & {
+  column?: ColumnDescriptor;
+};
+
+export const PriceFilterWithOperators = ({
+  column = { name: "price", serverDataType: "double" },
+  defaultValue = "",
+  ...props
+}: OperatorExampleProps) => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: instrumentsSchema.table }),
+    [VuuDataSource],
+  );
+  const { record, recorder } = useCallbackRecorder();
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate>
+        <FormField>
+          <FormFieldLabel>
+            {column.label ?? (column.name === "price" ? "Price" : column.name)}
+          </FormFieldLabel>
+          <ColumnFilter
+            {...props}
+            InputProps={{ placeholder: "Enter value", ...props.InputProps }}
+            column={column}
+            defaultValue={defaultValue}
+            onCommit={(column, op, value) => record(column, op, value)}
+            showOperatorPicker
+            table={instrumentsSchema.table}
+          />
+        </FormField>
+      </ContainerTemplate>
+      {recorder}
+    </DataSourceProvider>
+  );
+};
+
+export const PriceFilterWithCustomOperators = () => (
+  <PriceFilterWithOperators operators={["=", ">", "between-inclusive"]} />
+);
+
+export const ControlledPriceFilterWithOperators = () => {
+  const [operator, setOperator] = useState<ColumnFilterOp>("=");
+  const [value, setValue] = useState<ColumnFilterValue>("100");
+  const { record, recorder } = useCallbackRecorder();
+  return (
+    <ContainerTemplate>
+      <Button
+        onClick={() => {
+          setOperator("<");
+          setValue("50");
+        }}
+      >
+        Set less than
+      </Button>
+      <Button
+        onClick={() => {
+          setOperator("between");
+          setValue(["10", "20"]);
+        }}
+      >
+        Set range
+      </Button>
+      <ColumnFilter
+        column={{ name: "price", serverDataType: "double" }}
+        onColumnFilterChange={(value) =>
+          setValue((current) =>
+            Array.isArray(current) ? [`${value}`, current[1]] : value,
+          )
+        }
+        onColumnRangeFilterChange={(value) =>
+          setValue((current) =>
+            Array.isArray(current) ? [current[0], `${value}`] : value,
+          )
+        }
+        onCommit={(column, op, value) => {
+          setValue(value);
+          record(column, op, value);
+        }}
+        onOperatorChange={(_event, op) => setOperator(op)}
+        operator={operator}
+        operators={["=", "<", ">", "between"]}
+        showOperatorPicker
+        value={value}
+      />
+      {recorder}
+    </ContainerTemplate>
+  );
+};
+
+export const ContainerManagedPriceFilterWithOperators = ({
+  filter: initialFilter,
+  includeLotSize = false,
+  operators = ["=", "!=", ">", ">=", "<", "<=", "between", "between-inclusive"],
+}: Pick<FilterContainerProps, "filter"> &
+  Pick<ColumnFilterProps, "operators"> & { includeLotSize?: boolean }) => {
+  const [filter, setFilter] = useState(initialFilter);
+  const { record, recorder } = useCallbackRecorder();
+  return (
+    <ContainerTemplate>
+      <Button
+        onClick={() => setFilter({ column: "price", op: "<=", value: 50 })}
+      >
+        Load less than
+      </Button>
+      <Button
+        onClick={() =>
+          setFilter({
+            op: "and",
+            filters: [
+              { column: "price", op: ">=", value: 10 },
+              { column: "price", op: "<=", value: 20 },
+            ],
+          })
+        }
+      >
+        Load range
+      </Button>
+      <Button onClick={() => setFilter(undefined)}>Clear filter</Button>
+      <FilterContainer
+        filter={filter}
+        onFilterApplied={(filter) => {
+          setFilter(filter);
+          record(filter);
+        }}
+        onFilterCleared={() => {
+          setFilter(undefined);
+          record("cleared");
+        }}
+      >
+        <FormField>
+          <FormFieldLabel>Price</FormFieldLabel>
+          <FilterContainerColumnFilter
+            column={{ name: "price", serverDataType: "double" }}
+            operators={operators}
+            showOperatorPicker
+          />
+        </FormField>
+        {includeLotSize ? (
+          <FormField>
+            <FormFieldLabel>Lot size</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={{ name: "lotSize", serverDataType: "int" }}
+            />
+          </FormField>
+        ) : null}
+      </FilterContainer>
+      <FilterDisplay filter={filter} />
+      {recorder}
+    </ContainerTemplate>
+  );
+};
+
+const SavedPriceFilterContent = () => {
+  const { currentFilter, setCurrentFilter, clearCurrentFilter } =
+    useSavedFilters();
+  return (
+    <ContainerTemplate>
+      <Button
+        onClick={() =>
+          setCurrentFilter({ column: "price", op: ">=", value: 100 })
+        }
+      >
+        Load saved price
+      </Button>
+      <Button onClick={() => clearCurrentFilter()}>Clear saved price</Button>
+      <FilterContainer
+        filter={currentFilter.filter ?? undefined}
+        onFilterApplied={(filter) => setCurrentFilter(filter)}
+        onFilterCleared={() => clearCurrentFilter()}
+      >
+        <FilterContainerColumnFilter
+          column={{ name: "price", serverDataType: "double" }}
+          operators={["=", ">=", "between-inclusive"]}
+          showOperatorPicker
+        />
+      </FilterContainer>
+    </ContainerTemplate>
+  );
+};
+
+export const SavedPriceFilterWithOperators = () => (
+  <FilterProvider>
+    <SavedPriceFilterContent />
+  </FilterProvider>
+);
 
 const ContainerTemplate = ({
   children,

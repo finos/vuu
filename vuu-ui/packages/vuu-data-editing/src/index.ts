@@ -41,6 +41,7 @@ export {
   EditSession,
   SupersededEditError,
   type AddRowResultData,
+  type DeleteSelectedRowsResultData,
   type EditActionType,
   type EditCommitOptions,
   type EditLifecycle,

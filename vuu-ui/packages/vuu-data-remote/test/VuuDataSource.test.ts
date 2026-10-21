@@ -732,10 +732,48 @@ describe("VuuDataSource", () => {
         table,
       });
       expect(dataSource.columns).toEqual(["col1", "col2", "col3", "col4"]);
+      expect(dataSource.config.columns).toEqual([
+        "col1",
+        "col2",
+        "col3",
+        "col4",
+      ]);
 
       dataSource.columns = ["col1", "col2"];
 
       expect(dataSource.columns).toEqual(["col1", "col2", "col4"]);
+      expect(dataSource.config.columns).toEqual(["col1", "col2", "col4"]);
+
+      // Simulates adding an autosubscribed column via column picker (dataSource.columns.concat("col4"))
+      dataSource.columns = dataSource.columns.concat("col4");
+      expect(dataSource.columns).toEqual(["col1", "col2", "col4"]);
+      expect(dataSource.config.columns).toEqual(["col1", "col2", "col4"]);
+    });
+
+    it("includes autosubscribe columns when columns are passed to subscribe", async () => {
+      const callback = () => undefined;
+      const dataSource = new VuuDataSource({
+        autosubscribeColumns: ["col4"],
+        columns: ["col1", "col2"],
+        table,
+      });
+      await dataSource.subscribe({ columns: ["col1", "col3"] }, callback);
+
+      const serverAPI = await ConnectionManager.serverAPI;
+      expect(serverAPI.subscribe).toHaveBeenCalledWith(
+        {
+          ...defaultSubscribeOptions,
+          columns: ["col1", "col3", "col4"],
+          table: {
+            module: "SIMUL",
+            table: "instruments",
+          },
+          viewport: expect.stringMatching(/^\S{21}$/),
+        },
+        expect.any(Function),
+      );
+      expect(dataSource.columns).toEqual(["col1", "col3", "col4"]);
+      expect(dataSource.config.columns).toEqual(["col1", "col3", "col4"]);
     });
   });
 });
@@ -791,11 +829,12 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     const dataSource = await subscribedDataSource({
       table,
       columns: ["bbg", "currency", "description"],
+      autosubscribeColumns: ["ric"],
     });
 
     const session = await dataSource.createSessionDataSource("All", "export");
 
-    expect(session?.columns).toEqual(["bbg", "currency", "description"]);
+    expect(session?.columns).toEqual(["bbg", "currency", "description", "ric"]);
   });
 
   it("stores the source datasource on created session datasources", async () => {

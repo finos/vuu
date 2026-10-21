@@ -25,6 +25,7 @@ import type {
   VuuRpcMenuRequest,
   VuuTable,
   VuuDataRow,
+  DeselectRowRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isAddRowRpcRequest,
@@ -68,6 +69,8 @@ export interface IVuuModule<T extends string = string> {
 }
 
 export type SessionTableMap = Record<string, Table>;
+
+type DeselectRowAction = Omit<DeselectRowRequest, "vpId">;
 
 export type ServiceHandler = (
   rpcRequest: VuuRpcServiceRequest,
@@ -424,6 +427,20 @@ export abstract class VuuModule<T extends string = string>
     }
   }
 
+  /**
+   * Soft-deletes a session table row, unless the row is an uncommitted insert
+   * (vuuAction === "addRow"), in which case it is removed outright — there is
+   * no prior state to restore.
+   */
+  #softDeleteSessionRow(sessionTable: Table, key: string) {
+    const row = sessionTable.findByKey(key);
+    if (row && row[sessionTable.map.vuuAction] === "addRow") {
+      sessionTable.delete(key);
+    } else {
+      sessionTable.update(key, "vuuAction", "deleteRow");
+    }
+  }
+
   protected deleteRow: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
@@ -434,7 +451,7 @@ export abstract class VuuModule<T extends string = string>
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
         if (mode === "soft") {
-          sessionTable.update(key, "vuuAction", "deleteRow");
+          this.#softDeleteSessionRow(sessionTable, key);
         } else {
           sessionTable.delete(key);
         }
@@ -474,14 +491,17 @@ export abstract class VuuModule<T extends string = string>
         if (selectedRowIds.length > 0) {
           for (const key of selectedRowIds) {
             if ((mode as DeleteRowMode) === "soft") {
-              sessionTable.update(key, "vuuAction", "deleteRow");
+              this.#softDeleteSessionRow(sessionTable, key);
             } else {
               sessionTable.delete(key);
             }
           }
           dataSource.select?.({ type: "DESELECT_ALL" });
         }
-        return { type: "SUCCESS_RESULT", data: undefined };
+        return {
+          type: "SUCCESS_RESULT",
+          data: { deletedKeys: selectedRowIds },
+        };
       }
       return {
         type: "ERROR_RESULT",
@@ -521,7 +541,12 @@ export abstract class VuuModule<T extends string = string>
         const action = sessionRow[sessionTable.map.vuuAction];
         if (action === "addRow") {
           sessionTable.delete(key);
-          return { type: "SUCCESS_RESULT", data: { wasInsertedRow: true } };
+          dataSource.select?.({
+            preserveExistingSelection: true,
+            rowKey: key,
+            type: "DESELECT_ROW",
+          } as DeselectRowAction);
+          return { type: "SUCCESS_RESULT", data: undefined };
         }
         if (action === "deleteRow" || action === "editCell") {
           const sourceRow = sourceTable.findByKey(key);

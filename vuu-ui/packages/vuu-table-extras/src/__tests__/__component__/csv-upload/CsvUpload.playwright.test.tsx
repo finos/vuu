@@ -244,7 +244,7 @@ test.describe("Given a DataUploadPreview", () => {
       .getByRole("checkbox", { name: "Press space to select row" })
       .click();
     await page.getByRole("button", { name: "Delete", exact: true }).click();
-    await expect(deletedRow).toContainClass("vuuTableRow-deleted");
+    await expect(deletedRow).toHaveCount(0);
 
     await page.getByRole("button", { name: "Submit", exact: true }).click();
 
@@ -375,5 +375,70 @@ test.describe("Given a CsvUpload with custom validators", () => {
       "Please rectify and reupload",
     );
     await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+});
+
+test.describe("Given a CsvUpload with customHeaders and hasHeaderRow", () => {
+  test("WHEN a headerless CSV is uploaded with customHeaders and hasHeaderRow=false THEN rows are imported correctly", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithCustomHeaders");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "headerless.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("item-1,Gadget,9.99\nitem-2,Widget,19.99\n"),
+    });
+
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled({
+      timeout: 5000,
+    });
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"id":"item-1"',
+      { timeout: 5000 },
+    );
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"name":"Gadget"',
+    );
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"price":9.99',
+    );
+    await expect(page.locator('[data-testid="captured-row-1"]')).toContainText(
+      '"id":"item-2"',
+    );
+  });
+});
+
+test.describe("Given a CsvUpload with headerMapping", () => {
+  test("WHEN a CSV with custom headers is uploaded THEN headers are mapped to schema columns and validated", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithHeaderMapping");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "mapped-headers.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("Identifier,Description,Cost\nitem-99,Super Device,49.95\n"),
+    });
+
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled({
+      timeout: 5000,
+    });
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"id":"item-99"',
+      { timeout: 5000 },
+    );
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"name":"Super Device"',
+    );
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"price":49.95',
+    );
   });
 });

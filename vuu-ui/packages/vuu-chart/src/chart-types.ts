@@ -46,6 +46,7 @@ export interface LineSeries extends SeriesBase {
 }
 export interface ScatterSeries extends SeriesBase {
   type: "scatter";
+  z?: number;
 }
 
 export type Series = LineSeries | ScatterSeries;

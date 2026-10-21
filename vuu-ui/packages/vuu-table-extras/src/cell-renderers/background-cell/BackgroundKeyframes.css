@@ -1,3 +1,87 @@
+@keyframes vuucoolup {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vuucooldown {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vuucoolbgup {
+  from {
+    background-color: var(--vuuBackgroundCell-hotUp-background, color-mix(in srgb, var(--salt-sentiment-positive-foreground-informative) 30%, transparent));
+  }
+  to { background-color: transparent; }
+}
+
+@keyframes vuucoolbgdown {
+  from {
+    background-color: var(--vuuBackgroundCell-hotDown-background, color-mix(in srgb, var(--salt-sentiment-negative-foreground-informative) 30%, transparent));
+  }
+  to { background-color: transparent; }
+}
+
+@keyframes vuuflashtextup1 {
+  0% {
+    color: var(--vuuBackgroundCell-flash-color, white);
+    animation-timing-function: step-end;
+  }
+  33% {
+    color: var(--vuuBackgroundCell-color, var(--salt-content-primary-foreground));
+  }
+}
+
+@keyframes vuuflashtextup2 {
+  0% {
+    color: var(--vuuBackgroundCell-flash-color, white);
+    animation-timing-function: step-end;
+  }
+  33% {
+    color: var(--vuuBackgroundCell-color, var(--salt-content-primary-foreground));
+  }
+}
+
+@keyframes vuuflashtextdown1 {
+  0% {
+    color: var(--vuuBackgroundCell-flash-color, white);
+    animation-timing-function: step-end;
+  }
+  33% {
+    color: var(--vuuBackgroundCell-color, var(--salt-content-primary-foreground));
+  }
+}
+
+@keyframes vuuflashtextdown2 {
+  0% {
+    color: var(--vuuBackgroundCell-flash-color, white);
+    animation-timing-function: step-end;
+  }
+  33% {
+    color: var(--vuuBackgroundCell-color, var(--salt-content-primary-foreground));
+  }
+}
+
+@keyframes vuuflashup1 {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vuuflashup2 {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vuuflashdown1 {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vuuflashdown2 {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 
 @keyframes vuubgup1 {
     0% {

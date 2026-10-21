@@ -7,7 +7,7 @@
     "defaultBranch": "main"
   },
   "files": {
-    "includes": ["packages/**/*", "sample-apps/**/*"]
+    "includes": ["packages/**/*", "sample-apps/**/*", "benchmarks/**/*", "!benchmarks/results", "!benchmarks/dist"]
   },
   "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "formatter": {

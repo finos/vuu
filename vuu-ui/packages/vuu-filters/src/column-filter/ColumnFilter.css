@@ -52,3 +52,26 @@
 .vuuColumnFilter-invalid {
     border-color: red;
 }
+
+.vuuColumnFilter.vuuColumnFilter-withOperator {
+    max-width: none;
+
+    [data-field="operator"] {
+        display: flex;
+        align-self: stretch;
+        border-right: 1px solid var(--salt-separable-primary-borderColor);
+        margin-right: var(--salt-spacing-100);
+    }
+
+    .vuuColumnFilter-operator {
+        min-width: 60px;
+        width: auto;
+        border: none;
+        background: transparent;
+
+        &.saltDropdown .saltDropdown-toggle {
+            display: block;
+            flex-shrink: 0;
+        }
+    }
+}

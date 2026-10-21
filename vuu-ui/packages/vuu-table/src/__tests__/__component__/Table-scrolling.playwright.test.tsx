@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 test.describe("Table scrolling and keyboard navigation", () => {
   test.describe("Page Keys", () => {
@@ -9,7 +9,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
         page,
       }) => {
         await mount("Table/Misc/TestTable");
-        const table = new TableOM(page.getByRole("table"));
+        const table = new PwTable(page);
 
         const cell = table.locateCell(2, 1);
         await cell.click();
@@ -38,7 +38,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           page,
         }) => {
           await mount("Table/Misc/TestTable");
-          const table = new TableOM(page.getByRole("table"));
+          const table = new PwTable(page);
 
           let cell = table.locateCell(2, 1);
           await cell.click();
@@ -64,7 +64,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
         test("THEN nothing changes", async ({ mount, page }) => {
           await mount("Table/Misc/TestTable");
 
-          const table = new TableOM(page.getByRole("table"));
+          const table = new PwTable(page);
 
           const cell = table.locateCell(2, 1);
           await cell.click();
@@ -81,7 +81,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           page,
         }) => {
           await mount("Table/Misc/TestTable");
-          const table = new TableOM(page.getByRole("table"));
+          const table = new PwTable(page);
 
           const cell = table.locateCell(6, 1);
           await cell.click();
@@ -99,7 +99,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           page,
         }) => {
           await mount("Table/Misc/TestTable");
-          const table = new TableOM(page.getByRole("table"));
+          const table = new PwTable(page);
 
           let cell = table.locateCell(2, 1);
           await cell.click();
@@ -118,7 +118,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           page,
         }) => {
           await mount("Table/Misc/TestTable");
-          const table = new TableOM(page.getByRole("table"));
+          const table = new PwTable(page);
 
           let cell = table.locateCell(11, 1);
           await cell.click();
@@ -139,7 +139,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           }) => {
             await mount("Table/Misc/TestTable");
 
-            const table = new TableOM(page.getByRole("table"));
+            const table = new PwTable(page);
 
             let cell = table.locateCell(2, 1);
             await cell.click();
@@ -159,7 +159,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           page,
         }) => {
           await mount("Table/Misc/TestTable");
-          const table = new TableOM(page.getByRole("table"));
+          const table = new PwTable(page);
 
           let cell = table.locateCell(31, 1);
           await cell.click();
@@ -182,7 +182,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             test.skip(browserName === "firefox");
 
             await mount("Table/Misc/TestTable");
-            const table = new TableOM(page.getByRole("table"));
+            const table = new PwTable(page);
 
             const cell = table.locateCell(31, 1);
             await cell.click();
@@ -202,7 +202,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             // this width allows for exactly 6 visible columns, we allow a buffer of 200px
             // so 2 out-of-viewport colums are rendered
             await mount("Table/TEST/TwoHundredColumns");
-            const table = new TableOM(page.getByRole("table"));
+            const table = new PwTable(page);
             const cell = table.locateCell(2, 1);
             await expect(cell).toBeVisible();
             await table.assertRenderedColumns({
@@ -215,7 +215,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           test("THEN rendering is unchanged", async ({ mount, page }) => {
             await mount("Table/TEST/TwoHundredColumns");
 
-            const table = new TableOM(page.getByRole("table"));
+            const table = new PwTable(page);
 
             const cell = table.locateCell(2, 1);
             await cell.click();
@@ -234,7 +234,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           }) => {
             await mount("Table/TEST/TwoHundredColumns");
 
-            const table = new TableOM(page.getByRole("table"));
+            const table = new PwTable(page);
             const cell = table.locateCell(2, 1);
             await cell.click();
             await page.mouse.wheel(110, 0);
@@ -251,7 +251,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             page,
           }) => {
             await mount("Table/TEST/TwoHundredColumns");
-            const table = new TableOM(page.getByRole("table"));
+            const table = new PwTable(page);
             const cell = table.locateCell(2, 1);
             await cell.click();
             // Set the scroll position directly. WebKit animates a mouse wheel

@@ -23,34 +23,49 @@ import type {
 } from "./parse/csv-schema-validation";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import type { CsvUploadTableData } from "./parse/csv-upload-utils";
+import type {
+  CsvUploadTableData,
+  CsvHeaderMapping,
+} from "./parse/csv-upload-utils";
 import { useCsvUpload } from "./useCsvUpload";
 import css from "./CsvUpload.css";
 
 export type CsvUploadImportedResult = {
+  /** Normalized table column names and 2D row data imported into the table. */
   tableData: CsvUploadTableData;
 };
 
 export type CsvUploadPreviewResult = {
+  /** The live session DataSource containing the staged rows. */
   dataSource: DataSource;
+  /** The active EditSession managing the staged import. */
   editSession: EditSession;
+  /** Normalized table column names and 2D row data staged for import. */
   tableData: CsvUploadTableData;
 };
 
 export type CsvUploadErrors = {
+  /** Error when CSV columns do not match the target or import table schema. */
   schemaError?: CsvUploadError;
+  /** Error when CSV syntax or cell values fail type coercion or custom validation. */
   validationError?: CsvUploadError;
+  /** Error during server-side row staging or session commitment. */
   importError?: CsvUploadError;
 };
 
 export type CsvUploadError = {
+  /** Human-readable error description. */
   message: string;
+  /** Raw CSV parser error details, if the failure occurred during file parsing. */
   parseError?: CsvParseError;
+  /** Structured validation error map, if the failure occurred during schema/row validation. */
   validationError?: CsvValidationStructuredError;
+  /** Origin phase of the error. */
   source: "schema" | "validation" | "import";
 };
 
 export type CsvUploadErrorResult = {
+  /** Container of populated upload errors by category. */
   errors: CsvUploadErrors;
 };
 
@@ -59,7 +74,9 @@ export type CsvUploadSessionTable = VuuTable;
 export type CsvUploadSessionEndReason = "saved" | "discarded" | "failed";
 
 export type CsvUploadSessionEndResult = {
+  /** Outcome reason for ending the session: `"saved"`, `"discarded"`, or `"failed"`. */
   reason: CsvUploadSessionEndReason;
+  /** The Vuu session table descriptor that was closed, if one was active. */
   sessionTable?: CsvUploadSessionTable;
 };
 
@@ -72,8 +89,14 @@ export type CsvUploadPhase =
   | "failed";
 
 export interface CsvUploadProps {
+  /** Optional content rendered below the drop zone inside the dialog content area (e.g., error preview table). */
   children?: ReactNode;
+  /**
+   * The Vuu DataSource for the target table. Must be subscribed (`status: "subscribed"`)
+   * and support session creation, row insertion, and edit session completion.
+   */
   dataSource: DataSource;
+  /** Renders the upload content inline without a Dialog wrapper. Defaults to `false`. */
   embedded?: boolean;
   /**
    * Schema of the import table, where it differs from the target table. Used to validate
@@ -83,20 +106,41 @@ export interface CsvUploadProps {
   importSchema?: TableSchema;
   /** Expected import table, used to validate the session table returned by the server. */
   importTable?: VuuTable;
+  /** Fired when the server-side session is fully hydrated and a preview session DataSource is available. */
   onImportSessionReady?: (dataSource: DataSource) => void;
+  /** Fired when the import session ends (whether by save, discard, or failure). */
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
+  /** Fired when any error occurs, or called with `undefined` when errors are cleared. */
   onError?: (result: CsvUploadErrorResult | undefined) => void;
+  /** Fired after a successful import commit with the normalized imported table data. */
   onImported?: (result: CsvUploadImportedResult) => void;
+  /** In preview mode, fired when Import is pressed with the active EditSession and session DataSource. */
   onPreview?: (result: CsvUploadPreviewResult) => void;
+  /** Fired when file parsing and validation starts. */
   onProcessingStarted?: () => void;
+  /** Header title text displayed in the dialog header. Defaults to `"Import CSV"`. */
   dialogTitle?: string;
+  /** Maximum number of data rows permitted in the uploaded CSV. Defaults to `10000`. */
   maxRows?: number;
+  /** Fired when the user clicks Cancel. */
   onCancel?: () => void;
+  /** Fired after a successful import has completed. */
   onClose?: () => void;
+  /** Controls dialog open state. When provided, the dialog is fully controlled. */
   open?: boolean;
+  /** Parser configuration options such as requiring quotes or custom headers. */
   parseOptions?: CsvParseOptions;
+  /** Optional custom header columns to use instead of reading headers from the CSV file. */
+  customHeaders?: string[];
+  /** Whether the CSV contains a header row. Defaults to true. When false and customHeaders is provided, row 0 is treated as data. */
+  hasHeaderRow?: boolean;
+  /** Optional mapping or resolver function from CSV header column names to schema column names. */
+  headerMapping?: CsvHeaderMapping;
+  /** Import mode: `"direct"` commits immediately on Import; `"preview"` returns the session via `onPreview`. Defaults to `"direct"`. */
   importMode?: "direct" | "preview";
+  /** Default column values merged into rows where a column is omitted in the CSV. Pass a stable reference. */
   rowDefaults?: RowDefaultDataItemValues;
+  /** Custom per-column validation functions. */
   validators?: Record<string, CsvColumnValidator>;
 }
 

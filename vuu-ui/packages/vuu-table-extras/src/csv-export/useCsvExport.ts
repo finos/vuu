@@ -4,26 +4,51 @@ import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 import {
   exportCsvTemplate,
   exportToCsv,
+  type CsvHeaderMapping,
   type ExportColumnDescriptor,
   type ExportCsvTemplateOptions,
   type ExportToCsvOptions,
 } from "./export-utils";
 
 export interface UseCsvExportProps {
+  /** The target Vuu DataSource to export data or templates from. */
   dataSource?: DataSource;
+  /** Optional table configuration used to derive visible columns, order, and formatters. */
   tableConfig?: TableConfig;
+  /** Explicit columns to export when not derived from tableConfig or options. */
   columns?: readonly (string | ExportColumnDescriptor | ColumnDescriptor)[];
+  /**
+   * Optional mapping from schema column name to exported header name,
+   * or a resolver function `(col: string) => string`.
+   */
+  headerMapping?: CsvHeaderMapping;
+  /** Default error callback for export operations. */
   onError?: (error: Error) => void;
+  /** Default success callback when an export or template download is initiated. */
   onSuccess?: () => void;
 }
 
 export interface UseCsvExportResult {
+  /** True while an export or template download operation is in progress. */
   isExporting: boolean;
+  /** The most recent export error, or null if no error occurred. */
   error: Error | null;
+  /**
+   * Exports table data to CSV and triggers a file download in the browser.
+   *
+   * @param options - Export options including filename, columns, and limits.
+   * @param overrideDataSource - Optional DataSource to export instead of the default.
+   */
   exportCsv: (
     options?: ExportToCsvOptions,
     overrideDataSource?: DataSource,
   ) => Promise<void>;
+  /**
+   * Exports a header-only CSV template suitable for importing back into the table.
+   *
+   * @param options - Template options including filename, columns, and header mapping.
+   * @param overrideDataSource - Optional DataSource to export template for instead of the default.
+   */
   exportTemplate: (
     options?: ExportCsvTemplateOptions,
     overrideDataSource?: DataSource,
@@ -45,6 +70,7 @@ export function useCsvExport(
     dataSource: defaultDataSource,
     tableConfig,
     columns: defaultColumns,
+    headerMapping: defaultHeaderMapping,
     onError,
     onSuccess,
   } = config;
@@ -74,8 +100,14 @@ export function useCsvExport(
           defaultColumns ??
           tableConfig?.columns;
 
+        const effectiveHeaderMapping =
+          options?.headerMapping ?? defaultHeaderMapping;
+
         await exportToCsv(activeDataSource, {
           columns: columnsToExport,
+          ...(effectiveHeaderMapping !== undefined
+            ? { headerMapping: effectiveHeaderMapping }
+            : {}),
           ...options,
           onError: (err) => {
             setError(err);
@@ -98,7 +130,7 @@ export function useCsvExport(
         setIsExporting(false);
       }
     },
-    [defaultDataSource, defaultColumns, tableConfig, onError, onSuccess],
+    [defaultDataSource, defaultColumns, defaultHeaderMapping, tableConfig, onError, onSuccess],
   );
 
   const exportTemplate = useCallback(
@@ -125,8 +157,14 @@ export function useCsvExport(
           defaultColumns ??
           tableConfig?.columns;
 
+        const effectiveHeaderMapping =
+          options?.headerMapping ?? defaultHeaderMapping;
+
         await exportCsvTemplate(activeDataSource, {
           columns: templateColumns,
+          ...(effectiveHeaderMapping !== undefined
+            ? { headerMapping: effectiveHeaderMapping }
+            : {}),
           ...options,
           onError: (err) => {
             setError(err);
@@ -149,7 +187,7 @@ export function useCsvExport(
         setIsExporting(false);
       }
     },
-    [defaultDataSource, defaultColumns, tableConfig, onError, onSuccess],
+    [defaultDataSource, defaultColumns, defaultHeaderMapping, tableConfig, onError, onSuccess],
   );
 
   return {

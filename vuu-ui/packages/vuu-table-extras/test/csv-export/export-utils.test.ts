@@ -523,6 +523,132 @@ describe("export-utils", () => {
         exportCsvTemplate(noColumnsDs as unknown as DataSource),
       ).rejects.toThrow("no columns available for export");
     });
+
+    it("respects ColumnDescriptor.label when writing the template CSV header", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      mockSessionDataSource.subscribe.mockImplementation(
+        (_props: unknown, callback: (msg: unknown) => void) => {
+          callback({
+            type: "subscribed",
+            columns: ["ric", "currency", "description", "vuuRowNum"],
+          });
+        },
+      );
+
+      const onSuccess = vi.fn();
+      await exportCsvTemplate(mockDataSource as unknown as DataSource, {
+        filename: "labeled-template.csv",
+        columns: [
+          { name: "ric", label: "RIC, Code" },
+          { name: "currency", label: "Base Currency" },
+        ],
+        onSuccess,
+      });
+
+      expect(csvContent).toBe('"RIC, Code",Base Currency\r\n');
+      expect(onSuccess).toHaveBeenCalled();
+    });
+
+    it("respects headerMapping in template export with direct and reverse mappings", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      mockSessionDataSource.subscribe.mockImplementation(
+        (_props: unknown, callback: (msg: unknown) => void) => {
+          callback({
+            type: "subscribed",
+            columns: ["ric", "currency", "description", "vuuRowNum"],
+          });
+        },
+      );
+
+      const onSuccess = vi.fn();
+      // Reverse mapping: CSV Header -> Schema column (same as CsvUpload headerMapping)
+      await exportCsvTemplate(mockDataSource as unknown as DataSource, {
+        filename: "mapped-template.csv",
+        columns: ["ric", "currency"],
+        headerMapping: {
+          "RIC Identifier": "ric",
+          "Currency Code": "currency",
+        },
+        onSuccess,
+      });
+
+      expect(csvContent).toBe("RIC Identifier,Currency Code\r\n");
+      expect(onSuccess).toHaveBeenCalled();
+    });
+  });
+
+  describe("exportToCsv with headerMapping", () => {
+    it("maps header columns using headerMapping when exporting data", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      const metadata: DataSourceRow = [
+        0, 1, false, false, 0, 0, "key1", 0, 0, false,
+      ];
+
+      mockSessionDataSource.subscribe.mockImplementation(
+        (_props: unknown, callback: (msg: unknown) => void) => {
+          callback({
+            type: "subscribed",
+            columns: ["ric", "currency", "description", "vuuRowNum"],
+          });
+          callback({
+            type: "viewport-update",
+            mode: "size-only",
+            size: 1,
+          });
+          callback({
+            type: "viewport-update",
+            mode: "batch",
+            rows: [[...metadata, "VOD.L", "GBP", "Vodafone", 1]],
+          });
+        },
+      );
+
+      const onSuccess = vi.fn();
+      await exportToCsv(mockDataSource as unknown as DataSource, {
+        filename: "mapped-data.csv",
+        columns: ["ric", "currency"],
+        headerMapping: {
+          "Ticker": "ric",
+          "Denomination": "currency",
+        },
+        onSuccess,
+      });
+
+      const lines = csvContent.split("\r\n").filter(Boolean);
+      expect(lines[0]).toBe("Ticker,Denomination");
+      expect(lines[1]).toBe("VOD.L,GBP");
+      expect(onSuccess).toHaveBeenCalled();
+    });
   });
 
   describe("exportSessionTableToCsv with options object", () => {

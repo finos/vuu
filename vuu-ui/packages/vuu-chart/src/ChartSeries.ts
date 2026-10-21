@@ -199,6 +199,9 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
               symbol,
               symbolSize: 20,
               type: "scatter",
+              // render excluded data items above the line, which still passes
+              // through them, so they can be clicked (e.g. to include them again)
+              z: 3,
             };
           }
 

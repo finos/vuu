@@ -2,6 +2,7 @@ export {
   ColumnFilter,
   type ColumnFilterProps,
 } from "./column-filter/ColumnFilter";
+export type { SelectableColumnFilterOp } from "./column-filter/column-filter-utils";
 export * from "./filter-bar";
 export * from "./filter-clause";
 export { ExtendedSingleValueFilterClause } from "./filter-container/ExtendedSingleValueFilterClause";

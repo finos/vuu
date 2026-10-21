@@ -1070,13 +1070,15 @@ export class ArrayDataSource
         size: data.length,
         type: "viewport-update",
       });
+      // The client now holds every row in the buffered range, whether this
+      // message sent all of them or (delta) only the new ones. Recording
+      // anything smaller makes the next range change resend rows the
+      // client already has. Clamp to the data, so rows added later are
+      // still treated as new.
+      const served = this.rangeWithBufferWithinMaxRangeEnd;
       this.lastRangeServed = {
-        from: this.#range.from,
-        // to: this.#range.to,
-        to: Math.min(
-          this.#range.to,
-          this.#range.from + rowsWithinViewport.length,
-        ),
+        from: served.from,
+        to: Math.min(served.to, data.length),
       };
       // console.log(
       //   `%c[ArrayDataSource] lastRangeServed (${this.lastRangeServed.from}:${this.lastRangeServed.to})`,
