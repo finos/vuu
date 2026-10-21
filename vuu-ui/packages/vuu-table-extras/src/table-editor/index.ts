@@ -1,6 +1,7 @@
 export {
-  type TableEditorEditIn,
+  type TableEditorCreateStrategy,
   type TableEditorEditModel,
+  type TableEditorEditStrategy,
   type TableEditorMode,
   type TableEditorPanelVisibility,
   type TableEditorState,

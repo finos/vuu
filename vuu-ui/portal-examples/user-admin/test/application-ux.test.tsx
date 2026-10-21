@@ -2,7 +2,7 @@ import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import { TableWithEditForm, useTableEditor } from "@vuu-ui/vuu-table-extras";
+import { EditableTable, useTableEditor } from "@vuu-ui/vuu-table-extras";
 import { PortalModuleRegistryProvider } from "@vuu-ui/core/portal";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CreateGroupForm } from "../src/components/groups-edit-form/GroupsEditForm";
@@ -220,10 +220,10 @@ describe("application-centred admin UX", () => {
 
     const renderForm = (application?: string) =>
       renderWithModel(
-        <TableWithEditForm dataSource={dataSource}>
+        <EditableTable dataSource={dataSource} editStrategy="form">
           <StartCreate />
           <CreateGroupForm application={application} />
-        </TableWithEditForm>,
+        </EditableTable>,
       );
 
     const typeGroupName = async (value: string) => {

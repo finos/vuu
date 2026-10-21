@@ -16,7 +16,10 @@ export interface EditFormButtonsProps {
   confirmCancel?: () => boolean | Promise<boolean>;
   /** Hide the Cancel button. */
   hideCancel?: boolean;
-  /** @default "Save" in edit mode, "Create" in create mode */
+  /**
+   * @default "Save" in edit mode, "Done" with direct editing, "Create" in
+   * create mode, or "Add" when adding to a shared session
+   */
   saveLabel?: string;
 }
 
@@ -31,9 +34,26 @@ export const EditFormButtons = ({
   hideCancel = false,
   saveLabel: saveLabelProp,
 }: EditFormButtonsProps) => {
-  const { cancel, canSave, editSession, isDirty, mode, saving, submit } =
-    assertForm(useEditFormContext());
-  const saveLabel = saveLabelProp ?? (mode === "create" ? "Create" : "Save");
+  const {
+    cancel,
+    canSave,
+    editModel,
+    editSession,
+    isDirty,
+    isSharedSession,
+    mode,
+    saving,
+    submit,
+  } = assertForm(useEditFormContext());
+  const saveLabel =
+    saveLabelProp ??
+    (mode === "create"
+      ? isSharedSession
+        ? "Add"
+        : "Create"
+      : editModel === "direct"
+        ? "Done"
+        : "Save");
 
   const handleCancel = useCallback(async () => {
     if (confirmCancel && isDirty && !(await confirmCancel())) {
@@ -41,6 +61,15 @@ export const EditFormButtons = ({
     }
     cancel();
   }, [cancel, confirmCancel, isDirty]);
+
+  if (editModel === "direct") {
+    // each field was sent as it was committed, there is nothing to cancel
+    return (
+      <Button onClick={() => submit()} sentiment="accented">
+        {saveLabel}
+      </Button>
+    );
+  }
 
   return mode === "edit" ? (
     <EditButtons

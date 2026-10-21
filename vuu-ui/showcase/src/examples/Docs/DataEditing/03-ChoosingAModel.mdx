@@ -6,10 +6,11 @@ Not every edit needs a session table. There are two models.
 | - | -------------- | ----------- |
 | Edits go to | a session table, applied on Save | the source table, immediately |
 | Save / Cancel | yes | no |
-| Insert and delete | yes | no |
+| Insert | inline add row or create form | create form (`createStrategy="form"` or `editStrategy="form"`) |
+| Delete | yes | no |
 | Other users see changes | on Save | on each edit |
 | Server needs | session-table and edit RPC handlers | `editCell` on the source table |
-| Use | `EditableTable`, `TableWithEditForm`, `EditForm`, `useEditableTable` | `EditableTable editModel="direct"`, `DirectEditSession` |
+| Use | `EditableTable` (any `editStrategy`), `EditForm`, `useEditableTable` | `EditableTable editModel="direct"` (any `editStrategy`), `DirectEditSession` |
 
 ## Staged session
 
@@ -28,11 +29,12 @@ no Save step and nothing to undo.
   config={config}
   dataSource={dataSource}
   editModel="direct"
-  editable={{ notes: true, status: true }}
 />
 ```
 
-The table is always editable unless you ask for View and Edit modes; see
+Which columns can be edited comes from the server schema and the `editable`
+flags on `config.columns`. The table is always editable unless you ask for
+View and Edit modes; see
 [Direct editing](./04-EditableTables.mdx#direct-editing). The source table's
 service must support `editCell`.
 

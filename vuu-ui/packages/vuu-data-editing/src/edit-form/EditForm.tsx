@@ -34,7 +34,10 @@ export interface EditFormProps
   confirmCancel?: () => boolean | Promise<boolean>;
   /** Hide the Cancel button. */
   hideCancel?: boolean;
-  /** @default "Save" in edit mode, "Create" in create mode */
+  /**
+   * @default "Save" in edit mode, "Done" with direct editing, "Create" in
+   * create mode, or "Add" when adding to a shared `editSession`
+   */
   saveLabel?: string;
   /**
    * Set false to render the buttons yourself, with `EditFormButtons`.
@@ -62,6 +65,8 @@ export const EditForm = ({
   dataRow,
   dataSource,
   deleteMode,
+  editModel,
+  editSession: sharedEditSession,
   editSessionApi,
   hideCancel = false,
   isEditMode,
@@ -82,6 +87,8 @@ export const EditForm = ({
     dataRow,
     dataSource,
     deleteMode,
+    editModel,
+    editSession: sharedEditSession,
     editSessionApi,
     isEditMode,
     mode,
@@ -92,7 +99,7 @@ export const EditForm = ({
     rowDefaults,
     validate,
   });
-  const { canSave, editSession, error, saving, submit } = form;
+  const { canSave, error, fieldEditSession, saving, submit } = form;
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
@@ -141,7 +148,7 @@ export const EditForm = ({
 
   return (
     <EditFormContext.Provider value={form}>
-      <DataEditingProvider editSession={editSession}>
+      <DataEditingProvider editSession={fieldEditSession}>
         {ownsEditMode ? (
           <EditModeProvider isEditMode={form.isEditMode}>
             {content}

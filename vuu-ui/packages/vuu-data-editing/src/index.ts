@@ -6,6 +6,7 @@ export {
 export {
   DirectEditSession,
   type DirectEditSessionConstructorProps,
+  type DirectEditValidator,
 } from "./DirectEditSession";
 export type {
   TableEditSession,
@@ -86,9 +87,7 @@ export {
   getEditableColumns,
   UNDO_COLUMN,
   useEditableColumns,
-  type EditableColumnOptions,
-  type EditableColumnsConfig,
-  type EditableColumnSpec,
+  narrowEditable,
   type EditableColumnsHookProps,
 } from "./useEditableColumns";
 export {
@@ -116,3 +115,5 @@ export {
   type ConfirmDiscardHookProps,
 } from "./useConfirmDiscard";
 export * from "./edit-form";
+export * from "./edit-control";
+export { type FormFieldsOptions, getFormFields } from "./form-fields";

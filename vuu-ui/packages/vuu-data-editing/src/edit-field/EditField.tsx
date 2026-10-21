@@ -10,15 +10,20 @@ import {
 import type { DataRow, TableCellEditHandler } from "@vuu-ui/vuu-table-types";
 import { type ChangeEvent, useCallback, useEffect, useState } from "react";
 import { useEditField } from "./useEditField";
-import { useEditSession } from "../DataEditingProvider";
+import { useEditSession, useTableEditSession } from "../DataEditingProvider";
 import { dataDescriptorTypeToVuuRowDataItemType } from "@vuu-ui/vuu-utils";
-import type { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
+import type {
+  DataValueDescriptor,
+  DataValueValidationChecker,
+} from "@vuu-ui/vuu-data-types";
 import type {
   VuuColumnDataType,
   VuuRowDataItemType,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import { useEditMode } from "../EditModeProvider";
+import { getDataItemEditControl } from "../edit-control";
+import { DirectEditSession } from "../DirectEditSession";
 import { useEditFormContext } from "../edit-form/EditFormContext";
 import { useEditSessionState } from "../useEditSessionState";
 import {
@@ -73,6 +78,27 @@ export interface DropdownEditFieldProps extends EditFieldProps {
 }
 
 /**
+ * A field described by a column descriptor, the same descriptor a Table
+ * column uses. The control is chosen by `getDataItemEditControl`, from the
+ * descriptor's `editor` and `serverDataType`. `editable` and `required` are
+ * respected.
+ */
+export interface ColumnEditFieldProps
+  extends Omit<
+    EditFieldProps,
+    "label" | "name" | "readOnly" | "required" | "serverDataType" | "type"
+  > {
+  column: DataValueDescriptor;
+  /** Defaults to `column.label`, then `column.name` */
+  label?: string;
+}
+
+const isColumnEditFieldProps = (
+  props: EditFieldProps | DropdownEditFieldProps | ColumnEditFieldProps,
+): props is ColumnEditFieldProps =>
+  (props as ColumnEditFieldProps).column !== undefined;
+
+/**
  * A labelled form field bound to the EditSession provided by the enclosing
  * DataEditingProvider. Read-only unless the enclosing EditModeProvider is in
  * edit mode. Commits on Enter or blur (text), selection (dropdown) or toggle
@@ -85,10 +111,35 @@ const resolveDataRow = (dataRow?: DataRow) => {
   return dataRow;
 };
 
-export const EditField = ({
+export const EditField = (
+  props: EditFieldProps | DropdownEditFieldProps | ColumnEditFieldProps,
+) =>
+  isColumnEditFieldProps(props) ? (
+    <ColumnEditField {...props} />
+  ) : (
+    <TypedEditField {...props} />
+  );
+
+const ColumnEditField = ({
+  column: descriptor,
+  label = descriptor.label ?? descriptor.name,
+  ...props
+}: ColumnEditFieldProps) => (
+  <TypedEditField
+    {...props}
+    descriptor={descriptor}
+    label={label}
+    name={descriptor.name}
+    required={descriptor.required}
+    serverDataType={descriptor.serverDataType}
+  />
+);
+
+const TypedEditField = ({
   clientSideEditValidationCheck,
   dataRow: dataRowProp,
   deferNewRow: deferNewRowProp,
+  descriptor,
   label,
   name,
   readOnly = false,
@@ -96,8 +147,12 @@ export const EditField = ({
   serverDataType = "string",
   type,
   ...options
-}: EditFieldProps | DropdownEditFieldProps) => {
+}: (EditFieldProps | DropdownEditFieldProps) & {
+  descriptor?: DataValueDescriptor;
+}) => {
   const editSession = useEditSession();
+  // an EditSession or, with direct editing, a DirectEditSession
+  const tableEditSession = useTableEditSession();
   const form = useEditFormContext();
   const dataRow = resolveDataRow(dataRowProp ?? form?.dataRow);
   const deferNewRow = deferNewRowProp ?? form?.mode === "create";
@@ -110,7 +165,7 @@ export const EditField = ({
   );
 
   const lookupValues = useLookupValues({
-    enabled: type === "dropdown",
+    enabled: descriptor === undefined && type === "dropdown",
     ...options,
   });
 
@@ -130,8 +185,8 @@ export const EditField = ({
   const onEdit = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
       const { isValid = true, previousValue = "", value } = editState;
-      if (editPhase === "commit" && editSession) {
-        if (editSession.isNewRow(dataRow.key)) {
+      if (editPhase === "commit" && tableEditSession) {
+        if (editSession?.isNewRow(dataRow.key)) {
           const isEmptyValue = typeof value === "string" && value.trim() === "";
           if (!isValid && !isEmptyValue) {
             return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
@@ -147,7 +202,7 @@ export const EditField = ({
           return { data: undefined, type: "SUCCESS_RESULT" };
         }
 
-        return editSession.commit(
+        return tableEditSession.commit(
           dataRow.key,
           name,
           previousValue,
@@ -164,7 +219,7 @@ export const EditField = ({
         return { data: undefined, type: "SUCCESS_RESULT" };
       }
     },
-    [dataRow, deferNewRow, editSession, name, setNewRowValue],
+    [dataRow, deferNewRow, editSession, name, setNewRowValue, tableEditSession],
   );
 
   const necessity = required ? "asterisk" : undefined;
@@ -207,6 +262,7 @@ export const EditField = ({
   };
 
   const {
+    commit,
     inputProps,
     onChange,
     onDropdownSelectionChange,
@@ -241,6 +297,25 @@ export const EditField = ({
           inputProps={{ readOnly: true }}
           value={String(dataValue)}
         />
+      ) : descriptor ? (
+        getDataItemEditControl({
+          InputProps: {
+            bordered: true,
+            inputProps: { ...inputProps, onChange, value },
+            onKeyDown,
+            value,
+          },
+          commitOnBlur: true,
+          dataDescriptor: descriptor,
+          editOperation: isNewRow ? "insert" : "update",
+          onCommit: (_evt, committedValue) => {
+            void commit(String(committedValue));
+          },
+          table:
+            tableEditSession instanceof DirectEditSession
+              ? tableEditSession.dataSource.table
+              : editSession?.sourceDataSource?.table,
+        })
       ) : type === "checkbox" ? (
         <Checkbox
           checked={checked}

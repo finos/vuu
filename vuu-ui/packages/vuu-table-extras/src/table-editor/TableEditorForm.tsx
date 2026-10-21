@@ -1,21 +1,52 @@
 import {
   CreateRowForm,
-  type CreateRowFormField,
   type CreateRowFormProps,
   EditField,
-  type EditFieldProps,
   EditForm,
   type EditFormProps,
   type EditFormValidator,
   type EditFormValues,
+  getFormFields,
   useEditFormContext,
 } from "@vuu-ui/vuu-data-editing";
-import { type ReactNode, useCallback, useLayoutEffect, useRef } from "react";
+import type { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import {
+  type ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useTableEditorContext } from "./TableEditorContext";
 
 const classBase = "vuuTableEditorForm";
 
-export type TableEditorField = CreateRowFormField;
+/**
+ * Form editing: describes a field, overlaid on its schema column (and table
+ * column). The control is chosen from its `editor` and `serverDataType`.
+ */
+export type TableEditorField = DataValueDescriptor;
+
+/**
+ * The fields of a generated form, from the dataSource schema and the
+ * table's columns.
+ */
+const useFormFields = (
+  fields: readonly DataValueDescriptor[] | undefined,
+  operation: "insert" | "update",
+  enabled: boolean,
+) => {
+  const { columns, dataSource } = useTableEditorContext("TableEditorForm");
+  const schema = dataSource.tableSchema;
+  return useMemo(
+    () =>
+      enabled ? getFormFields({ columns, fields, operation, schema }) : [],
+    [columns, enabled, fields, operation, schema],
+  );
+};
+
+const requiredNames = (fields: readonly DataValueDescriptor[]) =>
+  fields.filter(({ required }) => required).map(({ name }) => name);
 
 type ProviderOwnedProps =
   | "confirmCancel"
@@ -32,6 +63,8 @@ export interface TableEditorFormProps
     | "children"
     | "columns"
     | "dataRow"
+    | "editModel"
+    | "editSession"
     | "isEditMode"
     | "mode"
     | "requiredColumns"
@@ -42,7 +75,10 @@ export interface TableEditorFormProps
    * `useTableEditor`. Defaults to an `EditField` per entry in `fields`.
    */
   children?: ReactNode;
-  /** Fields for the default form content, in tab order. */
+  /**
+   * Fields for the default form content, in tab order. Without `fields` or
+   * `children`, a field is generated for each schema column.
+   */
   fields?: readonly TableEditorField[];
   /**
    * Render the built-in Save and Cancel buttons. When you compose the form's
@@ -58,7 +94,11 @@ const FormRegistration = () => {
   const { formHandleRef } = useTableEditorContext("TableEditorForm");
   useLayoutEffect(() => {
     formHandleRef.current = form
-      ? { cancel: form.cancel, isDirty: form.isDirty }
+      ? {
+          cancel: form.cancel,
+          getValues: form.getValues,
+          isDirty: form.isDirty,
+        }
       : undefined;
   });
   useLayoutEffect(
@@ -71,10 +111,16 @@ const FormRegistration = () => {
 };
 
 /**
- * Form editing: the selected row of the enclosing `TableWithEditForm`,
- * read-only in view mode and editable in edit mode. Renders nothing in
- * create mode (see `TableEditorCreateForm`) and when no row is selected (see
+ * Form editing: the selected row of the enclosing `EditableTable`, read-only
+ * in view mode and editable in edit mode. Renders nothing in create mode
+ * (see `TableEditorCreateForm`) and when no row is selected (see
  * `TableEditorPlaceholder`).
+ *
+ * Without `children` or `fields`, the form is generated: a field per schema
+ * column, labelled and edited as the table's columns are.
+ *
+ * With `editModel="direct"`, each field is validated and sent as it is
+ * committed. Done returns the form to read-only.
  */
 export const TableEditorForm = ({
   children,
@@ -89,13 +135,20 @@ export const TableEditorForm = ({
   const {
     confirmCancel,
     dataSource,
-    editIn,
+    editModel,
+    editStrategy,
+    formHandleRef,
     formSessionProps,
     mode,
     onEditCancelled,
     onEditSaved,
     selectedRow,
   } = useTableEditorContext("TableEditorForm");
+  const formFields = useFormFields(fields, "update", children === undefined);
+  const requiredColumns = useMemo(
+    () => requiredNames(formFields),
+    [formFields],
+  );
   const submittedValuesRef = useRef<EditFormValues | undefined>(undefined);
 
   const validateEdit = useCallback<EditFormValidator>(
@@ -114,10 +167,19 @@ export const TableEditorForm = ({
 
   const handleSaved = useCallback(() => {
     onSaved?.();
-    onEditSaved(submittedValuesRef.current);
-  }, [onEditSaved, onSaved]);
+    onEditSaved(
+      // direct edits are not validated as a whole on submit
+      editModel === "direct"
+        ? formHandleRef.current?.getValues()
+        : submittedValuesRef.current,
+    );
+  }, [editModel, formHandleRef, onEditSaved, onSaved]);
 
-  if (editIn !== "form" || mode === "create" || selectedRow === undefined) {
+  if (
+    editStrategy !== "form" ||
+    mode === "create" ||
+    selectedRow === undefined
+  ) {
     return null;
   }
 
@@ -129,16 +191,18 @@ export const TableEditorForm = ({
       confirmCancel={confirmCancel}
       dataRow={selectedRow}
       dataSource={dataSource}
+      editModel={editModel}
       isEditMode={mode === "edit"}
       key={selectedRow.key}
       onCancelled={handleCancelled}
       onSaved={handleSaved}
+      requiredColumns={requiredColumns}
       showButtons={showButtons}
       validate={validateEdit}
     >
       {children ??
-        fields?.map((field) => (
-          <EditField {...(field as EditFieldProps)} key={field.name} />
+        formFields.map((field) => (
+          <EditField column={field} key={field.name} />
         ))}
       <FormRegistration />
     </EditForm>
@@ -146,17 +210,25 @@ export const TableEditorForm = ({
 };
 
 export interface TableEditorCreateFormProps
-  extends Omit<CreateRowFormProps, ProviderOwnedProps> {}
+  extends Omit<CreateRowFormProps, ProviderOwnedProps | "editSession"> {}
 
 /**
- * Form editing: a form for adding a row, shown in create mode (see
- * `TableEditorNewButton`). Renders an `EditField` per entry in `fields`,
+ * A form for adding a row, shown in create mode (see
+ * `TableEditorNewButton`), with `editStrategy="form"` or
+ * `createStrategy="form"`. Renders an `EditField` per entry in `fields`,
  * followed by `children`. Custom editors in `children` stage values with
  * `setValue` from `useEditFormContext`.
+ *
+ * Without `children` or `fields`, a field is generated for each schema
+ * column that can be set on a new row.
+ *
+ * With inline session editing the row is added to the table's edit
+ * session (the button reads Add), and saved with the rest of the session.
  */
 export const TableEditorCreateForm = ({
   children,
   className,
+  fields,
   onCancelled,
   onSaved,
   ...formProps
@@ -164,12 +236,36 @@ export const TableEditorCreateForm = ({
   const {
     confirmCancel,
     createKey,
+    createStrategy,
     dataSource,
-    editIn,
+    editModel,
+    editSession,
+    editStrategy,
     formSessionProps,
     mode,
     onCreateDone,
   } = useTableEditorContext("TableEditorCreateForm");
+  const generatedFields = useFormFields(
+    fields,
+    "insert",
+    fields !== undefined || children === undefined,
+  );
+  // CreateRowForm fields are required unless they say otherwise. Generated
+  // fields are only required when the schema or table column says so.
+  const formFields = useMemo(
+    () =>
+      fields
+        ? generatedFields
+        : generatedFields.map((field) =>
+            field.required ? field : { ...field, required: false },
+          ),
+    [fields, generatedFields],
+  );
+  // inline session editing: the new row joins the table's edit session
+  const sharedEditSession =
+    editStrategy === "inline" && editModel === "session"
+      ? editSession
+      : undefined;
 
   const handleCancelled = useCallback(() => {
     onCancelled?.();
@@ -180,7 +276,7 @@ export const TableEditorCreateForm = ({
     onCreateDone(true);
   }, [onCreateDone, onSaved]);
 
-  if (editIn !== "form" || mode !== "create") {
+  if (createStrategy !== "form" || mode !== "create") {
     return null;
   }
 
@@ -191,6 +287,8 @@ export const TableEditorCreateForm = ({
       className={[classBase, className].filter(Boolean).join(" ")}
       confirmCancel={confirmCancel}
       dataSource={dataSource}
+      editSession={sharedEditSession}
+      fields={formFields}
       key={createKey}
       onCancelled={handleCancelled}
       onSaved={handleSaved}

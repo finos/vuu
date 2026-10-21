@@ -7,14 +7,15 @@ import {
   getDataRowValues,
   useEditableTable,
 } from "@vuu-ui/vuu-data-editing";
-import type { DataSource } from "@vuu-ui/vuu-data-types";
+import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import {
   TableEditorContext,
   type TableEditorContextValue,
-  type TableEditorEditIn,
+  type TableEditorCreateStrategy,
   type TableEditorEditModel,
+  type TableEditorEditStrategy,
   type TableEditorFormHandle,
   type TableEditorMode,
   type TableEditorPanelVisibility,
@@ -26,25 +27,27 @@ export interface TableEditorProviderProps
     "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
   > {
   /**
-   * Table editing: show a checkbox column, and a Delete button in
+   * Inline session editing: show a checkbox column, and a Delete button in
    * `TableEditorButtons`, so selected rows can be deleted.
    */
   allowDelete?: boolean;
   children: ReactNode;
   /** Asked before changes are discarded. See `useConfirmDiscard`. */
   confirmCancel?: () => boolean | Promise<boolean>;
-  /** Table editing: rows copied into the edit session. @default "All" */
+  /** Inline session editing: rows copied into the edit session. @default "All" */
   copyOption?: EditableTableHookProps["copyOption"];
+  /**
+   * How rows are added. Always `form` with `editStrategy="form"`.
+   * @default "inline"
+   */
+  createStrategy?: TableEditorCreateStrategy;
   dataSource: DataSource;
   /** Uncontrolled initial mode. @default "view" */
   defaultMode?: TableEditorMode;
-  /** @default "table" */
-  editIn?: TableEditorEditIn;
-  /**
-   * Table editing: `session` stages edits until Save, `direct` sends each
-   * edit straight to `dataSource`. @default "session"
-   */
+  /** @default "session" */
   editModel?: TableEditorEditModel;
+  /** @default "inline" */
+  editStrategy?: TableEditorEditStrategy;
   /** Controlled mode. Pair with `onModeChange`. */
   mode?: TableEditorMode;
   /** Called once changes have been discarded. */
@@ -80,25 +83,98 @@ const useModeState = ({
   return [modeProp ?? modeState, setMode] as const;
 };
 
-/** A plain snapshot of a row that, unlike a table DataRow, can be updated. */
-const toRowSnapshot = (values: EditFormValues): DataRow => {
-  const snapshot = { ...values };
-  return {
-    ...snapshot,
-    hasColumn: (name: string) => name in snapshot,
-  } as unknown as DataRow;
+/** State shared by every variant: the table's columns and the mounted form. */
+const useFormState = () => {
+  const [columns, setColumns] = useState<
+    readonly DataValueDescriptor[] | undefined
+  >();
+  const formHandleRef = useRef<TableEditorFormHandle | undefined>(undefined);
+  return { columns, formHandleRef, setColumns };
 };
 
-const NO_FORM: TableEditorContextValue["formHandleRef"] = {
-  current: undefined,
+/** Discards the mounted form, asking `confirmCancel` first if it is dirty. */
+const cancelForm = async (
+  form: TableEditorFormHandle | undefined,
+  confirmCancel: TableEditorProviderProps["confirmCancel"],
+  onNoForm: () => void,
+) => {
+  if (form === undefined) {
+    onNoForm();
+  } else if (!confirmCancel || !form.isDirty || (await confirmCancel())) {
+    await form.cancel();
+  }
 };
+
+/**
+ * Inline editing with `createStrategy="form"`: new rows are added in a form,
+ * in a side panel that is open only while creating.
+ */
+const useInlineCreate = ({
+  createStrategy,
+  mode,
+  modeAfterCreate,
+  setMode,
+}: {
+  createStrategy: TableEditorCreateStrategy;
+  mode: TableEditorMode;
+  /** Defaults to the mode before the new row was started. */
+  modeAfterCreate?: TableEditorMode;
+  setMode: (mode: TableEditorMode) => void;
+}) => {
+  const [createKey, setCreateKey] = useState(0);
+  const modeBeforeCreateRef = useRef<TableEditorMode>("view");
+  const hasCreateForm = createStrategy === "form";
+  const canCreate = hasCreateForm && mode !== "create";
+
+  // read through a ref, so startCreate is stable across mode changes
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+
+  const startCreate = useCallback(() => {
+    const currentMode = modeRef.current;
+    if (hasCreateForm && currentMode !== "create") {
+      modeBeforeCreateRef.current = currentMode;
+      setCreateKey((key) => key + 1);
+      setMode("create");
+    }
+  }, [hasCreateForm, setMode]);
+
+  const endCreate = useCallback(() => {
+    setMode(modeAfterCreate ?? modeBeforeCreateRef.current);
+  }, [modeAfterCreate, setMode]);
+
+  return {
+    canCreate,
+    createKey,
+    endCreate,
+    panelOpen: hasCreateForm && mode === "create",
+    startCreate,
+  };
+};
+
+const NO_FORM_SESSION_PROPS = undefined;
 const noop = () => undefined;
 
-const TableCellEditorProvider = ({
+const Providers = ({
+  children,
+  value,
+}: {
+  children: ReactNode;
+  value: TableEditorContextValue;
+}) => (
+  <TableEditorContext.Provider value={value}>
+    <SidePanelProvider onOpenChange={value.setPanelOpen} open={value.panelOpen}>
+      {children}
+    </SidePanelProvider>
+  </TableEditorContext.Provider>
+);
+
+const InlineSessionProvider = ({
   allowDelete = false,
   children,
   confirmCancel,
   copyOption,
+  createStrategy = "inline",
   dataSource,
   deleteMode = allowDelete ? "soft" : undefined,
   editSessionApi,
@@ -107,12 +183,11 @@ const TableCellEditorProvider = ({
   onSaved,
   rowDefaults,
   ...modeProps
-}: Omit<
-  TableEditorProviderProps,
-  "editIn" | "editModel" | "panelVisibility"
->) => {
+}: Omit<TableEditorProviderProps, "editModel" | "editStrategy">) => {
   const [mode, setMode] = useModeState(modeProps);
+  // the session stays active while a new row is added to it
   const isEditing = mode !== "view";
+  const { columns, formHandleRef, setColumns } = useFormState();
 
   const handleCancelled = useCallback(() => {
     setMode("view");
@@ -137,8 +212,14 @@ const TableCellEditorProvider = ({
   });
   const { editSession, onCancel: cancelEdit } = editableTable;
 
+  // the new row joins the session, which is then saved or cancelled as a whole
+  const { canCreate, createKey, endCreate, panelOpen, startCreate } =
+    useInlineCreate({ createStrategy, mode, modeAfterCreate: "edit", setMode });
+
   const cancel = useCallback(async () => {
-    if (
+    if (mode === "create") {
+      await cancelForm(formHandleRef.current, confirmCancel, endCreate);
+    } else if (
       isEditing &&
       (!confirmCancel ||
         editSession.editState === "clean" ||
@@ -146,114 +227,202 @@ const TableCellEditorProvider = ({
     ) {
       cancelEdit();
     }
-  }, [cancelEdit, confirmCancel, editSession, isEditing]);
+  }, [
+    cancelEdit,
+    confirmCancel,
+    editSession,
+    endCreate,
+    formHandleRef,
+    isEditing,
+    mode,
+  ]);
 
   const startEdit = useCallback(() => setMode("edit"), [setMode]);
 
   const value = useMemo<TableEditorContextValue>(
     () => ({
       allowDelete,
-      canClosePanel: true,
+      canClosePanel: false,
+      canCreate,
       cancel,
+      columns,
       confirmCancel,
-      createKey: 0,
+      createKey,
+      createStrategy,
       dataSource,
-      editIn: "table",
       editModel: "session",
       editSession,
+      editStrategy: "inline",
       editableTable,
-      formHandleRef: NO_FORM,
+      formHandleRef,
+      formSessionProps: NO_FORM_SESSION_PROPS,
       isEditing,
       mode,
-      onCreateDone: noop,
+      onCreateDone: endCreate,
       onEditCancelled: noop,
       onEditSaved: noop,
       onSelect: noop,
-      panelOpen: false,
+      panelOpen,
+      setColumns,
       setPanelOpen: noop,
-      startCreate: noop,
+      startCreate,
       startEdit,
     }),
     [
       allowDelete,
+      canCreate,
       cancel,
+      columns,
       confirmCancel,
+      createKey,
+      createStrategy,
       dataSource,
       editSession,
       editableTable,
+      endCreate,
+      formHandleRef,
       isEditing,
       mode,
+      panelOpen,
+      setColumns,
+      startCreate,
       startEdit,
     ],
   );
 
   return (
-    <TableEditorContext.Provider value={value}>
+    <Providers value={value}>
       <DataEditingProvider editSession={editSession}>
         {children}
       </DataEditingProvider>
-    </TableEditorContext.Provider>
+    </Providers>
   );
 };
 
-const DirectCellEditorProvider = ({
+const InlineDirectProvider = ({
   children,
+  confirmCancel,
+  createStrategy = "inline",
   dataSource,
+  deleteMode,
+  editSessionApi,
+  onCancelled,
+  onError,
+  onSaved,
+  rowDefaults,
   ...modeProps
-}: Pick<
+}: Omit<
   TableEditorProviderProps,
-  "children" | "dataSource" | "defaultMode" | "mode" | "onModeChange"
+  "allowDelete" | "copyOption" | "editModel" | "editStrategy"
 >) => {
   const [mode, setMode] = useModeState(modeProps);
   const isEditing = mode !== "view";
+  const { columns, formHandleRef, setColumns } = useFormState();
 
   const editSession = useMemo(
     () => new DirectEditSession({ dataSource }),
     [dataSource],
   );
 
+  const { canCreate, createKey, endCreate, panelOpen, startCreate } =
+    useInlineCreate({ createStrategy, mode, setMode });
+
+  const onCreateDone = useCallback(
+    (saved = false) => {
+      endCreate();
+      if (saved) {
+        onSaved?.();
+      } else {
+        onCancelled?.();
+      }
+    },
+    [endCreate, onCancelled, onSaved],
+  );
+
   // edits are committed as they are made, so there is nothing to discard
-  const cancel = useCallback(async () => setMode("view"), [setMode]);
+  const cancel = useCallback(async () => {
+    if (mode === "create") {
+      await cancelForm(formHandleRef.current, confirmCancel, onCreateDone);
+    } else {
+      setMode("view");
+    }
+  }, [confirmCancel, formHandleRef, mode, onCreateDone, setMode]);
   const startEdit = useCallback(() => setMode("edit"), [setMode]);
 
   const value = useMemo<TableEditorContextValue>(
     () => ({
       allowDelete: false,
-      canClosePanel: true,
+      canClosePanel: false,
+      canCreate,
       cancel,
-      createKey: 0,
+      columns,
+      confirmCancel,
+      createKey,
+      createStrategy,
       dataSource,
-      editIn: "table",
       editModel: "direct",
-      formHandleRef: NO_FORM,
+      editStrategy: "inline",
+      formHandleRef,
+      formSessionProps: { deleteMode, editSessionApi, onError, rowDefaults },
       isEditing,
       mode,
-      onCreateDone: noop,
+      onCreateDone,
       onEditCancelled: noop,
       onEditSaved: noop,
       onSelect: noop,
-      panelOpen: false,
+      panelOpen,
+      setColumns,
       setPanelOpen: noop,
-      startCreate: noop,
+      startCreate,
       startEdit,
     }),
-    [cancel, dataSource, isEditing, mode, startEdit],
+    [
+      canCreate,
+      cancel,
+      columns,
+      confirmCancel,
+      createKey,
+      createStrategy,
+      dataSource,
+      deleteMode,
+      editSessionApi,
+      formHandleRef,
+      isEditing,
+      mode,
+      onCreateDone,
+      onError,
+      panelOpen,
+      rowDefaults,
+      setColumns,
+      startCreate,
+      startEdit,
+    ],
   );
 
   return (
-    <TableEditorContext.Provider value={value}>
+    <Providers value={value}>
       <DataEditingProvider editSession={editSession}>
         {children}
       </DataEditingProvider>
-    </TableEditorContext.Provider>
+    </Providers>
   );
 };
 
-const FormEditorProvider = ({
+/** A plain snapshot of a row that, unlike a table DataRow, can be updated. */
+const toRowSnapshot = (values: EditFormValues): DataRow => {
+  const snapshot = { ...values };
+  return {
+    ...snapshot,
+    hasColumn: (name: string) => name in snapshot,
+  } as unknown as DataRow;
+};
+
+const FormProvider = ({
   children,
   confirmCancel,
   dataSource,
   deleteMode,
+  editModel = "session",
   editSessionApi,
   onCancelled,
   onError,
@@ -263,14 +432,14 @@ const FormEditorProvider = ({
   ...modeProps
 }: Omit<
   TableEditorProviderProps,
-  "allowDelete" | "copyOption" | "editIn" | "editModel"
+  "allowDelete" | "copyOption" | "createStrategy" | "editStrategy"
 >) => {
   const [mode, setMode] = useModeState(modeProps);
   const [selectedRow, setSelectedRow] = useState<DataRow | undefined>();
   const [createKey, setCreateKey] = useState(0);
   const [panelOpenState, setPanelOpenState] = useState(false);
   const panelOpenBeforeCreateRef = useRef(false);
-  const formHandleRef = useRef<TableEditorFormHandle | undefined>(undefined);
+  const { columns, formHandleRef, setColumns } = useFormState();
 
   const isEditing = mode !== "view";
   const alwaysVisible = panelVisibility === "always";
@@ -301,10 +470,16 @@ const FormEditorProvider = ({
     }
   }, [selectedRow, setMode]);
 
+  // read through a ref, so startCreate is stable across mode changes
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+
   const startCreate = useCallback(() => {
-    setCreateKey((key) => key + 1);
-    panelOpenBeforeCreateRef.current = panelOpenState;
-    setMode("create");
+    if (modeRef.current === "view") {
+      setCreateKey((key) => key + 1);
+      panelOpenBeforeCreateRef.current = panelOpenState;
+      setMode("create");
+    }
   }, [panelOpenState, setMode]);
 
   const onCreateDone = useCallback(
@@ -338,30 +513,33 @@ const FormEditorProvider = ({
   );
 
   const cancel = useCallback(async () => {
-    const form = formHandleRef.current;
-    if (!isEditing) {
-      return;
-    } else if (form === undefined) {
-      if (mode === "create") {
-        onCreateDone();
-      } else {
-        onEditCancelled();
-      }
-    } else if (!confirmCancel || !form.isDirty || (await confirmCancel())) {
-      await form.cancel();
+    if (isEditing) {
+      await cancelForm(formHandleRef.current, confirmCancel, () =>
+        mode === "create" ? onCreateDone() : onEditCancelled(),
+      );
     }
-  }, [confirmCancel, isEditing, mode, onCreateDone, onEditCancelled]);
+  }, [
+    confirmCancel,
+    formHandleRef,
+    isEditing,
+    mode,
+    onCreateDone,
+    onEditCancelled,
+  ]);
 
   const value = useMemo<TableEditorContextValue>(
     () => ({
       allowDelete: false,
       canClosePanel,
+      canCreate: !isEditing,
       cancel,
+      columns,
       confirmCancel,
       createKey,
+      createStrategy: "form",
       dataSource,
-      editIn: "form",
-      editModel: "session",
+      editModel,
+      editStrategy: "form",
       formHandleRef,
       formSessionProps: { deleteMode, editSessionApi, onError, rowDefaults },
       isEditing,
@@ -372,6 +550,7 @@ const FormEditorProvider = ({
       onSelect,
       panelOpen,
       selectedRow,
+      setColumns,
       setPanelOpen,
       startCreate,
       startEdit,
@@ -379,11 +558,14 @@ const FormEditorProvider = ({
     [
       canClosePanel,
       cancel,
+      columns,
       confirmCancel,
       createKey,
       dataSource,
       deleteMode,
+      editModel,
       editSessionApi,
+      formHandleRef,
       isEditing,
       mode,
       onCreateDone,
@@ -394,55 +576,45 @@ const FormEditorProvider = ({
       panelOpen,
       rowDefaults,
       selectedRow,
+      setColumns,
       setPanelOpen,
       startCreate,
       startEdit,
     ],
   );
 
-  return (
-    <TableEditorContext.Provider value={value}>
-      <SidePanelProvider onOpenChange={setPanelOpen} open={panelOpen}>
-        {children}
-      </SidePanelProvider>
-    </TableEditorContext.Provider>
-  );
+  return <Providers value={value}>{children}</Providers>;
 };
 
 /**
- * Internal: the provider behind `EditableTable` (`editIn="table"`) and
- * `TableWithEditForm` (`editIn="form"`). Owns the editing state shared by
- * the `TableEditor` components: the mode
- * (view, edit or create), the edit session and, when editing in a form, the
- * selected row and the side panel. Lay out `TableEditorTable`,
- * `TableEditorForm`, `TableEditorButtons` etc anywhere inside it; read its
- * state with `useTableEditor`.
+ * Internal: the provider behind `EditableTable`. Owns the editing state
+ * shared by the `TableEditor` components: the mode (view, edit or create),
+ * the edit session and, with a side panel, the selected row and the panel.
+ * Lay out `TableEditorTable`, `TableEditorForm`, `TableEditorButtons` etc
+ * anywhere inside it; read its state with `useTableEditor`.
  *
- * - `editIn="table"`: cells are edited in `TableEditorTable`. With
+ * - `editStrategy="inline"`: cells are edited in `TableEditorTable`. With
  *   `editModel="session"` edits are staged in a session table and applied
  *   on Save; with `editModel="direct"` each edit is sent straight to
- *   `dataSource`.
- * - `editIn="form"`: selecting a row in `TableEditorTable` shows it in
- *   `TableEditorForm`. The provider drives a Salt `SidePanelProvider`, so a
- *   `SidePanel` placed inside opens on selection. Row selection is locked,
- *   and the panel cannot be closed, while the form is being edited.
+ *   `dataSource`. With `createStrategy="form"`, new rows are added in
+ *   `TableEditorCreateForm`.
+ * - `editStrategy="form"`: selecting a row in `TableEditorTable` shows it in
+ *   `TableEditorForm`. Row selection is locked, and the panel cannot be
+ *   closed, while the form is being edited.
+ *
+ * A Salt `SidePanelProvider` is provided, so a `SidePanel` placed inside
+ * opens and closes with the form.
  */
 export const TableEditorProvider = ({
-  editIn = "table",
+  createStrategy,
   editModel = "session",
+  editStrategy = "inline",
   ...props
 }: TableEditorProviderProps) =>
-  editIn === "form" ? (
-    <FormEditorProvider {...props} />
+  editStrategy === "form" ? (
+    <FormProvider {...props} editModel={editModel} />
   ) : editModel === "direct" ? (
-    <DirectCellEditorProvider
-      dataSource={props.dataSource}
-      defaultMode={props.defaultMode}
-      mode={props.mode}
-      onModeChange={props.onModeChange}
-    >
-      {props.children}
-    </DirectCellEditorProvider>
+    <InlineDirectProvider {...props} createStrategy={createStrategy} />
   ) : (
-    <TableCellEditorProvider {...props} />
+    <InlineSessionProvider {...props} createStrategy={createStrategy} />
   );

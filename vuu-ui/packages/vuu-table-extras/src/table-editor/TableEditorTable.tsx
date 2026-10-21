@@ -4,7 +4,7 @@ import {
 } from "@vuu-ui/vuu-data-editing";
 import { Table, type TableProps } from "@vuu-ui/vuu-table";
 import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
-import { useCallback, useMemo } from "react";
+import { useCallback, useLayoutEffect, useMemo } from "react";
 import { InlineAddRow } from "../inline-add-row";
 import { useTableEditorContext } from "./TableEditorContext";
 
@@ -13,9 +13,7 @@ export interface TableEditorTableProps
       TableProps,
       "customHeader" | "dataSource" | "isRowSelectable" | "selectionModel"
     >,
-    Partial<
-      Pick<EditableColumnsHookProps, "editable" | "readOnly" | "undoColumn">
-    > {
+    Partial<Pick<EditableColumnsHookProps, "undoColumn">> {
   /**
    * Session table editing: show a row, above the column headers, for adding
    * rows.
@@ -27,8 +25,6 @@ const NO_ROWS_SELECTABLE = () => false;
 
 const TableCellEditorTable = ({
   config,
-  editable,
-  readOnly,
   showInlineAddRow = false,
   undoColumn = false,
   ...tableProps
@@ -49,9 +45,8 @@ const TableCellEditorTable = ({
     columns: config.columns,
     columnsDiverge,
     editSchema,
-    editable,
     isEditing: isEditSessionReady,
-    readOnly,
+    schema: dataSource.tableSchema ?? editSchema,
     undoColumn,
   });
 
@@ -87,8 +82,6 @@ const TableCellEditorTable = ({
 
 const DirectCellEditorTable = ({
   config,
-  editable,
-  readOnly,
   showInlineAddRow: _showInlineAddRow,
   undoColumn: _undoColumn,
   ...tableProps
@@ -97,9 +90,8 @@ const DirectCellEditorTable = ({
 
   const columns = useEditableColumns({
     columns: config.columns,
-    editable,
     isEditing,
-    readOnly,
+    schema: dataSource.tableSchema,
   });
 
   const tableConfig = useMemo<TableConfig>(
@@ -118,9 +110,8 @@ const DirectCellEditorTable = ({
 };
 
 const FormEditorTable = ({
-  editable: _editable,
+  config,
   onSelect,
-  readOnly: _readOnly,
   showInlineAddRow: _showInlineAddRow,
   undoColumn: _undoColumn,
   ...tableProps
@@ -139,10 +130,21 @@ const FormEditorTable = ({
     [onSelect, selectRow],
   );
 
+  // editing happens in the form, cells are never editable
+  const columns = useEditableColumns({
+    columns: config.columns,
+    isEditing: false,
+  });
+  const tableConfig = useMemo<TableConfig>(
+    () => ({ ...config, columns }),
+    [columns, config],
+  );
+
   return (
     <Table
       renderBufferSize={10}
       {...tableProps}
+      config={tableConfig}
       dataSource={dataSource}
       isRowSelectable={isEditing ? NO_ROWS_SELECTABLE : undefined}
       onSelect={handleSelect}
@@ -152,20 +154,28 @@ const FormEditorTable = ({
 };
 
 /**
- * The Table of the enclosing `EditableTable` or `TableWithEditForm`, bound to its dataSource and mode.
+ * The Table of the enclosing `EditableTable`, bound to its dataSource and
+ * mode. Its `config.columns` are also used by generated forms, for labels,
+ * editors etc.
  *
- * - Session table editing: cells become editable in edit mode, edited,
+ * - Inline session editing: cells become editable in edit mode, edited,
  *   added and deleted rows are styled, and rows can be checked for deletion
  *   when `allowDelete` is set on the provider.
- * - Direct table editing: cells are editable in edit mode, and each edit is
+ * - Inline direct editing: cells are editable in edit mode, and each edit is
  *   sent straight to the dataSource. `showInlineAddRow` and `undoColumn`
  *   are ignored.
  * - Form editing: single selection, which selects the row shown in
  *   `TableEditorForm`. Selection is locked while the form is being edited.
  */
 export const TableEditorTable = (props: TableEditorTableProps) => {
-  const { editIn, editModel } = useTableEditorContext("TableEditorTable");
-  return editIn === "form" ? (
+  const { editModel, editStrategy, setColumns } =
+    useTableEditorContext("TableEditorTable");
+  const { columns } = props.config;
+  useLayoutEffect(() => {
+    setColumns(columns);
+  }, [columns, setColumns]);
+  useLayoutEffect(() => () => setColumns(undefined), [setColumns]);
+  return editStrategy === "form" ? (
     <FormEditorTable {...props} />
   ) : editModel === "direct" ? (
     <DirectCellEditorTable {...props} />

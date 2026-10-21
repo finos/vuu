@@ -1,11 +1,11 @@
 import { Avatar, SidePanelContent, Tag } from "@salt-ds/core";
 import {
-  TableWithEditFormPanel,
-  TableWithEditFormPanelHeader,
+  EditableTablePanel,
+  EditableTablePanelHeader,
   TableEditorForm,
-  TableWithEditFormTablePanel,
+  EditableTableMain,
   TableEditorTable,
-  TableWithEditForm,
+  EditableTable,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import {
@@ -58,8 +58,8 @@ const UserHeading = () => {
 export const UsersPage = () => {
   const { application, config, dataSource, setApplication } = useUsersPage();
   return (
-    <TableWithEditForm dataSource={dataSource}>
-      <TableWithEditFormTablePanel className="vuuIdentityAdmin-page">
+    <EditableTable dataSource={dataSource} editStrategy="form">
+      <EditableTableMain className="vuuIdentityAdmin-page">
         <PageHeader
           description="Grant application access by adding users to an application's groups."
           title="Users"
@@ -75,17 +75,17 @@ export const UsersPage = () => {
         <div className="vuuIdentityAdmin-tableCard">
           <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
         </div>
-      </TableWithEditFormTablePanel>
-      <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
-        <TableWithEditFormPanelHeader>
+      </EditableTableMain>
+      <EditableTablePanel className="vuuIdentityAdmin-panel">
+        <EditableTablePanelHeader>
           <UserHeading />
-        </TableWithEditFormPanelHeader>
+        </EditableTablePanelHeader>
         <SidePanelContent>
           <TableEditorForm>
             <UserEditForm />
           </TableEditorForm>
         </SidePanelContent>
-      </TableWithEditFormPanel>
-    </TableWithEditForm>
+      </EditableTablePanel>
+    </EditableTable>
   );
 };

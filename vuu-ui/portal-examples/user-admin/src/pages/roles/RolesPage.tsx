@@ -4,10 +4,10 @@ import {
   TableEditorForm,
   TableEditorNewButton,
   TableEditorTable,
-  TableWithEditForm,
-  TableWithEditFormPanel,
-  TableWithEditFormPanelHeader,
-  TableWithEditFormTablePanel,
+  EditableTable,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+  EditableTableMain,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import { useEffect } from "react";
@@ -99,9 +99,9 @@ const CreateRoleFromSearchParams = () => {
 export const RolesPage = () => {
   const { application, config, dataSource, setApplication } = useRolesPage();
   return (
-    <TableWithEditForm dataSource={dataSource}>
+    <EditableTable dataSource={dataSource} editStrategy="form">
       <CreateRoleFromSearchParams />
-      <TableWithEditFormTablePanel className="vuuIdentityAdmin-page">
+      <EditableTableMain className="vuuIdentityAdmin-page">
         <PageHeader
           description="Access roles open an application; application roles grant what users can do in it."
           title="Roles"
@@ -119,18 +119,18 @@ export const RolesPage = () => {
         <div className="vuuIdentityAdmin-tableCard">
           <TableEditorTable config={config} rowHeight={ROLE_ROW_HEIGHT} />
         </div>
-      </TableWithEditFormTablePanel>
-      <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
-        <TableWithEditFormPanelHeader>
+      </EditableTableMain>
+      <EditableTablePanel className="vuuIdentityAdmin-panel">
+        <EditableTablePanelHeader>
           <RoleHeading />
-        </TableWithEditFormPanelHeader>
+        </EditableTablePanelHeader>
         <SidePanelContent>
           <TableEditorForm>
             <RoleEditForm />
           </TableEditorForm>
           <CreateRoleForm application={application} />
         </SidePanelContent>
-      </TableWithEditFormPanel>
-    </TableWithEditForm>
+      </EditableTablePanel>
+    </EditableTable>
   );
 };

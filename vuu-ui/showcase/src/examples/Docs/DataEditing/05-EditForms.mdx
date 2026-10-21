@@ -1,10 +1,10 @@
 # Edit Forms
 
-There are three form components, from most to least complete:
+There are three ways to edit a row in a form, from most to least complete:
 
 | Component | Use it to |
 | --------- | --------- |
-| `TableWithEditForm` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New. To arrange the pieces yourself, compose the [`TableEditor` components](#composing-your-own-layout) it is built from |
+| `EditableTable editStrategy="form"` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New. The form is generated from the schema and columns, or composed from your own content. See [Form editing](./04-EditableTables.mdx#form-editing) |
 | `CreateRowForm` | add a row from a list of fields |
 | `EditForm` | lay out your own form for editing or adding a row |
 
@@ -13,230 +13,57 @@ All of them own an edit session, so you don't need `useEditableTable` or a
 edited (copy option `Selected`); in create mode it starts empty (`Empty`). Save
 applies the change to the source table.
 
-## TableWithEditForm
-
-```tsx
-<TableWithEditForm
-  config={config}
-  createFields={createFields}
-  createTitle="New instrument"
-  dataSource={dataSource}
-  fields={fields}
-  formTitle={(row) => `Instrument ${row.ric}`}
-  validate={validateInstrument}
-/>
-```
-
-The form is shown in a Salt `SidePanel` to the right of the table. Selecting a
-row shows it read-only; Edit makes the form editable and New replaces it with
-a create form. While a form is being edited, row selection is locked and the
-panel can't be closed.
-
-| Prop | Description |
-| ---- | ----------- |
-| `panelVisibility` | `"on-select"` (default): the panel opens when a row is selected, or Edit or New is clicked, and closes when the selection is cleared or its close button is clicked. `"always"`: the panel is always shown, with the `placeholder` text when no row is selected, and has no close button. |
-| `panelClassName` | Class for the `SidePanel`, e.g. to set `--saltSidePanel-width` (default `320px`). Any CSS length works, including a percentage such as `min(460px, 45%)`; the form keeps its width while the panel slides open. |
-| `fields` | Fields shown for the selected row. See [Fields](#fields). |
-| `createFields` | Fields shown when adding a row. Defaults to `fields`. |
-| `allowCreate` | Show the New button. Default `true`. |
-| `validate`, `validateCreate` | Client-side validation for edit and create. `validateCreate` defaults to `validate`. |
-| `formTitle` | Panel title for the selected row: a string, or a function of the row. |
-| `createTitle` | Panel title for the create form. Default `"New"`. |
-| `placeholder` | Text shown in the panel when no row is selected. |
-| `confirmCancel` | Asked before discarding unsaved changes. See `useConfirmDiscard`. |
-| `onModeChange` | Called with `"view"`, `"edit"` or `"create"`. |
-| `onSaved`, `onCancelled` | Called after an edit or a new row is saved, or discarded. |
-| `deleteMode`, `editSessionApi`, `rowDefaults`, `onError` | Passed to the form's edit session. |
-| `className`, `style` | For the container. |
-| `testId` | Suffix for `data-testid`s. |
-
-Other `Table` props are passed through. For anything beyond these, such as
-extra toolbar content, compose the layout yourself.
-
-## Composing your own layout
-
-`TableWithEditForm` covers a table with a generated form. When you need your
-own header, toolbar, panel layout or form content, such as tabs or custom
-editors, give `TableWithEditForm` `children`. It always renders its container,
-a flex row, and owns the editing state: mode, selected row, side panel and edit
-session. Without `children` it lays out a default toolbar, table and panel;
-with `children` you lay out the pieces it is built from, and it takes only the
-editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
-`onModeChange`, ...) and `className`/`style`. The pieces, all in
-`@vuu-ui/vuu-table-extras`:
-
-| Component | Role |
-| --------- | ---- |
-| `TableWithEditFormTablePanel` | A column holding the table and anything above or below it, such as a header or toolbar. Fills the space beside the side panel. |
-| `TableEditorTable` | The table. It fills the rest of `TableWithEditFormTablePanel`. Selecting a row selects it for the form; selection is locked while editing. Takes `Table` props. |
-| `TableWithEditFormPanel` | The Salt `SidePanel` for the form, on the right. Opens and closes with the selection. Takes `SidePanel` props, such as `className` and `style`; set its width with `--saltSidePanel-width` (any CSS length). Compose `TableWithEditFormPanelHeader` and `SidePanelContent` inside it. |
-| `TableWithEditFormPanelHeader` | The panel's `SidePanelHeader`. Its first child fills the width and a close button follows; pass `canClose={false}` to leave the close button out. Takes `SidePanelHeader` props. |
-| `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate` and `title`. Renders its own Save and Cancel only without `children`; with `children`, place `TableEditorButtons` yourself. |
-| `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. Renders `children` after any `fields`; see [Custom create forms](#custom-create-forms). |
-| `TableEditorPlaceholder` | Its `children`, shown only when no row is selected and no row is being created. |
-| `TableEditorToolbar` | A row for controls above the table. |
-| `TableEditorEditButton` | Makes the selected row's form editable. |
-| `TableEditorNewButton` | Enters create mode. |
-| `TableEditorModeToggle` | View/Edit toggle. |
-| `TableEditorButtons` | Save and Cancel. Render inside a composed `TableEditorForm`, or a `TableEditorCreateForm` with `showButtons={false}`. |
-| `TableEditorPanelCloseButton` | Closes the side panel; not rendered while the panel can't be closed. `TableWithEditFormPanelHeader` includes one; use this to place it yourself. |
-
-`TableWithEditForm` provides the Salt `SidePanelProvider`, so `TableWithEditFormPanel`
-(or any Salt `SidePanel` inside it) opens and closes with the selection. Any
-component inside it can call `useTableEditor()` for the state and
-actions: `mode`, `isEditing`, `selectedRow`, `panelOpen`, `canClosePanel`,
-`startEdit()`, `startCreate()`, `cancel()` and `setPanelOpen()`.
-
-```tsx
-import {
-  TableWithEditFormPanel,
-  TableWithEditFormPanelHeader,
-  TableEditorButtons,
-  TableEditorCreateForm,
-  TableEditorForm,
-  TableEditorModeToggle,
-  TableEditorNewButton,
-  TableEditorPlaceholder,
-  TableEditorTable,
-  TableEditorToolbar,
-  TableWithEditFormTablePanel,
-  TableWithEditForm,
-  useTableEditor,
-} from "@vuu-ui/vuu-table-extras";
-
-const PanelHeader = () => {
-  const { mode, selectedRow } = useTableEditor();
-  return (
-    <TableWithEditFormPanelHeader>
-      <SidePanelTitle>
-        {mode === "create" ? "New instrument" : selectedRow?.description}
-      </SidePanelTitle>
-    </TableWithEditFormPanelHeader>
-  );
-};
-
-const InstrumentEditor = ({ dataSource }) => (
-  <TableWithEditForm dataSource={dataSource} style={{ height: 500 }}>
-    <TableWithEditFormTablePanel>
-      <TableEditorToolbar>
-        <H2>Instruments</H2>
-        <TableEditorNewButton>New instrument</TableEditorNewButton>
-      </TableEditorToolbar>
-      <TableEditorTable config={config} />
-    </TableWithEditFormTablePanel>
-    <TableWithEditFormPanel>
-      <PanelHeader />
-      <SidePanelContent>
-        <TableEditorPlaceholder>Select an instrument</TableEditorPlaceholder>
-        <TableEditorForm validate={validateInstrument}>
-          <TableEditorModeToggle />
-          <Tabs defaultValue="details">
-            {/* TabBar ... */}
-            <TabPanel value="details">
-              <EditField label="Description" name="description" />
-            </TabPanel>
-            <TabPanel value="trading">
-              <EditField label="Lot size" name="lotSize" serverDataType="int" />
-            </TabPanel>
-          </Tabs>
-          <TableEditorButtons />
-        </TableEditorForm>
-        <TableEditorCreateForm fields={createFields} validate={validateInstrument} />
-      </SidePanelContent>
-    </TableWithEditFormPanel>
-  </TableWithEditForm>
-);
-```
-
-- `EditField`s inside `TableEditorForm` edit the selected row; they don't need
-  a `dataRow`. They are read-only until the form is in edit mode.
-- A custom editor, such as a picker that edits a non-field value, should use
-  `useCustomEditField`. It commits to the form's edit session, so its changes
-  are saved, or discarded, with the fields, and it resets itself when editing
-  ends. There's no need to track or reset the value yourself.
-- After a save, `selectedRow` holds the saved values, so headers built from it
-  update immediately.
-- `TableEditorForm` and `TableEditorCreateForm` take `onSaved` and
-  `onCancelled`, for side effects such as a notification. They run before the
-  panel is updated, so there's no need to close or reset anything yourself.
-
-See the showcase examples `EditForms / TableWithForm`,
-`TableWithFormAlwaysVisible` and `TableWithCustomForm`, and the user-admin
-`UsersPage`, `GroupsPage` and `RolesPage`. `UsersPage` keeps its own page
-layout and a form with tabs and a module permissions picker; `GroupsPage` and
-`RolesPage` also have custom create forms. `RolesPage` picks a different form
-for each row, using `useEditFormContext().dataRow` inside `TableEditorForm`.
-
-### Custom create forms
-
-When a new row's values aren't one input per column, leave out `fields` and
-render your own editors as `children`. Stage each value with `setValue` from
-`useEditFormContext()`; staged values are what `validate` receives and what is
-added when the user clicks Create.
-
-```tsx
-const NewGroupValues = ({ groupName, roleAssignments }) => {
-  const { fieldErrors, setValue } = useEditFormContext();
-  useEffect(() => setValue("group_name", groupName), [groupName, setValue]);
-  useEffect(
-    () => setValue("role_assignments", roleAssignments),
-    [roleAssignments, setValue],
-  );
-  return fieldErrors.group_name ? (
-    <p role="alert">{fieldErrors.group_name}</p>
-  ) : null;
-};
-
-const CreateGroupForm = () => {
-  const [suffix, setSuffix] = useState("");
-  // ... other local state
-  return (
-    <TableEditorCreateForm onSaved={notifyCreated} validate={validate}>
-      <Input value={suffix} onChange={(e) => setSuffix(e.target.value)} />
-      <NewGroupValues groupName={groupName} roleAssignments={roleAssignments} />
-    </TableEditorCreateForm>
-  );
-};
-```
-
-- `setValue(name, value)` also clears a validation error keyed by `name`, so
-  keying errors to the value they describe clears them as the user edits.
-  `EditField`s in a create form go through `setValue` too.
-- If the row is added but the save then fails, the error is shown and Create
-  stays enabled. Clicking it again retries the save without adding the row a
-  second time.
-- Local state in the create form survives between creates unless it remounts.
-  Render it only while `useTableEditor().mode === "create"` to start each new
-  row from a blank form.
+`EditableTable` builds its forms from the components on this page:
+`TableEditorForm` is an `EditForm` for the selected row and
+`TableEditorCreateForm` is a `CreateRowForm`. Both take the props described
+here.
 
 ## Fields
 
-`fields` and `createFields` are lists of `CreateRowFormField`, the props of an
-`EditField` without `dataRow`:
+`fields` and `createFields` are lists of `DataValueDescriptor`, the type
+`ColumnDescriptor` extends, so a field is described the same way as a table
+column. Each field's control is chosen by `getDataItemEditControl` from its
+`editor`, `type` and `serverDataType` (see
+[Generated forms](./04-EditableTables.mdx#generated-forms)):
 
 ```ts
-const fields: CreateRowFormField[] = [
-  { label: "RIC", name: "ric", readOnly: true },
+const fields: DataValueDescriptor[] = [
+  { editable: false, label: "RIC", name: "ric" },
   { label: "Description", name: "description" },
   { label: "Lot size", name: "lotSize", serverDataType: "int" },
-  { label: "Active", name: "active", type: "checkbox" },
+  { label: "Active", name: "active", serverDataType: "boolean" },
+  {
+    label: "Currency",
+    name: "currency",
+    editor: { name: "dropdown-cell", values: ["EUR", "GBP", "USD"] },
+  },
   {
     label: "Exchange",
     name: "exchange",
-    optionMap: { label: "description", value: "code" },
-    table: { module: "SIMUL", table: "exchanges" },
-    type: "dropdown",
+    editor: {
+      name: "dropdown-cell",
+      lookup: {
+        labelColumn: "description",
+        table: { module: "SIMUL", table: "exchanges" },
+        valueColumn: "code",
+      },
+    },
   },
 ];
 ```
 
 - `serverDataType` converts the typed text before it is sent (default
-  `"string"`, or `"boolean"` for checkboxes).
+  `"string"`); `"boolean"` gives a checkbox.
+- `editable: false` makes a field read-only; `{ insert: true, update: false }`
+  lets it be set on a new row only. In `EditableTable`, the server schema
+  still has the last word.
 - `required` defaults to `true` in a create form. Set it to `false` for
   optional fields.
-- `clientSideEditValidationCheck` validates a single field as the user types.
-- A `dropdown` field gets its options from a lookup table. See
+- A lookup dropdown gets its options from a lookup table. See
   [Lookups](./06-Lookups.mdx).
+
+To render a single field from a descriptor yourself, pass it to `EditField`
+as `column`: `<EditField column={descriptor} />`.
 
 ## CreateRowForm
 

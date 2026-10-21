@@ -21,22 +21,22 @@ export interface TableEditorButtonsProps {
 }
 
 /**
- * Save and Cancel (and, for table editing with `allowDelete`, Delete)
- * buttons for the enclosing `EditableTable` or
- * `TableWithEditForm`. Disabled outside edit
- * mode. When editing in a form, render them within the `children` of
- * `TableEditorForm` (which then omits its own buttons), or within
- * `TableEditorCreateForm` with `showButtons={false}`.
+ * Save and Cancel (and, for inline editing with `allowDelete`, Delete)
+ * buttons for the enclosing `EditableTable`. Disabled outside edit mode.
+ * Within a form, they are the form's buttons: render them within the
+ * `children` of `TableEditorForm` (which then omits its own buttons), or
+ * within `TableEditorCreateForm` with `showButtons={false}`. Renders nothing
+ * for inline direct editing, which has nothing to save.
  */
 export const TableEditorButtons = ({
   hideCancel,
   saveLabel,
 }: TableEditorButtonsProps) => {
-  const { allowDelete, confirmCancel, editIn, editableTable } =
+  const { allowDelete, confirmCancel, editStrategy, editableTable } =
     useTableEditorContext("TableEditorButtons");
   const form = useEditFormContext();
 
-  if (editIn === "form") {
+  if (form || editStrategy === "form") {
     return form ? (
       <EditFormButtons
         confirmCancel={confirmCancel}
@@ -78,10 +78,9 @@ export interface TableEditorModeToggleProps
 }
 
 /**
- * View/Edit toggle for the enclosing `EditableTable` or
- * `TableWithEditForm`. Switching to View
- * discards changes, asking `confirmCancel` first. When editing in a form it
- * is disabled until a row is selected, and while a row is being created.
+ * View/Edit toggle for the enclosing `EditableTable`. Switching to View
+ * discards changes, asking `confirmCancel` first. It is disabled while a row
+ * is being created and, when editing in a form, until a row is selected.
  */
 export const TableEditorModeToggle = ({
   "aria-label": ariaLabel = "Mode",
@@ -89,7 +88,7 @@ export const TableEditorModeToggle = ({
   testId = "",
   ...props
 }: TableEditorModeToggleProps) => {
-  const { cancel, editIn, mode, selectedRow, startEdit } =
+  const { cancel, editStrategy, mode, selectedRow, startEdit } =
     useTableEditorContext("TableEditorModeToggle");
 
   const handleChange = useCallback(
@@ -110,7 +109,7 @@ export const TableEditorModeToggle = ({
       disabled={
         disabled ||
         mode === "create" ||
-        (editIn === "form" && selectedRow === undefined)
+        (editStrategy === "form" && selectedRow === undefined)
       }
       onChange={handleChange}
       value={mode === "edit" ? "edit" : "view"}
@@ -156,20 +155,21 @@ export const TableEditorEditButton = forwardRef<
 export type TableEditorNewButtonProps = Omit<ButtonProps, "onClick">;
 
 /**
- * Form editing: starts a new row, shown in `TableEditorCreateForm`. Disabled
- * while editing.
+ * Starts a new row, shown in `TableEditorCreateForm`, with
+ * `editStrategy="form"` or `createStrategy="form"`. Disabled while a new row
+ * can't be started: while editing in a form, or while already creating.
  */
 export const TableEditorNewButton = forwardRef<
   HTMLButtonElement,
   TableEditorNewButtonProps
 >(function TableEditorNewButton({ children = "New", disabled, ...props }, ref) {
-  const { isEditing, startCreate } = useTableEditorContext(
+  const { canCreate, startCreate } = useTableEditorContext(
     "TableEditorNewButton",
   );
   return (
     <Button
       {...props}
-      disabled={disabled || isEditing}
+      disabled={disabled || !canCreate}
       onClick={startCreate}
       ref={ref}
     >
@@ -179,8 +179,8 @@ export const TableEditorNewButton = forwardRef<
 });
 
 /**
- * Form editing: a Salt `SidePanelCloseButton` that is only rendered while
- * the side panel can be closed, i.e. not while editing.
+ * A Salt `SidePanelCloseButton` that is only rendered while the side panel
+ * can be closed, i.e. not while editing.
  */
 export const TableEditorPanelCloseButton = forwardRef<
   HTMLButtonElement,
