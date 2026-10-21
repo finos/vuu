@@ -20,7 +20,7 @@ import {
   RoleEditForm,
 } from "user-admin/src/components/roles-edit-form/RolesEditForm";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
-import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
+import type { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
 import { ApplicationModelProvider } from "user-admin/src/data/ApplicationModelProvider";
 import { ApplicationsPage } from "user-admin/src/pages/applications/ApplicationsPage";
 import { GroupsPage } from "user-admin/src/pages/groups/GroupsPage";
@@ -36,7 +36,7 @@ import {
   TableEditorNewButton,
   TableEditorPlaceholder,
   TableEditorTable,
-  TableWithEditForm,
+  EditableTable,
 } from "@vuu-ui/vuu-table-extras";
 import UserAdmin from "user-admin/src/UserAdmin";
 
@@ -154,7 +154,7 @@ export const DefaultUserEditForm = () => {
 
   return (
     <AdminContext>
-      <TableWithEditForm dataSource={dataSource}>
+      <EditableTable dataSource={dataSource} editStrategy="form">
         <div style={{ display: "flex", gap: 16, height: 800 }}>
           <div style={{ flex: "1 1 auto", minWidth: 0 }}>
             <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
@@ -166,7 +166,7 @@ export const DefaultUserEditForm = () => {
             </TableEditorForm>
           </div>
         </div>
-      </TableWithEditForm>
+      </EditableTable>
     </AdminContext>
   );
 };
@@ -232,7 +232,7 @@ export const DefaultRolesEditPage = () => {
 
   return (
     <AdminContext>
-      <TableWithEditForm dataSource={dataSource}>
+      <EditableTable dataSource={dataSource} editStrategy="form">
         <div style={{ display: "flex", gap: 16, height: 800 }}>
           <div
             style={{
@@ -256,7 +256,7 @@ export const DefaultRolesEditPage = () => {
             <CreateRoleForm />
           </div>
         </div>
-      </TableWithEditForm>
+      </EditableTable>
     </AdminContext>
   );
 };
@@ -296,7 +296,7 @@ export const DefaultGroupsEditPage = () => {
 
   return (
     <AdminContext>
-      <TableWithEditForm dataSource={dataSource}>
+      <EditableTable dataSource={dataSource} editStrategy="form">
         <div style={{ display: "flex", gap: 16, height: 800 }}>
           <div
             style={{
@@ -320,7 +320,7 @@ export const DefaultGroupsEditPage = () => {
             <CreateGroupForm />
           </div>
         </div>
-      </TableWithEditForm>
+      </EditableTable>
     </AdminContext>
   );
 };

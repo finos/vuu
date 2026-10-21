@@ -12,13 +12,16 @@ Most applications don't need to assemble the pieces in this package by hand.
 ```tsx
 import { EditableTable } from "@vuu-ui/vuu-table-extras";
 
+// Edit options live on the column descriptors, e.g. { name: "ric", editable: false }
 <EditableTable
   allowDelete
   config={{ columns }}
   dataSource={dataSource}
-  editable={{ price: true, quantity: true }}
   showInlineAddRow
 />
+
+// The selected row in a generated form beside the table
+<EditableTable config={{ columns }} dataSource={dataSource} editStrategy="form" />
 ```
 
 See the Data Editing guides in the showcase (_Docs / DataEditing_, source in
@@ -30,7 +33,7 @@ _DataEditing_ examples in the showcase.
 
 | Layer | Use it when | APIs |
 | ----- | ----------- | ---- |
-| Pattern components (`@vuu-ui/vuu-table-extras`) | A standard editing UI fits. | `EditableTable`, `TableWithEditForm`, `useBulkEditDialog` |
+| Pattern components (`@vuu-ui/vuu-table-extras`) | A standard editing UI fits. | `EditableTable` (inline or form editing), `useBulkEditDialog` |
 | Composable hooks and components (this package) | You need your own layout or behaviour. | `useEditableTable`, `useEditableColumns`, `useEditForm`, `EditForm`, `CreateRowForm`, `EditButtons`, `useConfirmDiscard`, `useEditSessionState`, `useLookupOptions` |
 | Primitives (this package) | You are building a new pattern. | `EditSession`, `DirectEditSession`, `DataEditingProvider`, `EditModeProvider` |
 

@@ -1,7 +1,7 @@
 import type { DataSource, DeleteRowMode } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { isRpcError } from "@vuu-ui/vuu-utils";
+import { isRpcError, isRpcSuccess } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   EditSession,
@@ -9,11 +9,20 @@ import {
   type EditSessionValue,
   type RowDefaultDataItemValues,
 } from "./EditSession";
+import { DirectEditSession } from "./DirectEditSession";
 import { useEditMode } from "./EditModeProvider";
 import { type EditErrorHandler, reportEditError, toError } from "./edit-errors";
 import { useEditSessionState } from "./useEditSessionState";
 
 export type EditFormMode = "edit" | "create";
+
+/**
+ * Edit mode only.
+ * - `session`: edits are staged in a session table and applied on Save.
+ * - `direct`: each field is validated and sent to `dataSource` as it is
+ *   committed. There is nothing to save; `submit` just ends editing.
+ */
+export type EditFormEditModel = "session" | "direct";
 
 export type EditFormValues = Readonly<
   Record<string, EditSessionValue | undefined>
@@ -46,8 +55,20 @@ export interface EditFormHookProps {
   mode?: EditFormMode;
   /** Create mode: the form's fields, in tab order. */
   columns?: readonly string[];
-  /** Create mode: fields that must have a value. Defaults to `columns`. */
+  /**
+   * Fields that must have a value. In create mode, defaults to `columns`. In
+   * direct edit mode, an empty value for one of these is not sent.
+   */
   requiredColumns?: readonly string[];
+  /** @default "session" */
+  editModel?: EditFormEditModel;
+  /**
+   * Create mode only: add the new row to this session, owned by someone else
+   * (e.g. a table's edit session), rather than to a session of the form's
+   * own. Create then adds the row to the session without saving it; the
+   * owner saves or cancels the session.
+   */
+  editSession?: EditSession;
   /**
    * Edit mode only: whether the edit session is active. When omitted, edit
    * mode is read from the nearest EditModeProvider. Create mode is always
@@ -88,6 +109,50 @@ export const getDataRowValues = (
   return { ...values, key: dataRow.key };
 };
 
+const isEmptyValue = (value: unknown) =>
+  value === undefined ||
+  value === null ||
+  (typeof value === "string" && value.trim() === "");
+
+const toRowSnapshot = (
+  key: string,
+  values: Record<string, EditSessionValue | undefined>,
+) => ({ ...values, key }) as unknown as DataRow;
+
+/**
+ * A DirectEditSession that reports each value accepted by the server, so
+ * the form can show it once editing ends.
+ */
+class FormDirectEditSession extends DirectEditSession {
+  #onCommitted: (columnName: string, value: VuuRowDataItemType) => void;
+  constructor(
+    props: ConstructorParameters<typeof DirectEditSession>[0],
+    onCommitted: (columnName: string, value: VuuRowDataItemType) => void,
+  ) {
+    super(props);
+    this.#onCommitted = onCommitted;
+  }
+  async commit(
+    key: string,
+    columnName: string,
+    originalValue: VuuRowDataItemType,
+    typedValue: string | number | boolean,
+    isValid: boolean,
+  ) {
+    const response = await super.commit(
+      key,
+      columnName,
+      originalValue,
+      typedValue,
+      isValid,
+    );
+    if (isRpcSuccess(response)) {
+      this.#onCommitted(columnName, typedValue);
+    }
+    return response;
+  }
+}
+
 const hasErrors = (errors: EditFormFieldErrors | undefined) =>
   errors !== undefined && errors !== null && Object.keys(errors).length > 0;
 
@@ -100,13 +165,19 @@ const hasErrors = (errors: EditFormFieldErrors | undefined) =>
  *   `dataRow={{ key: EditSession.newRowKey }}` and `deferNewRow`.
  *
  * Call `submit()` to validate and save, `cancel()` to discard. Wrap the form
- * in a `DataEditingProvider` with the returned `editSession`.
+ * in a `DataEditingProvider` with the returned `fieldEditSession`.
+ *
+ * With `editModel: "direct"` each field is validated and sent as it is
+ * committed. With a shared `editSession` (create mode), Create adds the row
+ * to that session, which its owner saves.
  */
 export const useEditForm = ({
   columns,
   dataRow,
   dataSource,
   deleteMode,
+  editModel = "session",
+  editSession: sharedEditSession,
   editSessionApi,
   isEditMode: isEditModeProp,
   mode = "edit",
@@ -119,6 +190,10 @@ export const useEditForm = ({
 }: EditFormHookProps) => {
   const { isEditMode: isEditModeContext } = useEditMode();
   const isCreate = mode === "create";
+  const isDirect = !isCreate && editModel === "direct";
+  const isShared = isCreate && sharedEditSession !== undefined;
+  // the session's lifecycle is managed by the form
+  const ownsSession = !isDirect && !isShared;
   const isEditMode = isCreate || (isEditModeProp ?? isEditModeContext);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<Error | undefined>();
@@ -139,8 +214,54 @@ export const useEditForm = ({
 
   const editSession = useMemo(
     () =>
+      sharedEditSession ??
       new EditSession({ dataSource, deleteMode, editSessionApi, rowDefaults }),
-    [dataSource, deleteMode, editSessionApi, rowDefaults],
+    [dataSource, deleteMode, editSessionApi, rowDefaults, sharedEditSession],
+  );
+
+  // direct editing: values accepted by the server since the row was selected
+  const [directValues, setDirectValues] = useState<
+    Record<string, VuuRowDataItemType>
+  >({});
+  const directRowKey = isDirect ? dataRow?.key : undefined;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset when the row changes
+  useEffect(() => {
+    setDirectValues({});
+  }, [directRowKey]);
+  const directValuesRef = useRef(directValues);
+  directValuesRef.current = directValues;
+  const dataRowRef = useRef(dataRow);
+  dataRowRef.current = dataRow;
+  const requiredRef = useRef(requiredColumns);
+  requiredRef.current = requiredColumns;
+
+  const directEditSession = useMemo(
+    () =>
+      isDirect
+        ? new FormDirectEditSession(
+            {
+              dataSource,
+              validate: (_key, columnName, value) => {
+                if (
+                  requiredRef.current?.includes(columnName) &&
+                  isEmptyValue(value)
+                ) {
+                  return "A value is required";
+                }
+                const { current: row } = dataRowRef;
+                const values = {
+                  ...(row ? getDataRowValues(row) : undefined),
+                  ...directValuesRef.current,
+                  [columnName]: value,
+                };
+                return callbacksRef.current.validate?.(values)?.[columnName];
+              },
+            },
+            (columnName, value) =>
+              setDirectValues((values) => ({ ...values, [columnName]: value })),
+          )
+        : undefined,
+    [dataSource, isDirect],
   );
 
   const sessionState = useEditSessionState(editSession);
@@ -184,22 +305,31 @@ export const useEditForm = ({
     setError(undefined);
     setValidationErrors(EMPTY_ERRORS);
     markRowAdded(false);
+    if (!ownsSession) {
+      return;
+    }
     const transition = isEditMode
       ? editSession.begin(isCreate ? "Empty" : "Selected")
       : editSession.end();
     transition.catch((cause) => fail(cause, isEditMode ? "begin" : "cancel"));
-  }, [editSession, fail, isCreate, isEditMode, markRowAdded]);
+  }, [editSession, fail, isCreate, isEditMode, markRowAdded, ownsSession]);
 
   useEffect(
     () => () => {
-      editSession.end().catch(() => undefined);
+      if (isShared) {
+        editSession.clearNewRow();
+      } else if (ownsSession) {
+        editSession.end().catch(() => undefined);
+      }
     },
-    [editSession],
+    [editSession, isShared, ownsSession],
   );
 
   const getValues = useCallback((): EditFormValues => {
     if (isCreate) {
       return editSession.newRowState.values;
+    } else if (isDirect && dataRow) {
+      return { ...getDataRowValues(dataRow), ...directValuesRef.current };
     } else if (dataRow) {
       return {
         ...getDataRowValues(dataRow),
@@ -207,7 +337,7 @@ export const useEditForm = ({
       };
     }
     return {};
-  }, [dataRow, editSession, isCreate]);
+  }, [dataRow, editSession, isCreate, isDirect]);
 
   /**
    * Validates and saves. Resolves true when saved. Concurrent calls are
@@ -219,6 +349,11 @@ export const useEditForm = ({
         return false;
       }
       setError(undefined);
+      if (isDirect) {
+        // every field was sent as it was committed, nothing left to save
+        callbacksRef.current.onSaved?.();
+        return true;
+      }
       if (!rowAddedRef.current) {
         const errors = callbacksRef.current.validate?.(getValues());
         if (hasErrors(errors)) {
@@ -240,6 +375,11 @@ export const useEditForm = ({
             // missing required values, errors are shown against the fields
             return false;
           }
+          if (isShared) {
+            // the session's owner saves the row along with its other changes
+            callbacksRef.current.onSaved?.();
+            return true;
+          }
           markRowAdded(true);
         }
         await editSession.end(true, force);
@@ -254,13 +394,17 @@ export const useEditForm = ({
         setSaving(false);
       }
     },
-    [editSession, fail, getValues, isCreate, markRowAdded],
+    [editSession, fail, getValues, isCreate, isDirect, isShared, markRowAdded],
   );
 
   /** Discards all changes and ends the edit session. */
   const cancel = useCallback(async () => {
     try {
-      await editSession.end();
+      if (isShared) {
+        editSession.clearNewRow();
+      } else if (ownsSession) {
+        await editSession.end();
+      }
       markRowAdded(false);
       setValidationErrors(EMPTY_ERRORS);
       setError(undefined);
@@ -268,7 +412,7 @@ export const useEditForm = ({
     } catch (cause) {
       fail(cause, "cancel");
     }
-  }, [editSession, fail, markRowAdded]);
+  }, [editSession, fail, isShared, markRowAdded, ownsSession]);
 
   /** Create mode: stage a value without rendering an EditField. */
   const setValue = useCallback(
@@ -297,21 +441,46 @@ export const useEditForm = ({
 
   const isDirty = isCreate
     ? Object.keys(sessionState.newRowState.values).length > 0
-    : sessionState.isDirty;
+    : isDirect
+      ? false
+      : sessionState.isDirty;
+
+  const formDataRow = useMemo(
+    () =>
+      isCreate
+        ? NEW_ROW
+        : dataRow && Object.keys(directValues).length > 0
+          ? toRowSnapshot(dataRow.key, {
+              ...getDataRowValues(dataRow),
+              ...directValues,
+            })
+          : dataRow,
+    [dataRow, directValues, isCreate],
+  );
 
   return {
     ...sessionState,
     canSave:
       !saving &&
-      (isCreate
-        ? rowAdded
-          ? sessionState.inEditMode
-          : sessionState.isActive && editSession.isNewRowComplete()
-        : sessionState.canSave),
+      (isDirect
+        ? isEditMode
+        : isCreate
+          ? rowAdded
+            ? sessionState.inEditMode
+            : sessionState.isActive && editSession.isNewRowComplete()
+          : sessionState.canSave),
     cancel,
-    /** The row being edited, a new-row placeholder in create mode. */
-    dataRow: isCreate ? NEW_ROW : dataRow,
+    /**
+     * The row being edited, a new-row placeholder in create mode. With
+     * direct editing, includes the values sent so far.
+     */
+    dataRow: formDataRow,
+    editModel: isDirect ? ("direct" as const) : ("session" as const),
     editSession,
+    /** Create mode: rows are added to a session owned by someone else. */
+    isSharedSession: isShared,
+    /** The session fields commit their edits to. */
+    fieldEditSession: directEditSession ?? editSession,
     error: error ?? sessionState.error,
     fieldErrors,
     getValues,

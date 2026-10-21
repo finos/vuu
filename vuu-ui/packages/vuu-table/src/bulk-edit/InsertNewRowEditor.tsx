@@ -1,10 +1,10 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { BaseRowProps, ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { getDataItemEditControl } from "@vuu-ui/vuu-data-editing";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { BaseRowProps, ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { VirtualColSpan } from "../VirtualColSpan";
 import { useHeaderProps } from "../table-header";
 import { useBulkEditRow } from "./useColumnCascadingEditor";

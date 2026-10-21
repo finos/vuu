@@ -33,7 +33,7 @@ import { useMemo } from "react";
 
 const config: TableConfig = {
   columns: [
-    { name: "ric", serverDataType: "string" },
+    { name: "ric", serverDataType: "string", editable: false },
     { name: "description", serverDataType: "string" },
     { name: "currency", serverDataType: "string" },
     { name: "lotSize", serverDataType: "int" },
@@ -52,45 +52,55 @@ export const Instruments = () => {
   );
 
   return (
-    <EditableTable config={config} dataSource={dataSource} readOnly={["ric"]} />
+    <EditableTable config={config} dataSource={dataSource} />
   );
 };
 ```
 
-By default every column can be edited except the server-maintained
-`vuuCreatedTimestamp`, `vuuUpdatedTimestamp` and `vuuMsg`. `readOnly` adds
-columns to that list. To choose exactly which columns can be edited, and how,
-use `editable` instead:
+By default every column the server allows can be edited, except the
+server-maintained `vuuCreatedTimestamp`, `vuuUpdatedTimestamp` and `vuuMsg`.
+Edit options live on the column descriptors in `config.columns`:
+`editable: false` makes `ric` read-only, and `editor` chooses how a value is
+edited:
 
 ```tsx
-<EditableTable
-  config={config}
-  dataSource={dataSource}
-  editable={{
-    currency: { renderer: "dropdown-cell", values: ["EUR", "GBP", "USD"] },
-    description: true,
-    lotSize: true,
-  }}
-/>
+const config: TableConfig = {
+  columns: [
+    { name: "ric", serverDataType: "string", editable: false },
+    { name: "description", serverDataType: "string" },
+    {
+      name: "currency",
+      serverDataType: "string",
+      editor: { name: "dropdown-cell", values: ["EUR", "GBP", "USD"] },
+    },
+    { name: "lotSize", serverDataType: "int" },
+  ],
+};
 ```
+
+A column can narrow what the server allows, never widen it. See
+[Which columns can be edited](./04-EditableTables.mdx#which-columns-can-be-edited).
 
 ## Step 2: insert, delete and undo
 
 These props let the user add and remove rows:
 
 ```tsx
+const config: TableConfig = {
+  columns: [
+    // the key can be set on a new row but not changed afterwards
+    { name: "ric", editable: { insert: true, update: false } },
+    // ...
+  ],
+};
+
 <EditableTable
   allowDelete
   config={config}
   dataSource={dataSource}
-  editable={{
-    "*": true,
-    // the key can be set on a new row but not changed afterwards
-    ric: { insert: true, update: false },
-  }}
   showInlineAddRow
   undoColumn
-/>
+/>;
 ```
 
 - `showInlineAddRow` shows an empty row at the top of the table. The user
@@ -99,48 +109,76 @@ These props let the user add and remove rows:
   Nothing is removed until the user saves.
 - `undoColumn` adds an undo button to every changed, added or deleted row.
 
-## Step 3: a table with an edit form
-
-Some data is easier to edit in a form. `TableWithEditForm` shows the selected
-row in a form, in a side panel beside the table. The user clicks Edit to change
-it, or New to add a row.
+New rows often need several values entered together. To add them with a form
+in a side panel instead, while still editing existing rows in the table, use
+`createStrategy="form"`:
 
 ```tsx
-import type { CreateRowFormField } from "@vuu-ui/vuu-data-editing";
-import { TableWithEditForm } from "@vuu-ui/vuu-table-extras";
-
-const fields: CreateRowFormField[] = [
-  { label: "RIC", name: "ric", readOnly: true },
-  { label: "Description", name: "description" },
-  { label: "Currency", name: "currency" },
-  { label: "Lot size", name: "lotSize", serverDataType: "int" },
-];
-
-const createFields: CreateRowFormField[] = [
-  { label: "RIC", name: "ric" },
-  ...fields.slice(1),
-];
-
-<TableWithEditForm
+<EditableTable
   config={config}
-  createFields={createFields}
+  createStrategy="form"
+  createTitle="New instrument"
   dataSource={dataSource}
-  fields={fields}
+/>
+```
+
+The form is generated from the table's schema and columns. The new row joins
+the edit session and is saved with everything else.
+
+## Step 3: a table with an edit form
+
+Some data is easier to edit in a form. With `editStrategy="form"`,
+`EditableTable` shows the selected row in a form, in a side panel beside the
+table. The user clicks Edit to change it, or New to add a row. The form is
+generated from the columns, using the same `editable` and `editor` metadata:
+
+```tsx
+<EditableTable
+  config={config}
+  createTitle="New instrument"
+  dataSource={dataSource}
+  editStrategy="form"
   formTitle={(row) => `Instrument ${row.ric}`}
   validate={({ lotSize }) =>
     typeof lotSize === "number" && lotSize <= 0
       ? { lotSize: "Lot size must be greater than zero" }
-      : {}
+      : undefined
   }
-/>;
+/>
 ```
+
+With `ric` as `{ insert: true, update: false }`, the create form lets the user
+enter it and the edit form shows it read-only.
 
 The panel opens when a row is selected; pass `panelVisibility="always"` to keep
 it open. Row selection is locked while the form is being edited, so the user
 can't lose their changes by clicking another row. Pass `allowCreate={false}`
-to hide New. To use your own page layout or form content, for example tabs,
-pass `children` that compose the `TableEditor` components it is built from (see
-[Composing your own layout](./05-EditForms.mdx#composing-your-own-layout)).
+to hide New. To choose the fields, pass `fields` (a list of
+`DataValueDescriptor`). To use your own page layout or form content, for
+example tabs, pass `children` that compose the pieces `EditableTable` is built
+from (see
+[Composing your own layout](./04-EditableTables.mdx#composing-your-own-layout)).
+
+## Step 4: edit without a session
+
+Everything above stages edits in a session and saves them together. For data
+where each change should go to the server straight away, use
+`editModel="direct"`. It works with every strategy:
+
+```tsx
+// Spreadsheet-style: each cell is saved as it is committed
+<EditableTable config={config} dataSource={dataSource} editModel="direct" />
+
+// Form: each field is saved as it is committed; Done ends editing
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  editModel="direct"
+  editStrategy="form"
+/>
+```
+
+See [Choosing an editing model](./03-ChoosingAModel.mdx).
 
 ## Next steps
 

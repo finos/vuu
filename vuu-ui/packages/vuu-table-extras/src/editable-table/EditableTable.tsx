@@ -1,98 +1,165 @@
+import { SidePanelContent, SidePanelTitle } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type {
-  EditableColumnsConfig,
   EditableTableHookProps,
+  EditFormValidator,
 } from "@vuu-ui/vuu-data-editing";
-import type { DataSource } from "@vuu-ui/vuu-data-types";
+import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import type { CSSProperties, ReactNode } from "react";
 import {
+  TableEditorCreateForm,
+  type TableEditorCreateStrategy,
+  TableEditorEditButton,
   type TableEditorEditModel,
+  type TableEditorEditStrategy,
+  TableEditorForm,
+  type TableEditorMode,
   TableEditorModeToggle,
+  TableEditorNewButton,
+  type TableEditorPanelVisibility,
+  TableEditorPlaceholder,
   TableEditorTable,
   TableEditorToolbar,
   useTableEditor,
 } from "../table-editor";
-import {
-  TableEditorProvider,
-  type TableEditorProviderProps,
-} from "../table-editor/TableEditorProvider";
+import { TableEditorProvider } from "../table-editor/TableEditorProvider";
 
 import editableTableCss from "./EditableTable.css";
-import { EditableTableFooter } from "./EditableTableLayout";
+import {
+  EditableTableFooter,
+  EditableTableMain,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+} from "./EditableTableLayout";
 
-export type EditableTableMode = "view" | "edit";
+/** `create` is only used with a create form. */
+export type EditableTableMode = TableEditorMode;
 
 /**
  * - `session`: edits are staged in a session table and applied on Save, or
  *   discarded on Cancel.
- * - `direct`: each committed cell edit is sent straight to `dataSource`.
- *   There is no Save or Cancel.
+ * - `direct`: each committed edit is sent straight to `dataSource`. There
+ *   is no Save or Cancel.
  */
 export type EditableTableEditModel = TableEditorEditModel;
 
-interface EditableTableCommonProps {
+/**
+ * - `inline`: cells are edited in the table.
+ * - `form`: the selected row is edited in a form in a side panel.
+ */
+export type EditableTableEditStrategy = TableEditorEditStrategy;
+
+/**
+ * - `inline`: new rows are added in the table (`showInlineAddRow`).
+ * - `form`: new rows are added with a form in a side panel.
+ */
+export type EditableTableCreateStrategy = TableEditorCreateStrategy;
+
+/**
+ * - `on-select`: the side panel opens when a row is selected (or New is
+ *   clicked) and closes when the selection is cleared or the panel's close
+ *   button is clicked.
+ * - `always`: the side panel is always visible, showing a placeholder when
+ *   no row is selected.
+ */
+export type EditableTablePanelVisibility = TableEditorPanelVisibility;
+
+export type EditableTableField = DataValueDescriptor;
+
+type Never<T> = { [K in keyof T]?: never };
+
+/** Props for every strategy and model. */
+export interface EditableTableBaseProps
+  extends Pick<
+    EditableTableHookProps,
+    "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
+  > {
   className?: string;
+  /** Asked before unsaved changes are discarded. See `useConfirmDiscard`. */
+  confirmCancel?: () => boolean | Promise<boolean>;
   /** The source (view) dataSource. */
   dataSource: DataSource;
   /**
-   * Uncontrolled initial mode. Defaults to `view` for session editing and to
-   * `edit` (always editable) for direct editing.
+   * Uncontrolled initial mode. Defaults to `edit` (always editable) for
+   * inline direct editing, otherwise to `view`.
    */
   defaultMode?: EditableTableMode;
   /** Controlled mode. Pair with `onModeChange`. */
   mode?: EditableTableMode;
+  /** Called once changes, or a new row, have been discarded. */
+  onCancelled?: () => void;
   onModeChange?: (mode: EditableTableMode) => void;
+  /** Called once changes, or a new row, have been saved. */
+  onSaved?: () => void;
+  /** With a side panel. @default "on-select" */
+  panelVisibility?: EditableTablePanelVisibility;
   style?: CSSProperties;
   /** Suffix appended to built-in test ids (`edit-table`, `toggle-edit` …). */
   testId?: string;
 }
 
-/** Session editing: edits are staged in a session table until Save. */
-export interface EditableTableSessionProps
-  extends EditableTableCommonProps,
-    Pick<
-      EditableTableHookProps,
-      "copyOption" | "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
-    > {
+/** Inline session editing only. */
+export interface EditableTableSessionOnlyProps {
   /**
    * Show a checkbox column and a Delete button in edit mode, so selected
    * rows can be deleted. Rows already marked for deletion cannot be selected.
    */
   allowDelete?: boolean;
-  /** Asked before an edit session with unsaved changes is discarded. */
-  confirmCancel?: () => boolean | Promise<boolean>;
-  /** @default "session" */
-  editModel?: "session";
-  /** Called once changes have been discarded. */
-  onCancelled?: () => void;
-  /** Called once changes have been saved. */
-  onSaved?: () => void;
+  /** Rows copied into the edit session. @default "All" */
+  copyOption?: EditableTableHookProps["copyOption"];
 }
 
-type SessionOnlyProps = Omit<
-  EditableTableSessionProps,
-  keyof EditableTableCommonProps | "editModel"
->;
-
-/** Direct editing: each cell edit is sent straight to `dataSource`. */
-export type EditableTableDirectProps = EditableTableCommonProps & {
-  editModel: "direct";
-} & { [K in keyof SessionOnlyProps]?: never };
-
-/**
- * Your own layout: compose `TableEditorTable`, `EditableTableFooter`,
- * `TableEditorToolbar`, `TableEditorModeToggle`, `TableEditorButtons` etc.
- */
-export interface EditableTableComposedProps {
-  children: ReactNode;
+/** Inline session editing, default layout only. */
+export interface EditableTableSessionLayoutProps {
+  /** @default "Save" */
+  saveLabel?: string;
+  /** Show an inline row, above the column headers, for adding new rows. */
+  showInlineAddRow?: boolean;
+  /** Add a column with an undo button for edited rows. */
+  undoColumn?: boolean;
 }
 
-/** The default layout: a toolbar, the table and a footer. */
-export interface EditableTableDefaultProps
+/** Inline editing, default layout only. */
+export interface EditableTableInlineLayoutProps {
+  /**
+   * Show a View/Edit toggle above the table. Defaults to true for session
+   * editing and false (always editable) for direct editing.
+   */
+  showEditModeToggle?: boolean;
+}
+
+/** Form editing, default layout only. */
+export interface EditableTableFormLayoutProps {
+  /** Show a New button and a form for adding rows. @default true */
+  allowCreate?: boolean;
+  /** Fields for the edit form, in tab order. Generated when omitted. */
+  fields?: readonly EditableTableField[];
+  /** Title shown in the side panel header for the selected row. */
+  formTitle?: string | ((dataRow: DataRow) => string);
+  /** @default "Select a row to see its details" */
+  placeholder?: string;
+  /** Validates the edit form. */
+  validate?: EditFormValidator;
+}
+
+/** With a create form, default layout only. */
+export interface EditableTableCreateLayoutProps {
+  /** Fields for the create form. Defaults to `fields`, or generated. */
+  createFields?: readonly EditableTableField[];
+  /** @default "New" */
+  createTitle?: string;
+  /** Applied to the SidePanel, e.g. to set `--saltSidePanel-width`. */
+  panelClassName?: string;
+  /** Validates the create form. Defaults to `validate`. */
+  validateCreate?: EditFormValidator;
+}
+
+/** The default layout. Other `Table` props are passed to the table. */
+export interface EditableTableDefaultLayoutProps
   extends Omit<
     TableProps,
     | "children"
@@ -106,69 +173,192 @@ export interface EditableTableDefaultProps
     | "style"
   > {
   children?: undefined;
-  /** Table config used in view mode. Edit mode columns are derived from it. */
+  /**
+   * Table config. Per-column `editable` and `editor` (on each column's
+   * `DataValueDescriptor`) control what can be edited, and how.
+   */
   config: TableConfig;
-  /**
-   * Per-column editability. When omitted every column is editable except
-   * the read-only defaults (vuuCreatedTimestamp etc) and `readOnly`.
-   */
-  editable?: EditableColumnsConfig;
-  /** Columns that can never be edited. */
-  readOnly?: readonly string[];
-  /** Session editing only. @default "Save" */
-  saveLabel?: string;
-  /**
-   * Show a View/Edit toggle above the table. Defaults to true for session
-   * editing and false (always editable) for direct editing.
-   */
-  showEditModeToggle?: boolean;
-  /**
-   * Session editing only: show an inline row, above the column headers, for
-   * adding new rows.
-   */
-  showInlineAddRow?: boolean;
-  /** Session editing only: adds a column with an undo button for edited rows. */
-  undoColumn?: boolean;
 }
 
-type DirectDefaultProps = EditableTableDefaultProps & {
-  saveLabel?: never;
-  showInlineAddRow?: never;
-  undoColumn?: never;
-};
+/**
+ * Your own layout: compose `TableEditorTable`, `EditableTableFooter`,
+ * `TableEditorToolbar`, `EditableTableMain`, `EditableTablePanel`,
+ * `TableEditorForm`, `TableEditorCreateForm` etc.
+ */
+export interface EditableTableComposedProps {
+  children: ReactNode;
+  config?: never;
+}
 
-export type EditableTableProps =
-  | (EditableTableSessionProps &
-      (EditableTableComposedProps | EditableTableDefaultProps))
-  | (EditableTableDirectProps &
-      (EditableTableComposedProps | DirectDefaultProps));
+type SessionModel = { editModel?: "session" };
+type DirectModel = { editModel: "direct" } & Never<
+  EditableTableSessionOnlyProps & EditableTableSessionLayoutProps
+>;
+
+type InlineStrategy = {
+  createStrategy?: "inline";
+  editStrategy?: "inline";
+} & Never<EditableTableFormLayoutProps & EditableTableCreateLayoutProps>;
+type InlineWithCreateForm = {
+  createStrategy: "form";
+  editStrategy?: "inline";
+} & Never<
+  EditableTableFormLayoutProps &
+    Pick<EditableTableSessionLayoutProps, "showInlineAddRow">
+>;
+type FormStrategy = {
+  createStrategy?: "form";
+  editStrategy: "form";
+} & Never<
+  EditableTableSessionOnlyProps &
+    EditableTableSessionLayoutProps &
+    EditableTableInlineLayoutProps
+>;
+
+type Layout =
+  | EditableTableComposedProps
+  | (EditableTableDefaultLayoutProps &
+      EditableTableSessionLayoutProps &
+      EditableTableInlineLayoutProps &
+      EditableTableFormLayoutProps &
+      EditableTableCreateLayoutProps);
+
+export type EditableTableProps = EditableTableBaseProps &
+  EditableTableSessionOnlyProps &
+  (SessionModel | DirectModel) &
+  (InlineStrategy | InlineWithCreateForm | FormStrategy) &
+  Layout;
 
 /** Every prop, for destructuring. */
-type AllProps = Omit<EditableTableSessionProps, "editModel"> & {
-  editModel?: EditableTableEditModel;
-} & Partial<EditableTableComposedProps> &
-  Omit<Partial<EditableTableDefaultProps>, "children">;
+type AllProps = EditableTableBaseProps &
+  EditableTableSessionOnlyProps & {
+    children?: ReactNode;
+    createStrategy?: EditableTableCreateStrategy;
+    editModel?: EditableTableEditModel;
+    editStrategy?: EditableTableEditStrategy;
+  };
+
+type ContentProps = EditableTableDefaultLayoutProps &
+  EditableTableSessionLayoutProps &
+  EditableTableInlineLayoutProps &
+  EditableTableFormLayoutProps &
+  EditableTableCreateLayoutProps & { testId: string };
 
 const classBase = "vuuEditableTable";
 
-type DefaultContentProps = Omit<EditableTableDefaultProps, "children"> & {
-  testId: string;
+const PanelTitle = ({
+  createTitle,
+  formTitle,
+}: Pick<ContentProps, "createTitle" | "formTitle">) => {
+  const { mode, selectedRow } = useTableEditor();
+  const title =
+    mode === "create"
+      ? createTitle
+      : selectedRow
+        ? typeof formTitle === "function"
+          ? formTitle(selectedRow)
+          : formTitle
+        : null;
+  return title ? <SidePanelTitle>{title}</SidePanelTitle> : null;
 };
 
-const DefaultContent = ({
+const InlineContent = ({
+  createFields,
+  createTitle = "New",
+  panelClassName,
   saveLabel,
   showEditModeToggle,
   testId,
+  validateCreate,
   ...tableProps
-}: DefaultContentProps) => (
+}: ContentProps) => {
+  const { createStrategy, editModel } = useTableEditor();
+  const hasCreateForm = createStrategy === "form";
+  const showToggle = showEditModeToggle ?? editModel === "session";
+  const table = (
+    <>
+      {showToggle || hasCreateForm ? (
+        <TableEditorToolbar>
+          {showToggle ? <TableEditorModeToggle testId={testId} /> : null}
+          {hasCreateForm ? (
+            <TableEditorNewButton data-testid={`new-button${testId}`} />
+          ) : null}
+        </TableEditorToolbar>
+      ) : null}
+      <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
+      <EditableTableFooter saveLabel={saveLabel} />
+    </>
+  );
+  return hasCreateForm ? (
+    <>
+      <EditableTableMain>{table}</EditableTableMain>
+      <EditableTablePanel
+        className={panelClassName}
+        data-testid={`edit-panel${testId}`}
+      >
+        <EditableTablePanelHeader>
+          <PanelTitle createTitle={createTitle} />
+        </EditableTablePanelHeader>
+        <SidePanelContent className={`${classBase}-detail`}>
+          <TableEditorCreateForm
+            data-testid={`create-form${testId}`}
+            fields={createFields}
+            validate={validateCreate}
+          />
+        </SidePanelContent>
+      </EditableTablePanel>
+    </>
+  ) : (
+    table
+  );
+};
+
+const FormContent = ({
+  allowCreate = true,
+  createFields,
+  createTitle = "New",
+  fields,
+  formTitle,
+  panelClassName,
+  placeholder = "Select a row to see its details",
+  testId,
+  validate,
+  validateCreate = validate,
+  ...tableProps
+}: ContentProps) => (
   <>
-    {showEditModeToggle ? (
+    <EditableTableMain>
       <TableEditorToolbar>
-        <TableEditorModeToggle testId={testId} />
+        <TableEditorEditButton data-testid={`edit-button${testId}`} />
+        {allowCreate ? (
+          <TableEditorNewButton data-testid={`new-button${testId}`} />
+        ) : null}
       </TableEditorToolbar>
-    ) : null}
-    <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
-    <EditableTableFooter saveLabel={saveLabel} />
+      <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
+    </EditableTableMain>
+    <EditableTablePanel
+      className={panelClassName}
+      data-testid={`edit-panel${testId}`}
+    >
+      <EditableTablePanelHeader>
+        <PanelTitle createTitle={createTitle} formTitle={formTitle} />
+      </EditableTablePanelHeader>
+      <SidePanelContent className={`${classBase}-detail`}>
+        <TableEditorPlaceholder>{placeholder}</TableEditorPlaceholder>
+        <TableEditorForm
+          data-testid={`edit-form${testId}`}
+          fields={fields}
+          validate={validate}
+        />
+        {allowCreate ? (
+          <TableEditorCreateForm
+            data-testid={`create-form${testId}`}
+            fields={createFields ?? fields}
+            validate={validateCreate}
+          />
+        ) : null}
+      </SidePanelContent>
+    </EditableTablePanel>
   </>
 );
 
@@ -177,7 +367,7 @@ const Container = ({
   className,
   style,
   testId,
-}: Pick<EditableTableCommonProps, "className" | "style"> & {
+}: Pick<EditableTableBaseProps, "className" | "style"> & {
   children: ReactNode;
   testId: string;
 }) => {
@@ -187,11 +377,14 @@ const Container = ({
     css: editableTableCss,
     window: targetWindow,
   });
-  const { mode } = useTableEditor();
+  const { createStrategy, editStrategy, mode, panelOpen } = useTableEditor();
   return (
     <div
-      className={cx(classBase, className, {
+      className={cx(classBase, className, `${classBase}-${mode}`, {
         [`${classBase}-editing`]: mode === "edit",
+        [`${classBase}-panelOpen`]: panelOpen,
+        [`${classBase}-withPanel`]:
+          editStrategy === "form" || createStrategy === "form",
       })}
       data-testid={`edit-table${testId}`}
       style={style}
@@ -202,23 +395,29 @@ const Container = ({
 };
 
 /**
- * A Table with View/Edit modes. All the wiring (edit session, editable
- * columns, row styling, Save/Cancel/Delete buttons, the inline add row) is
+ * A Table with editing. All the wiring (edit session, editable columns, row
+ * styling, forms, Save/Cancel/Delete buttons, the inline add row) is
  * handled internally.
  *
- * - `editModel="session"` (the default): entering edit mode starts an edit
- *   session against a session copy of `dataSource`; edits are only applied
- *   when the user saves.
- * - `editModel="direct"`: each committed cell edit is sent straight to
- *   `dataSource`. There is no Save or Cancel; View just makes the table
- *   read-only. Always editable unless you show the mode toggle or set
- *   `defaultMode`/`mode`.
+ * - `editStrategy="inline"` (the default): cells are edited in the table.
+ *   `createStrategy="form"` adds new rows with a form in a side panel.
+ * - `editStrategy="form"`: selecting a row shows it in a form in a side
+ *   panel; Edit makes it editable and New shows a form for a new row.
  *
- * Renders a flex column container that fills its parent. Without `children`
- * it holds an optional View/Edit toggle, the table and a footer. Otherwise
- * it holds `children`: compose `TableEditorTable`, `EditableTableFooter`,
- * `TableEditorToolbar`, `TableEditorModeToggle` etc. Read the state with
- * `useTableEditor`.
+ * - `editModel="session"` (the default): edits are staged in an edit
+ *   session and applied when the user saves.
+ * - `editModel="direct"`: each committed edit is sent straight to
+ *   `dataSource`. There is no Save or Cancel.
+ *
+ * What can be edited, and how, comes from the server schema and each
+ * column's `editable` and `editor`. Forms are generated from the schema
+ * unless you pass `fields` or compose your own.
+ *
+ * Renders a flex container that fills its parent (a row, with the side
+ * panel, when there is one). Without `children` it renders a default
+ * layout. Otherwise it holds `children`: compose `TableEditorTable`,
+ * `EditableTableFooter`, `EditableTableMain`, `EditableTablePanel`,
+ * `TableEditorForm` etc. Read the state with `useTableEditor`.
  */
 export const EditableTable = (props: EditableTableProps) => {
   const {
@@ -227,50 +426,60 @@ export const EditableTable = (props: EditableTableProps) => {
     className,
     confirmCancel,
     copyOption,
+    createStrategy,
     dataSource,
     defaultMode,
     deleteMode,
     editModel = "session",
     editSessionApi,
+    editStrategy = "inline",
     mode,
     onCancelled,
     onError,
     onModeChange,
     onSaved,
+    panelVisibility,
     rowDefaults,
     style,
     testId = "",
     ...contentProps
   } = props as AllProps;
 
-  const isDirect = editModel === "direct";
+  const isInlineDirect = editStrategy === "inline" && editModel === "direct";
 
   return (
     <TableEditorProvider
       allowDelete={allowDelete}
       confirmCancel={confirmCancel}
       copyOption={copyOption}
+      createStrategy={createStrategy}
       dataSource={dataSource}
-      defaultMode={defaultMode ?? (isDirect ? "edit" : "view")}
+      defaultMode={defaultMode ?? (isInlineDirect ? "edit" : "view")}
       deleteMode={deleteMode}
-      editIn="table"
       editModel={editModel}
       editSessionApi={editSessionApi}
+      editStrategy={editStrategy}
       mode={mode}
       onCancelled={onCancelled}
       onError={onError}
-      onModeChange={onModeChange as TableEditorProviderProps["onModeChange"]}
+      onModeChange={onModeChange}
       onSaved={onSaved}
+      panelVisibility={panelVisibility}
       rowDefaults={rowDefaults}
     >
       <Container className={className} style={style} testId={testId}>
-        {children ?? (
-          <DefaultContent
-            showEditModeToggle={!isDirect}
-            {...(contentProps as Omit<DefaultContentProps, "testId">)}
-            testId={testId}
-          />
-        )}
+        {children ??
+          (editStrategy === "form" ? (
+            <FormContent
+              {...(contentProps as Omit<ContentProps, "testId">)}
+              testId={testId}
+            />
+          ) : (
+            <InlineContent
+              {...(contentProps as Omit<ContentProps, "testId">)}
+              testId={testId}
+            />
+          ))}
       </Container>
     </TableEditorProvider>
   );

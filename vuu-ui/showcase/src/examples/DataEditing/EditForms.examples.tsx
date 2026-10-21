@@ -12,8 +12,8 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
 import {
-  TableWithEditFormPanel,
-  TableWithEditFormPanelHeader,
+  EditableTablePanel,
+  EditableTablePanelHeader,
   TableEditorButtons,
   TableEditorCreateForm,
   TableEditorForm,
@@ -22,9 +22,9 @@ import {
   TableEditorPlaceholder,
   TableEditorTable,
   TableEditorToolbar,
-  TableWithEditFormTablePanel,
-  TableWithEditForm,
-  type TableWithEditFormPanelVisibility,
+  EditableTableMain,
+  EditableTable,
+  type EditableTablePanelVisibility,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
@@ -65,7 +65,7 @@ const useInstrumentsDataSource = () => {
 };
 
 const instrumentFields: CreateRowFormField[] = [
-  { label: "RIC", name: "ric", readOnly: true },
+  { editable: false, label: "RIC", name: "ric" },
   { label: "Description", name: "description" },
   { label: "Currency", name: "currency" },
   { label: "Exchange", name: "exchange" },
@@ -89,19 +89,20 @@ const validateInstrument: EditFormValidator = ({ currency, lotSize }) => {
   return errors;
 };
 
-const TableWithEditFormTemplate = ({
+const FormTemplate = ({
   panelVisibility,
 }: {
-  panelVisibility?: TableWithEditFormPanelVisibility;
+  panelVisibility?: EditableTablePanelVisibility;
 }) => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 500, width: 1100 }}>
-      <TableWithEditForm
+      <EditableTable
         config={instrumentsTableConfig}
         createFields={createFields}
         createTitle="New instrument"
         dataSource={dataSource}
+        editStrategy="form"
         fields={instrumentFields}
         formTitle={(row) => `Instrument ${row.ric}`}
         panelVisibility={panelVisibility}
@@ -118,7 +119,7 @@ const TableWithEditFormTemplate = ({
  */
 export const TableWithForm = () => (
   <LocalDataSourceProvider>
-    <TableWithEditFormTemplate />
+    <FormTemplate />
   </LocalDataSourceProvider>
 );
 
@@ -128,14 +129,14 @@ export const TableWithForm = () => (
  */
 export const TableWithFormAlwaysVisible = () => (
   <LocalDataSourceProvider>
-    <TableWithEditFormTemplate panelVisibility="always" />
+    <FormTemplate panelVisibility="always" />
   </LocalDataSourceProvider>
 );
 
 const InstrumentPanelHeader = () => {
   const { mode, selectedRow } = useTableEditor();
   return (
-    <TableWithEditFormPanelHeader>
+    <EditableTablePanelHeader>
       <div>
         <SidePanelTitle>
           {mode === "create"
@@ -146,7 +147,7 @@ const InstrumentPanelHeader = () => {
           <Text color="secondary">{selectedRow.ric}</Text>
         ) : null}
       </div>
-    </TableWithEditFormPanelHeader>
+    </EditableTablePanelHeader>
   );
 };
 
@@ -195,11 +196,12 @@ const InstrumentFormContent = () => {
 const TableWithCustomFormTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
-    <TableWithEditForm
+    <EditableTable
       dataSource={dataSource}
+      editStrategy="form"
       style={{ height: 500, width: 1100 }}
     >
-      <TableWithEditFormTablePanel>
+      <EditableTableMain>
         <TableEditorToolbar>
           <Text styleAs="h3" style={{ flex: 1 }}>
             Instruments
@@ -207,8 +209,8 @@ const TableWithCustomFormTemplate = () => {
           <TableEditorNewButton>New instrument</TableEditorNewButton>
         </TableEditorToolbar>
         <TableEditorTable config={instrumentsTableConfig} />
-      </TableWithEditFormTablePanel>
-      <TableWithEditFormPanel
+      </EditableTableMain>
+      <EditableTablePanel
         style={{ "--saltSidePanel-width": "360px" } as CSSProperties}
       >
         <InstrumentPanelHeader />
@@ -222,8 +224,8 @@ const TableWithCustomFormTemplate = () => {
             validate={validateInstrument}
           />
         </SidePanelContent>
-      </TableWithEditFormPanel>
-    </TableWithEditForm>
+      </EditableTablePanel>
+    </EditableTable>
   );
 };
 

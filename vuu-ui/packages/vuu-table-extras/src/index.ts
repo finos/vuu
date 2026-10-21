@@ -51,34 +51,30 @@ export {
 } from "./bulk-edit-dialog/useBulkEditDialog";
 export {
   EditableTable,
+  type EditableTableBaseProps,
   type EditableTableComposedProps,
-  type EditableTableDefaultProps,
-  type EditableTableDirectProps,
+  type EditableTableCreateLayoutProps,
+  type EditableTableCreateStrategy,
+  type EditableTableDefaultLayoutProps,
   type EditableTableEditModel,
+  type EditableTableEditStrategy,
+  type EditableTableField,
+  type EditableTableFormLayoutProps,
+  type EditableTableInlineLayoutProps,
   type EditableTableMode,
+  type EditableTablePanelVisibility,
   type EditableTableProps,
-  type EditableTableSessionProps,
+  type EditableTableSessionLayoutProps,
+  type EditableTableSessionOnlyProps,
 } from "./editable-table/EditableTable";
 export {
   EditableTableFooter,
   type EditableTableFooterProps,
+  EditableTableMain,
+  type EditableTableMainProps,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+  type EditableTablePanelHeaderProps,
+  type EditableTablePanelProps,
 } from "./editable-table/EditableTableLayout";
-export {
-  TableWithEditForm,
-  type TableWithEditFormBaseProps,
-  type TableWithEditFormComposedProps,
-  type TableWithEditFormDefaultProps,
-  type TableWithEditFormField,
-  type TableWithEditFormMode,
-  type TableWithEditFormPanelVisibility,
-  type TableWithEditFormProps,
-} from "./table-with-edit-form/TableWithEditForm";
-export {
-  TableWithEditFormPanel,
-  TableWithEditFormPanelHeader,
-  type TableWithEditFormPanelHeaderProps,
-  type TableWithEditFormPanelProps,
-  TableWithEditFormTablePanel,
-  type TableWithEditFormTablePanelProps,
-} from "./table-with-edit-form/TableWithEditFormLayout";
 export * from "./table-editor";

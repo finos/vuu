@@ -11,10 +11,11 @@ never see half-finished changes.
   state and the lifecycle.
 - [Choosing an editing model](./03-ChoosingAModel.mdx): staged session or direct
   edit.
-- [Editable tables](./04-EditableTables.mdx): `EditableTable`, editable columns,
-  insert, delete, undo and cell editors.
-- [Edit forms](./05-EditForms.mdx): `EditForm`, `CreateRowForm`,
-  `TableWithEditForm`, custom fields and validation.
+- [Editable tables](./04-EditableTables.mdx): `EditableTable`, with inline or
+  form editing, column edit metadata, generated forms, insert, delete, undo
+  and cell editors.
+- [Edit forms](./05-EditForms.mdx): `EditForm`, `CreateRowForm`, fields,
+  custom fields and validation.
 - [Lookups](./06-Lookups.mdx): dropdowns filled from a Vuu table.
 - [Bulk editing](./07-BulkEditing.mdx): edit many rows at once in a dialog.
 - [Divergent edit tables](./08-DivergentEditTables.mdx): when the edit table has a
@@ -30,8 +31,8 @@ when you need more control.
 
 | Layer | What you get | Exports |
 | ----- | ------------ | ------- |
-| Pattern components | A complete editing UI, configured with props | `EditableTable`, `TableWithEditForm`, `useBulkEditDialog` (`@vuu-ui/vuu-table-extras`); `EditForm`, `CreateRowForm` (`@vuu-ui/vuu-data-editing`) |
-| Composable components | The pieces the table patterns are built from, arranged in your own layout as `children` of `EditableTable` or `TableWithEditForm` | `TableWithEditFormTablePanel`, `TableWithEditFormPanel`, `TableWithEditFormPanelHeader`, `TableEditorTable`, `TableEditorForm`, `TableEditorCreateForm`, `TableEditorPlaceholder`, `EditableTableFooter`, `TableEditorToolbar`, `TableEditorButtons`, `TableEditorModeToggle`, `TableEditorEditButton`, `TableEditorNewButton`, `TableEditorPanelCloseButton`, `useTableEditor` (`@vuu-ui/vuu-table-extras`) |
+| Pattern components | A complete editing UI, configured with props | `EditableTable`, `useBulkEditDialog` (`@vuu-ui/vuu-table-extras`); `EditForm`, `CreateRowForm` (`@vuu-ui/vuu-data-editing`) |
+| Composable components | The pieces the table patterns are built from, arranged in your own layout as `children` of `EditableTable` | `EditableTableMain`, `EditableTablePanel`, `EditableTablePanelHeader`, `TableEditorTable`, `TableEditorForm`, `TableEditorCreateForm`, `TableEditorPlaceholder`, `EditableTableFooter`, `TableEditorToolbar`, `TableEditorButtons`, `TableEditorModeToggle`, `TableEditorEditButton`, `TableEditorNewButton`, `TableEditorPanelCloseButton`, `useTableEditor` (`@vuu-ui/vuu-table-extras`) |
 | Composable hooks | The state and handlers behind the patterns, for your own layout | `useEditableTable`, `useEditableColumns`, `useEditForm`, `useEditSessionState`, `useCustomEditField`, `useConfirmDiscard`, `useLookupOptions` |
 | Primitives | The building blocks | `EditSession`, `DirectEditSession`, `DataEditingProvider`, `EditModeProvider`, `EditField`, `EditButtons`, cell renderers |
 

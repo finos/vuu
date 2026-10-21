@@ -705,7 +705,7 @@ const CreateGroupFormContent = ({
 };
 
 /**
- * Creates a group, shown while the enclosing `TableWithEditForm` is creating
+ * Creates a group, shown while the enclosing `EditableTable` is creating
  * a row. The group is named with its application's prefix and always
  * includes the application's access role.
  */

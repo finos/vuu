@@ -317,6 +317,18 @@ export class EditSession
     });
   }
 
+  /** Discards the new-row draft, leaving the rest of the session untouched. */
+  clearNewRow() {
+    this.#setNewRowState({
+      columns: this.#newRowState.columns,
+      draftRevision: this.#newRowState.draftRevision + 1,
+      errors: {},
+      requiredColumns: this.#newRowState.requiredColumns,
+      submitting: false,
+      values: {},
+    });
+  }
+
   async addNewRow(): Promise<RpcResult> {
     const requiredColumns =
       this.#newRowState.requiredColumns ?? this.#newRowState.columns;
@@ -733,6 +745,11 @@ export class EditSession
 
   get dataSource() {
     return this.#sessionDataSource ?? this.#sourceTableDataSource;
+  }
+
+  /** The dataSource of the table being edited. */
+  get sourceDataSource() {
+    return this.#sourceTableDataSource;
   }
 
   get sessionDataSource() {

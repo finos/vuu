@@ -58,33 +58,60 @@ describe("getEditableColumns", () => {
     ]);
   });
 
-  it("applies per-column config and wildcard", () => {
+  it("narrows schema editability with the column's editable", () => {
     const result = getEditableColumns({
-      columns: columns.slice(0, 2),
-      editable: {
-        "*": true,
-        ric: { insert: true, update: false },
-      },
+      columns: [
+        { editable: { insert: true, update: false }, name: "ric" },
+        { name: "price", serverDataType: "double" },
+        { editable: true, name: "qty", serverDataType: "int" },
+      ],
       isEditing: true,
+      schema: {
+        columns: [
+          { name: "ric", serverDataType: "string" },
+          { name: "price", serverDataType: "double" },
+          { editable: false, name: "qty", serverDataType: "int" },
+        ],
+        key: "ric",
+        table: { module: "TEST", table: "test" },
+      },
     });
-    expect(result[0].editable).toEqual({ insert: true, update: false });
-    expect(result[1].editable).toBe(true);
+    expect(result.map((c) => [c.name, c.editable])).toEqual([
+      ["ric", { insert: true, update: false }],
+      ["price", true],
+      ["qty", false],
+    ]);
   });
 
-  it("leaves unlisted columns as-is when config has no wildcard", () => {
+  it("uses the column's editor as the cell renderer", () => {
     const result = getEditableColumns({
-      columns: columns.slice(0, 2),
-      editable: { price: { renderer: "dropdown-cell", values: ["1", "2"] } },
+      columns: [
+        {
+          editor: { name: "dropdown-cell", values: ["1", "2"] },
+          name: "price",
+          serverDataType: "double",
+        },
+        { editor: { name: "typeahead" }, name: "ric" },
+      ],
       isEditing: true,
     });
-    expect(result[0]).toBe(columns[0]);
-    expect(result[1]).toMatchObject({
+    expect(result[0]).toMatchObject({
       editable: true,
       type: {
         name: "string",
         renderer: { name: "dropdown-cell", values: ["1", "2"] },
       },
     });
+    // typeahead has no cell editor
+    expect(result[1].type).toBeUndefined();
+  });
+
+  it("switches editing off in view mode", () => {
+    const result = getEditableColumns({
+      columns: [{ editable: true, name: "ric" }, { name: "price" }],
+      isEditing: false,
+    });
+    expect(result.map((c) => c.editable)).toEqual([false, undefined]);
   });
 
   it("appends action and undo columns", () => {

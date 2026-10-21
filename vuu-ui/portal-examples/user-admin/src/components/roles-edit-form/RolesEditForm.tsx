@@ -343,7 +343,7 @@ const CreateRoleFormContent = ({
 };
 
 /**
- * Creates an application role, shown while the enclosing `TableWithEditForm`
+ * Creates an application role, shown while the enclosing `EditableTable`
  * is creating a row.
  */
 export const CreateRoleForm = (props: CreateRoleFormProps) => {

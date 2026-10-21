@@ -4,10 +4,10 @@ import {
   TableEditorForm,
   TableEditorNewButton,
   TableEditorTable,
-  TableWithEditForm,
-  TableWithEditFormPanel,
-  TableWithEditFormPanelHeader,
-  TableWithEditFormTablePanel,
+  EditableTable,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+  EditableTableMain,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import { useEffect } from "react";
@@ -88,9 +88,9 @@ const CreateGroupFromSearchParams = () => {
 export const GroupsPage = () => {
   const { application, config, dataSource, setApplication } = useGroupsPage();
   return (
-    <TableWithEditForm dataSource={dataSource}>
+    <EditableTable dataSource={dataSource} editStrategy="form">
       <CreateGroupFromSearchParams />
-      <TableWithEditFormTablePanel className="vuuIdentityAdmin-page">
+      <EditableTableMain className="vuuIdentityAdmin-page">
         <PageHeader
           description="Each group belongs to one application and bundles its roles."
           title="Groups"
@@ -108,18 +108,18 @@ export const GroupsPage = () => {
         <div className="vuuIdentityAdmin-tableCard">
           <TableEditorTable config={config} rowHeight={GROUP_ROW_HEIGHT} />
         </div>
-      </TableWithEditFormTablePanel>
-      <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
-        <TableWithEditFormPanelHeader>
+      </EditableTableMain>
+      <EditableTablePanel className="vuuIdentityAdmin-panel">
+        <EditableTablePanelHeader>
           <GroupHeading />
-        </TableWithEditFormPanelHeader>
+        </EditableTablePanelHeader>
         <SidePanelContent>
           <TableEditorForm>
             <GroupEditForm />
           </TableEditorForm>
           <CreateGroupForm application={application} />
         </SidePanelContent>
-      </TableWithEditFormPanel>
-    </TableWithEditForm>
+      </EditableTablePanel>
+    </EditableTable>
   );
 };

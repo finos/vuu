@@ -33,7 +33,7 @@ vi.mock("../../src/datasource-stats/DatasourceStats", () => ({
 
 const config: TableConfig = {
   columns: [
-    { name: "ric", serverDataType: "string" },
+    { editable: false, name: "ric", serverDataType: "string" },
     { name: "description", serverDataType: "string" },
     { name: "lotSize", serverDataType: "int" },
   ],
@@ -84,7 +84,6 @@ describe("EditableTable, direct editing", () => {
         config={config}
         dataSource={dataSource}
         editModel="direct"
-        editable={{ description: true, lotSize: true }}
       />,
     );
     expect(rendered.props?.dataSource).toBe(dataSource);
@@ -101,11 +100,14 @@ describe("EditableTable, direct editing", () => {
   it("supports View/Edit modes, with no Save or Cancel", async () => {
     await render(
       <EditableTable
-        config={config}
+        config={{
+          columns: config.columns.map((column) =>
+            column.name === "lotSize" ? { ...column, editable: false } : column,
+          ),
+        }}
         dataSource={dataSource}
         defaultMode="view"
         editModel="direct"
-        editable={{ description: true }}
         showEditModeToggle
       />,
     );
@@ -129,7 +131,7 @@ describe("EditableTable, direct editing", () => {
         onModeChange={onModeChange}
       >
         <TableEditorModeToggle />
-        <TableEditorTable config={config} readOnly={["ric"]} />
+        <TableEditorTable config={config} />
       </EditableTable>,
     );
     expect(editableColumns()).toEqual([]);
@@ -141,7 +143,7 @@ describe("EditableTable, direct editing", () => {
 
     await render(
       <EditableTable dataSource={dataSource} editModel="direct" mode="edit">
-        <TableEditorTable config={config} readOnly={["ric"]} />
+        <TableEditorTable config={config} />
       </EditableTable>,
     );
     expect(editableColumns()).toEqual(["description", "lotSize"]);

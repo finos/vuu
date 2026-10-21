@@ -10,10 +10,13 @@ down a layer only when you need to.
 | --- | ------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------- |
 | 1   | View/Edit toggle                | Users browse a table and occasionally edit several cells, then Save      | `EditableTable / ViewEditToggle`              |
 | 2   | Insert / update / delete + undo | Users maintain a reference table: add, change and remove rows            | `EditableTable / InsertUpdateDelete`          |
+| 2b  | Inline edit, form for new rows  | Cells are edited in a session, but new rows need several values at once  | `EditableTable / SessionCreateForm`           |
 | 3   | Custom cell editors             | Some columns need a dropdown or other editor; only some are editable     | `EditableTable / CustomEditors`               |
 | 4   | Direct edit                     | Each cell edit should be applied immediately, with no Save/Cancel        | `EditableTable / DirectEdit`                  |
 | 4b  | Direct edit with View/Edit      | As 4, but users switch to Edit mode first, to avoid accidental edits      | `EditableTable / DirectEditWithModes`         |
-| 5   | Master–detail form              | Rows have many fields, or fields that do not fit in a cell               | `EditForms / TableWithForm`                   |
+| 4c  | Direct edit, form for new rows  | As 4, with new rows added through a form                                 | `EditableTable / DirectCreateForm`            |
+| 5   | Master–detail form              | Rows have many fields, or fields that do not fit in a cell               | `EditableTable / FormEditing`, `EditForms / TableWithForm` |
+| 5c  | Master–detail form, direct      | As 5, but each field is saved as it is committed                         | `EditableTable / DirectFormEditing`           |
 | 6   | Create row form                 | Rows are added through a form, with client and server validation         | `EditForms / CreateRowWithValidation`         |
 | 7   | Custom edit field               | A field needs a non standard editor (list, picker, permissions …)        | `EditForms / CustomEditField`                 |
 | 8   | Bulk edit dialog                | Users select rows and edit them together, away from the main table       | `BulkEdit / BulkEditDialog`                   |
@@ -22,7 +25,7 @@ down a layer only when you need to.
 
 ## Layers
 
-1. **Components** – `EditableTable`, `TableWithEditForm`, `useBulkEditDialog`
+1. **Components** – `EditableTable`, `useBulkEditDialog`
    (in `vuu-table-extras`); `EditForm`, `CreateRowForm`, `EditField`,
    `EditButtons` (in `vuu-data-editing`). Use these first.
 2. **Hooks** – `useEditableTable`, `useEditableColumns`, `useEditForm`,

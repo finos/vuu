@@ -4,7 +4,7 @@ import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EditForm } from "@vuu-ui/vuu-data-editing";
-import { TableWithEditForm, useTableEditor } from "@vuu-ui/vuu-table-extras";
+import { EditableTable, useTableEditor } from "@vuu-ui/vuu-table-extras";
 import { PortalModuleRegistryProvider } from "@vuu-ui/core/portal";
 import {
   CreateRoleForm,
@@ -198,11 +198,11 @@ describe("CreateRoleForm", () => {
       root.render(
         <PortalModuleRegistryProvider remoteModules={remoteModules}>
           <ApplicationModelContext.Provider value={{ loading: false, model }}>
-            <TableWithEditForm dataSource={dataSource}>
+            <EditableTable dataSource={dataSource} editStrategy="form">
               <StartCreate />
               <CreateMode />
               <CreateRoleForm application={application} />
-            </TableWithEditForm>
+            </EditableTable>
           </ApplicationModelContext.Provider>
         </PortalModuleRegistryProvider>,
       );

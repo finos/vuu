@@ -10,7 +10,7 @@ The package is organised in layers. Applications should start at the highest
 layer that fits and drop down only when they need more control:
 
 1. **Pattern components** – `EditForm`, `CreateRowForm` (this package) and
-   `EditableTable`, `TableWithEditForm`, `BulkEditDialog`
+   `EditableTable`, `BulkEditDialog`
    (`@vuu-ui/vuu-table-extras`).
 2. **Composable hooks** – `useEditableTable`, `useEditForm`,
    `useEditableColumns`, `useEditSessionState`, `useLookupOptions`,
@@ -212,18 +212,21 @@ This decouples the client from requiring the remote server to return an extra re
 | `src/EditButtons.tsx`         | Renders save, cancel, delete, and add-row controls based on edit-session state.                                                    |
 | `src/edit-utils.tsx`          | Supplies user-facing stale-update messages and per-row edit errors (`withDataRowEditErrors`).                                       |
 | `src/edit-errors.ts`          | Defines `EditOperation` and `EditErrorHandler`; reports errors to `onError` or the console.                                        |
-| `src/useEditableColumns.ts`   | Builds edit-mode column descriptors from an `editable` spec, including divergent edit schemas.                                     |
+| `src/useEditableColumns.ts`   | Builds edit-mode column descriptors from column `editable`/`editor` metadata and the schema, including divergent edit schemas.    |
 | `src/useEditSessionState.ts`  | Subscribes to an `EditSession` and returns its edit state, counters and lifecycle.                                                 |
 | `src/useConfirmDiscard.ts`    | Returns a `confirmCancel` callback that asks before discarding unsaved edits.                                                      |
 | `src/useEditForm.ts`          | Form state for editing or creating one row in its own edit session.                                                                |
 | `src/edit-form/`              | `EditForm`, `CreateRowForm` and `EditFormContext` (`useEditFormContext`).                                                          |
+| `src/edit-field/`             | `EditField`: a form field bound to the form's edit session; given a `column`, its control comes from `getDataItemEditControl`.     |
+| `src/edit-control/`           | `getDataItemEditControl`, the single place that picks an edit control for a `DataValueDescriptor` (forms, filters, bulk edit).     |
+| `src/form-fields.ts`          | `getFormFields`: generates form field descriptors from the schema and table columns, for edit or create.                           |
 | `src/useCustomEditField.ts`   | Connects a custom field control to the enclosing edit form.                                                                        |
 | `src/lookup-values/`          | `useLookupValues` and `useLookupOptions`, which load options from lookup tables.                                                   |
 | `src/index.ts`                | Defines the package's public API.                                                                                                  |
 
 The pattern components built on this package live in `@vuu-ui/vuu-table-extras`:
-`EditableTable` (`src/editable-table/`), `TableWithEditForm`
-(`src/table-with-edit-form/`) and `useBulkEditDialog` (`src/bulk-edit-dialog/`).
+`EditableTable` (`src/editable-table/`, inline or form editing, built from the
+`src/table-editor/` pieces) and `useBulkEditDialog` (`src/bulk-edit-dialog/`).
 
 ## Dependencies
 

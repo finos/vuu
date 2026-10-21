@@ -1,33 +1,15 @@
-import type { DataEditable, TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  DataEditable,
+  DataValueEditor,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import type {
   ColumnDescriptor,
   DataValueTypeDescriptor,
 } from "@vuu-ui/vuu-table-types";
+import { isDataValueEditable } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { UNDO_CELL_RENDERER } from "./UndoCellRenderer";
-
-/**
- * Per-column editing options. Use the shorthand forms for simple cases:
- * `true`/`false` or `{ insert, update }`.
- */
-export interface EditableColumnOptions {
-  /** @default true */
-  editable?: DataEditable;
-  /** Replaces the column type while editing. Takes precedence over `renderer`. */
-  type?: ColumnDescriptor["type"];
-  /** Name of a registered cell renderer to use while editing, e.g. "dropdown-cell". */
-  renderer?: string;
-  /** Values offered by a value-list renderer such as "dropdown-cell". */
-  values?: string[];
-}
-
-export type EditableColumnSpec = DataEditable | EditableColumnOptions;
-
-/**
- * Maps column names to editing options. The key `"*"` applies to every column
- * that has no entry of its own.
- */
-export type EditableColumnsConfig = Record<string, EditableColumnSpec>;
 
 /** Columns maintained by the Vuu server, never editable by default. */
 export const DEFAULT_READ_ONLY_COLUMNS = [
@@ -50,24 +32,24 @@ export const UNDO_COLUMN: ColumnDescriptor = {
 };
 
 export interface EditableColumnsHookProps {
-  /** Column descriptors used in view mode and as the base for edit mode. */
+  /**
+   * Column descriptors used in view mode and as the base for edit mode. A
+   * column's `editable` narrows what the server schema allows, its `editor`
+   * is used as the cell editor in edit mode.
+   */
   columns: readonly ColumnDescriptor[];
   /**
    * Whether the table is currently showing the edit session. Typically
-   * `isEditSessionReady` from `useEditableTable`. When false, `columns` are
-   * returned unchanged.
+   * `isEditSessionReady` from `useEditableTable`. When false, editing is
+   * switched off for every column.
    */
   isEditing: boolean;
   /**
-   * Editing options per column. When omitted, every column that is not
-   * read-only is editable.
+   * The schema of the table being edited. A column the schema marks as not
+   * editable can never be edited, whatever the column descriptor says.
+   * Columns with no `editable` flag in the schema are editable.
    */
-  editable?: EditableColumnsConfig;
-  /**
-   * Columns that are never editable.
-   * @default ["vuuCreatedTimestamp", "vuuUpdatedTimestamp", "vuuMsg"]
-   */
-  readOnly?: readonly string[];
+  schema?: TableSchema;
   /**
    * Append the client-side undo column while editing. Pass a partial
    * descriptor to override defaults such as width.
@@ -88,11 +70,6 @@ export interface EditableColumnsHookProps {
   editSchema?: TableSchema;
 }
 
-const isEditableOptions = (
-  spec: EditableColumnSpec,
-): spec is EditableColumnOptions =>
-  typeof spec === "object" && !("insert" in spec && "update" in spec);
-
 const typeName = (
   column: ColumnDescriptor,
 ): DataValueTypeDescriptor["name"] => {
@@ -104,31 +81,55 @@ const typeName = (
   return "string";
 };
 
-const applySpec = (
-  column: ColumnDescriptor,
-  spec: EditableColumnSpec | undefined,
-): ColumnDescriptor => {
-  if (spec === undefined) {
-    return { ...column, editable: column.editable ?? true };
-  } else if (!isEditableOptions(spec)) {
-    return { ...column, editable: spec };
-  }
+const isReadOnlyColumn = (name: string) =>
+  (DEFAULT_READ_ONLY_COLUMNS as readonly string[]).includes(name);
 
-  const { editable = true, renderer, type, values } = spec;
-  if (type) {
-    return { ...column, editable, type };
-  } else if (renderer) {
-    return {
-      ...column,
-      editable,
-      type: {
-        name: typeName(column),
-        renderer: values ? { name: renderer, values } : { name: renderer },
-      } as DataValueTypeDescriptor,
-    };
+/**
+ * Combines the schema and column `editable` values. The column can only
+ * narrow what the schema allows.
+ */
+export const narrowEditable = (
+  schemaEditable: DataEditable = true,
+  columnEditable: DataEditable = true,
+): DataEditable => {
+  if (schemaEditable === true) {
+    return columnEditable;
+  } else if (schemaEditable === false || columnEditable === false) {
+    return false;
   }
-  return { ...column, editable };
+  const insert =
+    isDataValueEditable({ editable: schemaEditable }, "insert") &&
+    isDataValueEditable({ editable: columnEditable }, "insert");
+  const update =
+    isDataValueEditable({ editable: schemaEditable }, "update") &&
+    isDataValueEditable({ editable: columnEditable }, "update");
+  return insert === update ? insert : { insert, update };
 };
+
+/**
+ * The cell renderer used to edit a value. Typeahead has no cell editor, so
+ * it is left to the default input-cell.
+ */
+const withEditor = (
+  column: ColumnDescriptor,
+  editor?: DataValueEditor,
+): ColumnDescriptor => {
+  if (editor === undefined || editor.name === "typeahead") {
+    return column;
+  }
+  return {
+    ...column,
+    type: {
+      name: typeName(column),
+      renderer: editor,
+    } as DataValueTypeDescriptor,
+  };
+};
+
+const toViewColumn = (column: ColumnDescriptor) =>
+  column.editable === undefined || column.editable === false
+    ? column
+    : { ...column, editable: false };
 
 /**
  * Builds edit-mode column descriptors. Exposed for use outside React, e.g. in
@@ -140,13 +141,14 @@ export const getEditableColumns = ({
   columns,
   columnsDiverge = false,
   editSchema,
-  editable,
   isEditing,
-  readOnly = DEFAULT_READ_ONLY_COLUMNS,
+  schema = editSchema,
   undoColumn = false,
 }: EditableColumnsHookProps): readonly ColumnDescriptor[] => {
   if (!isEditing) {
-    return columns;
+    return columns.some((c) => c.editable !== undefined && c.editable !== false)
+      ? columns.map(toViewColumn)
+      : columns;
   }
 
   const baseColumns: readonly ColumnDescriptor[] =
@@ -162,16 +164,19 @@ export const getEditableColumns = ({
           )
       : columns;
 
-  const wildcard = editable?.["*"];
   const editColumns = baseColumns.map<ColumnDescriptor>((column) => {
-    if (column.source === "client" || readOnly.includes(column.name)) {
+    if (column.source === "client") {
       return column;
+    } else if (isReadOnlyColumn(column.name)) {
+      return column.editable === undefined
+        ? column
+        : { ...column, editable: false };
     }
-    const spec = editable?.[column.name] ?? wildcard;
-    if (editable && spec === undefined) {
-      return column;
-    }
-    return applySpec(column, spec);
+    const schemaColumn = schema?.columns.find(
+      ({ name }) => name === column.name,
+    );
+    const editable = narrowEditable(schemaColumn?.editable, column.editable);
+    return withEditor({ ...column, editable }, column.editor);
   });
 
   if (actionColumn) {
@@ -191,20 +196,24 @@ export const getEditableColumns = ({
 };
 
 /**
- * Maps view-mode column descriptors to edit-mode descriptors, applying
- * per-column `editable` options and adding the action and undo columns.
+ * Maps view-mode column descriptors to edit-mode descriptors and adds the
+ * action and undo columns. Editability comes from the schema, narrowed by
+ * each column's `editable`; a column's `editor` becomes its cell editor.
  *
- * Returns `columns` unchanged when `isEditing` is false.
+ * When `isEditing` is false, editing is switched off for every column.
  *
  * @example
  * const columns = useEditableColumns({
- *   columns: InstrumentColumns,
+ *   columns: [
+ *     { name: "ric", editable: { insert: true, update: false } },
+ *     {
+ *       name: "currency",
+ *       editor: { name: "dropdown-cell", values: ["EUR", "GBP", "USD"] },
+ *     },
+ *     { name: "lastUpdate", editable: false },
+ *   ],
  *   isEditing: isEditSessionReady,
- *   editable: {
- *     "*": true,
- *     isin: { insert: true, update: false },
- *     currency: { renderer: "dropdown-cell", values: ["EUR", "GBP", "USD"] },
- *   },
+ *   schema: dataSource.tableSchema,
  *   undoColumn: true,
  *   actionColumn: "hidden",
  * });
@@ -214,9 +223,8 @@ export const useEditableColumns = ({
   columns,
   columnsDiverge,
   editSchema,
-  editable,
   isEditing,
-  readOnly,
+  schema,
   undoColumn,
 }: EditableColumnsHookProps) =>
   useMemo(
@@ -226,9 +234,8 @@ export const useEditableColumns = ({
         columns,
         columnsDiverge,
         editSchema,
-        editable,
         isEditing,
-        readOnly,
+        schema,
         undoColumn,
       }),
     [
@@ -236,9 +243,8 @@ export const useEditableColumns = ({
       columns,
       columnsDiverge,
       editSchema,
-      editable,
       isEditing,
-      readOnly,
+      schema,
       undoColumn,
     ],
   );

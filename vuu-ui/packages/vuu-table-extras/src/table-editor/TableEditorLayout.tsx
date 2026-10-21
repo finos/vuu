@@ -42,10 +42,12 @@ export const TableEditorPlaceholder = ({
   ...htmlAttributes
 }: TableEditorPlaceholderProps) => {
   useLayoutCss();
-  const { editIn, mode, selectedRow } = useTableEditorContext(
+  const { editStrategy, mode, selectedRow } = useTableEditorContext(
     "TableEditorPlaceholder",
   );
-  return editIn === "form" && mode !== "create" && selectedRow === undefined ? (
+  return editStrategy === "form" &&
+    mode !== "create" &&
+    selectedRow === undefined ? (
     <div
       {...htmlAttributes}
       className={cx("vuuTableEditorPlaceholder", className)}

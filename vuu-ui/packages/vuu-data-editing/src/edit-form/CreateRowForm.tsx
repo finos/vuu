@@ -1,18 +1,16 @@
+import type { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { type ReactNode, useMemo } from "react";
 import { EditSession } from "../EditSession";
-import {
-  type DropdownEditFieldProps,
-  EditField,
-  type EditFieldProps,
-} from "../edit-field/EditField";
+import { EditField } from "../edit-field/EditField";
 import { EditForm, type EditFormProps } from "./EditForm";
 
-type FieldProps<T> = Omit<T, "dataRow" | "deferNewRow">;
-
-export type CreateRowFormField =
-  | FieldProps<EditFieldProps>
-  | FieldProps<DropdownEditFieldProps>;
+/**
+ * A create form field. The control is chosen from its `editor` and
+ * `serverDataType` by `getDataItemEditControl`. Required unless
+ * `required: false`.
+ */
+export type CreateRowFormField = DataValueDescriptor;
 
 export interface CreateRowFormProps
   extends Omit<
@@ -38,8 +36,8 @@ const NEW_ROW = { key: EditSession.newRowKey } as DataRow;
 const NO_FIELDS: readonly CreateRowFormField[] = [];
 
 /**
- * A form that adds one row to `dataSource`. Renders an `EditField` per entry
- * in `fields`, stages the values as a new-row draft, and adds the row on
+ * A form that adds one row to `dataSource`, or, given an `editSession`, to
+ * that session. Renders an `EditField` per entry in `fields`, stages the values as a new-row draft, and adds the row on
  * Create. Required fields left empty, `validate` errors and server
  * rejections are shown on the form; the row is only added once all pass.
  *
@@ -76,11 +74,12 @@ export const CreateRowForm = ({
     >
       {fields.map((field) => (
         <EditField
-          {...(field as EditFieldProps)}
+          column={
+            field.required === false ? field : { ...field, required: true }
+          }
           dataRow={NEW_ROW}
           deferNewRow
           key={field.name}
-          required={field.required !== false}
         />
       ))}
       {children}
