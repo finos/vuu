@@ -6,7 +6,11 @@ import type {
   SchemaColumn,
   SessionType,
 } from "@vuu-ui/vuu-data-types";
-import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type {
+  DeselectRowRequest,
+  RpcResult,
+  VuuRowDataItemType,
+} from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 import type { TableEditSession } from "./TableEditSession";
 
@@ -38,6 +42,8 @@ export type AddRowResultData = {
 export type DeleteSelectedRowsResultData = {
   deletedKeys?: string[];
 };
+
+type DeselectRowAction = Omit<DeselectRowRequest, "vpId">;
 
 const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
   switch (copyOption) {
@@ -536,6 +542,13 @@ export class EditSession
     if (wasInsertedRow) {
       this.#addedRowKeys.delete(key);
       this.#addCount = Math.max(0, this.#addCount - 1);
+      if (this.dataSource?.selectedRowsCount !== 0) {
+        await this.dataSource?.select?.({
+          preserveExistingSelection: true,
+          rowKey: key,
+          type: "DESELECT_ROW",
+        } as DeselectRowAction);
+      }
     }
 
     this.#emitEditStateChange(oldState);

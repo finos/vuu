@@ -25,7 +25,6 @@ import type {
   VuuRpcMenuRequest,
   VuuTable,
   VuuDataRow,
-  DeselectRowRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isAddRowRpcRequest,
@@ -69,8 +68,6 @@ export interface IVuuModule<T extends string = string> {
 }
 
 export type SessionTableMap = Record<string, Table>;
-
-type DeselectRowAction = Omit<DeselectRowRequest, "vpId">;
 
 export type ServiceHandler = (
   rpcRequest: VuuRpcServiceRequest,
@@ -541,11 +538,6 @@ export abstract class VuuModule<T extends string = string>
         const action = sessionRow[sessionTable.map.vuuAction];
         if (action === "addRow") {
           sessionTable.delete(key);
-          dataSource.select?.({
-            preserveExistingSelection: true,
-            rowKey: key,
-            type: "DESELECT_ROW",
-          } as DeselectRowAction);
           return { type: "SUCCESS_RESULT", data: undefined };
         }
         if (action === "deleteRow" || action === "editCell") {
