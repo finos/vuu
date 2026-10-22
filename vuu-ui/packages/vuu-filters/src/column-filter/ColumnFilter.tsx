@@ -133,9 +133,23 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
           operators={operators}
           onSelect={(event, operator) => {
             onOperatorSelect(event, operator);
+            // Deferred so the Dropdown can finish returning focus to its
+            // button first. Focus moves to the value input only if it is
+            // still within this filter, so a control the user has moved to
+            // in the meantime keeps focus.
             requestAnimationFrame(() => {
-              rootRef.current
-                ?.querySelector<HTMLInputElement>("input:not(:disabled)")
+              const root = rootRef.current;
+              if (!root) return;
+              const { activeElement, body } = root.ownerDocument;
+              if (
+                activeElement &&
+                activeElement !== body &&
+                !root.contains(activeElement)
+              ) {
+                return;
+              }
+              root
+                .querySelector<HTMLInputElement>("input:not(:disabled)")
                 ?.focus();
             });
           }}
