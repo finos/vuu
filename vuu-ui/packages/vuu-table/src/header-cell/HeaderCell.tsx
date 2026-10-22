@@ -5,6 +5,7 @@ import { isTypeDescriptor, useSortable } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
+  memo,
   MouseEventHandler,
   SyntheticEvent,
   useCallback,
@@ -22,7 +23,11 @@ const doNothing = () => {
   return { ref: { current: null } };
 };
 
-export const HeaderCell = ({
+/**
+ * The header re-renders as the table scrolls horizontally, while each cell's
+ * props stay the same, so cells skip rendering unless their props change.
+ */
+export const HeaderCell = memo(function HeaderCell({
   allowDragColumnHeader = true,
   allowSelectAll,
   allRowsSelected,
@@ -35,7 +40,7 @@ export const HeaderCell = ({
   onResize,
   showColumnHeaderMenus = true,
   ...htmlAttributes
-}: HeaderCellProps) => {
+}: HeaderCellProps) {
   const dragDropSortHook = allowDragColumnHeader ? useSortable : doNothing;
   const { ref: sortableRef } = dragDropSortHook({ id, index });
   const {
@@ -154,4 +159,4 @@ export const HeaderCell = ({
       {column.resizeable !== false ? <ColumnResizer {...resizeProps} /> : null}
     </div>
   );
-};
+});
