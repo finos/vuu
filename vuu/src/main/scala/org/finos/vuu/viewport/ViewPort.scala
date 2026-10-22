@@ -473,6 +473,7 @@ class ViewPortImpl(val id: String,
 
     logger.trace(s"VP got update for ${update.key} update, index = $index isDeleted = ${update.isDelete}, $update, pushing to queue")
 
+    // TODO call deselect???
     if (update.isDelete) {
       selection = selection - update.key
     }
