@@ -22,8 +22,6 @@ import {
   filterAsQuery,
   getColumnsByName,
   getColumnsByNameForFilter,
-  getScaledDecimalScale,
-  isTypeDescriptor,
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
@@ -31,10 +29,14 @@ import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import {
+  filterColumns,
   InstrumentsExtendedColumnFilters,
   instrumentsExtendedColumns,
 } from "./instruments-extended-columns";
-import "./RoundAndTruncateCell";
+import {
+  createDataSourceWithTwins,
+  withRoundingRuleColumns,
+} from "./rounding-rule-columns";
 
 const schema = getSchema("instrumentsExtended");
 const filterColumnsByName = getColumnsByNameForFilter(schema);
@@ -434,50 +436,35 @@ export const TimeRangeFilter = () => (
 );
 
 /**
- * Table columns for the AllColumnTypes examples. Scaled decimal columns that
- * display fewer decimals than they hold show the value both rounded and
- * truncated, the underlying value as a tooltip.
+ * Scaled decimal columns that display fewer decimals than they hold are shown,
+ * and filtered, both rounded and truncated. Values show the underlying value as
+ * a tooltip.
  */
-const allColumnTypesTableColumns = instrumentsExtendedColumns.map((column) => {
-  const scale = getScaledDecimalScale(column.serverDataType);
-  const decimals = isTypeDescriptor(column.type)
-    ? column.type.formatting?.decimals
-    : undefined;
-  return scale !== undefined &&
-    decimals !== undefined &&
-    decimals < scale &&
-    isTypeDescriptor(column.type)
-    ? {
-        ...column,
-        label: `${column.label} (round | truncate)`,
-        type: {
-          ...column.type,
-          renderer: { name: "example.round-and-truncate" },
-        },
-        width: 180,
-      }
-    : column;
-});
+const allColumnTypesTableColumns = withRoundingRuleColumns(
+  instrumentsExtendedColumns,
+  { renderer: true },
+);
+const allColumnTypesFilterColumns = withRoundingRuleColumns(filterColumns);
+const allColumnTypesColumnsByName = getColumnsByNameForFilter(
+  schema,
+  getColumnsByName(allColumnTypesTableColumns),
+);
 
 const AllColumnTypesTemplate = ({
   filter: filterProp,
   showOperatorPicker = false,
 }: Pick<FilterContainerProps, "filter"> &
   Pick<ColumnFilterProps, "showOperatorPicker">) => {
-  const { VuuDataSource } = useData();
   const [filter, setFilter] =
     useState<FilterContainerProps["filter"]>(filterProp);
 
   const dataSource = useMemo(() => {
-    const dataSource = new VuuDataSource({
-      columns: instrumentsExtendedColumns.map(toColumnName),
-      table: schema.table,
-    });
+    const dataSource = createDataSourceWithTwins(instrumentsExtendedColumns);
     if (filterProp) {
-      dataSource.setFilter?.(filterProp);
+      dataSource.setFilter(filterProp);
     }
     return dataSource;
-  }, [VuuDataSource, filterProp]);
+  }, [filterProp]);
 
   const config = useMemo(
     () => ({ columns: allColumnTypesTableColumns, rowSeparators: true }),
@@ -514,6 +501,7 @@ const AllColumnTypesTemplate = ({
           }}
         >
           <InstrumentsExtendedColumnFilters
+            columns={allColumnTypesFilterColumns}
             showOperatorPicker={showOperatorPicker}
           />
         </FilterContainer>
@@ -526,14 +514,11 @@ const AllColumnTypesTemplate = ({
             minWidth: 0,
           }}
         >
-          <FilterDisplay columns={instrumentsExtendedColumns} filter={filter} />
+          <FilterDisplay columns={allColumnTypesTableColumns} filter={filter} />
           <pre data-testid="vuu-filter-query" style={{ margin: 0 }}>
             {filter
               ? filterAsQuery(filter, {
-                  columnsByName: getColumnsByNameForFilter(
-                    schema,
-                    getColumnsByName(instrumentsExtendedColumns),
-                  ),
+                  columnsByName: allColumnTypesColumnsByName,
                 })
               : ""}
           </pre>

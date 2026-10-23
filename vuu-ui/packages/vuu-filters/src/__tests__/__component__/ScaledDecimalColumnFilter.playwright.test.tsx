@@ -13,10 +13,7 @@ const selectOperator = async (page: Page, label: string, op: string) => {
   await page.getByRole("option", { name: op, exact: true }).click();
 };
 
-/**
- * The text of every rendered cell in a Table column. Where a cell shows a value
- * both rounded and truncated, the rounded value, with which filters match.
- */
+/** The text of every rendered cell in a Table column */
 const columnValues = async (page: Page, columnName: string) => {
   const table = new PwTable(page);
   const colIndex = await table.locator
@@ -27,13 +24,7 @@ const columnValues = async (page: Page, columnName: string) => {
     .locator(
       `[aria-rowindex]:not([aria-rowindex="1"]) > [aria-colindex="${colIndex}"]`,
     )
-    .evaluateAll((cells) =>
-      cells.map(
-        (cell) =>
-          (cell.querySelector(".exampleRoundAndTruncateCell-round") ?? cell)
-            .textContent ?? "",
-      ),
-    );
+    .allTextContents();
 };
 
 /** The number of rows in the DataSource, from DataSourceStats */
@@ -236,8 +227,8 @@ test.describe("FilterContainer with a filter for every column type", () => {
     // successive counts always differ, so a changed count is the new result
     let previousCount = 10_000;
     const countFor = async (op: string) => {
-      await selectOperator(page, "FX rate", op);
-      await commitValue(page, "FX rate", "1.23");
+      await selectOperator(page, "FX rate (round)", op);
+      await commitValue(page, "FX rate (round)", "1.23");
       await expect(page.getByTestId("vuu-filter-query")).toHaveText(
         queries[op],
       );
@@ -267,15 +258,86 @@ test.describe("FilterContainer with a filter for every column type", () => {
     page,
   }) => {
     await mount("Filters/FilterContainer/AllColumnTypes");
-    // closePrice 27.0593 displays as 27.06 (rounded) | 27.05 (truncated)
-    await commitValue(page, "Close price", "27.059");
+    // closePrice 27.0593 displays as 27.06 (rounded), 27.05 (truncated)
+    await commitValue(page, "Close price (round)", "27.059");
     await expect(page.getByTestId("vuu-filter-query")).toHaveText(
       "closePrice >= 27.0585 and closePrice <= 27.0594",
     );
     await expect.poll(() => rowCount(page)).toBe(1);
-    const cell = page.locator(".exampleRoundAndTruncateCell").first();
-    await expect(cell).toHaveAttribute("title", "underlying value 27.0593");
-    await expect(cell).toHaveText("27.06|27.05");
+    expect(await columnValues(page, "closePrice")).toEqual(["27.06"]);
+    expect(await columnValues(page, "closePriceTruncated")).toEqual(["27.05"]);
+    await expect(
+      page.locator(".exampleUnderlyingValueCell").first(),
+    ).toHaveAttribute("title", "underlying value 27.0593");
+  });
+
+  test.describe("a value filtered rounded and truncated", () => {
+    test("rounded, matches the rows displaying the value rounded", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterContainer/AllColumnTypes");
+      await commitValue(page, "Close price (round)", "27.06");
+      await expect(page.getByTestId("vuu-filter-query")).toHaveText(
+        "closePrice >= 27.0550 and closePrice <= 27.0649",
+      );
+      await expect.poll(() => rowCount(page)).toBeLessThan(10_000);
+      expect(new Set(await columnValues(page, "closePrice"))).toEqual(
+        new Set(["27.06"]),
+      );
+    });
+
+    test("truncated, matches the rows displaying the value truncated", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterContainer/AllColumnTypes");
+      await commitValue(page, "Close price (truncate)", "27.05");
+      await expect(page.getByTestId("vuu-filter-query")).toHaveText(
+        "closePriceTruncated >= 27.0500 and closePriceTruncated <= 27.0599",
+      );
+      await expect.poll(() => rowCount(page)).toBeLessThan(10_000);
+      expect(new Set(await columnValues(page, "closePriceTruncated"))).toEqual(
+        new Set(["27.05"]),
+      );
+      // the row holding 27.0593 displays 27.05 truncated, 27.06 rounded
+      await expect(
+        page.locator(
+          '.exampleUnderlyingValueCell[title="underlying value 27.0593"]',
+        ),
+      ).toHaveCount(2);
+    });
+
+    test("operators on a truncated value partition the rows", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterContainer/AllColumnTypesWithOperators");
+      await expect.poll(() => rowCount(page)).toBe(10_000);
+      const label = "FX rate (truncate)";
+      const counts: Record<string, number> = {};
+      let previousCount = 10_000;
+      for (const [op, query] of [
+        ["=", "fxRateTruncated >= 1.230000 and fxRateTruncated <= 1.239999"],
+        ["!=", "fxRateTruncated < 1.230000 or fxRateTruncated > 1.239999"],
+        [">=", "fxRateTruncated >= 1.230000"],
+        [">", "fxRateTruncated > 1.239999"],
+      ]) {
+        await selectOperator(page, label, op);
+        await commitValue(page, label, "1.23");
+        await expect(page.getByTestId("vuu-filter-query")).toHaveText(query);
+        await expect.poll(() => rowCount(page)).not.toBe(previousCount);
+        previousCount = counts[op] = await rowCount(page);
+        if (op === "=") {
+          expect(new Set(await columnValues(page, "fxRateTruncated"))).toEqual(
+            new Set(["1.23"]),
+          );
+        }
+      }
+      expect(counts["="]).toBeGreaterThan(1);
+      expect(counts["="] + counts["!="]).toBe(10_000);
+      expect(counts[">="] - counts[">"]).toBe(counts["="]);
+    });
   });
 
   test("a char toggle filters the table", async ({ mount, page }) => {
