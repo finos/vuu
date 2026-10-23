@@ -24,6 +24,7 @@
   flex: 1 1 auto;
   min-height: 240px;
   overflow: hidden;
+  position: relative;
 
   .ShowCaseIFrame {
     display: block;

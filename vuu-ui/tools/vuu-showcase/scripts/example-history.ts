@@ -170,6 +170,8 @@ const gitDateOf = (examplesPath: string) => {
   const dates = gitExportDates(examplesPath);
   return ({ nodeData }: TreeSourceNode<NodeData>) => {
     if (root && nodeData?.path && nodeData.componentName) {
+      // Only used as a lookup key into git's own file list, never to access the file system
+      // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
       const file = path.relative(root, path.resolve(nodeData.path));
       return dates.get(file)?.get(nodeData.componentName);
     }

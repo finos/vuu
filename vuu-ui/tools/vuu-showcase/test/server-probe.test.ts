@@ -36,20 +36,20 @@ describe("probeWebSocket", () => {
 
   it("resolves true and closes the socket when it opens", async () => {
     const close = stubWebSocket("open");
-    await expect(probeWebSocket("ws://test")).resolves.toBe(true);
+    await expect(probeWebSocket("wss://test")).resolves.toBe(true);
     expect(close).toHaveBeenCalled();
   });
 
   it("resolves false on error", async () => {
     const close = stubWebSocket("error");
-    await expect(probeWebSocket("ws://test")).resolves.toBe(false);
+    await expect(probeWebSocket("wss://test")).resolves.toBe(false);
     expect(close).not.toHaveBeenCalled();
   });
 
   it("resolves false when the connection times out", async () => {
     vi.useFakeTimers();
     const close = stubWebSocket("silent");
-    const result = probeWebSocket("ws://test", 500);
+    const result = probeWebSocket("wss://test", 500);
     vi.advanceTimersByTime(500);
     await expect(result).resolves.toBe(false);
     expect(close).toHaveBeenCalled();

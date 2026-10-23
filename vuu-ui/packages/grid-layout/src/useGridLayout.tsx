@@ -250,6 +250,10 @@ export const useGridLayout = ({
       }
 
       gridLayoutModel.removeGridItem(id, reason);
+
+      if (reason === "close") {
+        queueMicrotask(() => gridModel.notifyChange());
+      }
     },
     [gridLayoutModel, gridModel, setChildren],
   );
@@ -363,6 +367,26 @@ export const useGridLayout = ({
             splitters,
             stackedItems,
           }));
+        } else if (
+          position === "centre" &&
+          targetGridItem.type !== "placeholder"
+        ) {
+          // A component dropped onto the centre of another is stacked with
+          // it, rather than replacing it.
+          const { stackId } = targetGridItem;
+          if (stackId) {
+            const tabState = gridModel.getTabState(stackId);
+            tabState.addTab(
+              {
+                id: droppedItemId,
+                label: droppedGridItem.title ?? droppedItemId,
+              },
+              { position: "before", target: tabState.tabs[0].label },
+            );
+          } else {
+            gridModel.stackChildItems(targetItemId, droppedItemId);
+          }
+          gridModel.notifyChange();
         } else if (position === "centre") {
           const { column, row } = gridLayoutModel.dropReplaceGridItem(
             droppedItemId,
@@ -421,6 +445,14 @@ export const useGridLayout = ({
           dragSource.componentJson,
         );
 
+        // A template dropped onto the centre of a content item is stacked
+        // with that item, rather than replacing it.
+        const stackWithTarget =
+          position === "centre" && targetGridItem.type !== "placeholder";
+        const existingStackId = stackWithTarget
+          ? targetGridItem.stackId
+          : undefined;
+
         const newChildId = uuid();
         const gridModelChildItem = new GridModelChildItem({
           id: newChildId,
@@ -429,12 +461,22 @@ export const useGridLayout = ({
           header: layoutOptions?.newChildItem.header,
           resizeable: "hv",
           row: { start: 1, end: 1 },
+          stackId: existingStackId,
           title: label,
         });
         gridModel.addChildItem(gridModelChildItem);
 
         const component = layoutFromJson(restJSON as LayoutJSON, "");
-        if (position === "centre") {
+        if (stackWithTarget) {
+          if (existingStackId) {
+            addChildComponent(component, gridModelChildItem);
+            gridModel.getTabState(existingStackId).setActiveTab(label);
+          } else {
+            gridModel.stackChildItems(targetItemId, newChildId);
+            addChildComponent(component, gridModelChildItem);
+          }
+          gridModel.notifyChange();
+        } else if (position === "centre") {
           const newGridItem = gridLayoutModel.dropReplaceGridItem(
             gridModelChildItem.id,
             targetItemId,
@@ -719,7 +761,24 @@ export const useGridLayout = ({
   }, [gridModel, gridLayoutModel]);
 
   useEffect(() => {
+    // Some changes, e.g moving or closing an item, or selecting a tab, are
+    // not reported by the model as a layout change. Batch these into a
+    // single (deferred) layout change notification.
+    let notifyPending = false;
+    const scheduleNotifyChange = () => {
+      if (!notifyPending) {
+        notifyPending = true;
+        queueMicrotask(() => {
+          notifyPending = false;
+          gridModel.notifyChange();
+        });
+      }
+    };
     gridModel.addListener("grid-layout-change", saveGridLayout);
+    gridModel.addListener("child-position-updates", scheduleNotifyChange);
+    gridModel.addListener("tab-selection-change", scheduleNotifyChange);
+    gridModel.addListener("tabs-change", scheduleNotifyChange);
+    gridModel.addListener("tabs-removed", scheduleNotifyChange);
     gridModel.addListener("child-position-updates", updateGridChildItems);
     gridModel.addListener("tab-selection-change", handleTabSelectionChange);
     gridModel.addListener("tabs-change", handleTabsChange);

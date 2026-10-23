@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { createHighlighter, type Highlighter } from "shiki";
+import { resolveWithin } from "./safe-path";
 
 import {
   type HighlightedSource,
@@ -60,7 +61,7 @@ const isExampleSource = (relativePath: string) =>
 export const resolveSourcePath = (showcaseDir: string, urlPath: string) => {
   const relativePath = path.posix.normalize(decodeURIComponent(urlPath));
   if (isExampleSource(relativePath)) {
-    return path.join(showcaseDir, relativePath);
+    return resolveWithin(showcaseDir, relativePath);
   }
 };
 
@@ -72,9 +73,9 @@ export const writeHighlightedSources = async (
 ) => {
   let count = 0;
   for (const examplePath of examplePaths) {
-    const filePath = path.resolve(showcaseDir, examplePath);
+    const filePath = resolveWithin(showcaseDir, examplePath);
     const code = fs.readFileSync(filePath, "utf8");
-    const target = path.join(outDir, sourceUrl(examplePath));
+    const target = resolveWithin(outDir, sourceUrl(examplePath));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, JSON.stringify(await highlightSource(code)));
     count += 1;

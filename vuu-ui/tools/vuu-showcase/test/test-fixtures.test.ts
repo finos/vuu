@@ -8,6 +8,7 @@ import {
   findExampleIds,
   findTestFiles,
 } from "../scripts/test-fixtures";
+import { resolveWithin } from "../scripts/safe-path";
 import type { NodeData } from "../scripts/treeSourceFromFileSystem";
 
 const ids = new Set(["Filters/ColumnFilter/Text", "Layout/Stack/Tabs"]);
@@ -31,8 +32,9 @@ describe("test-fixtures", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "test-fixtures-"));
     afterAll(() => fs.rmSync(root, { force: true, recursive: true }));
     const write = (file: string, text: string) => {
-      fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
-      fs.writeFileSync(path.join(root, file), text);
+      const filePath = resolveWithin(root, file);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, text);
     };
     write("packages/b/B.playwright.test.tsx", `mount("Layout/Stack/Tabs")`);
     write(
