@@ -153,7 +153,7 @@ body {
 
     blockquote {
       background: var(--salt-container-secondary-background);
-      border-left: 4px solid var(--salt-palette-accent-border, var(--salt-accent-borderColor));
+      border-left: 4px solid var(--salt-sentiment-accent-borderColor);
       margin: var(--salt-spacing-200) 0;
       padding: var(--salt-spacing-100) var(--salt-spacing-300);
 

@@ -1,8 +1,8 @@
 .vuuFreezeControl {
   display: inline-flex;
   --freeze-control-flash-duration: 0.25s;
-  --freeze-control-active-button-color: var(--salt-palette-error-background);
-  --freeze-control-badge-color: var(--salt-palette-success-background);
+  --freeze-control-active-button-color: var(--salt-status-error-background);
+  --freeze-control-badge-color: var(--salt-status-success-background);
 
   height: fit-content;
 
@@ -31,7 +31,7 @@
 
   .vuuFreezeControl-buttonWrapper-active .saltToggleButton {
     background-color: var(--freeze-control-active-button-color);
-    color: var(--salt-actionable-secondary-foreground-active);
+    color: var(--salt-actionable-subtle-foreground-active);
   }
 
   .saltToggleButtonGroup.vuuStateButtonGroup {
@@ -45,7 +45,7 @@
   .vuuFreezeControl-customBadge {
     background-color: transparent;
     border-radius: 50%;
-    color: var(--salt-text-primary-foreground);
+    color: var(--salt-content-primary-foreground);
     display: flex;
     align-items: center;
     justify-content: center;
