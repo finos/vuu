@@ -388,7 +388,8 @@ export const startMockVuuServer = async (port = 0) => {
   await new Promise<void>((done) => server.listen(port, "127.0.0.1", done));
   const address = server.address() as AddressInfo;
   return {
-    url: `ws://127.0.0.1:${address.port}/`,
+    /** the server's origin, WebSocket connects to it with the ws scheme */
+    url: `http://127.0.0.1:${address.port}/`,
     /**
      * Generates a dataset ahead of the first CREATE_VP that uses it, and
      * releases any others

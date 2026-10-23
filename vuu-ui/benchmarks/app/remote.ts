@@ -3,8 +3,10 @@
  * server proxy, connected to the runner's mock Vuu server, and a control
  * channel to that server for starting update feeds.
  *
- * The server url comes from the page url, ?vuuServer=ws://host:port/, which
- * the runner sets. window.__vuuBench is the same for local and remote data.
+ * The server comes from the page url, ?vuuServer=<server origin>, e.g.
+ * http://127.0.0.1:8091/, which the runner sets. WebSocket accepts an http
+ * url and connects with the matching WebSocket scheme. window.__vuuBench is
+ * the same for local and remote data.
  */
 import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import { datasetColumns, datasetTableName } from "../harness/dataset";
@@ -19,7 +21,7 @@ const serverUrl = () => {
   const url = new URLSearchParams(location.search).get("vuuServer");
   if (!url) {
     throw Error(
-      "[benchmarks] remote scenarios need a mock Vuu server, open the page with ?vuuServer=ws://host:port/",
+      "[benchmarks] remote scenarios need a mock Vuu server, open the page with ?vuuServer=<server origin>",
     );
   }
   return url;

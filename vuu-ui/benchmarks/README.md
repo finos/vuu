@@ -59,7 +59,7 @@ When any target sets the data source, only scenarios that leave it open run, so 
 npm run bench:mock-server     # mock Vuu server on port 8091 (BENCH_MOCK_PORT)
 ```
 
-Then open the app with `?vuuServer=ws%3A%2F%2F127.0.0.1%3A8091%2F` and mount a scenario whose `dataset.source` is `"remote"`. Demo mode uses local data only.
+Then open the app with `?vuuServer=http%3A%2F%2F127.0.0.1%3A8091%2F` and mount a scenario whose `dataset.source` is `"remote"`. Demo mode uses local data only.
 
 ## Demo mode: comparing by eye
 
