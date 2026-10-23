@@ -1,11 +1,11 @@
 # Vuu Table benchmarks
 
-Performance benchmarks for the Vuu Table, run in Chromium with Playwright and the Chrome DevTools Protocol. This is phase 1 of the benchmarking design: local data scenarios, a nightly history on gh-pages, and A/B comparison between two builds. Nothing is gated on the results yet.
+Performance benchmarks for the Vuu Table, run in Chromium with Playwright and the Chrome DevTools Protocol: local data scenarios, remote data scenarios against a mock Vuu server, a nightly history on gh-pages, and A/B comparison between two builds. Nothing is gated on the results yet.
 
 ## Running locally
 
 ```bash
-npm run bench:build                      # production build of the benchmark app
+npm run bench:build                      # production build of the benchmark app and the data source worker
 npm run bench                            # all scenarios, results in benchmarks/results/current
 BENCH_SCENARIOS=tick npm run bench       # only scenarios whose id starts with "tick"
 ```
@@ -20,6 +20,46 @@ const s = { id: "x", description: "", dataset: { rows: 100000, cols: 20, cellTyp
 await __vuuBench.mount(s, { width: 1200, height: 700, rowHeight: 20, renderBufferSize: 5 });
 await __vuuBench.run(s, { instrument: false, keepSamples: false });
 ```
+
+## Remote data
+
+Scenarios with a `-remote` suffix mount the Table on a `VuuDataSource`, the production path: the data source's DedicatedWorker, the server proxy and the Vuu viewport protocol over a WebSocket. The runner starts a mock Vuu server (`runner/mock-vuu-server.ts`) next to the static server and passes its url to the page as `?vuuServer=`. The mock server speaks the part of the protocol the Table uses: `LOGIN`, `GET_TABLE_META`, `CREATE_VP`, `CHANGE_VP`, `CHANGE_VP_RANGE`, `REMOVE_VP`, menus and visual links (both empty), and `TABLE_ROW` messages for the rows in each viewport's range. It serves the same seeded data as the local scenarios, generated in the runner; the Vuu table name identifies the dataset (`bench_<rows>_<cols>_<seed>`).
+
+For tick scenarios the update feed runs in the mock server, started by the page over a second WebSocket (`/control`). Each batch is one `TABLE_ROW` message with the latest value of every updated row in the viewport's range, so the update stream for a seed is the same as the local feed's. Feed modes (`run.mode`):
+
+- `steady`: `updatesPerSecond` spread evenly, a batch every 4ms, as in the local scenarios
+- `burst`: modelled on the Vuu simulation's price provider, every ticking row updates in one batch, then a random 10-400ms pause with a 100ms minimum cycle, about 215ms on average. `tick-burst-20-remote` updates all 10k rows; the server sends only those in range, about 140 rows per burst, as the Vuu server does
+
+Update-to-paint latency is measured as for local data, from the seq column in the DOM, but batches are timestamped by the server. The page maps server time onto its own clock from the round trip with the smallest delay over the control channel, so the error is under half that round trip, well under a millisecond on one machine.
+
+Things to keep in mind when reading remote results:
+
+- Chrome does not apply CPU throttling to workers, and the throttling rate cannot be set on a worker target, so the worker side of the remote path always runs at full speed while the main thread is slowed by `BENCH_CPU_THROTTLE`. Main thread figures (`frames.*`, `cdp.*`, `perUnit.*`) are throttled as usual.
+- The mock server runs in the runner's node process on the same machine: no network latency or server-side cost is included. It answers at once, so the figures are a lower bound on the client cost of the remote path.
+- A local feed runs on the throttled main thread, a remote feed does not, so at the same rate a local run emits fewer, larger batches than a remote one. Compare latencies and per-frame costs rather than batch counts.
+- `mount.firstRowsMs` for remote data includes the Table's first, empty render: it subscribes after mounting, then the rows arrive. `mount.connectMs` is the worker's WebSocket connection and login, before the data source is created.
+
+`worker.jsHeapUsedMB` is read from the worker after a GC at the end of each run. `worker.cpuMs` is the worker's busy time from a sampling CPU profile, taken in the instrumented pass only so that profiling does not slow the worker in the timing pass. Both come over CDP (`Target.setAutoAttach`); workers have no `Performance` domain.
+
+### Comparing local and remote data
+
+A target's dist folder can carry an `@local` or `@remote` suffix, which runs every scenario on that data source. With one build as both targets, iterations are interleaved and the results compare like any A/B:
+
+```bash
+BENCH_TARGETS="local=benchmarks/dist@local,remote=benchmarks/dist@remote" \
+  BENCH_SCENARIOS=load-100k-20,scroll-smooth-100k-20,tick-1k-20 npm run bench
+npm run bench:compare -- benchmarks/results/local benchmarks/results/remote
+```
+
+When any target sets the data source, only scenarios that leave it open run, so the `-remote` twins (and the remote-only `tick-burst-20-remote`) are skipped.
+
+### From the console
+
+```bash
+npm run bench:mock-server     # mock Vuu server on port 8091 (BENCH_MOCK_PORT)
+```
+
+Then open the app with `?vuuServer=ws%3A%2F%2F127.0.0.1%3A8091%2F` and mount a scenario whose `dataset.source` is `"remote"`. Demo mode uses local data only.
 
 ## Demo mode: comparing by eye
 
@@ -48,7 +88,7 @@ The comparison reports a change only when the medians differ by more than 5% and
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `BENCH_TARGETS` | `current=benchmarks/dist` | Comma-separated `label=dist folder` pairs |
+| `BENCH_TARGETS` | `current=benchmarks/dist` | Comma-separated `label=dist folder` pairs, a folder may end in `@local` or `@remote` (see Remote data) |
 | `BENCH_SCENARIOS` | all | Comma-separated scenario id prefixes |
 | `BENCH_ITERATIONS` | 5 | Timing iterations per scenario and target |
 | `BENCH_CPU_THROTTLE` | 4 | CPU slowdown factor (1 = none) |
@@ -67,13 +107,14 @@ Each scenario runs a **timing pass** (`BENCH_ITERATIONS` times, each in a fresh 
 
 | Metric | Source |
 | --- | --- |
-| `mount.*` | Data source construction, mount to first rows committed, mount to first paint |
+| `mount.*` | Data source construction, mount to first rows committed, mount to first paint; remote: worker connection (`connectMs`) |
 | `frames.*` | requestAnimationFrame intervals: p50, p95, p99, % of frames over 25ms |
 | `longFrames.*` | Long Animation Frames API: count and blocking time |
 | `blankRowMs.*` | scroll-jump: jump until every visible row is rendered and painted |
 | `updateToPaintMs.*`, `updateToCommitMs.*` | tick: update emitted until its value is in the DOM, and until that frame is painted |
 | `cdp.*` | CDP `Performance.getMetrics` deltas (layouts, style recalcs, script time), heap and DOM nodes after GC |
 | `dom.*`, `perUnit.*` | Instrumented pass: row mounts, element inserts, text and attribute changes, and per-row or per-update ratios |
+| `worker.*` | Remote: the data source worker's heap after GC, and (instrumented pass) its CPU time, over CDP |
 
 Update-to-paint latency works by writing the update batch's sequence number into the `seq` column of every row it updates, then watching for that value in the DOM.
 
@@ -91,9 +132,10 @@ Results from single nightly runs vary from run to run with the cloud runner; a c
 
 ## Files
 
-- `app/` the benchmark host page (rsbuild), scenario data and scenario runners
-- `harness/` in-page measurement, statistics and the types shared with the runner
-- `runner/` Playwright runner, scenario definitions and result summaries
+- `app/` the benchmark host page (rsbuild), scenario runners, local and remote data sources
+- `harness/` in-page measurement, statistics, the dataset and update generator, and the types shared with the runner
+- `runner/` Playwright runner, scenario definitions, result summaries, the mock Vuu server and the worker CDP probe
+- `scripts/mock-vuu-server.ts` the mock Vuu server on its own
 - `scripts/compare.ts` A/B comparison report
 - `scripts/publish-results.ts` and `site/index.html` the gh-pages history and trends page
 - `.github/workflows/benchmark-ui.yml` nightly run on a fixed-size runner, publishing to `gh-pages:benchmarks/`

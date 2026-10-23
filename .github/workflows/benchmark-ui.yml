@@ -27,6 +27,8 @@ on:
       - "vuu-ui/packages/vuu-ui-controls/**"
       - "vuu-ui/packages/vuu-utils/**"
       - "vuu-ui/packages/vuu-data-local/**"
+      - "vuu-ui/packages/vuu-data-remote/**"
+      - "vuu-ui/packages/vuu-protocol-types/**"
       - "vuu-ui/packages/vuu-theme/**"
   workflow_dispatch:
     inputs:
@@ -51,7 +53,8 @@ concurrency:
 
 env:
   # vuu-table, its runtime @vuu-ui dependencies, the packages the benchmark
-  # app uses (vuu-data-local, vuu-theme), the benchmarks and the lock file
+  # app uses (vuu-data-local, vuu-data-remote, vuu-theme), the benchmarks and
+  # the lock file
   BENCH_PATHS: >-
     .github/workflows/benchmark-ui.yml
     vuu-ui/package-lock.json
@@ -65,6 +68,8 @@ env:
     vuu-ui/packages/vuu-ui-controls
     vuu-ui/packages/vuu-utils
     vuu-ui/packages/vuu-data-local
+    vuu-ui/packages/vuu-data-remote
+    vuu-ui/packages/vuu-protocol-types
     vuu-ui/packages/vuu-theme
 
 jobs:
@@ -116,9 +121,6 @@ jobs:
 
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
-
-      - name: Build worker
-        run: cd ./vuu-ui && npm run build:worker
 
       - name: Install Chromium
         run: cd ./vuu-ui && npx playwright install --with-deps --no-shell chromium

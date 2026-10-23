@@ -12,10 +12,10 @@ export const VIEWPORT = { width: 1280, height: 800 };
 const SEED = 20261020;
 
 /**
- * Phase 1 scenarios, all on local data. Ids are stable: they key result
- * files and the history on gh-pages, so rename only with care.
+ * Local data scenarios: an ArrayDataSource in the page. Ids are stable: they
+ * key result files and the history on gh-pages, so rename only with care.
  */
-export const SCENARIOS: Scenario[] = [
+const LOCAL_SCENARIOS: Scenario[] = [
   {
     id: "load-100k-20",
     description: "Mount a table of 100k rows x 20 columns",
@@ -90,6 +90,56 @@ export const SCENARIOS: Scenario[] = [
       kind: "tick",
       updatesPerSecond: 1000,
       tickingRows: 30,
+      columnsPerUpdate: 3,
+      durationMs: 5000,
+    },
+  },
+];
+
+/**
+ * Local scenarios that also run on remote data, as `<id>-remote`: a
+ * VuuDataSource, with its worker and server proxy, on the runner's mock Vuu
+ * server. The server sends updates only for rows in the viewport's range.
+ */
+const REMOTE_IDS = [
+  "load-100k-20",
+  "load-1m-20",
+  "scroll-smooth-100k-20",
+  "scroll-fast-100k-20",
+  "scroll-jump-1m-20",
+  "tick-100-20",
+  "tick-1k-20",
+  "tick-1k-20-plain",
+];
+
+const remote = (scenario: Scenario): Scenario => ({
+  ...scenario,
+  id: `${scenario.id}-remote`,
+  description: `${scenario.description}, remote data`,
+  dataset: { ...scenario.dataset, source: "remote" },
+});
+
+export const SCENARIOS: Scenario[] = [
+  ...LOCAL_SCENARIOS,
+  ...LOCAL_SCENARIOS.filter(({ id }) => REMOTE_IDS.includes(id)).map(remote),
+  // remote only: a local feed of every row measures ArrayDataSource.updateRow,
+  // which finds each row by a linear search, more than it measures the Table
+  {
+    id: "tick-burst-20-remote",
+    description:
+      "Bursts like the Vuu simulation's price feed: all 10k rows every 100-400ms, flashing cells, remote data",
+    dataset: {
+      rows: 10_000,
+      cols: 20,
+      cellType: "flash",
+      seed: SEED,
+      source: "remote",
+    },
+    run: {
+      kind: "tick",
+      mode: "burst",
+      updatesPerSecond: 0,
+      tickingRows: 10_000,
       columnsPerUpdate: 3,
       durationMs: 5000,
     },
