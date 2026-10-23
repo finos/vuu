@@ -41,7 +41,7 @@
     "@salt-ds/theme": "1.47.0",
     "open": "10.1.0",
     "serve-handler": "6.1.6",
-    "@vuu-ui/vuu-layout": "3.5.10"
+    "@vuu-ui/vuu-layout": "4.0.0-alpha.20"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

@@ -18,7 +18,7 @@
   "dependencies": {
     "@vuu-ui/vuu-context-menu": "4.0.0-alpha.20",
     "@vuu-ui/vuu-data-react": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-layout": "3.5.10",
+    "@vuu-ui/vuu-layout": "4.0.0-alpha.20",
     "@vuu-ui/vuu-popups": "4.0.0-alpha.20",
     "@vuu-ui/vuu-table": "4.0.0-alpha.20",
     "@vuu-ui/vuu-utils": "4.0.0-alpha.20",
