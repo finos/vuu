@@ -107,6 +107,19 @@ renders `NotificationsIndicator`, a bell with the unread count (see
 `notificationsIndicator={false}` to hide it, or pass an object of
 `NotificationsIndicatorProps`.
 
+For a left-nav footer, `@vuu-ui/core/portal` provides two components that take
+`variant="expanded"` or `variant="rail"` (the icons-only nav):
+
+- `PortalConnectionStatus` shows a dot for the worst state across the
+  monitored Vuu connections, and a label such as "Connected" or "Trading
+  reconnecting…". Click it, or hover for 400ms, for a breakdown with a row per
+  connection and Retry. Pass `connections` to give connections friendly
+  labels, an `impact` and a `detail`.
+- `PortalNavUserMenu` is a hover menu (opening after 300ms) with the user's
+  identity and roles, **Saved state…** with the time state was last saved,
+  any `PortalNavUserMenuItem` children, and **Log out**. Pass `account` for
+  app-supplied text such as the trading account.
+
 ## WindowHost and module launch menus
 
 `PortalAppSwitcher` module links provide **Open in new Tab** and **Open in new

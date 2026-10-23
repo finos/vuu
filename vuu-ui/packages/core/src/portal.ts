@@ -67,9 +67,21 @@ export {
   type PortalUserMenuProps,
 } from "./portal-header/PortalUserMenu";
 export {
+  PortalConnectionStatus,
+  type PortalConnectionDescriptor,
+  type PortalConnectionStatusProps,
+  PortalNavUserMenu,
+  PortalNavUserMenuItem,
+  type PortalNavUserMenuItemProps,
+  type PortalNavUserMenuProps,
+  type PortalNavFooterVariant,
+} from "./portal-nav-footer";
+export {
   ClearSavedStateConfirmation,
   type ClearSavedStateConfirmationProps,
   getApplicationKey,
+  SavedStateContext,
+  type SavedStateContextValue,
   SavedStateDialog,
   type SavedStateDialogProps,
   SavedStateProvider,
@@ -81,6 +93,7 @@ export {
 } from "./saved-state";
 export {
   useModuleServerStatus,
+  useRetryConnection,
   useVuuServerStatus,
   useVuuServerStatuses,
   VuuServerMonitorProvider,
@@ -92,4 +105,5 @@ export type {
   VuuServerPresence,
   VuuServerStatus,
   VuuServerStatusDetail,
+  VuuServerStatusSource,
 } from "./connection-management/server-status";

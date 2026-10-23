@@ -781,6 +781,10 @@ export const useVuuAuthorizations = () => {
   return connection.session.authorizations;
 };
 
+/** The Vuu session's authorizations, or undefined outside a Vuu connection. */
+export const useOptionalVuuAuthorizations = () =>
+  useContext(VuuConnectionContext)?.session.authorizations;
+
 export const useVuuConnectionId = () => {
   const connection = useContext(VuuConnectionContext);
   if (!connection) {
