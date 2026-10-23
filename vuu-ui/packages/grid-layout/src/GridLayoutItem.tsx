@@ -149,7 +149,7 @@ export const GridLayoutItem = ({
     onDragStart,
   });
 
-  const className = cx(classBaseItem, {
+  const className = cx(classBaseItem, classNameProp, {
     "vuuGridLayoutItem-dragging": dragging,
     "vuu-detached": contentDetached,
     "vuu-stacked": stacked && !contentDetached,

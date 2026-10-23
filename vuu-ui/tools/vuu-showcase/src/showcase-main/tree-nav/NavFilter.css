@@ -1,0 +1,55 @@
+.ShowcaseNavFilter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-2);
+  padding: var(--sc-space-3) var(--sc-space-3) var(--sc-space-2);
+}
+
+.ShowcaseNavFilter-field {
+  color: var(--sc-text-3);
+
+  kbd {
+    border: 1px solid var(--sc-border);
+    border-radius: 4px;
+    color: var(--sc-text-3);
+    font-family: var(--sc-mono);
+    font-size: 11px;
+    line-height: 16px;
+    padding: 0 5px;
+  }
+}
+
+.ShowcaseNavFilter-clear {
+  --saltButton-height: 22px;
+  --saltButton-padding: 0;
+  --saltButton-width: 22px;
+}
+
+.ShowcaseNavFilter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-1);
+}
+
+.ShowcaseNavFilter-chip {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  gap: 4px;
+  height: 22px;
+  padding: 0 6px;
+
+  &:not([aria-pressed="true"]) {
+    border-color: var(--sc-border);
+  }
+}
+
+.ShowcaseLiveDot {
+  background: var(--sc-ok);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--sc-ok-halo);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 6px;
+  width: 6px;
+}

@@ -1,0 +1,223 @@
+.ShowcaseHome {
+  background: var(--sc-bg);
+  box-sizing: border-box;
+  color: var(--sc-text);
+  container-type: inline-size;
+  font-family: var(--sc-font);
+  height: 100%;
+  overflow: auto;
+  padding-bottom: 40px;
+}
+
+/* ---- Hero ---- */
+
+.ShowcaseHome-hero {
+  background:
+    radial-gradient(
+      800px 300px at 85% -40%,
+      color-mix(in srgb, var(--sc-accent) 18%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      600px 260px at 10% 0%,
+      color-mix(in srgb, var(--sc-accent) 8%, transparent),
+      transparent 70%
+    ),
+    var(--sc-surface);
+  border-bottom: 1px solid var(--sc-border);
+  padding: 44px 56px 30px;
+}
+
+.ShowcaseHome-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.ShowcaseHome-pitch {
+  color: var(--sc-text-2);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 8px 0 22px;
+  max-width: 640px;
+
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-top: 6px;
+  }
+}
+
+.ShowcaseHome-search {
+  --saltButton-borderRadius: 12px;
+  --saltButton-fontWeight: 400;
+  --saltButton-height: 46px;
+  --saltButton-justifyContent: flex-start;
+  --saltButton-padding: 14px;
+  --saltButton-text-color: var(--sc-text-3);
+  --saltButton-width: 100%;
+  box-shadow: var(--sc-shadow-2);
+  cursor: text;
+  font-size: 14.5px;
+  gap: 10px;
+  max-width: 640px;
+
+  kbd {
+    border: 1px solid var(--sc-border-strong);
+    border-radius: 5px;
+    color: var(--sc-text-3);
+    font-family: var(--sc-font);
+    font-size: 11px;
+    line-height: 16px;
+    min-width: 12px;
+    padding: 0 4px;
+    text-align: center;
+  }
+}
+
+.ShowcaseHome-searchLabel {
+  flex: 1;
+}
+
+.ShowcaseHome-stats {
+  color: var(--sc-text-3);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  gap: 8px 28px;
+  margin: 22px 0 0;
+
+  > div {
+    align-items: baseline;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 4px;
+  }
+
+  dd {
+    color: var(--sc-text);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 650;
+    margin: 0;
+  }
+}
+
+/* ---- Sections ---- */
+
+.ShowcaseHome-section {
+  padding: 26px 56px 0;
+}
+
+.ShowcaseHome-heading {
+  align-items: center;
+  color: var(--sc-text-3);
+  display: flex;
+  font-size: 13px;
+  font-weight: 650;
+  justify-content: space-between;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+/* Page lists, recently viewed and recently added */
+
+.ShowcaseHome-pages {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ShowcaseHome-page {
+  align-items: center;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  color: var(--sc-text);
+  display: flex;
+  gap: 10px;
+  padding: 9px 12px;
+  text-decoration: none;
+
+  > .ShowcaseChromeIcon {
+    color: var(--sc-text-4);
+    flex: 0 0 auto;
+  }
+
+  &:hover {
+    border-color: var(--sc-border-strong);
+
+    .ShowcaseHome-pageLabel {
+      color: var(--sc-accent-text);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sc-focus);
+    outline-offset: 2px;
+  }
+}
+
+.ShowcaseHome-pageText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ShowcaseHome-pageLabel,
+.ShowcaseHome-pageTrail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ShowcaseHome-pageLabel {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  font-weight: 560;
+  gap: 6px;
+}
+
+.ShowcaseHome-pageTrail {
+  color: var(--sc-text-3);
+  font-size: 11.5px;
+}
+
+.ShowcaseHome-pageDate {
+  color: var(--sc-text-3);
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+
+/* ---- Responsive ---- */
+
+@container (max-width: 1100px) {
+  .ShowcaseHome-pages {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (max-width: 860px) {
+  .ShowcaseHome-hero,
+  .ShowcaseHome-section {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}
+
+@container (max-width: 560px) {
+  .ShowcaseHome-pages {
+    grid-template-columns: 1fr;
+  }
+}

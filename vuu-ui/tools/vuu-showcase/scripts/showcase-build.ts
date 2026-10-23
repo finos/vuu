@@ -6,6 +6,10 @@ import { parseArgs } from "util";
 import { buildFileList } from "./build-file-list";
 import { mdxOptions } from "./mdx-options";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import { syncExampleHistory } from "./example-history";
+import { applyFixtureUsage } from "./test-fixtures";
+import { DOCS_INDEX_URL, writeDocsSearchIndex } from "./docs-search-index";
+import { writeHighlightedSources } from "./highlight-source";
 import { createFolder, writeFile } from "./utils";
 
 /**
@@ -34,6 +38,26 @@ const showcaseRoot = path.resolve(import.meta.dirname, "../src/root.ts");
 // useComponentCssInjection. Their css must be imported as a string.
 const inlineCssPackages =
   /[\\/]packages[\\/](grid-layout|vuu-chart|vuu-context-menu|vuu-datatable|vuu-data-react|vuu-filters|vuu-layout|vuu-notifications|vuu-popups|vuu-shell|vuu-table|vuu-table-extras|vuu-ui-controls)[\\/]/;
+
+/** Paths of the examples modules, the source shown by the Source tab */
+const collectExamplePaths = (
+  treeSourceNodes: TreeSourceNode[],
+  paths = new Set<string>(),
+) => {
+  for (const { childNodes, nodeData } of treeSourceNodes) {
+    const { componentName, path } = (nodeData ?? {}) as {
+      componentName?: string;
+      path?: string;
+    };
+    if (componentName && path) {
+      paths.add(path);
+    }
+    if (childNodes) {
+      collectExamplePaths(childNodes, paths);
+    }
+  }
+  return paths;
+};
 
 const collectExhibitPaths = (
   treeSourceNodes: TreeSourceNode[],
@@ -105,6 +129,8 @@ const rsbuildConfig: RsbuildConfig = {
     entry: { index: path.join(srcDir, "index.js") },
     define: {
       "process.env.NODE_DEBUG": false,
+      // Open in VS Code links are dev only
+      "process.env.SHOWCASE_SOURCE_ROOT": JSON.stringify(""),
     },
   },
   html: {
@@ -164,6 +190,9 @@ const rsbuildConfig: RsbuildConfig = {
 
 async function main() {
   const [treeSourceJson] = treeSourceFromFileSystem(pathToExhibits);
+  syncExampleHistory(treeSourceJson, pathToExhibits);
+  // the vuu-ui folder, test files are found in packages and playwright
+  applyFixtureUsage(treeSourceJson, path.resolve(".."));
 
   createFolder(srcDir);
   await writeFile(
@@ -184,6 +213,19 @@ async function main() {
   try {
     const { close } = await rsbuild.build();
     await close();
+    const sourceCount = await writeHighlightedSources(
+      collectExamplePaths(treeSourceJson),
+      showcaseDir,
+      outDir,
+    );
+    console.log(`highlighted ${sourceCount} example sources`);
+    const docCount = writeDocsSearchIndex(
+      treeSourceJson,
+      showcaseDir,
+      outDir,
+      DOCS_INDEX_URL,
+    );
+    console.log(`indexed ${docCount} doc sections for search`);
   } catch (e) {
     console.error(e);
     process.exit(1);

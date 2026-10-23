@@ -26,7 +26,6 @@ import {
   KeySet,
   lastPathSegment,
   metadataKeys,
-  missingAncestor,
   NULL_RANGE,
   TreeSourceNode,
   treeToDataSourceRows,
@@ -44,6 +43,19 @@ const treeSchema = (columns: ColumnDescriptor[]): TableSchema => ({
 });
 
 type VisibleRowIndex = Record<number, number>;
+
+export interface TreeNodeFilterProps {
+  depth: number;
+  key: string;
+  label: string;
+  nodeData: unknown;
+}
+
+/**
+ * Tests a single tree node. Nodes that pass are displayed, along with all of
+ * their ancestors.
+ */
+export type TreeNodeFilterPredicate = (node: TreeNodeFilterProps) => boolean;
 
 export interface TreeDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -73,6 +85,12 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
   #size = 0;
   #status: DataSourceStatus = "initialising";
   #filterSet: number[] | undefined;
+  /**
+   * While filtered, all nodes are expanded unless explicitly collapsed. These
+   * are tracked separately from expandedRows, which are restored when the
+   * filter is cleared.
+   */
+  #filterCollapsedRows = new Set<string>();
 
   public rowCount: number | undefined;
 
@@ -92,8 +110,6 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
     );
 
     this.expandedRows = getInitiallyExpandedKeys(data);
-
-    console.table(this.#data);
 
     if (this.columnDescriptors) {
       const columns = this.columnDescriptors.map((c) => c.name);
@@ -142,10 +158,7 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       this.applySelectedKeyValues(selectedKeyValues, revealSelected);
     }
 
-    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
-      this.#data,
-      this.expandedRows,
-    );
+    this.computeVisibleRows();
 
     this.clientCallback?.({
       aggregations: this.#aggregations,
@@ -156,7 +169,7 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       groupBy: this._configWithVisualLink.groupBy,
       range: this.range,
       sort: this.sort,
-      tableSchema: treeSchema(this.columnDescriptors),
+      tableSchema: this.tableSchema,
     });
 
     this.clientCallback({
@@ -221,11 +234,50 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       this.#filterSet = undefined;
     }
 
+    this.refreshVisibleRows();
+  }
+
+  /**
+   * An alternative to a filter expression, filters on any attribute of a
+   * tree node, including nodeData. Pass undefined to clear the filter.
+   */
+  filterNodes(predicate?: TreeNodeFilterPredicate) {
+    if (predicate) {
+      const filterSet: number[] = [];
+      const { count: nodeDataIndex } = metadataKeys;
+      for (const row of this.#data) {
+        const { [DEPTH]: depth, [KEY]: key, [IDX]: idx } = row;
+        const label = row[nodeDataIndex + depth];
+        if (
+          predicate({
+            depth,
+            key,
+            label: typeof label === "string" ? label : "",
+            nodeData: row[nodeDataIndex],
+          })
+        ) {
+          filterSet.push(idx);
+        }
+      }
+      this.#filterSet = filterSet;
+    } else {
+      this.#filterSet = undefined;
+    }
+    this.refreshVisibleRows();
+  }
+
+  private computeVisibleRows() {
     [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
       this.#data,
       this.expandedRows,
       this.#filterSet,
+      this.#filterCollapsedRows,
     );
+  }
+
+  private refreshVisibleRows() {
+    this.#filterCollapsedRows.clear();
+    this.computeVisibleRows();
 
     const { from, to } = this.range;
     this.clientCallback?.({
@@ -245,8 +297,13 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       const filterSet = [];
       const regex = new RegExp(`${filter.value}`, "i");
       for (const row of this.#data) {
-        const { [KEY]: key, [IDX]: idx } = row;
-        if (regex.test(lastPathSegment(key, "|"))) {
+        const { [DEPTH]: depth, [KEY]: key, [IDX]: idx } = row;
+        // the label follows nodeData and one column per ancestor level
+        const label = row[metadataKeys.count + depth];
+        if (
+          regex.test(lastPathSegment(key, "|")) ||
+          (typeof label === "string" && regex.test(label))
+        ) {
           filterSet.push(idx);
         }
       }
@@ -346,11 +403,12 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
 
   openTreeNode(keyOrIndex: string | number) {
     const key = this.getRowKey(keyOrIndex);
-    this.expandedRows.add(key);
-    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
-      this.#data,
-      this.expandedRows,
-    );
+    if (this.#filterSet) {
+      this.#filterCollapsedRows.delete(key);
+    } else {
+      this.expandedRows.add(key);
+    }
+    this.computeVisibleRows();
 
     const { from, to } = this._range;
     this.clientCallback?.({
@@ -367,19 +425,24 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
 
   closeTreeNode(keyOrIndex: string | number, cascade = false) {
     const key = this.getRowKey(keyOrIndex);
-    this.expandedRows.delete(key);
-    if (cascade) {
-      for (const rowKey of this.expandedRows.keys()) {
-        if (rowKey.startsWith(key)) {
-          this.expandedRows.delete(rowKey);
+    if (this.#filterSet) {
+      this.#filterCollapsedRows.add(key);
+    } else {
+      this.expandedRows.delete(key);
+      if (cascade) {
+        for (const rowKey of this.expandedRows.keys()) {
+          if (rowKey.startsWith(key)) {
+            this.expandedRows.delete(rowKey);
+          }
         }
       }
     }
-    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
-      this.#data,
-      this.expandedRows,
-    );
+    this.computeVisibleRows();
     this.sendRowsToClient();
+  }
+
+  get tableSchema() {
+    return treeSchema(this.columnDescriptors);
   }
 
   get status() {
@@ -483,8 +546,8 @@ const getInitiallyExpandedKeys = (
   keyBase = "$root",
   expandedKeys = new Set<string>(),
 ) => {
-  for (const { childNodes, expanded, label } of treeSourceNodes) {
-    const key = `${keyBase}|${label}`;
+  for (const { childNodes, expanded, keySegment, label } of treeSourceNodes) {
+    const key = `${keyBase}|${keySegment ?? label}`;
     if (expanded) {
       expandedKeys.add(key);
     }
@@ -499,45 +562,48 @@ function getVisibleRows(
   rows: DataSourceRow[],
   expandedKeys: Set<string>,
   filterset?: number[],
+  filterCollapsedKeys?: Set<string>,
 ): [visibleRows: DataSourceRow[], index: VisibleRowIndex] {
   const visibleRows: DataSourceRow[] = [];
   const visibleRowIndex: VisibleRowIndex = {};
 
-  const data = filterset ?? rows;
-
-  for (let i = 0, index = 0; i < data.length; i++) {
-    const idx = filterset ? filterset[i] : i;
-    const row = rows[idx];
-    const {
-      [COUNT]: count,
-      [DEPTH]: depth,
-      [KEY]: key,
-      [IS_LEAF]: isLeaf,
-    } = row;
-    if (filterset) {
-      // assume expanded for now
-
-      // if we have skipped a higher level group (that didn't directly match
-      // our filter criteria, add it.
-      const previousRow = visibleRows.at(-1);
-      if (missingAncestor(row, previousRow)) {
-        let currentRow: DataSourceRow | undefined = row;
-        const missingRows = [];
-        while (currentRow) {
-          currentRow = getParentRow(rows, currentRow);
-          if (currentRow) {
-            // we will get the missing rows in reverse order
-            missingRows.unshift(currentRow);
-          }
-        }
-        missingRows.forEach((row) => {
-          visibleRows.push(cloneRow(row, index++, true));
-        });
+  if (filterset) {
+    // matching rows are displayed along with all their ancestors, expanded
+    // unless explicitly collapsed
+    const included = new Set<number>();
+    for (const idx of filterset) {
+      let row: DataSourceRow | undefined = rows[idx];
+      while (row && !included.has(row[IDX])) {
+        included.add(row[IDX]);
+        row = getParentRow(rows, row);
       }
-
-      visibleRows.push(cloneRow(row, index++, true));
+    }
+    let collapsedKey: string | undefined;
+    for (let i = 0, index = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const { [COUNT]: count, [KEY]: key } = row;
+      if (!included.has(row[IDX])) {
+        continue;
+      } else if (
+        collapsedKey !== undefined &&
+        key.startsWith(`${collapsedKey}|`)
+      ) {
+        continue;
+      }
+      const isCollapsed = filterCollapsedKeys?.has(key) ?? false;
+      collapsedKey = isCollapsed ? key : undefined;
       visibleRowIndex[index] = i;
-    } else {
+      visibleRows.push(cloneRow(row, index++, count > 0 && !isCollapsed));
+    }
+  } else {
+    for (let i = 0, index = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const {
+        [COUNT]: count,
+        [DEPTH]: depth,
+        [KEY]: key,
+        [IS_LEAF]: isLeaf,
+      } = row;
       const isExpanded = expandedKeys.has(key);
       visibleRows.push(cloneRow(row, index, isExpanded));
       visibleRowIndex[index++] = i;
@@ -549,6 +615,7 @@ function getVisibleRows(
       }
     }
   }
+
   return [visibleRows, visibleRowIndex];
 }
 

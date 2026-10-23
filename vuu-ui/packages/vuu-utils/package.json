@@ -12,7 +12,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.54.1"
+    "@salt-ds/core": "1.72.0"
   },
   "devDependencies": {
     "@dnd-kit/react": "^0.1.21",

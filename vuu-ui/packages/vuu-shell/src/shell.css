@@ -24,7 +24,7 @@
 }
 
 .vuuShell-warningPlaceholder {
-  background-color: var(--salt-container-background-high);
+  background-color: var(--salt-container-tertiary-background);
   height: 100%;
 }
 

@@ -28,6 +28,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .vuuTableGroupCell-adornment {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: var(--salt-spacing-100);
+    margin-left: auto;
+    padding-left: var(--salt-spacing-100);
+  }
 }
 
 [aria-level="2"] {

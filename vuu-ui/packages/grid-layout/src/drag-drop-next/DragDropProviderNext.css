@@ -7,7 +7,7 @@
     row-gap: 0;
 
     &.vuuDragContainer-dragging {
-        .saltTabNextTrigger {
+        .saltTabTrigger {
             /* only when drag in progress */
             pointer-events: none;
         }
@@ -58,7 +58,7 @@
         width:0;
     }
 
-    &.saltTabListNext {
+    &.saltTabList {
         gap: 0;
     }
 

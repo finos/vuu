@@ -49,13 +49,12 @@ export const isDocumentDescriptor = (val: unknown): val is DocumentDescriptor =>
   typeof val["path"] === "string" &&
   val["path"].endsWith("mdx");
 
-export const getTargetTreeNode = <T = unknown>(
-  url: URL,
+/** Finds the tree node for a url pathname, whatever kind of node it is */
+export const findTreeNode = <T = unknown>(
+  pathname: string,
   treeSourceNodes: TreeSourceNode<T>[],
-  throwIfNotFound = true,
 ) => {
-  const { pathname } = url;
-  const keys = pathname.slice(1).split("/");
+  const keys = pathname.replace(/^\/|\/$/g, "").split("/");
 
   let key = keys.shift();
   let treeNode = treeSourceNodes.find((node) => node.id === key);
@@ -64,6 +63,26 @@ export const getTargetTreeNode = <T = unknown>(
     key += `/${keys.shift()}`;
     treeNode = treeNode?.childNodes?.find((node) => node.id === key);
   }
+  return treeNode;
+};
+
+/**
+ * A folder, or examples file, without a document of its own. There is
+ * nothing to render in the iframe, the shell displays an index instead.
+ */
+export const isIndexNode = (treeNode?: TreeSourceNode) =>
+  Array.isArray(treeNode?.childNodes) &&
+  treeNode.childNodes.length > 0 &&
+  !isComponentDescriptor(treeNode.nodeData) &&
+  !isDocumentDescriptor(treeNode.nodeData);
+
+export const getTargetTreeNode = <T = unknown>(
+  url: URL,
+  treeSourceNodes: TreeSourceNode<T>[],
+  throwIfNotFound = true,
+) => {
+  const { pathname } = url;
+  const treeNode = findTreeNode(pathname, treeSourceNodes);
 
   if (
     isComponentDescriptor(treeNode?.nodeData) ||
@@ -74,6 +93,16 @@ export const getTargetTreeNode = <T = unknown>(
     throw Error(`Target tree node not found for path: ${pathname}`);
   }
 };
+
+/**
+ * A standalone url (one with the ?standalone param) for a document. Documents
+ * render in the showcase chrome (DocsStandalone), not as an example.
+ */
+export const isStandaloneDocument = (treeSource: TreeSourceNode[]) =>
+  isDocumentDescriptor(
+    getTargetTreeNode(new URL(document.location.href), treeSource, false)
+      ?.nodeData,
+  );
 
 export const loadTheme = (themeName: string): Promise<void> =>
   // The theme module imports the theme css. This works in the Vite dev server

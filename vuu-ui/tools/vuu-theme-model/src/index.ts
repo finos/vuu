@@ -8,3 +8,23 @@ export {
   buildThemeModelFromSources,
 } from "./build-theme-model.ts";
 export { buildThemeStylesheet } from "./build-theme-stylesheet.ts";
+export {
+  summariseThemeModel,
+  type ThemeModelSummary,
+} from "./summarise-theme-model.ts";
+export {
+  applicableValue,
+  type Axes,
+  resolveTokenValue,
+} from "./resolve-token.ts";
+export {
+  buildTokenSearchIndex,
+  type TokenSearchEntry,
+} from "./token-search-index.ts";
+export * from "./component-model-types.ts";
+export {
+  buildComponentModel,
+  componentReferences,
+  extractComponentDeclarations,
+  referencesIn,
+} from "./build-component-model.ts";

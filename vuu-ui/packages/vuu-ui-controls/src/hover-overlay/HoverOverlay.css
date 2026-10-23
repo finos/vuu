@@ -1,0 +1,4 @@
+.vuuHoverOverlay-panel {
+  /* Salt 1.67 switched OverlayPanel to the bold container border */
+  --saltOverlay-borderColor: var(--salt-container-primary-borderColor);
+}

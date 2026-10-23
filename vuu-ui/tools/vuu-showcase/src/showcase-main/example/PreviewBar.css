@@ -1,0 +1,60 @@
+.ShowcasePreviewBar {
+  align-items: center;
+  background: var(--sc-surface);
+  border-bottom: 1px solid var(--sc-border);
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: var(--sc-space-2) var(--sc-space-3);
+  min-height: 52px;
+  padding: var(--sc-space-2) var(--sc-space-8);
+}
+
+.ShowcasePreviewBar-group {
+  align-items: center;
+  display: flex;
+  gap: var(--sc-space-2);
+}
+
+.ShowcasePreviewBar-separator {
+  background: var(--sc-border);
+  height: 20px;
+  width: 1px;
+}
+
+.ShowcasePreviewBar-end {
+  align-items: center;
+  display: flex;
+  gap: var(--sc-space-1);
+  margin-left: auto;
+
+  > .ShowcasePreviewBar-segmented {
+    margin-right: var(--sc-space-2);
+  }
+}
+
+.ShowcasePreviewBar-iconButton,
+.ShowcasePreviewBar-iconToggle {
+  --saltButton-padding: 0;
+  padding: 0;
+  width: 28px;
+}
+
+.ShowcasePreviewBar-swatch {
+  background: var(--sc-surface-3);
+  border-radius: 4px;
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+
+  &[data-theme="vuu-theme"] {
+    background: linear-gradient(135deg, #8c6bff 0 50%, #5a37cc 50%);
+  }
+  &[data-theme="salt-theme-next"] {
+    background: linear-gradient(135deg, #2670a9 0 50%, #1b4f78 50%);
+  }
+  &[data-theme="no-theme"] {
+    background: transparent;
+    border: 1px dashed var(--sc-text-4);
+  }
+}

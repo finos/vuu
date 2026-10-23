@@ -46,7 +46,13 @@ describe.each([
     const axis = (name: string) =>
       model.axes.find((a) => a.name === name)?.values;
     expect(axis("mode")).toEqual(["light", "dark"]);
-    expect(axis("density")).toEqual(["touch", "low", "medium", "high"]);
+    expect(axis("density")).toEqual([
+      "touch",
+      "low",
+      "medium",
+      "high",
+      "mobile",
+    ]);
   });
 
   it("has no complex selectors or parse errors", () => {

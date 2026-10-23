@@ -8,6 +8,7 @@
 @import url(next/palette/accent.css);
 @import url(next/palette/alpha.css);
 @import url(next/palette/background.css);
+@import url(next/palette/brand.css);
 @import url(next/palette/categorical.css);
 @import url(next/palette/corner.css);
 @import url(next/palette/foreground.css);
@@ -16,17 +17,16 @@
 @import url(next/palette/neutral.css);
 @import url(next/palette/positive.css);
 @import url(next/palette/shadow.css);
-@import url(next/palette/text.css);
 @import url(next/palette/warning.css);
 
 /* Each characteristic file references values from above foundations */
-@import url(next/characteristics/accent.css);
 @import url(next/characteristics/actionable.css);
 @import url(next/characteristics/category.css);
 @import url(next/characteristics/container.css);
 @import url(next/characteristics/content.css);
 @import url(next/characteristics/editable.css);
 @import url(next/characteristics/focused.css);
+@import url(next/characteristics/layout.css);
 @import url(next/characteristics/navigable.css);
 @import url(next/characteristics/overlayable.css);
 @import url(next/characteristics/selectable.css);

@@ -1,20 +1,279 @@
+/*
+ * TreeNavPanel can be styled via these custom properties
+ *
+ * --vuuTreeNavPanel-background
+ * --vuuTreeNavPanel-color             node label colour
+ * --vuuTreeNavPanel-color-folder      folder label colour
+ * --vuuTreeNavPanel-color-expanded    expanded folder label colour
+ * --vuuTreeNavPanel-color-selected
+ * --vuuTreeNavPanel-background-hover
+ * --vuuTreeNavPanel-background-selected
+ * --vuuTreeNavPanel-fontSize
+ * --vuuTreeNavPanel-fontWeight-selected
+ * --vuuTreeNavPanel-fontWeight-expanded
+ * --vuuTreeNavPanel-guide-color       indentGuides lines
+ * --vuuTreeNavPanel-indent            width of one level of indentation
+ * --vuuTreeNavPanel-item-radius
+ * --vuuTreeNavPanel-padding           horizontal inset of the tree
+ * --vuuTreeNavPanel-selectionBar      colour of the selected node marker,
+ *                                     transparent to hide
+ * --vuuTreeNavPanel-heading-color
+ * --vuuTreeNavPanel-heading-fontSize
+ * --vuuTreeNavPanel-toggle-color      expand/collapse toggle
+ * --vuuTreeNavPanel-toggle-svg        toggle icon, an svg url, as shown when
+ *                                     collapsed, default a triangle
+ * --vuuTreeNavPanel-toggle-transform  transform of the toggle icon, collapsed
+ * --vuuTreeNavPanel-toggle-transform-expanded
+ * --vuuTreeNavPanel-toggle-size       size of the toggle icon
+ * --vuuTreeNavPanel-toggle-left       position of the toggle icon
+ * --vuuTreeNavPanel-toggle-top
+ * --vuuTreeNavPanel-adornment-color
+ * --vuuTreeNavPanel-highlight-color   filter matches within labels
+ * --vuuTreeNavPanel-borderColor       header and footer separator
+ */
 .vuuTreeNavPanel {
+  --vuuTable-background: var(
+    --vuuTreeNavPanel-background,
+    var(--salt-container-primary-background)
+  );
+  /* row backgrounds are drawn on the cell, so they can be inset and rounded */
+  --vuuTableRow-background-selected: transparent;
+  --vuuTableRow-background-highlighted: transparent;
 
-    .vuuTreeNavPanel-search {
-        display: flex;
-        flex-basis: 40px;
-        flex-grow: 0;
-        flex-shrink: 0;
-        justify-content: center;
-        padding: 2px var(--salt-spacing-300) 0 var(--salt-spacing-300);
-    }
+  --treeNavPanel-padding: var(--vuuTreeNavPanel-padding, 8px);
 
-    .vuuTreeNavPanel-treeContainer {
-        flex-basis: auto;
-        flex-grow: 1;
-        flex-shrink: 1;
-    }
+  background: var(--vuuTable-background);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
+
+.vuuTreeNavPanel-header {
+  flex: 0 0 auto;
+}
+
+.vuuTreeNavPanel-filterInput {
+  box-sizing: border-box;
+  margin: 8px;
+  width: calc(100% - 16px);
+}
+
+.vuuTreeNavPanel-treeContainer {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 var(--treeNavPanel-padding);
+}
+
+.vuuTreeNavPanel-footer {
+  border-top: 1px solid
+    var(
+      --vuuTreeNavPanel-borderColor,
+      var(--salt-separable-tertiary-borderColor)
+    );
+  flex: 0 0 auto;
+}
+
+.vuuTreeNavPanel .vuuTableRow {
+  --treeNavPanel-spacerWidth: calc(
+    var(--indent, 0) *
+      var(--vuuTreeNavPanel-indent, var(--group-cell-spacer-width))
+  );
+  border-bottom: none;
+
+  .vuuTableGroupCell.vuuTableCell {
+    border-radius: var(--vuuTreeNavPanel-item-radius, 6px);
+    color: var(
+      --vuuTreeNavPanel-color,
+      var(--salt-content-secondary-foreground)
+    );
+    font-size: var(--vuuTreeNavPanel-fontSize, 13px);
+    padding-left: 4px;
+    padding-right: 8px;
+    position: relative;
+  }
+
+  .vuuTableGroupCell-spacer {
+    min-width: var(--treeNavPanel-spacerWidth);
+  }
+
+  .vuuToggleIconButton .vuuIcon:after,
+  .vuuTableGroupCell:hover .vuuToggleIconButton .vuuIcon:after {
+    --vuu-icon-color: var(--vuuTreeNavPanel-toggle-color, currentColor);
+    --vuu-icon-size: var(--vuuTreeNavPanel-toggle-size, 7px);
+  }
+
+  .vuuToggleIconButton .vuuIcon[data-icon] {
+    --vuu-icon-svg: var(
+      --vuuTreeNavPanel-toggle-svg,
+      var(--vuu-svg-triangle-right)
+    );
+  }
+
+  .vuuToggleIconButton .vuuIcon[data-icon]:after {
+    left: var(--vuuTreeNavPanel-toggle-left, var(--vuu-icon-left, auto));
+    top: var(--vuuTreeNavPanel-toggle-top, var(--vuu-icon-top, auto));
+    transform: var(--vuuTreeNavPanel-toggle-transform, rotate(-45deg));
+  }
+
+  &[aria-expanded="true"] .vuuToggleIconButton .vuuIcon[data-icon]:after {
+    transform: var(--vuuTreeNavPanel-toggle-transform-expanded, rotate(45deg));
+  }
+
+  .vuuHighlight {
+    color: var(
+      --vuuTreeNavPanel-highlight-color,
+      var(--salt-content-accent-foreground, inherit)
+    );
+    font-weight: 600;
+  }
+
+  .vuuTableGroupCell-adornment {
+    color: var(
+      --vuuTreeNavPanel-adornment-color,
+      var(--salt-content-secondary-foreground)
+    );
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &[aria-expanded] .vuuTableGroupCell.vuuTableCell {
+    color: var(
+      --vuuTreeNavPanel-color-folder,
+      var(--salt-content-primary-foreground)
+    );
+  }
+
+  &[aria-expanded="true"] .vuuTableGroupCell.vuuTableCell {
+    color: var(
+      --vuuTreeNavPanel-color-expanded,
+      var(
+        --vuuTreeNavPanel-color-folder,
+        var(--salt-content-primary-foreground)
+      )
+    );
+    font-weight: var(--vuuTreeNavPanel-fontWeight-expanded, inherit);
+  }
+
+  &:hover .vuuTableGroupCell.vuuTableCell {
+    background: var(
+      --vuuTreeNavPanel-background-hover,
+      var(--salt-selectable-background-hover)
+    );
+  }
+
+  &[aria-selected="true"] .vuuTableGroupCell.vuuTableCell {
+    background: var(
+      --vuuTreeNavPanel-background-selected,
+      var(--salt-selectable-background-selected)
+    );
+    color: var(
+      --vuuTreeNavPanel-color-selected,
+      var(--salt-content-primary-foreground)
+    );
+    font-weight: var(--vuuTreeNavPanel-fontWeight-selected, 560);
+  }
+
+  &[aria-selected="true"] .vuuTableGroupCell.vuuTableCell::before {
+    background: var(
+      --vuuTreeNavPanel-selectionBar,
+      var(--salt-accent-background)
+    );
+    border-radius: 0 3px 3px 0;
+    bottom: 7px;
+    content: "";
+    left: calc(-1 * var(--treeNavPanel-padding));
+    position: absolute;
+    top: 7px;
+    width: 3px;
+  }
+}
+
+/* top level leaf nodes align with the labels of top level folders */
+.vuuTreeNavPanel .vuuTableRow[aria-level="1"]:not([aria-expanded]) {
+  --indent: 1;
+}
+
+/* ---- topLevelHeadings: depth 1 nodes render as section headings ---- */
+.vuuTreeNavPanel-headings .vuuTableRow {
+  --treeNavPanel-spacerWidth: calc(
+    max(var(--indent, 0) - 1, 0) *
+      var(--vuuTreeNavPanel-indent, var(--group-cell-spacer-width))
+  );
+
+  &[aria-level="1"] {
+    cursor: default;
+
+    .vuuTableGroupCell.vuuTableCell {
+      background: transparent;
+      color: var(
+        --vuuTreeNavPanel-heading-color,
+        var(--salt-content-secondary-foreground)
+      );
+      cursor: default;
+      font-size: var(--vuuTreeNavPanel-heading-fontSize, 11px);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding-top: 8px;
+      text-transform: uppercase;
+    }
+
+    .vuuToggleIconButton,
+    .vuuIcon {
+      display: none;
+    }
+  }
+}
+
+/* ---- indentGuides ----
+   One line per ancestor, beneath the centre of its toggle (7px into each
+   level of indentation). Leaves are indented one level more than folders, so
+   their last level, which has no ancestor toggle above it, has no line. */
+.vuuTreeNavPanel-indentGuides .vuuTableRow {
+  --treeNavPanel-guideWidth: var(
+    --vuuTreeNavPanel-indent,
+    var(--group-cell-spacer-width)
+  );
+
+  .vuuTableGroupCell-spacer {
+    align-self: stretch;
+    background: linear-gradient(
+        to right,
+        transparent 6.5px,
+        var(
+            --vuuTreeNavPanel-guide-color,
+            var(--salt-separable-tertiary-borderColor)
+          )
+          6.5px 7.5px,
+        transparent 7.5px
+      )
+      0 0 / var(--treeNavPanel-guideWidth) 100% repeat-x;
+    background-clip: content-box;
+    box-sizing: border-box;
+  }
+
+  &:not([aria-expanded]) .vuuTableGroupCell-spacer {
+    padding-right: var(--treeNavPanel-guideWidth);
+  }
+}
+
+/* the selected node is marked on its guide, rather than the panel edge */
+.vuuTreeNavPanel-indentGuides
+  .vuuTableRow[aria-selected="true"]:not([aria-expanded]):not([aria-level="1"])
+  .vuuTableGroupCell.vuuTableCell::before {
+  left: calc(
+    4px + var(--treeNavPanel-spacerWidth) - 2 * var(--treeNavPanel-guideWidth) +
+      5.5px
+  );
+}
+
+.vuuTreeNavPanel-indentGuides.vuuTreeNavPanel-headings
+  .vuuTableRow[aria-selected="true"][aria-level="2"]:not([aria-expanded])
+  .vuuTableGroupCell.vuuTableCell::before {
+  left: calc(-1 * var(--treeNavPanel-padding));
+}
+
 /* Distinguishes documentation nodes from code example nodes */
 .vuuTreeNavPanel [data-icon="document"] {
   --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none" stroke="black" stroke-width="1.5" stroke-linejoin="round"><path d="M3.75 1.75h7l3.5 3.5v11h-10.5z"/><path d="M10.75 1.75v3.5h3.5M6.25 9h5.5M6.25 12.25h5.5"/></svg>');

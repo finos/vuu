@@ -3,60 +3,156 @@ body {
   overflow: hidden;
 }
 
-.ShowcaseNav {
-  --vuuTree-toggle-expand: var(--vuu-svg-chevron-right);
-  --vuuTree-toggle-collapse: var(--vuu-svg-chevron-right);
-  --vuuTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
-  --vuuTree-icon-color: var(--salt-palette-accent-background);
-  --vuuTree-font-size: 12px;
-  height: 100%;
+/* ------ Shell frame (GridLayout), styled with chrome --sc-* tokens ------ */
+.vuuGridLayout.ShowcaseShell {
+  --vuu-grid-gap: 0px;
+  background: var(--sc-bg);
+  color: var(--sc-text);
+  font-family: var(--sc-font);
+
+  /* keep items within their grid track, content scrolls within them */
+  > .vuuGridLayoutItem {
+    border: none;
+    min-height: 0;
+    min-width: 0;
+
+    > .vuuGridLayoutItemContent {
+      min-height: 0;
+      min-width: 0;
+    }
+  }
+
+  .vuuGridSplitter {
+    --splitter-background: var(--sc-border);
+    --splitter-borderColor: var(--sc-surface);
+    --splitter-borderWidth: 3px;
+  }
+  .vuuGridSplitter:hover,
+  .vuuGridSplitter-active {
+    --splitter-background: var(--sc-accent);
+  }
 }
 
-.ShowcaseToolbar,
-.ShowcaseContentToolbar {
-  --saltToolbar-height: 30px;
-  --saltButton-height: 28px;
-  --saltButton-width: 28px;
+.ShowcaseShell-nav {
+  background: var(--sc-surface);
+}
 
-  [data-align="end"] {
-    margin-left: auto;
+.ShowcaseShell-content {
+  background: var(--sc-bg);
+}
+
+.ShowcaseNav {
+  --vuuTreeNavPanel-background: var(--sc-surface);
+  --vuuTreeNavPanel-color: var(--sc-text-2);
+  --vuuTreeNavPanel-color-folder: var(--sc-text-2);
+  --vuuTreeNavPanel-color-expanded: var(--sc-text);
+  --vuuTreeNavPanel-fontWeight-expanded: 540;
+  --vuuTreeNavPanel-guide-color: var(--sc-border);
+  --vuuTreeNavPanel-color-selected: var(--sc-accent-text);
+  --vuuTreeNavPanel-background-hover: var(--sc-surface-2);
+  --vuuTreeNavPanel-background-selected: var(--sc-accent-soft);
+  --vuuTreeNavPanel-selectionBar: var(--sc-accent);
+  --vuuTreeNavPanel-heading-color: var(--sc-text-3);
+  --vuuTreeNavPanel-adornment-color: var(--sc-text-4);
+  --vuuTreeNavPanel-toggle-color: var(--sc-text-4);
+  --vuuTreeNavPanel-toggle-size: 12px;
+  --vuuTreeNavPanel-toggle-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5 10.5 8 6 12.5"/></svg>');
+  --vuuTreeNavPanel-toggle-transform: none;
+  --vuuTreeNavPanel-toggle-transform-expanded: rotate(90deg);
+  --vuuTreeNavPanel-toggle-left: 0;
+  --vuuTreeNavPanel-toggle-top: 0;
+  --vuuTreeNavPanel-highlight-color: var(--sc-accent-text);
+  --vuuTreeNavPanel-borderColor: var(--sc-border);
+  --vuuTreeNavPanel-fontSize: 13px;
+  --vuuTreeNavPanel-indent: 16px;
+
+  font-family: var(--sc-font);
+}
+
+.ShowcaseNavRowAdornment-count {
+  color: var(--sc-text-4);
+}
+
+/* numbered docs chapters, the number takes the place of the icon */
+.ShowcaseShell-nav .vuuTableGroupCell:has(.ShowcaseNavRowAdornment-ordinal) {
+  .vuuTableGroupCell-adornment {
+    flex: 0 0 auto;
+    margin: 0 8px 0 4px;
+    order: 1;
   }
-  [data-align="end"] ~ [data-align="end"] {
+  .vuuTableGroupCell-label {
+    flex: 1 1 auto;
+    order: 2;
+  }
+}
+
+.ShowcaseNavRowAdornment-ordinal {
+  color: var(--sc-text-4);
+  font-size: 12px;
+}
+
+[aria-selected="true"] .ShowcaseNavRowAdornment-ordinal {
+  color: var(--sc-accent-text);
+  opacity: 0.7;
+}
+
+.ShowcaseNavRowAdornment-fixture {
+  color: var(--sc-text-3);
+  display: inline-flex;
+}
+
+.ShowcaseNavRowAdornment-star {
+  border-radius: 4px;
+  color: var(--sc-text-4);
+  height: 20px;
+  margin-right: -4px;
+  padding: 0;
+  visibility: hidden;
+  width: 20px;
+
+  &:hover {
+    color: var(--sc-warn);
+  }
+}
+
+.vuuTableRow:hover .ShowcaseNavRowAdornment-star,
+.ShowcaseNavRowAdornment-star[aria-pressed="true"] {
+  visibility: visible;
+}
+
+.ShowcaseNavRowAdornment-star.saltToggleButton[aria-pressed="true"] {
+  background: transparent;
+  color: var(--sc-warn);
+
+  svg {
+    fill: currentColor;
+  }
+}
+
+/* The Theme section has no nav, the GridLayout tracks are only read on
+   creation so the nav column is collapsed with css */
+.vuuGridLayout.ShowcaseShell[data-section="theme"] {
+  grid-template-columns: 0 1fr !important;
+
+  > .ShowcaseShell-nav,
+  > .vuuGridSplitter {
+    display: none;
+  }
+
+  /* space reserved for the (hidden) splitter */
+  > .ShowcaseShell-content.has-v-splitter {
     margin-left: 0;
   }
 }
 
-.ShowcaseToolbar > .Responsive-inner,
-.ShowcaseContentToolbar > .Responsive-inner {
-  align-items: center;
-}
-
-.ShowcaseContentToolbar {
-  --saltToolbar-background: transparent;
-  --vuuToolbarProxy-height: 40px;
-  border-bottom: solid 1px var(--salt-container-primary-borderColor);
-  flex: 0 0 auto;
-}
-
 .ShowcaseContent {
-  background-color: var(--salt-container-primary-background);
+  background-color: var(--sc-surface);
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
   position: relative;
-}
-
-.ShowcaseContent-main {
-  flex: 1 1 auto;
-  min-height: 0;
-  position: relative;
-}
-
-.ShowCaseIFrame-container {
-  height: 100%;
-  width: 100%;
 }
 
 .ShowCaseIFrame {

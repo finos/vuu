@@ -1,16 +1,16 @@
 import type { ThemeModel } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
 import { createContext, useContext } from "react";
+import type { ComponentIndex } from "./component-utils";
 import type { Axes, ThemeIndex } from "./model-utils";
 import type { ThemeSandbox } from "./ThemeSandbox";
 
 export type ThemeBrowserViewId =
-  | "tiers"
-  | "characteristic"
-  | "foundations"
-  | "diagnostics";
+  "tiers" | "characteristic" | "foundations" | "diagnostics";
 
 export interface ThemeBrowserContextProps {
   axes: Axes;
+  /** components whose css is matched to the theme, when available */
+  components?: ComponentIndex;
   index: ThemeIndex;
   model: ThemeModel;
   sandbox: ThemeSandbox;
@@ -18,7 +18,15 @@ export interface ThemeBrowserContextProps {
   resolve: (name: string, axes?: Axes) => string;
   select: (name: string, view?: ThemeBrowserViewId) => void;
   selected?: string;
+  /** a selected component takes precedence over the selected token */
+  selectComponent: (id: string) => void;
+  selectedComponent?: string;
   setAxes: (axes: Axes) => void;
+  setShowAllTokens: (show: boolean) => void;
+  setShowComponents: (show: boolean) => void;
+  /** with a component selected, show all theme tokens, not only those it references */
+  showAllTokens: boolean;
+  showComponents: boolean;
 }
 
 export const ThemeBrowserContext =

@@ -17,6 +17,7 @@ node tools/vuu-theme-model/src/cli.ts \
   --entry path/to/css/theme-next.css \
   [--fallback path/to/css/theme.css] \
   [--name my-theme] [--out my-theme.json] [--module my-theme.js] \
+  [--summary my-theme.summary.js] [--search my-theme.search.js] \
   [--pretty] [--verbose]
 ```
 
@@ -24,7 +25,13 @@ node tools/vuu-theme-model/src/cli.ts \
 - `--module` writes an ES module exporting `model` (the JSON model) and
   `stylesheet` (the whole theme flattened into one stylesheet, with `@import`
   inlined and `@font-face` removed, ready for `CSSStyleSheet.replaceSync`).
-- With neither option, the JSON model is written to stdout.
+- `--summary` writes a tiny ES module exporting `summary` (name, token counts
+  by tier, axes).
+- `--search` writes an ES module exporting `tokens`, a compact list of the
+  theme's tokens (name, tier, category, group, alias) with values resolved
+  statically for light and dark mode (`resolveTokenValue`). Used by the
+  showcase command palette.
+- With neither `--out` nor `--module`, the JSON model is written to stdout.
 
 `npm run build:theme-model` writes `vuu-theme.js` and `salt-theme.js` modules to
 `tools/vuu-showcase/src/theme-browser/generated/` (gitignored). It runs
