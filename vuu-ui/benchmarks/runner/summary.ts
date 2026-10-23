@@ -19,6 +19,7 @@ export const flattenRun = (run: BenchRun): MetricSummary => {
   add("updateToPaintMs", result.updateToPaintMs);
   add("updateToCommitMs", result.updateToCommitMs);
   add("dom", result.dom);
+  add("worker", run.worker);
   if (result.updatesEmitted !== undefined) {
     metrics["updates.emitted"] = result.updatesEmitted;
     metrics["updates.batches"] = result.updateBatches ?? 0;
@@ -49,6 +50,9 @@ export const summarise = (runs: BenchRun[]): MetricSummary => {
   }
 
   const instrumented = runs.find((r) => r.pass === "instrumented");
+  // worker CPU is profiled in the instrumented pass only
+  const workerCpuMs = instrumented?.worker?.cpuMs;
+  if (workerCpuMs !== undefined) summary["worker.cpuMs"] = workerCpuMs;
   const dom = instrumented?.result.dom;
   if (instrumented && dom) {
     for (const [key, value] of Object.entries(dom)) {

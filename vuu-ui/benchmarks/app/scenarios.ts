@@ -6,7 +6,20 @@ import {
   nextFrame,
 } from "../harness/measure";
 import { distribution, frameStats } from "../harness/stats";
+import {
+  burstPauseMs,
+  createRandom,
+  KEY_COLUMN,
+  type Row,
+  rowKey,
+  SEQ_COLUMN,
+  STEADY_INTERVAL_MS,
+  steadyUpdatesDue,
+  updatedRow,
+  updateRandom,
+} from "../harness/dataset";
 import type {
+  DatasetConfig,
   InPageResult,
   RunOptions,
   Scenario,
@@ -15,22 +28,85 @@ import type {
   TableLayout,
   TickConfig,
 } from "../harness/types";
-import {
-  type BenchDataSource,
-  createRandom,
-  FIRST_VALUE_COLUMN,
-  KEY_COLUMN,
-  type Row,
-  rowKey,
-  SEQ_COLUMN,
-} from "./data";
+import type { BenchDataSource } from "./data";
+
+/**
+ * Source of row updates for the tick scenario. Each update batch carries a
+ * sequence number, 1, 2, 3 ..., written into the seq column of every row
+ * it updates. Resolves when the feed ends, with the time (page clock) each
+ * batch was emitted, by sequence number - 1.
+ */
+export interface UpdateFeed {
+  run: (
+    config: TickConfig,
+    seed: number,
+  ) => Promise<{ updatesEmitted: number; batchTimes: number[] }>;
+}
 
 export interface ScenarioContext {
-  dataSource: BenchDataSource;
-  data: Row[];
+  dataset: DatasetConfig;
+  feed: UpdateFeed;
   layout: TableLayout;
   table: HTMLElement;
 }
+
+/**
+ * Feed for local data: updates are generated in the page and applied to the
+ * ArrayDataSource, on the same update path a ticking local data source uses.
+ */
+export const localFeed = (
+  dataSource: BenchDataSource,
+  data: Row[],
+): UpdateFeed => ({
+  run: (config, seed) =>
+    new Promise((resolve) => {
+      const random = updateRandom(seed);
+      const tickingRows = Math.min(config.tickingRows, data.length);
+      const batchTimes: number[] = [];
+      let emitted = 0;
+      const update = (rowIndex: number) => {
+        const row = updatedRow(
+          data[rowIndex],
+          batchTimes.length,
+          random,
+          config.columnsPerUpdate,
+        );
+        data[rowIndex] = row;
+        dataSource.applyUpdate(row);
+        emitted += 1;
+      };
+      const start = performance.now();
+      const done = () => {
+        const finished = performance.now() - start >= config.durationMs;
+        if (finished) resolve({ updatesEmitted: emitted, batchTimes });
+        return finished;
+      };
+
+      if (config.mode === "burst") {
+        const burst = () => {
+          if (done()) return;
+          batchTimes.push(performance.now());
+          for (let r = 0; r < tickingRows; r++) update(r);
+          setTimeout(burst, burstPauseMs(random));
+        };
+        burst();
+      } else {
+        const steady = () => {
+          if (done()) return;
+          const due = steadyUpdatesDue(
+            config.updatesPerSecond,
+            performance.now() - start,
+          );
+          if (due > emitted) {
+            batchTimes.push(performance.now());
+            while (emitted < due) update(Math.floor(random() * tickingRows));
+          }
+          setTimeout(steady, STEADY_INTERVAL_MS);
+        };
+        steady();
+      }
+    }),
+});
 
 const scrollContainer = (table: HTMLElement) => {
   const el = table.querySelector<HTMLElement>(".vuuTable-scrollbarContainer");
@@ -124,7 +200,7 @@ const scrollJump = (
   const scroller = scrollContainer(ctx.table);
   const { rowHeight, height } = ctx.layout;
   const visibleRows = Math.floor(height / rowHeight) - 2;
-  const maxFirstRow = ctx.data.length - visibleRows - 1;
+  const maxFirstRow = ctx.dataset.rows - visibleRows - 1;
   const random = createRandom(seed + 1);
   const blankRowMs: number[] = [];
 
@@ -146,8 +222,8 @@ const scrollJump = (
 };
 
 /**
- * Emits row updates at a fixed rate over the top `tickingRows` rows. Every
- * update in a batch carries the batch sequence number in the seq column, a
+ * Runs an update feed over the top `tickingRows` rows. Every update in a
+ * batch carries the batch sequence number in the seq column, a
  * MutationObserver sees when that value reaches the DOM.
  */
 const tick = (
@@ -156,17 +232,14 @@ const tick = (
   options: RunOptions,
   seed: number,
 ) => {
-  const { dataSource, data, table } = ctx;
-  const random = createRandom(seed + 2);
-  const valueColumns = (data[0]?.length ?? 0) - FIRST_VALUE_COLUMN;
-  const columnsPerUpdate = Math.min(config.columnsPerUpdate, valueColumns);
-  const tickingRows = Math.min(config.tickingRows, data.length);
+  const { feed, table } = ctx;
   const body = table.querySelector(".vuuTable-body") ?? table;
   scrollContainer(table).scrollTop = 0;
 
-  const emittedAt = new Map<number, number>();
-  const commitLatencies: number[] = [];
-  const paintLatencies: number[] = [];
+  // commit and paint times, by sequence number - 1. A batch counts as
+  // committed when it, or any later batch, first shows in the seq column.
+  const committedAt: number[] = [];
+  const paintedAt: number[] = [];
   let highestSeen = 0;
 
   const onMutation = (records: MutationRecord[]) => {
@@ -183,19 +256,12 @@ const tick = (
       }
     }
     if (seq > highestSeen) {
-      const committedAt = performance.now();
-      const resolved: number[] = [];
-      for (let s = highestSeen + 1; s <= seq; s++) {
-        const t0 = emittedAt.get(s);
-        if (t0 !== undefined) {
-          commitLatencies.push(committedAt - t0);
-          resolved.push(t0);
-          emittedAt.delete(s);
-        }
-      }
+      const now = performance.now();
+      const first = highestSeen;
+      for (let i = first; i < seq; i++) committedAt[i] = now;
       highestSeen = seq;
-      afterNextPaint().then((paintedAt) => {
-        for (const t0 of resolved) paintLatencies.push(paintedAt - t0);
+      afterNextPaint().then((painted) => {
+        for (let i = first; i < seq; i++) paintedAt[i] = painted;
       });
     }
   };
@@ -208,50 +274,34 @@ const tick = (
       subtree: true,
     });
 
-    let seq = 0;
-    let emitted = 0;
-    const start = performance.now();
-    await new Promise<void>((resolve) => {
-      const emitBatch = () => {
-        const elapsed = performance.now() - start;
-        if (elapsed >= config.durationMs) {
-          resolve();
-          return;
-        }
-        const due = Math.floor((config.updatesPerSecond * elapsed) / 1000);
-        if (due > emitted) {
-          seq += 1;
-          emittedAt.set(seq, performance.now());
-          for (; emitted < due; emitted++) {
-            const rowIndex = Math.floor(random() * tickingRows);
-            const row = data[rowIndex].slice();
-            row[1] = String(seq);
-            for (let c = 0; c < columnsPerUpdate; c++) {
-              const col =
-                FIRST_VALUE_COLUMN + Math.floor(random() * valueColumns);
-              const value = row[col] as number;
-              row[col] =
-                Math.round(value * (1 + (random() - 0.5) * 0.002) * 100) / 100;
-            }
-            data[rowIndex] = row;
-            dataSource.applyUpdate(row);
-          }
-        }
-        setTimeout(emitBatch, 4);
-      };
-      emitBatch();
-    });
+    const { updatesEmitted, batchTimes } = await feed.run(config, seed);
 
-    // let the last batches reach the screen
+    // let the last batches reach the screen; remote batches may still be on
+    // their way through the worker
+    const deadline = performance.now() + 1000;
+    while (highestSeen < batchTimes.length && performance.now() < deadline) {
+      await nextFrame();
+    }
     await waitFrames(3);
     await afterNextPaint();
     onMutation(observer.takeRecords());
     observer.disconnect();
     await afterNextPaint();
 
+    const commitLatencies: number[] = [];
+    const paintLatencies: number[] = [];
+    batchTimes.forEach((emittedAt, i) => {
+      if (committedAt[i] !== undefined) {
+        commitLatencies.push(committedAt[i] - emittedAt);
+      }
+      if (paintedAt[i] !== undefined) {
+        paintLatencies.push(paintedAt[i] - emittedAt);
+      }
+    });
+
     return {
-      updatesEmitted: emitted,
-      updateBatches: seq,
+      updatesEmitted,
+      updateBatches: batchTimes.length,
       updateToCommitMs: distribution(commitLatencies),
       updateToPaintMs: distribution(paintLatencies),
       latencies: paintLatencies,

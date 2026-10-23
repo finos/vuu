@@ -12,13 +12,16 @@ import type {
   BenchEnv,
   BenchRun,
   CdpStats,
+  DataSourceKind,
   RunOptions,
   Scenario,
   ScenarioResult,
 } from "../harness/types";
+import { startMockVuuServer } from "./mock-vuu-server";
 import { SCENARIOS, TABLE_LAYOUT, VIEWPORT } from "./scenarios";
 import { serveDirectory } from "./static-server";
 import { summarise } from "./summary";
+import { WorkerProbe } from "./worker-probe";
 
 /**
  * Runs each scenario against one or more built benchmark apps (targets).
@@ -34,17 +37,38 @@ const KEEP_SAMPLES = env.BENCH_SAMPLES === "1";
 const RESULTS_DIR = resolve(env.BENCH_RESULTS ?? "benchmarks/results");
 const SCENARIO_FILTER = env.BENCH_SCENARIOS?.split(",").map((s) => s.trim());
 
-/** BENCH_TARGETS="base=../base/vuu-ui/benchmarks/dist,pr=benchmarks/dist" */
+/**
+ * BENCH_TARGETS="base=../base/vuu-ui/benchmarks/dist,pr=benchmarks/dist"
+ * A dist folder with an @local or @remote suffix runs every scenario on that
+ * data source, e.g. "local=benchmarks/dist@local,remote=benchmarks/dist@remote"
+ * compares the two data paths of one build.
+ */
 const TARGETS = (env.BENCH_TARGETS ?? "current=benchmarks/dist")
   .split(",")
   .map((spec) => {
-    const [label, dir] = spec.split("=");
-    return { label: label.trim(), dir: resolve(dir.trim()) };
+    const [label, target] = spec.split("=");
+    const [dir, source] = target.trim().split("@");
+    if (source !== undefined && source !== "local" && source !== "remote") {
+      throw Error(`[benchmarks] unknown data source @${source} in ${spec}`);
+    }
+    return {
+      label: label.trim(),
+      dir: resolve(dir),
+      source: source as DataSourceKind | undefined,
+    };
   });
 
+const forTarget = (scenario: Scenario, source?: DataSourceKind): Scenario =>
+  source ? { ...scenario, dataset: { ...scenario.dataset, source } } : scenario;
+
+// targets that set the data source run the scenarios that leave it open,
+// not their -remote twins
+const sourceOverride = TARGETS.some(({ source }) => source !== undefined);
 const selected = SCENARIOS.filter(
-  ({ id }) =>
-    !SCENARIO_FILTER || SCENARIO_FILTER.some((filter) => id.startsWith(filter)),
+  ({ id, dataset }) =>
+    (!SCENARIO_FILTER ||
+      SCENARIO_FILTER.some((filter) => id.startsWith(filter))) &&
+    !(sourceOverride && dataset.source !== undefined),
 );
 
 const CDP_METRICS = {
@@ -87,6 +111,7 @@ interface Session {
   context: BrowserContext;
   page: Page;
   cdp: CDPSession;
+  worker: WorkerProbe;
 }
 
 const openSession = async (browser: Browser, url: string): Promise<Session> => {
@@ -101,11 +126,13 @@ const openSession = async (browser: Browser, url: string): Promise<Session> => {
   await page.goto(url);
   await page.waitForFunction(() => window.__vuuBench !== undefined);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: CPU_THROTTLE });
-  return { context, page, cdp };
+  const worker = new WorkerProbe(cdp);
+  await worker.attach();
+  return { context, page, cdp, worker };
 };
 
 const measure = async (
-  { page, cdp }: Session,
+  { page, cdp, worker }: Session,
   scenario: Scenario,
   options: RunOptions,
   pass: BenchRun["pass"],
@@ -128,13 +155,19 @@ const measure = async (
     );
   }
   await beforeRun?.();
+  // the worker's CPU profile is part of the instrumented pass only, so that
+  // profiling does not slow the worker in the timing pass
+  const profileWorker = options.instrument && worker.attached;
+  if (profileWorker) await worker.startProfile();
   const before = await getMetrics(cdp);
   const result = await page.evaluate(([s, o]) => window.__vuuBench.run(s, o), [
     scenario,
     options,
   ] as const);
+  const workerCpuMs = profileWorker ? await worker.stopProfile() : undefined;
   await afterRun?.();
   const cdp_ = await cdpStats(cdp, before);
+  const workerStats = await worker.stats(workerCpuMs);
   return {
     schemaVersion: 1,
     scenarioId: scenario.id,
@@ -144,6 +177,7 @@ const measure = async (
     mount,
     result,
     cdp: cdp_,
+    ...(workerStats ? { worker: workerStats } : undefined),
   };
 };
 
@@ -174,24 +208,36 @@ test.describe("Vuu Table benchmarks", () => {
   let servers: Array<{
     label: string;
     url: string;
+    source?: DataSourceKind;
     close: () => Promise<void>;
   }>;
+  let vuuServer: Awaited<ReturnType<typeof startMockVuuServer>>;
 
   test.beforeAll(async () => {
+    vuuServer = await startMockVuuServer();
     servers = await Promise.all(
-      TARGETS.map(async ({ label, dir }) => ({
-        label,
-        ...(await serveDirectory(dir)),
-      })),
+      TARGETS.map(async ({ label, dir, source }) => {
+        const server = await serveDirectory(dir);
+        const url = `${server.url}?vuuServer=${encodeURIComponent(vuuServer.url)}`;
+        return { label, source, url, close: server.close };
+      }),
     );
   });
 
   test.afterAll(async () => {
     await Promise.all(servers.map((s) => s.close()));
+    await vuuServer.close();
   });
 
-  for (const scenario of selected) {
-    test(scenario.id, async ({ browser }) => {
+  for (const baseScenario of selected) {
+    test(baseScenario.id, async ({ browser }) => {
+      if (
+        servers.some(
+          (s) => forTarget(baseScenario, s.source).dataset.source === "remote",
+        )
+      ) {
+        vuuServer.prepare(baseScenario.dataset);
+      }
       const runs = new Map<string, BenchRun[]>(
         servers.map((s) => [s.label, []]),
       );
@@ -210,7 +256,7 @@ test.describe("Vuu Table benchmarks", () => {
             }
             const run = await measure(
               session,
-              scenario,
+              forTarget(baseScenario, server.source),
               { instrument: false, keepSamples: KEEP_SAMPLES },
               "timing",
               i,
@@ -224,6 +270,7 @@ test.describe("Vuu Table benchmarks", () => {
 
       for (const server of servers) {
         const session = await openSession(browser, server.url);
+        const scenario = forTarget(baseScenario, server.source);
         const tracePath = join(
           RESULTS_DIR,
           server.label,

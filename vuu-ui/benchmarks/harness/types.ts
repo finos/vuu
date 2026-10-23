@@ -8,12 +8,20 @@ export type ScenarioKind = "load" | "scroll-smooth" | "scroll-jump" | "tick";
 
 export type CellType = "plain" | "formatted" | "flash";
 
+/**
+ * local: an ArrayDataSource in the page. remote: a VuuDataSource, with its
+ * worker and server proxy, connected to the runner's mock Vuu server.
+ */
+export type DataSourceKind = "local" | "remote";
+
 export interface DatasetConfig {
   rows: number;
   cols: number;
   cellType: CellType;
   /** PRNG seed, the same seed always produces the same data and updates */
   seed: number;
+  /** default local */
+  source?: DataSourceKind;
 }
 
 export interface TableLayout {
@@ -38,9 +46,18 @@ export interface ScrollJumpConfig {
 
 export interface TickConfig {
   kind: "tick";
+  /**
+   * steady (default): updatesPerSecond spread evenly, a batch every 4ms.
+   * burst: like the Vuu simulation's price feed, every ticking row updates
+   * in one batch, then a 100-400ms pause; updatesPerSecond is ignored.
+   */
+  mode?: "steady" | "burst";
   /** row updates per second */
   updatesPerSecond: number;
-  /** updates are spread over this many visible rows, from the top */
+  /**
+   * steady: updates are spread over this many rows, from the top.
+   * burst: this many rows, from the top, update in each burst.
+   */
   tickingRows: number;
   /** number of value columns changed in each row update */
   columnsPerUpdate: number;
@@ -66,6 +83,8 @@ export interface Scenario {
 }
 
 export interface MountResult {
+  /** remote: opening the worker's WebSocket connection and logging in */
+  connectMs?: number;
   dataGenMs: number;
   dataSourceMs: number;
   /** mount() call until first rows are committed to the DOM */
@@ -151,6 +170,18 @@ export interface CdpStats {
   jsEventListeners: number;
 }
 
+/**
+ * The data source's DedicatedWorker (remote scenarios), read over CDP.
+ * Chrome does not apply CPU throttling to workers, so worker timings are
+ * unthrottled whatever BENCH_CPU_THROTTLE is.
+ */
+export interface WorkerStats {
+  /** instrumented pass only: busy time from a sampling CPU profile */
+  cpuMs?: number;
+  /** used heap after a GC, at the end of the run */
+  jsHeapUsedMB: number;
+}
+
 export interface BenchEnv {
   gitSha: string;
   target: string;
@@ -177,6 +208,7 @@ export interface BenchRun {
   mount: MountResult;
   result: InPageResult;
   cdp: CdpStats;
+  worker?: WorkerStats;
 }
 
 /** Per-metric medians across timing iterations */
@@ -189,6 +221,32 @@ export interface ScenarioResult {
   runs: BenchRun[];
   summary: MetricSummary;
 }
+
+/**
+ * Control channel between the page and the mock Vuu server, alongside the
+ * Vuu protocol connection. The page uses it to start a server-side update
+ * feed and to map server timestamps onto its own clock.
+ */
+export type MockControlRequest =
+  | { type: "clock"; id: number }
+  | {
+      type: "tick";
+      id: number;
+      /** Vuu table name of the dataset whose viewports receive the updates */
+      table: string;
+      config: TickConfig;
+      seed: number;
+    };
+
+export type MockControlResponse =
+  | { type: "clock"; id: number; serverTime: number }
+  | {
+      type: "tick-done";
+      id: number;
+      updatesEmitted: number;
+      /** server time (epoch ms) each batch was sent, by sequence number - 1 */
+      batchTimes: number[];
+    };
 
 declare global {
   interface Window {
