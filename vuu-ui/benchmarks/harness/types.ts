@@ -113,6 +113,27 @@ export interface LongFrameStats {
   blockingMs: number;
 }
 
+/**
+ * Calls to DOM APIs during the run, anywhere in the page, counted by
+ * wrapping the prototypes (harness/dom-probe.ts)
+ */
+export interface DomApiCounts {
+  createElement: number;
+  createTextNode: number;
+  appendChild: number;
+  insertBefore: number;
+  removeChild: number;
+  replaceChild: number;
+  setAttribute: number;
+  removeAttribute: number;
+  /** CSSStyleDeclaration.setProperty */
+  styleSetProperty: number;
+  /** Node.textContent setter */
+  textContentSet: number;
+  /** Node.nodeValue setter, React's path for updating a text node */
+  nodeValueSet: number;
+}
+
 export interface DomStats {
   /** element count inside the table at the end of the run */
   tableNodes: number;
@@ -123,6 +144,26 @@ export interface DomStats {
   elementsRemoved: number;
   textChanges: number;
   attributeChanges: number;
+  /** DOM API calls, when the runner installed the DOM probe */
+  api?: DomApiCounts;
+}
+
+export interface ComponentRenderStats {
+  /** renders, mounts included */
+  renders: number;
+  mounts: number;
+  /** the component's own render time, children excluded */
+  selfMs: number;
+}
+
+/** React commits and renders, from the profiling build (harness/react-probe.ts) */
+export interface ReactStats {
+  /** commits in which the Table rendered */
+  commits: number;
+  /** <Profiler> actualDuration summed over those commits */
+  renderMs: number;
+  /** keyed by component: Row, TableCell, HeaderCell */
+  components: Record<string, ComponentRenderStats>;
 }
 
 export interface InPageResult {
@@ -141,6 +182,8 @@ export interface InPageResult {
   updateBatches?: number;
   /** instrumented pass only */
   dom?: DomStats;
+  /** instrumented pass, profiling build only */
+  react?: ReactStats;
   samples?: { frames: number[]; latencies?: number[] };
 }
 
@@ -151,7 +194,12 @@ export interface RunOptions {
 
 export interface VuuBenchApi {
   version: number;
-  build: { gitSha: string; mode: "production" | "development" };
+  build: {
+    gitSha: string;
+    mode: "production" | "development";
+    /** profiling build, with React render counts (dist/profiling) */
+    profiling?: boolean;
+  };
   mount: (scenario: Scenario, layout: TableLayout) => Promise<MountResult>;
   run: (scenario: Scenario, options: RunOptions) => Promise<InPageResult>;
   unmount: () => Promise<void>;
@@ -248,8 +296,23 @@ export type MockControlResponse =
       batchTimes: number[];
     };
 
+/** Installed by the runner in the instrumented pass, see harness/dom-probe.ts */
+export interface DomProbe {
+  reset: () => void;
+  read: () => DomApiCounts;
+}
+
+/** Installed by the profiling build, see harness/react-probe.ts */
+export interface ReactProbe {
+  reset: () => void;
+  read: () => ReactStats;
+}
+
 declare global {
   interface Window {
     __vuuBench: VuuBenchApi;
+    __vuuDomProbe?: DomProbe;
+    __vuuReactProbe?: ReactProbe;
+    __REACT_DEVTOOLS_GLOBAL_HOOK__?: object;
   }
 }

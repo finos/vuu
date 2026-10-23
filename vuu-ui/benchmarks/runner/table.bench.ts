@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import { join, resolve } from "node:path";
@@ -17,6 +18,7 @@ import type {
   Scenario,
   ScenarioResult,
 } from "../harness/types";
+import { installDomProbe } from "../harness/dom-probe";
 import { startMockVuuServer } from "./mock-vuu-server";
 import { SCENARIOS, TABLE_LAYOUT, VIEWPORT } from "./scenarios";
 import { serveDirectory } from "./static-server";
@@ -114,11 +116,20 @@ interface Session {
   worker: WorkerProbe;
 }
 
-const openSession = async (browser: Browser, url: string): Promise<Session> => {
+/**
+ * instrumented: the session for the instrumented pass, with the DOM probe
+ * installed before any page script runs
+ */
+const openSession = async (
+  browser: Browser,
+  url: string,
+  instrumented = false,
+): Promise<Session> => {
   const context = await browser.newContext({
     viewport: VIEWPORT,
     deviceScaleFactor: DPR,
   });
+  if (instrumented) await context.addInitScript(installDomProbe);
   const page = await context.newPage();
   page.on("pageerror", (err) => console.error(`[page error] ${err.message}`));
   const cdp = await context.newCDPSession(page);
@@ -208,6 +219,8 @@ test.describe("Vuu Table benchmarks", () => {
   let servers: Array<{
     label: string;
     url: string;
+    /** the profiling build, used for the instrumented pass when built */
+    profilingUrl: string;
     source?: DataSourceKind;
     close: () => Promise<void>;
   }>;
@@ -218,8 +231,18 @@ test.describe("Vuu Table benchmarks", () => {
     servers = await Promise.all(
       TARGETS.map(async ({ label, dir, source }) => {
         const server = await serveDirectory(dir);
-        const url = `${server.url}?vuuServer=${encodeURIComponent(vuuServer.url)}`;
-        return { label, source, url, close: server.close };
+        const query = `?vuuServer=${encodeURIComponent(vuuServer.url)}`;
+        const url = `${server.url}${query}`;
+        // builds made before the profiling build existed have no profiling/
+        const profilingUrl = existsSync(join(dir, "profiling", "index.html"))
+          ? `${server.url}profiling/${query}`
+          : url;
+        if (profilingUrl === url) {
+          console.warn(
+            `[benchmarks] ${label}: no profiling build in ${dir}, React render counts are not recorded`,
+          );
+        }
+        return { label, source, url, profilingUrl, close: server.close };
       }),
     );
   });
@@ -269,7 +292,7 @@ test.describe("Vuu Table benchmarks", () => {
       }
 
       for (const server of servers) {
-        const session = await openSession(browser, server.url);
+        const session = await openSession(browser, server.profilingUrl, true);
         const scenario = forTarget(baseScenario, server.source);
         const tracePath = join(
           RESULTS_DIR,

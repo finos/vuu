@@ -3,16 +3,23 @@
  * window.__vuuBench, which the Playwright runner (or a person, from the
  * console) uses to mount a scenario and run it.
  */
-import { Table } from "@vuu-ui/vuu-table";
+import {
+  HeaderCell,
+  Row as TableRow,
+  Table,
+  TableCell,
+} from "@vuu-ui/vuu-table";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import iconsCss from "@vuu-ui/vuu-icons/index.css";
 import themeCss from "@vuu-ui/vuu-theme/index.css";
 // registers the vuu.price-move-background cell renderer
 import "@vuu-ui/vuu-table-extras";
+import { Profiler, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterNextPaint } from "../harness/measure";
+import { onProfilerRender, trackComponents } from "../harness/react-probe";
 import type { MountResult, Scenario, TableLayout } from "../harness/types";
 import {
   BenchDataSource,
@@ -41,6 +48,21 @@ for (const css of [themeCss, iconsCss]) {
 }
 
 declare const __BENCH_GIT_SHA__: string;
+declare const __BENCH_PROFILING__: boolean;
+
+// the profiling build counts Table renders with a <Profiler> and the React
+// probe (harness/react-probe.ts), the production build renders the Table on
+// its own
+if (__BENCH_PROFILING__)
+  trackComponents({ Row: TableRow, TableCell, HeaderCell });
+const Profiled = ({ children }: { children: ReactNode }) =>
+  __BENCH_PROFILING__ ? (
+    <Profiler id="table" onRender={onProfilerRender}>
+      {children}
+    </Profiler>
+  ) : (
+    children
+  );
 
 const rootElement = document.getElementById("root") as HTMLElement;
 let root: Root | undefined;
@@ -118,15 +140,17 @@ const mount = async (
   root = createRoot(rootElement);
   flushSync(() => {
     root?.render(
-      <Table
-        config={config}
-        data-testid="bench-table"
-        dataSource={dataSource}
-        height={layout.height}
-        renderBufferSize={layout.renderBufferSize}
-        rowHeight={layout.rowHeight}
-        width={layout.width}
-      />,
+      <Profiled>
+        <Table
+          config={config}
+          data-testid="bench-table"
+          dataSource={dataSource}
+          height={layout.height}
+          renderBufferSize={layout.renderBufferSize}
+          rowHeight={layout.rowHeight}
+          width={layout.width}
+        />
+      </Profiled>,
     );
   });
   const t3 = await rowsCommitted;
@@ -163,6 +187,7 @@ window.__vuuBench = {
   build: {
     gitSha: __BENCH_GIT_SHA__,
     mode: process.env.NODE_ENV === "production" ? "production" : "development",
+    profiling: __BENCH_PROFILING__,
   },
   mount,
   run: async (scenario, options) => {
