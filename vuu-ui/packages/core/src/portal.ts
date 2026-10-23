@@ -15,6 +15,28 @@ export {
   type PortalNavItem,
   type PortalNavSection,
 } from "./portal-app-switcher/nav-section-utils";
+export { PortalNav } from "./portal-nav/PortalNav";
+export {
+  DISPLAY_MODE_WIDTHS as PORTAL_NAV_WIDTHS,
+  type PortalNavCollapsedMode,
+  type PortalNavDensity,
+  type PortalNavDisplayMode,
+  type PortalNavProps,
+  type PortalNavSectionStyle,
+  type PortalNavSlot,
+  type PortalNavSlotContext,
+} from "./portal-nav/portal-nav-types";
+export { NAV_DISPLAY_MODE_KEY } from "./portal-nav/usePortalNavDisplayMode";
+export {
+  type PortalNavIndicator,
+  type PortalNavIndicatorSeverity,
+  usePortalNavIndicator,
+} from "./portal-nav/usePortalNavIndicator";
+export { NAV_COLLAPSED_SECTIONS_KEY } from "./portal-nav/usePortalNavSectionCollapse";
+export {
+  type PortalShellNavContextValue,
+  usePortalShellNav,
+} from "./portal-shell/PortalShellNavContext";
 export {
   WindowHost,
   type WindowHostProps,

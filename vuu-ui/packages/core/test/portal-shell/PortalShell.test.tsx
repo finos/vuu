@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { act, type HTMLAttributes, type ReactNode } from "react";
+import { act, type HTMLAttributes, type ReactNode, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
   BrowserRouter,
@@ -149,6 +149,7 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
 
 import { PortalShell } from "../../src/portal-shell/PortalShell";
 import { PortalLandingPage } from "../../src/portal-shell/PortalLandingPage";
+import { usePortalShellNav } from "../../src/portal-shell/PortalShellNavContext";
 import { AuthenticationProvider } from "../../src/auth/AuthenticationProvider";
 import { WindowShell } from "../../src/window-shell/WindowShell";
 import { getWindowHostPath } from "../../src/window-host/window-host-routing";
@@ -775,6 +776,52 @@ describe("Portal and window shells", () => {
       });
       expect(shell()?.style.getPropertyValue("--vuuPortalShell-navWidth")).toBe(
         expected,
+      );
+    });
+
+    const ManagedNav = ({ width }: { width?: string }) => {
+      const shellNav = usePortalShellNav();
+      useEffect(() => {
+        shellNav?.setNavWidth(width);
+      }, [shellNav, width]);
+      return null;
+    };
+
+    it("lets a nav child size and animate the column", async () => {
+      await act(async () => {
+        root.render(
+          <PortalShell remoteModules={modules} title="Portal">
+            <ManagedNav width="248px" />
+          </PortalShell>,
+        );
+      });
+      expect(shell()?.className).toBe(
+        "vuuPortalShell vuuPortalShell-managedNav",
+      );
+      expect(shell()?.style.getPropertyValue("--vuuPortalShell-navWidth")).toBe(
+        "248px",
+      );
+      await act(async () => {
+        root.render(
+          <PortalShell remoteModules={modules} title="Portal">
+            <ManagedNav />
+          </PortalShell>,
+        );
+      });
+      expect(shell()?.className).toBe("vuuPortalShell");
+      expect(shell()?.getAttribute("style")).toBeNull();
+    });
+
+    it("prefers navWidth to a nav child's width", async () => {
+      await act(async () => {
+        root.render(
+          <PortalShell navWidth={100} remoteModules={modules} title="Portal">
+            <ManagedNav width="248px" />
+          </PortalShell>,
+        );
+      });
+      expect(shell()?.style.getPropertyValue("--vuuPortalShell-navWidth")).toBe(
+        "100px",
       );
     });
 

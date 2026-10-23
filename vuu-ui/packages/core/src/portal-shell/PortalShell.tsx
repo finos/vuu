@@ -11,6 +11,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import {
   createBrowserRouter,
@@ -50,6 +51,10 @@ import {
   PortalLandingPage,
   type PortalLandingPageProps,
 } from "./PortalLandingPage";
+import {
+  PortalShellNavContext,
+  type PortalShellNavContextValue,
+} from "./PortalShellNavContext";
 
 import portalShellCss from "./PortalShell.css";
 
@@ -77,6 +82,8 @@ export interface PortalShellProps extends CommonShellProps {
    * Width of the navigation column, a number of pixels or a CSS length.
    * Sets `--vuuPortalShell-navWidth`, which defaults to `56px`. Changes
    * animate over `--vuuPortalShell-navTransitionDuration` (default `0s`).
+   * A `PortalNav` child sizes the column to its display mode, unless this
+   * is set.
    */
   navWidth?: number | string;
   /**
@@ -165,6 +172,18 @@ const PortalLayout = () => {
   } = usePortalShellProps();
   const targetWindow = useWindow();
   const openModuleId = useOpenModuleId(remoteModules);
+  // Width requested by a PortalNav child; the navWidth prop takes precedence.
+  const [managedNavWidth, setNavWidth] = useState<string | undefined>();
+  const navContext = useMemo<PortalShellNavContextValue>(
+    () => ({ setNavWidth }),
+    [],
+  );
+  const columnWidth =
+    navWidth === undefined
+      ? managedNavWidth
+      : typeof navWidth === "number"
+        ? `${navWidth}px`
+        : navWidth;
   const [
     [landingPage = <PortalLandingPage />, ...unexpectedLandingPages],
     portalChromeElements,
@@ -198,20 +217,21 @@ const PortalLayout = () => {
             <div
               className={clsx(classBase, {
                 [`${classBase}-noHeader`]: !header,
+                [`${classBase}-managedNav`]:
+                  navWidth === undefined && managedNavWidth !== undefined,
               })}
               id={id}
               style={
-                navWidth === undefined
+                columnWidth === undefined
                   ? undefined
                   : ({
-                      "--vuuPortalShell-navWidth":
-                        typeof navWidth === "number"
-                          ? `${navWidth}px`
-                          : navWidth,
+                      "--vuuPortalShell-navWidth": columnWidth,
                     } as CSSProperties)
               }
             >
-              {portalChromeElements}
+              <PortalShellNavContext.Provider value={navContext}>
+                {portalChromeElements}
+              </PortalShellNavContext.Provider>
               <div className={`${classBase}-banners`}>
                 <PortalNotificationBanners />
               </div>

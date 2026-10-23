@@ -1,0 +1,442 @@
+.vuuPortalNav {
+  --portalNav-row: 32px;
+  --portalNav-radius: 7px;
+  --portalNav-iconSize: 18px;
+  --portalNav-accent: var(--vuuPortalNav-accent, var(--salt-accent-background));
+  --portalNav-background: var(--vuuPortalNav-background, var(--salt-container-secondary-background));
+  --portalNav-borderColor: var(--vuuPortalNav-borderColor, var(--salt-separable-tertiary-borderColor));
+  --portalNav-foreground: var(--salt-content-primary-foreground);
+  --portalNav-foreground-dim: var(--salt-content-secondary-foreground);
+  --portalNav-hover: var(--salt-navigable-background-hover, var(--salt-selectable-background-hover));
+  --portalNav-active: var(--vuuPortalNav-activeBackground, var(--salt-selectable-background-selected));
+  --portalNav-transition: var(--vuuPortalShell-navTransitionDuration, 180ms) var(--vuuPortalShell-navTransitionTimingFunction, ease);
+
+  box-sizing: border-box;
+  color: var(--portalNav-foreground);
+  font-family: var(--salt-text-fontFamily);
+  font-size: 13px;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+  transition: width var(--portalNav-transition);
+  width: var(--vuuPortalNav-width);
+
+  &.vuuPortalNav-compact {
+    --portalNav-row: 26px;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+.vuuPortalShell > .vuuPortalNav {
+  grid-area: nav;
+  /* The shell column is sized and animated by the nav. */
+  width: auto;
+}
+
+.vuuPortalNav-panel {
+  background: var(--portalNav-background);
+  border-right: 1px solid var(--portalNav-borderColor);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+.vuuPortalNav-header {
+  align-items: center;
+  display: flex;
+  flex: none;
+  gap: var(--salt-spacing-100);
+  height: 54px;
+  padding: 0 12px 0 14px;
+}
+
+.vuuPortalNav-brand {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.vuuPortalNav-headerButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--portalNav-foreground-dim);
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  height: 26px;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0;
+  width: 26px;
+
+  &:hover {
+    background: var(--portalNav-hover);
+    color: var(--portalNav-foreground);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+    outline-offset: -2px;
+  }
+}
+
+.vuuPortalNav-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 8px 8px;
+  scrollbar-width: none;
+}
+
+.vuuPortalNav-section {
+  margin-top: 10px;
+}
+
+.vuuPortalNav-sectionHeading {
+  align-items: center;
+  color: var(--portalNav-foreground-dim);
+  display: flex;
+  font-size: 10.5px;
+  font-weight: var(--salt-text-label-fontWeight-strong, 600);
+  letter-spacing: 0.09em;
+  padding: 6px 8px 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.vuuPortalNav-sectionToggle {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 6px;
+  letter-spacing: inherit;
+  margin: -2px -4px;
+  padding: 2px 4px;
+  text-transform: inherit;
+  width: calc(100% + 8px);
+
+  &:hover {
+    color: var(--portalNav-foreground);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+.vuuPortalNav-sectionTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vuuPortalNav-sectionChevron {
+  margin-left: auto;
+  transition: transform 150ms;
+
+  .vuuPortalNav-section-collapsed & {
+    transform: rotate(-90deg);
+  }
+}
+
+.vuuPortalNav-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.vuuPortalNav-item {
+  display: block;
+  margin: 1px 0;
+}
+
+.vuuPortalNav-link {
+  align-items: center;
+  border-radius: var(--portalNav-radius);
+  color: var(--portalNav-foreground);
+  display: flex;
+  gap: 10px;
+  height: var(--portalNav-row);
+  padding: 0 8px;
+  position: relative;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--portalNav-hover);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+    outline-offset: -2px;
+  }
+
+  .vuuIcon {
+    --vuu-icon-color: var(--portalNav-foreground-dim);
+    --vuu-icon-size: var(--portalNav-iconSize);
+  }
+}
+
+.vuuPortalNav-link-active {
+  background: var(--portalNav-active);
+  font-weight: 550;
+
+  .vuuIcon {
+    --vuu-icon-color: var(--portalNav-accent);
+  }
+
+  &::before {
+    background: var(--portalNav-accent);
+    border-radius: 0 3px 3px 0;
+    bottom: 7px;
+    content: "";
+    left: -8px;
+    position: absolute;
+    top: 7px;
+    width: 3px;
+  }
+}
+
+.vuuPortalNav-icon {
+  display: inline-flex;
+  flex: none;
+  position: relative;
+}
+
+.vuuPortalNav-iconPlaceholder {
+  display: inline-block;
+  height: var(--portalNav-iconSize);
+  width: var(--portalNav-iconSize);
+}
+
+.vuuPortalNav-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vuuPortalNav-meta {
+  align-items: center;
+  color: var(--portalNav-foreground-dim);
+  display: flex;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.vuuPortalNav-count {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--portalNav-borderColor);
+  border-radius: 9px;
+  color: var(--portalNav-foreground);
+  display: inline-grid;
+  font-size: 11px;
+  font-weight: 600;
+  height: 18px;
+  min-width: 20px;
+  padding: 0 6px;
+  place-items: center;
+}
+
+/* Notification dot: severity from usePortalNavIndicator. */
+.vuuPortalNav-indicator {
+  --portalNav-indicatorColor: var(--salt-status-info-foreground-decorative, var(--portalNav-accent));
+  background: var(--portalNav-indicatorColor);
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+  height: 7px;
+  pointer-events: none;
+  width: 7px;
+
+  .vuuPortalNav-icon > & {
+    box-shadow: 0 0 0 2px var(--portalNav-background);
+    height: 9px;
+    position: absolute;
+    right: -4px;
+    top: -3px;
+    width: 9px;
+  }
+
+  .vuuPortalNav-link:hover .vuuPortalNav-icon > & {
+    box-shadow: 0 0 0 2px var(--portalNav-hover);
+  }
+}
+
+.vuuPortalNav-indicator-warning {
+  --portalNav-indicatorColor: var(--salt-status-warning-foreground-decorative);
+}
+
+.vuuPortalNav-indicator-error {
+  --portalNav-indicatorColor: var(--salt-status-error-foreground-decorative);
+}
+
+/* Text: no icons, the dot follows the label. */
+.vuuPortalNav-text {
+  .vuuPortalNav-header {
+    gap: 6px;
+    padding-right: 8px;
+  }
+
+  .vuuPortalNav-link {
+    padding-left: 12px;
+  }
+}
+
+/* Icons: the rail. */
+.vuuPortalNav-icons {
+  .vuuPortalNav-header {
+    justify-content: center;
+    padding: 0;
+
+    .vuuPortalNav-brand {
+      display: none;
+    }
+
+    .vuuPortalNav-headerButton {
+      margin: 0;
+    }
+  }
+
+  .vuuPortalNav-content {
+    padding: 4px 10px;
+  }
+
+  .vuuPortalNav-section {
+    margin-top: 0;
+  }
+
+  .vuuPortalNav-section + .vuuPortalNav-section::before {
+    background: var(--portalNav-borderColor);
+    content: "";
+    display: block;
+    height: 1px;
+    margin: 8px 6px;
+  }
+
+  .vuuPortalNav-link {
+    height: 36px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .vuuPortalNav-link-active::before {
+    left: -10px;
+  }
+
+  .vuuPortalNav-label {
+    border: 0;
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .vuuPortalNav-footer {
+    justify-items: center;
+    padding: 10px 0 12px;
+  }
+}
+
+.vuuPortalNav-compact.vuuPortalNav-icons .vuuPortalNav-link {
+  height: 30px;
+}
+
+/* Count pip in the rail, for a numeric badge. */
+.vuuPortalNav-pip {
+  background: var(--portalNav-accent);
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--portalNav-background);
+  height: 8px;
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 8px;
+}
+
+.vuuPortalNav-footer {
+  border-top: 1px solid var(--portalNav-borderColor);
+  display: grid;
+  flex: none;
+  gap: 8px;
+  padding: 10px 10px 12px;
+}
+
+/* Minimized: an edge handle opens the nav as an overlay. */
+.vuuPortalNav-handle {
+  align-items: center;
+  background: var(--portalNav-background);
+  border: 1px solid var(--portalNav-borderColor);
+  border-left: none;
+  border-radius: 0 7px 7px 0;
+  color: var(--portalNav-foreground-dim);
+  cursor: pointer;
+  display: flex;
+  height: 56px;
+  justify-content: center;
+  left: 0;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: width 120ms;
+  width: 14px;
+  z-index: var(--salt-zIndex-docked, 1);
+
+  &:hover {
+    color: var(--portalNav-foreground);
+    width: 18px;
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+
+  .vuuPortalNav-indicator {
+    position: absolute;
+    right: -4px;
+    top: -4px;
+  }
+}
+
+.vuuPortalNav-overlay {
+  box-shadow: var(--salt-shadow-4, 0 12px 30px rgba(0, 0, 0, 0.35));
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: var(--vuuPortalNav-overlayWidth);
+  z-index: var(--salt-zIndex-flyover, 1000);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vuuPortalNav,
+  .vuuPortalNav-handle,
+  .vuuPortalNav-sectionChevron {
+    transition: none;
+  }
+}
