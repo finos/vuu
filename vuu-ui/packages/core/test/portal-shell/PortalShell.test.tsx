@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { act, type HTMLAttributes, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
@@ -90,11 +92,13 @@ vi.mock("../../src/notifications/PortalNotificationBanners", () => ({
   PortalNotificationBanners: () => null,
 }));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
-  const { usePortalModuleRegistry } =
-    await import("../../src/portal-module-registry/PortalModuleRegistry");
+  const { usePortalModuleRegistry } = await import(
+    "../../src/portal-module-registry/PortalModuleRegistry"
+  );
   const { PortalLink } = await import("../../src/portal-link/PortalLink");
-  const { useContextPanel } =
-    await import("../../src/context-panel/ContextPanelProvider");
+  const { useContextPanel } = await import(
+    "../../src/context-panel/ContextPanelProvider"
+  );
   const { Button } = await import("@salt-ds/core");
   const ShowContextPanelButton = ({ module }: { module: string }) => {
     const showContextPanel = useContextPanel();
@@ -198,66 +202,63 @@ describe("Portal and window shells", () => {
     window.history.replaceState(null, "", "/");
   });
 
-  it.each([BrowserRouter, MemoryRouter])(
-    "rejects an external $name instead of nesting routers",
-    async (OuterRouter) => {
-      const render = async () => {
-        await act(async () => {
-          root.render(
-            <OuterRouter>
-              <PortalShell remoteModules={modules} title="Portal" />
-            </OuterRouter>,
-          );
-        });
-      };
-      await expect(render()).rejects.toThrow(
-        "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.",
-      );
-    },
-  );
+  it.each([
+    BrowserRouter,
+    MemoryRouter,
+  ])("rejects an external $name instead of nesting routers", async (OuterRouter) => {
+    const render = async () => {
+      await act(async () => {
+        root.render(
+          <OuterRouter>
+            <PortalShell remoteModules={modules} title="Portal" />
+          </OuterRouter>,
+        );
+      });
+    };
+    await expect(render()).rejects.toThrow(
+      "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.",
+    );
+  });
 
   it.each([
     ["/users/admin", "UserAdmin"],
     ["/orders", "Orders"],
-  ])(
-    "provides the complete registry at %s without an external router",
-    async (path, module) => {
-      window.history.replaceState(null, "", path);
-      await act(async () => {
-        root.render(<PortalShell remoteModules={modules} title="Portal" />);
-      });
+  ])("provides the complete registry at %s without an external router", async (path, module) => {
+    window.history.replaceState(null, "", path);
+    await act(async () => {
+      root.render(<PortalShell remoteModules={modules} title="Portal" />);
+    });
 
-      expect(
-        [...container.querySelectorAll("output")].map((element) => [
-          element.dataset.module,
-          element.textContent,
-        ]),
-      ).toEqual([[module, "2"]]);
-      expect(container.querySelector("[data-portal-nav]")).toBeNull();
-      expect(container.querySelector("[data-portal-header]")).toBeNull();
-      expect(container.querySelector("h3")).toBeNull();
-      expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(1);
-      expect(container.querySelector(".vuuWindowShell")).toBeNull();
-      expect(
-        container.querySelectorAll('[data-provider="remote"]'),
-      ).toHaveLength(1);
-      expect(
-        container.querySelectorAll('[data-provider="modal"]'),
-      ).toHaveLength(1);
-      expect(
-        container.querySelector('[data-accent] [data-provider="modal"]'),
-      ).not.toBeNull();
-      expect(container.querySelector("[data-accent]")).toMatchObject({
-        dataset: {
-          accent: "purple",
-          corner: "rounded",
-          density: "medium",
-          mode: "light",
-          theme: "vuu-theme",
-        },
-      });
-    },
-  );
+    expect(
+      [...container.querySelectorAll("output")].map((element) => [
+        element.dataset.module,
+        element.textContent,
+      ]),
+    ).toEqual([[module, "2"]]);
+    expect(container.querySelector("[data-portal-nav]")).toBeNull();
+    expect(container.querySelector("[data-portal-header]")).toBeNull();
+    expect(container.querySelector("h3")).toBeNull();
+    expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(1);
+    expect(container.querySelector(".vuuWindowShell")).toBeNull();
+    expect(container.querySelectorAll('[data-provider="remote"]')).toHaveLength(
+      1,
+    );
+    expect(container.querySelectorAll('[data-provider="modal"]')).toHaveLength(
+      1,
+    );
+    expect(
+      container.querySelector('[data-accent] [data-provider="modal"]'),
+    ).not.toBeNull();
+    expect(container.querySelector("[data-accent]")).toMatchObject({
+      dataset: {
+        accent: "purple",
+        corner: "rounded",
+        density: "medium",
+        mode: "light",
+        theme: "vuu-theme",
+      },
+    });
+  });
 
   it("renders PortalLandingPage at the root path and navigates to a module", async () => {
     await act(async () => {
@@ -505,21 +506,21 @@ describe("Portal and window shells", () => {
     ).toBe("dark");
   });
 
-  it.each(["/users/admin", "/users/admin/*"])(
-    "supports a fresh portal deep link with module path %s",
-    async (path) => {
-      window.history.replaceState(null, "", "/users/admin/details");
-      await act(async () => {
-        root.render(
-          <PortalShell
-            remoteModules={[{ ...modules[0], path }]}
-            title="Portal"
-          />,
-        );
-      });
-      expect(container.textContent).toContain("Module details");
-    },
-  );
+  it.each([
+    "/users/admin",
+    "/users/admin/*",
+  ])("supports a fresh portal deep link with module path %s", async (path) => {
+    window.history.replaceState(null, "", "/users/admin/details");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={[{ ...modules[0], path }]}
+          title="Portal"
+        />,
+      );
+    });
+    expect(container.textContent).toContain("Module details");
+  });
 
   it("forwards shared shell configuration to window routes without portal chrome", async () => {
     const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
@@ -594,14 +595,15 @@ describe("Portal and window shells", () => {
     );
   });
 
-  it.each(["missing", "01", "https%3A%2F%2Funtrusted.example"])(
-    "does not load a remote for an unregistered module ID %s",
-    async (id) => {
-      await renderWindow(`/window/${id}`);
-      expect(container.querySelector("output")).toBeNull();
-      expect(container.querySelector('[role="alert"]')).not.toBeNull();
-    },
-  );
+  it.each([
+    "missing",
+    "01",
+    "https%3A%2F%2Funtrusted.example",
+  ])("does not load a remote for an unregistered module ID %s", async (id) => {
+    await renderWindow(`/window/${id}`);
+    expect(container.querySelector("output")).toBeNull();
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  });
 
   it("preserves module-relative links in a window", async () => {
     await renderWindow("/window/1");
@@ -734,6 +736,66 @@ describe("Portal and window shells", () => {
       expect(
         contextPanel()?.querySelector("[data-panel-content]")?.textContent,
       ).toBe("Orders settings");
+    });
+  });
+
+  describe("layout", () => {
+    const shell = () =>
+      container.querySelector<HTMLDivElement>(".vuuPortalShell");
+
+    it("keeps the default layout: header row, no inline nav width", async () => {
+      await act(async () => {
+        root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      });
+      expect(shell()?.className).toBe("vuuPortalShell");
+      expect(shell()?.getAttribute("style")).toBeNull();
+    });
+
+    it("removes the header row when header is false", async () => {
+      await act(async () => {
+        root.render(
+          <PortalShell header={false} remoteModules={modules} title="Portal" />,
+        );
+      });
+      expect(shell()?.className).toBe("vuuPortalShell vuuPortalShell-noHeader");
+    });
+
+    it.each([
+      [248, "248px"],
+      ["12rem", "12rem"],
+    ])("sets the nav width from navWidth %s", async (navWidth, expected) => {
+      await act(async () => {
+        root.render(
+          <PortalShell
+            navWidth={navWidth}
+            remoteModules={modules}
+            title="Portal"
+          />,
+        );
+      });
+      expect(shell()?.style.getPropertyValue("--vuuPortalShell-navWidth")).toBe(
+        expected,
+      );
+    });
+
+    it("defines the grid from overridable defaults", () => {
+      const css = readFileSync(
+        join(import.meta.dirname, "../../src/portal-shell/PortalShell.css"),
+        "utf8",
+      ).replace(/\s+/g, " ");
+      expect(css).toContain(
+        "grid-template-columns: var(--vuuPortalShell-navWidth, 56px) 1fr;",
+      );
+      expect(css).toContain("grid-template-rows: 56px auto 1fr;");
+      expect(css).toContain(
+        'grid-template-areas: "nav header" "nav banners" "nav content";',
+      );
+      expect(css).toContain(
+        "transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 0s)",
+      );
+      expect(css).toMatch(
+        /&\.vuuPortalShell-noHeader \{ grid-template-rows: auto 1fr; grid-template-areas: "nav banners" "nav content"; \}/,
+      );
     });
   });
 });

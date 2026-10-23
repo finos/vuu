@@ -11,6 +11,11 @@ export {
   type PortalAppSwitcherProps,
 } from "./portal-app-switcher/PortalAppSwitcher";
 export {
+  buildNavSections,
+  type PortalNavItem,
+  type PortalNavSection,
+} from "./portal-app-switcher/nav-section-utils";
+export {
   WindowHost,
   type WindowHostProps,
 } from "./window-host/WindowHost";
