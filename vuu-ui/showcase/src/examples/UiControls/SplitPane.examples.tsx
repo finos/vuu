@@ -1,4 +1,4 @@
-import { FlexItem } from "@salt-ds/core";
+import { Button, FlexItem } from "@salt-ds/core";
 import {
   SplitPane,
   SplitPaneProps,
@@ -104,9 +104,9 @@ export const SplitPaneSingleChild = () => {
   const [showSecondPane, setShowSecondPane] = useState(true);
   return (
     <>
-      <button onClick={() => setShowSecondPane((show) => !show)}>
+      <Button onClick={() => setShowSecondPane((show) => !show)}>
         Toggle second pane
-      </button>
+      </Button>
       <SplitPane style={{ height: 400, width: 600 }}>
         <FlexItem basis="200px" grow={1} style={paneStyle("ivory")}>
           Pane 1

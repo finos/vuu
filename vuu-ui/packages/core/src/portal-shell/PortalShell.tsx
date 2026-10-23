@@ -1,10 +1,12 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import clsx from "clsx";
 import {
   Children,
   createContext,
   isValidElement,
   type ReactElement,
+  type CSSProperties,
   type ReactNode,
   useContext,
   useEffect,
@@ -64,7 +66,19 @@ const isPortalLandingPage = (
 
 export interface PortalShellProps extends CommonShellProps {
   children?: ReactNode;
+  /**
+   * Whether the layout has a header row for a `PortalHeader`. `false`
+   * removes the row so the navigation and content take the full height.
+   * Defaults to `true`.
+   */
+  header?: boolean;
   id?: string;
+  /**
+   * Width of the navigation column, a number of pixels or a CSS length.
+   * Sets `--vuuPortalShell-navWidth`, which defaults to `56px`. Changes
+   * animate over `--vuuPortalShell-navTransitionDuration` (default `0s`).
+   */
+  navWidth?: number | string;
   /**
    * Notifications from the applications' servers, shown as badges in the
    * navigation. `false` disables them.
@@ -139,7 +153,9 @@ const CloseContextPanelOnNavigation = () => {
 const PortalLayout = () => {
   const {
     children,
+    header = true,
     id,
+    navWidth,
     notifications,
     portalId = id,
     remoteModules,
@@ -179,7 +195,22 @@ const PortalLayout = () => {
         >
           <ShellContextPanelProvider>
             <CloseContextPanelOnNavigation />
-            <div className={classBase} id={id}>
+            <div
+              className={clsx(classBase, {
+                [`${classBase}-noHeader`]: !header,
+              })}
+              id={id}
+              style={
+                navWidth === undefined
+                  ? undefined
+                  : ({
+                      "--vuuPortalShell-navWidth":
+                        typeof navWidth === "number"
+                          ? `${navWidth}px`
+                          : navWidth,
+                    } as CSSProperties)
+              }
+            >
               {portalChromeElements}
               <div className={`${classBase}-banners`}>
                 <PortalNotificationBanners />

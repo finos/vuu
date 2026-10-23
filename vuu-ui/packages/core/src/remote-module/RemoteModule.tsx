@@ -93,6 +93,35 @@ const getRemoteComponentKey = (
 
 const remoteExports = new Map<string, Promise<RemoteExports>>();
 const components = new Map<string, ReturnType<typeof lazy>>();
+/**
+ * Pending and failed config promises read with `use`, keyed by `mfUrl`.
+ * `loadRemoteModuleConfig` evicts a failed load at once, so React's retry
+ * render would suspend on a new promise forever. A failed load is kept here
+ * until the error boundary forgets it; a successful one is left to the
+ * shared cache.
+ */
+const remoteConfigs = new Map<
+  string,
+  ReturnType<typeof loadRemoteModuleConfig>
+>();
+
+const getRemoteConfig = (mfUrl: string) => {
+  let config = remoteConfigs.get(mfUrl);
+  if (config === undefined) {
+    const pending = loadRemoteModuleConfig(mfUrl);
+    remoteConfigs.set(mfUrl, pending);
+    pending.then(
+      () => {
+        if (remoteConfigs.get(mfUrl) === pending) {
+          remoteConfigs.delete(mfUrl);
+        }
+      },
+      () => undefined,
+    );
+    config = pending;
+  }
+  return config;
+};
 
 /**
  * Loads the exposed module once, so that the component and its
@@ -177,6 +206,7 @@ const forgetRemote = (
   const key = getRemoteComponentKey(mfUrl, mfScope, mfComponent);
   components.delete(`${key}#${mfExport}`);
   remoteExports.delete(key);
+  remoteConfigs.delete(mfUrl);
   forgetRemoteModuleConfig(mfUrl);
 };
 
@@ -274,7 +304,7 @@ function RemoteModuleContent(props: RemoteModuleProps) {
     mfComponent,
     mfExport,
   );
-  const connection = vuu ?? use(loadRemoteModuleConfig(mfUrl)).vuu;
+  const connection = vuu ?? use(getRemoteConfig(mfUrl)).vuu;
   const lostStatus = useLostConnectionStatus(connection?.connectionId);
   const remoteComponent = (
     <ModuleContextPanel placement={contextPanelPlacement}>

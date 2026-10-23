@@ -61,6 +61,37 @@ omits it, and another module renders it with `RemoteModule`. The table viewer
 nested in the table browser is an example. `isNestedModule(descriptor)` tests
 for this.
 
+### Layout
+
+The shell is a grid with a nav column, then header, banners and content rows.
+The nav column is `56px` by default. Set the `navWidth` prop (a number of
+pixels or a CSS length), or the `--vuuPortalShell-navWidth` CSS variable, to
+change it. Width changes animate over
+`--vuuPortalShell-navTransitionDuration` (default `0s`, i.e. none) with
+`--vuuPortalShell-navTransitionTimingFunction` (default `ease`).
+
+Set `header={false}` to remove the header row, so the navigation and content
+take the full height. The root then has the `vuuPortalShell-noHeader` class.
+Don't render a `PortalHeader` in this case.
+
+### Navigation sections
+
+`buildNavSections(modules)` builds the model for a sectioned navigation from
+the descriptors. `buildNavItems`, used by `PortalAppSwitcher`, is unchanged.
+
+- Each first `navLocation` segment is a section (`id` `/Trading`, `title`
+  `Trading`). The remaining segments, joined with `": "`, are the item title.
+  A single-segment location (`/Reports`) gives an item titled `Reports` in the
+  `Reports` section.
+- Nested modules are excluded.
+- Items are ordered by `navOrder`, lowest first, then registration order.
+- Sections are ordered by the lowest `navOrder` of their items. Sections with
+  no `navOrder` follow, in order of first appearance. Number `navOrder`
+  across the whole registry to order sections and items together.
+- Each item carries `moduleId`, `title`, `href` (the `path` without a trailing
+  `/*`), `navIconName`, `navIconUrl`, `navOrder`, `navBadge` (a key the app
+  maps to a live value) and `notificationTopics`.
+
 Use `PortalLink` from `@vuu-ui/core/portal` for links within a remote module.
 It behaves like React Router's `NavLink` in the portal and maps absolute links
 under the module's portal route to the matching path under `/window/:moduleId`
