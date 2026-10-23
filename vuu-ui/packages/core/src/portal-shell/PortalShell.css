@@ -16,6 +16,13 @@
   padding: var(--vuuPortalShell-padding, var(--salt-spacing-50));
   width: 100vw;
 
+  /* The column is sized by a PortalNav, which animates by default. */
+  &.vuuPortalShell-managedNav {
+    transition: grid-template-columns
+      var(--vuuPortalShell-navTransitionDuration, 180ms)
+      var(--vuuPortalShell-navTransitionTimingFunction, ease);
+  }
+
   &.vuuPortalShell-noHeader {
     grid-template-rows: auto 1fr;
     grid-template-areas:
