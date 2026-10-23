@@ -203,3 +203,19 @@
   height: 9px;
   width: 9px;
 }
+
+/* a workspace open in a tab, other than the active tab */
+.ShowcaseWorkspacesNav-row-inTab {
+  position: relative;
+
+  &::before {
+    background: var(--sc-border-strong);
+    border-radius: 0 2px 2px 0;
+    bottom: 7px;
+    content: "";
+    left: 0;
+    position: absolute;
+    top: 7px;
+    width: 3px;
+  }
+}
