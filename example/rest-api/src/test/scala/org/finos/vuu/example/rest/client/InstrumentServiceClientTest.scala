@@ -11,7 +11,7 @@ import sttp.model.StatusCode
 
 class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers {
   private final val BASE_URL = "base-url.com"
-  val serializer = JsonSerializer[List[Instrument]]()
+  val serializer = JsonSerializer[List[Instrument]]
 
   Feature("getInstruments") {
     Scenario("can make an external call and parse response WHEN service responds as expected") {

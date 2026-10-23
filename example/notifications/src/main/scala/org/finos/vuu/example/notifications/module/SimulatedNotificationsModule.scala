@@ -43,7 +43,7 @@ object SimulatedNotificationsModule extends DefaultModule {
     val viewPortDefFactory = (table: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) =>
       ViewPortDef(
         columns = table.getTableDef.getColumns,
-        service = new DismissNotificationRpcHandler(table)(clock)
+        service = new DismissNotificationRpcHandler(table)(using clock)
       )
 
     NotificationModule(

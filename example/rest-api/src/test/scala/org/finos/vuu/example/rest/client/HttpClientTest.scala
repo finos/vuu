@@ -13,7 +13,7 @@ import sttp.model.StatusCode
 class HttpClientTest extends AnyFeatureSpec with BeforeAndAfterAll with Matchers with Eventually {
   Feature("Stubbed backend") {
     val httpClient = HttpClient(StubbedBackend())
-    val serializer = JsonSerializer[List[Instrument]]()
+    val serializer = JsonSerializer[List[Instrument]]
 
 
     Scenario("returns with correct response on /instruments GET endpoint") {
