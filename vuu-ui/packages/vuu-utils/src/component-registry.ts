@@ -34,7 +34,16 @@ export interface ConfigurationEditorProps {
   onChangeRendering: ColumnRenderPropsChangeHandler;
 }
 
-export type RowClassNameGenerator = (dataRow: DataRow) => string | undefined;
+/**
+ * Returns a class name for a row, or undefined. previousDataRow and nextDataRow
+ * are the rows immediately before and after dataRow in data order. Either is
+ * undefined at the start or end of the data, or when that row is not loaded.
+ */
+export type RowClassNameGenerator = (
+  dataRow: DataRow,
+  previousDataRow?: DataRow,
+  nextDataRow?: DataRow,
+) => string | undefined;
 
 export type RowClassGenerator = {
   id: string;

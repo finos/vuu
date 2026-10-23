@@ -6,6 +6,10 @@
   background-color: var(--salt-status-error-background);
 }
 
+.vuuTableRow.docs-group-end {
+  --row-borderColor: var(--salt-separable-primary-borderColor);
+}
+
 .vuuTableCell.docs-key-column,
 .vuuTableHeaderCell.docs-key-column {
   background-color: var(--salt-container-secondary-background);

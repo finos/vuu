@@ -3,7 +3,9 @@ import {
   ColumnClassName,
   CustomProperties,
   DisplayAttributes,
+  MassOrders,
   RowClassNames,
+  TradePairs,
 } from "./07-Styling.examples";
 
 # Styling
@@ -148,6 +150,120 @@ export const RowClassNames = () => {
 - Keep generators fast and free of side effects. They run every time a row renders, which for a live data source can be many times a second.
 - Use row styling for information about the whole row (status, side, alerts). For a single value, use a cell renderer instead.
 - Don't use color alone to carry meaning. Pair it with a value or icon that users can read, such as a status column.
+
+### Comparing a row with its neighbours
+
+A generator is also passed the rows immediately before and after the current row, in data order:
+
+```ts
+type RowClassNameGenerator = (
+  dataRow: DataRow,
+  previousDataRow?: DataRow,
+  nextDataRow?: DataRow,
+) => string | undefined;
+```
+
+Use these when a row's style depends on the rows around it, for example to draw a separator between groups of related rows. `previousDataRow` is undefined for the first row and `nextDataRow` is undefined for the last row. Either can also be undefined, briefly, if that row has not yet been loaded. Rows just outside the visible area are always loaded, so this only happens during fast scrolling.
+
+Here, each trade has a buy row and a sell row with the same `tradeId`. A separator is drawn below the last row of each trade:
+
+<LivePreview>
+  <TradePairs />
+
+```tsx
+/**
+ * Returns a generator that adds "docs-group-end" to the last row of each run
+ * of adjacent rows with the same, non-empty, value in groupColumn.
+ */
+const groupEnd =
+  (groupColumn: string): RowClassNameGenerator =>
+  (dataRow, _previousDataRow, nextDataRow) => {
+    if (nextDataRow !== undefined) {
+      const value = dataRow[groupColumn];
+      const sameGroup = value !== "" && value === nextDataRow[groupColumn];
+      if (!sameGroup) {
+        return "docs-group-end";
+      }
+    }
+  };
+
+registerComponent(
+  "docs-trade-pairs",
+  { id: "docs-trade-pairs", fn: groupEnd("tradeId") },
+  "row-class-generator",
+);
+
+export const TradePairs = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: tradeColumns,
+      rowClassNameGenerators: ["docs-trade-pairs"],
+    }),
+    [],
+  );
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: tradeColumns,
+        data: tradeData,
+        keyColumn: "execId",
+      }),
+    [],
+  );
+
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={680} />
+  );
+};
+```
+
+```css
+.vuuTableRow.docs-group-end {
+  --row-borderColor: var(--salt-separable-primary-borderColor);
+}
+```
+
+</LivePreview>
+
+The same generator works for orders placed by a mass order request, which share a `massOrderId`. Orders placed on their own have an empty `massOrderId`, so each one is treated as a group of one:
+
+<LivePreview>
+  <MassOrders />
+
+```tsx
+registerComponent(
+  "docs-mass-orders",
+  { id: "docs-mass-orders", fn: groupEnd("massOrderId") },
+  "row-class-generator",
+);
+
+export const MassOrders = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: orderColumns,
+      rowClassNameGenerators: ["docs-mass-orders"],
+    }),
+    [],
+  );
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: orderColumns,
+        data: orderData,
+        keyColumn: "orderId",
+      }),
+    [],
+  );
+
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={600} />
+  );
+};
+```
+
+</LivePreview>
+
+Grouping by neighbours only makes sense when related rows are next to each other. Sort the data by the group column (here `tradeId` or `massOrderId`) first. If users can sort by other columns, the separators will no longer mark meaningful groups.
 
 ## Column class names
 

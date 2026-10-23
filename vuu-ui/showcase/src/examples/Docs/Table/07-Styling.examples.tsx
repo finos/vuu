@@ -1,9 +1,21 @@
 import { Checkbox, CheckboxGroup } from "@salt-ds/core";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { Table } from "@vuu-ui/vuu-table";
 import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
-import { registerComponent, type RowClassGenerator } from "@vuu-ui/vuu-utils";
+import {
+  registerComponent,
+  type RowClassGenerator,
+  type RowClassNameGenerator,
+} from "@vuu-ui/vuu-utils";
 import { type ChangeEvent, useMemo, useState } from "react";
-import { stockColumns, useStockDataSource } from "./sample-data";
+import {
+  orderColumns,
+  orderData,
+  stockColumns,
+  tradeColumns,
+  tradeData,
+  useStockDataSource,
+} from "./sample-data";
 
 import "./07-Styling.css";
 
@@ -78,6 +90,80 @@ export const RowClassNames = () => {
 
   return (
     <Table config={config} dataSource={dataSource} height={300} width={800} />
+  );
+};
+
+/**
+ * Returns a generator that adds "docs-group-end" to the last row of each run
+ * of adjacent rows with the same, non-empty, value in groupColumn.
+ */
+const groupEnd =
+  (groupColumn: string): RowClassNameGenerator =>
+  (dataRow, _previousDataRow, nextDataRow) => {
+    if (nextDataRow !== undefined) {
+      const value = dataRow[groupColumn];
+      const sameGroup = value !== "" && value === nextDataRow[groupColumn];
+      if (!sameGroup) {
+        return "docs-group-end";
+      }
+    }
+  };
+
+registerComponent(
+  "docs-trade-pairs",
+  { id: "docs-trade-pairs", fn: groupEnd("tradeId") },
+  "row-class-generator",
+);
+
+registerComponent(
+  "docs-mass-orders",
+  { id: "docs-mass-orders", fn: groupEnd("massOrderId") },
+  "row-class-generator",
+);
+
+export const TradePairs = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: tradeColumns,
+      rowClassNameGenerators: ["docs-trade-pairs"],
+    }),
+    [],
+  );
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: tradeColumns,
+        data: tradeData,
+        keyColumn: "execId",
+      }),
+    [],
+  );
+
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={680} />
+  );
+};
+
+export const MassOrders = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: orderColumns,
+      rowClassNameGenerators: ["docs-mass-orders"],
+    }),
+    [],
+  );
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: orderColumns,
+        data: orderData,
+        keyColumn: "orderId",
+      }),
+    [],
+  );
+
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={600} />
   );
 };
 
