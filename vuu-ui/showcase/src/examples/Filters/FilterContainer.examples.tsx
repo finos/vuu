@@ -20,13 +20,21 @@ import {
 import {
   DataSourceProvider,
   filterAsQuery,
+  getColumnsByName,
   getColumnsByNameForFilter,
+  getScaledDecimalScale,
+  isTypeDescriptor,
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
+import {
+  InstrumentsExtendedColumnFilters,
+  instrumentsExtendedColumns,
+} from "./instruments-extended-columns";
+import "./RoundAndTruncateCell";
 
 const schema = getSchema("instrumentsExtended");
 const filterColumnsByName = getColumnsByNameForFilter(schema);
@@ -423,4 +431,153 @@ export const TimeRangeFilter = () => (
       </div>
     </FilterContainer>
   </>
+);
+
+/**
+ * Table columns for the AllColumnTypes examples. Scaled decimal columns that
+ * display fewer decimals than they hold show the value both rounded and
+ * truncated, the underlying value as a tooltip.
+ */
+const allColumnTypesTableColumns = instrumentsExtendedColumns.map((column) => {
+  const scale = getScaledDecimalScale(column.serverDataType);
+  const decimals = isTypeDescriptor(column.type)
+    ? column.type.formatting?.decimals
+    : undefined;
+  return scale !== undefined &&
+    decimals !== undefined &&
+    decimals < scale &&
+    isTypeDescriptor(column.type)
+    ? {
+        ...column,
+        label: `${column.label} (round | truncate)`,
+        type: {
+          ...column.type,
+          renderer: { name: "example.round-and-truncate" },
+        },
+        width: 180,
+      }
+    : column;
+});
+
+const AllColumnTypesTemplate = ({
+  filter: filterProp,
+  showOperatorPicker = false,
+}: Pick<FilterContainerProps, "filter"> &
+  Pick<ColumnFilterProps, "showOperatorPicker">) => {
+  const { VuuDataSource } = useData();
+  const [filter, setFilter] =
+    useState<FilterContainerProps["filter"]>(filterProp);
+
+  const dataSource = useMemo(() => {
+    const dataSource = new VuuDataSource({
+      columns: instrumentsExtendedColumns.map(toColumnName),
+      table: schema.table,
+    });
+    if (filterProp) {
+      dataSource.setFilter?.(filterProp);
+    }
+    return dataSource;
+  }, [VuuDataSource, filterProp]);
+
+  const config = useMemo(
+    () => ({ columns: allColumnTypesTableColumns, rowSeparators: true }),
+    [],
+  );
+
+  const onFilterApplied = useCallback<FilterAppliedHandler>(
+    (filter) => {
+      dataSource.setFilter?.(filter);
+      setFilter(filter as FilterContainerProps["filter"]);
+    },
+    [dataSource],
+  );
+
+  const onFilterCleared = useCallback(() => {
+    dataSource.clearFilter?.();
+    setFilter(undefined);
+  }, [dataSource]);
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <div style={{ display: "flex", gap: 12, height: "100%", padding: 12 }}>
+        <FilterContainer
+          filter={filter}
+          onFilterApplied={onFilterApplied}
+          onFilterCleared={onFilterCleared}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flexShrink: 0,
+            gap: 12,
+            overflow: "auto",
+            width: 300,
+          }}
+        >
+          <InstrumentsExtendedColumnFilters
+            showOperatorPicker={showOperatorPicker}
+          />
+        </FilterContainer>
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            flexDirection: "column",
+            gap: 8,
+            minWidth: 0,
+          }}
+        >
+          <FilterDisplay columns={instrumentsExtendedColumns} filter={filter} />
+          <pre data-testid="vuu-filter-query" style={{ margin: 0 }}>
+            {filter
+              ? filterAsQuery(filter, {
+                  columnsByName: getColumnsByNameForFilter(
+                    schema,
+                    getColumnsByName(instrumentsExtendedColumns),
+                  ),
+                })
+              : ""}
+          </pre>
+          <DataSourceStats
+            dataSource={dataSource}
+            style={{ flex: "0 0 32px" }}
+          />
+          <Table
+            config={config}
+            dataSource={dataSource}
+            height={500}
+            renderBufferSize={20}
+            width={1100}
+          />
+        </div>
+      </div>
+    </DataSourceProvider>
+  );
+};
+
+/**
+ * A ColumnFilter for every column type in instrumentsExtended. Scaled decimal
+ * columns display fewer decimals than they hold, a value entered as displayed
+ * matches every row that displays that value.
+ */
+export const AllColumnTypes = () => <AllColumnTypesTemplate />;
+
+export const AllColumnTypesWithOperators = () => (
+  <AllColumnTypesTemplate showOperatorPicker />
+);
+
+export const AllColumnTypesWithScaledDecimalFilter = () => (
+  <AllColumnTypesTemplate
+    filter={{
+      column: "fxRate",
+      op: "=",
+      value: "1.23",
+      extendedOptions: {
+        type: "ScaledDecimal",
+        scale: 6,
+        decimals: 2,
+        roundingRule: "round",
+      },
+    }}
+    showOperatorPicker
+  />
 );

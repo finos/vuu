@@ -561,3 +561,69 @@ describe("FilterAggregator", () => {
     });
   });
 });
+
+describe("FilterAggregator, scaled decimal columns", () => {
+  const fxRate = {
+    name: "fxRate",
+    serverDataType: "scaleddecimal6" as const,
+    type: { name: "number" as const, formatting: { decimals: 2 } },
+  };
+
+  it("creates a clause that matches values at the displayed precision", () => {
+    const aggregator = new FilterAggregator();
+    aggregator.add(fxRate, "1.23", "=");
+    expect(JSON.parse(JSON.stringify(aggregator.filter))).toEqual({
+      column: "fxRate",
+      op: "=",
+      value: "1.23",
+      extendedOptions: {
+        type: "ScaledDecimal",
+        scale: 6,
+        decimals: 2,
+        roundingRule: "round",
+      },
+    });
+    expect(filterAsQuery(aggregator.filter!)).toBe(
+      "fxRate >= 1.225000 and fxRate <= 1.234999",
+    );
+  });
+
+  it("creates an exact clause when every decimal is displayed", () => {
+    const aggregator = new FilterAggregator();
+    aggregator.add(
+      { name: "fxRate", serverDataType: "scaleddecimal6" },
+      "1.23",
+      ">",
+    );
+    expect(filterAsQuery(aggregator.filter!)).toBe("fxRate > 1.230000");
+  });
+
+  it("creates a range from between operators", () => {
+    const aggregator = new FilterAggregator();
+    aggregator.add(fxRate, ["1.22", "1.23"], "between-inclusive");
+    expect(filterAsQuery(aggregator.filter!)).toBe(
+      "fxRate >= 1.215000 and fxRate <= 1.234999",
+    );
+    aggregator.add(fxRate, ["1.22", "1.25"], "between");
+    expect(filterAsQuery(aggregator.filter!)).toBe(
+      "fxRate > 1.224999 and fxRate < 1.245000",
+    );
+  });
+
+  it("rejects a value that is not a decimal", () => {
+    const aggregator = new FilterAggregator();
+    expect(() => aggregator.add(fxRate, "abc", "=")).toThrow();
+  });
+
+  it("restores a persisted (JSON) clause with the same meaning", () => {
+    const aggregator = new FilterAggregator();
+    aggregator.add(fxRate, "1.23", "<=");
+    aggregator.add({ name: "ccy", serverDataType: "string" }, "GBP", "=");
+    const persisted = JSON.parse(JSON.stringify(aggregator.filter));
+    const expected = 'fxRate <= 1.234999 and ccy = "GBP"';
+    expect(filterAsQuery(persisted)).toBe(expected);
+    expect(filterAsQuery(new FilterAggregator(persisted).filter!)).toBe(
+      expected,
+    );
+  });
+});

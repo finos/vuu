@@ -1,5 +1,5 @@
 import type { DataValueDescriptor, ScaledDecimal } from "@vuu-ui/vuu-data-types";
-import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { ColumnDescriptor, RoundingRule } from "@vuu-ui/vuu-table-types";
 
 export declare type NumericFilterClauseOp =
   | "="
@@ -125,9 +125,29 @@ export declare type TimeDateFilterOptions = TemporalFilterOptions & {
   type: "TimeString";
 };
 
+/**
+ * Options for a clause on a scaled decimal column. Where the column displays
+ * fewer decimal places than its scale, a value entered at (or below) the
+ * displayed precision matches every value that displays as that value, e.g with
+ * 2 decimals displayed (rounded), notional = 1.23 matches 1.225 <= notional < 1.235.
+ * A value with more decimal places than are displayed is matched at its own
+ * precision, e.g 1.234 matches 1.2335 <= notional < 1.2345. A value with as many
+ * decimal places as the column holds is matched exactly.
+ */
+export declare type ScaledDecimalFilterOptions = {
+  type: "ScaledDecimal";
+  /** The number of decimal places held by the column (scaleddecimal2 etc). */
+  scale: 2 | 4 | 6 | 8;
+  /** The number of decimal places displayed. Undefined means all. */
+  decimals?: number;
+  /** How displayed values are rounded. Defaults to 'round'. */
+  roundingRule?: RoundingRule;
+};
+
 export declare type ExtendedFilterOptions =
   | TimeTodayFilterOptions
-  | TimeDateFilterOptions;
+  | TimeDateFilterOptions
+  | ScaledDecimalFilterOptions;
 
 /**
  This interface is only valid for a Filter that is being edioted

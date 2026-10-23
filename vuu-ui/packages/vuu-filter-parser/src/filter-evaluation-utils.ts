@@ -1,5 +1,6 @@
 import { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
 import {
+  ColumnDescriptorsByName,
   Filter,
   MultiClauseFilter,
   MultiValueFilterClause,
@@ -7,8 +8,12 @@ import {
 } from "@vuu-ui/vuu-filter-types";
 import {
   ColumnMap,
+  getScaledDecimalScale,
   isFilter,
   isScaledDecimalFilterClause,
+  type ScaledDecimalScale,
+  toDecimalString,
+  toScaledInteger,
 } from "@vuu-ui/vuu-utils";
 import { parseFilter } from "./FilterParser";
 import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
@@ -76,14 +81,17 @@ export function getFilterPredicate(
  * Two row formats supported:
  * -  DataRow,  used by Tables, when evaluatingn a Menu filter.
  * - DataSourceRow, used by local data source, like ArrayDataSOurce
+ * For a DataSourceRow, columnsByName provides the column types, required to
+ * compare scaled decimal values, which are held as scaled integer strings.
  */
 
 // prettier-ignore
-export function filterPredicate(columnMap: ColumnMap, filter: Filter): FilterPredicate;
+export function filterPredicate(columnMap: ColumnMap, filter: Filter, columnsByName?: ColumnDescriptorsByName): FilterPredicate;
 export function filterPredicate(filter: Filter): DataRowFilterPredicate;
 export function filterPredicate(
   columnMapOrFilter: ColumnMap | Filter,
   filter?: Filter,
+  columnsByName?: ColumnDescriptorsByName,
 ): FilterPredicate | DataRowFilterPredicate {
   if (isFilter(columnMapOrFilter)) {
     switch (columnMapOrFilter.op) {
@@ -119,6 +127,17 @@ export function filterPredicate(
     }
   } else if (filter) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
+    const scale =
+      filter.column === undefined
+        ? undefined
+        : getScaledDecimalScale(columnsByName?.[filter.column]?.serverDataType);
+    if (scale !== undefined && isComparisonOp(filter.op)) {
+      return testScaledDecimal(
+        columnMapOrFilter,
+        filter as SingleValueFilterClause,
+        scale,
+      );
+    }
     switch (filter.op) {
       case "in":
         return testInclude(columnMapOrFilter, filter);
@@ -141,9 +160,17 @@ export function filterPredicate(
       case "contains":
         return testContains(columnMapOrFilter, filter);
       case "and":
-        return testAND(columnMapOrFilter, filter as MultiClauseFilter<"and">);
+        return testAND(
+          columnMapOrFilter,
+          filter as MultiClauseFilter<"and">,
+          columnsByName,
+        );
       case "or":
-        return testOR(columnMapOrFilter, filter as MultiClauseFilter<"or">);
+        return testOR(
+          columnMapOrFilter,
+          filter as MultiClauseFilter<"or">,
+          columnsByName,
+        );
       default: {
         const unreachable: never = filter;
         console.log('unrecognized filter type', unreachable);
@@ -154,6 +181,46 @@ export function filterPredicate(
     throw Error(`[filterPredicate] invalid params`);
   }
 }
+
+type ComparisonOp = "=" | "!=" | ">" | ">=" | "<" | "<=";
+const comparisonOps: string[] = ["=", "!=", ">", ">=", "<", "<="];
+const isComparisonOp = (op: string): op is ComparisonOp =>
+  comparisonOps.includes(op);
+
+const compare: Record<ComparisonOp, (a: bigint, b: bigint) => boolean> = {
+  "=": (a, b) => a === b,
+  "!=": (a, b) => a !== b,
+  ">": (a, b) => a > b,
+  ">=": (a, b) => a >= b,
+  "<": (a, b) => a < b,
+  "<=": (a, b) => a <= b,
+};
+
+/**
+ * Scaled decimal values are held as scaled integer strings, the filter value
+ * is a decimal (number, string or ScaledDecimal), compared at the column scale.
+ * An empty (null) value matches only '!='.
+ */
+const testScaledDecimal = (
+  columnMap: ColumnMap,
+  filter: SingleValueFilterClause,
+  scale: ScaledDecimalScale,
+): FilterPredicate => {
+  const op = filter.op as ComparisonOp;
+  const test = compare[op];
+  const filterValue = toScaledInteger(
+    toDecimalString(filter.value, scale),
+    scale,
+  );
+  const index = columnMap[filter.column];
+  return (row) => {
+    const value = row[index];
+    if (value === "" || value === null || value === undefined) {
+      return op === "!=";
+    }
+    return test(BigInt(value as string | number | bigint), filterValue);
+  };
+};
 
 const testInclude = (
   columnMap: ColumnMap,
@@ -358,8 +425,11 @@ const testDataRowContains = (
 const testAND = (
   columnMap: ColumnMap,
   filter: MultiClauseFilter<"and">,
+  columnsByName?: ColumnDescriptorsByName,
 ): FilterPredicate => {
-  const filters = filter.filters.map((f1) => filterPredicate(columnMap, f1));
+  const filters = filter.filters.map((f1) =>
+    filterPredicate(columnMap, f1, columnsByName),
+  );
   return (row) => filters.every((fn) => fn(row));
 };
 
@@ -373,8 +443,11 @@ const testDataRowAND = (
 function testOR(
   columnMap: ColumnMap,
   filter: MultiClauseFilter<"or">,
+  columnsByName?: ColumnDescriptorsByName,
 ): FilterPredicate {
-  const filters = filter.filters.map((f1) => filterPredicate(columnMap, f1));
+  const filters = filter.filters.map((f1) =>
+    filterPredicate(columnMap, f1, columnsByName),
+  );
   return (row) => filters.some((fn) => fn(row));
 }
 

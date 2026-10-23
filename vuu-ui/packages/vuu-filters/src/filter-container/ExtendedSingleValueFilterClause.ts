@@ -7,8 +7,10 @@ import type {
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   getDefaultTimeZone,
+  isScaledDecimalFilterOptions,
   isValidTimeString,
   type RelativeDate,
+  scaledDecimalFilterAsQuery,
   temporalFilterAsQuery,
   type TemporalInfo,
 } from "@vuu-ui/vuu-utils";
@@ -25,13 +27,14 @@ export interface SerializableFilter {
 const timeStringWithFraction = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?$/;
 
 /**
- * A filter clause on a time of day value (TimeString). The time is resolved
- * against a date ('today' by default) only when the query is created, so a
- * persisted filter remains relative.
+ * A filter clause whose query depends on options beyond the column, op and value:
+ * - a time of day value (TimeString). The time is resolved against a date
+ *   ('today' by default) only when the query is created, so a persisted filter
+ *   remains relative.
+ * - a scaled decimal value, matched at the precision with which the column
+ *   displays values (see scaledDecimalFilterAsQuery).
  */
-export class ExtendedSingleValueFilterClause
-  implements SerializableSingleValueFilterClause
-{
+export class ExtendedSingleValueFilterClause implements SerializableSingleValueFilterClause {
   #options: ExtendedFilterOptions;
 
   constructor(
@@ -50,8 +53,10 @@ export class ExtendedSingleValueFilterClause
 
   asQuery() {
     const { column, op, value } = this;
-    const { date, encoding = "epochMillis", timeZone } = this.#options;
-    if (this.#options.type === "TimeString") {
+    if (isScaledDecimalFilterOptions(this.#options)) {
+      return scaledDecimalFilterAsQuery({ column, op, value }, this.#options);
+    } else if (this.#options.type === "TimeString") {
+      const { date, encoding = "epochMillis", timeZone } = this.#options;
       if (
         typeof value === "string" &&
         (isValidTimeString(value) || timeStringWithFraction.test(value))

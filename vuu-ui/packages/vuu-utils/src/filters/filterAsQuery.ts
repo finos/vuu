@@ -22,6 +22,11 @@ import {
   isSerializableFilter,
 } from "./filter-utils";
 import { ScaledDecimal } from "../ScaledDecimal";
+import {
+  getScaledDecimalScale,
+  isScaledDecimalFilterOptions,
+  scaledDecimalFilterAsQuery,
+} from "./scaled-decimal-filter";
 
 const filterValue = (
   value: string | number | boolean | ScaledDecimal,
@@ -37,6 +42,10 @@ const filterValue = (
         "double",
         "epochtimestamp",
         "epochtimestampnano",
+        "scaleddecimal2",
+        "scaleddecimal4",
+        "scaleddecimal6",
+        "scaleddecimal8",
       ].includes(columnType);
       return isNumericType ? value : `"${value}"`;
     }
@@ -94,6 +103,9 @@ function singleValueFilterAsQuery(
 ): string {
   if (isSerializableFilter(f)) {
     return f.asQuery();
+  } else if (isScaledDecimalFilterOptions(f.extendedOptions)) {
+    // a persisted (JSON) clause
+    return scaledDecimalFilterAsQuery(f, f.extendedOptions);
   } else {
     const column = opts?.columnsByName?.[f.column];
     const temporalInfo = getTemporalInfo(column);
@@ -286,8 +298,9 @@ export const getColumnsByNameForFilter = (
 
 /**
  * Returns true if the filter includes clauses whose meaning depends on the
- * column type (temporal columns) or which serialize themselves. Such filters
- * must be resolved (see resolveFilterQuery) before they can be evaluated locally.
+ * column type (temporal and scaled decimal columns) or which serialize
+ * themselves. Such filters must be resolved (see resolveFilterQuery) before
+ * they can be evaluated locally.
  */
 export const filterRequiresResolution = (
   filter: Filter,
@@ -297,9 +310,18 @@ export const filterRequiresResolution = (
     return filter.filters.some((f) =>
       filterRequiresResolution(f, columnsByName),
     );
-  } else if (isSerializableFilter(filter as SingleValueFilterClause)) {
+  } else if (
+    isSerializableFilter(filter as SingleValueFilterClause) ||
+    isScaledDecimalFilterOptions(
+      (filter as SingleValueFilterClause).extendedOptions,
+    )
+  ) {
     return true;
   } else {
-    return getTemporalInfo(columnsByName?.[filter.column]) !== undefined;
+    const column = columnsByName?.[filter.column];
+    return (
+      getTemporalInfo(column) !== undefined ||
+      getScaledDecimalScale(column?.serverDataType) !== undefined
+    );
   }
 };

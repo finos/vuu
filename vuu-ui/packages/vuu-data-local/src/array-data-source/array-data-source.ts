@@ -639,13 +639,14 @@ export class ArrayDataSource
     // Filters on temporal columns (and serializable filters) are evaluated
     // using the resolved query, so local semantics match those of the server
     // e.g a date '=' clause resolves to a range covering the whole day.
+    const columnsByName = getColumnsByNameForFilter(
+      this.tableSchema,
+      this.#filterColumnsByName,
+    );
     const filterStruct =
       rawFilterStruct &&
       filter &&
-      filterRequiresResolution(
-        rawFilterStruct,
-        getColumnsByNameForFilter(this.tableSchema, this.#filterColumnsByName),
-      )
+      filterRequiresResolution(rawFilterStruct, columnsByName)
         ? parseFilter(filter)
         : rawFilterStruct;
     if (filterStruct) {
@@ -657,9 +658,9 @@ export class ArrayDataSource
         for (const [col, idx] of Object.entries(this.dataMap)) {
           actualColumnMap[col] = offset + (idx as number);
         }
-        return filterPredicate(actualColumnMap, filterStruct);
+        return filterPredicate(actualColumnMap, filterStruct, columnsByName);
       }
-      return filterPredicate(this.#columnMap, filterStruct);
+      return filterPredicate(this.#columnMap, filterStruct, columnsByName);
     } else {
       throw Error("filter must include filterStruct");
     }

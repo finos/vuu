@@ -12,9 +12,7 @@ export class ScaledDecimal {
   constructor(
     protected readonly value: string,
     private readonly decimals = 6,
-  ) {
-    console.log(`create a scaled decimal ${value} (${decimals} decimals)`);
-  }
+  ) {}
 
   get asLong() {
     if (this.value === "") {
