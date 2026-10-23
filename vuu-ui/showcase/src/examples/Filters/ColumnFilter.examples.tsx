@@ -24,7 +24,7 @@ import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceProvider, filterAsQuery, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 
-const instrumentsSchema = getSchema("instruments");
+const instrumentsExtendedSchema = getSchema("instrumentsExtended");
 const ordersSchema = getSchema("parentOrders");
 
 const useCallbackRecorder = () => {
@@ -71,7 +71,7 @@ export const PriceFilterWithOperators = ({
 }: OperatorExampleProps) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(
-    () => new VuuDataSource({ table: instrumentsSchema.table }),
+    () => new VuuDataSource({ table: instrumentsExtendedSchema.table }),
     [VuuDataSource],
   );
   const { record, recorder } = useCallbackRecorder();
@@ -89,7 +89,7 @@ export const PriceFilterWithOperators = ({
             defaultValue={defaultValue}
             onCommit={(column, op, value) => record(column, op, value)}
             showOperatorPicker
-            table={instrumentsSchema.table}
+            table={instrumentsExtendedSchema.table}
           />
         </FormField>
       </ContainerTemplate>
@@ -280,7 +280,7 @@ export const ControlledTextColumnFilter = ({
   const [value, setValue] = useState<ColumnFilterValue>("");
   const { record, recorder } = useCallbackRecorder();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
@@ -313,7 +313,7 @@ export const ControlledTextColumnFilter = ({
             column={{ name: "bbg", serverDataType: "string" }}
             onColumnFilterChange={handleColumnFilterChange}
             onCommit={handleCommit}
-            table={{ module: "SIMUL", table: "instruments" }}
+            table={{ module: "SIMUL", table: "instrumentsExtended" }}
             value={value}
           />
         </FormField>
@@ -342,7 +342,7 @@ export const ControlledTextColumnFilterPopulated = () => {
   const { VuuDataSource } = useData();
   const [value, setValue] = useState<ColumnFilterValue>("AAOP.N");
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
   const { record, recorder } = useCallbackRecorder();
 
@@ -365,7 +365,7 @@ export const ControlledTextColumnFilterPopulated = () => {
           column={{ name: "ric", serverDataType: "string" }}
           onColumnFilterChange={setValue}
           onCommit={handleCommit}
-          table={{ module: "SIMUL", table: "instruments" }}
+          table={{ module: "SIMUL", table: "instrumentsExtended" }}
           value={value}
         />
       </FormField>
@@ -379,7 +379,7 @@ export const UnControlledTextColumnFilter = ({
 }: ColumnFilterPassthroughProps) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
   const { record, recorder } = useCallbackRecorder();
 
@@ -413,7 +413,7 @@ export const UnControlledTextColumnFilter = ({
             column={{ name: "bbg", serverDataType: "string" }}
             onColumnFilterChange={handleColumnFilterChange}
             onCommit={handleCommit}
-            table={{ module: "SIMUL", table: "instruments" }}
+            table={{ module: "SIMUL", table: "instrumentsExtended" }}
             defaultValue=""
           />
         </FormField>
@@ -430,7 +430,7 @@ export const UnControlledNumericColumnFilter = ({
 }: ColumnFilterPassthroughProps & { defaultValue?: string }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
   const { record, recorder } = useCallbackRecorder();
 
@@ -473,7 +473,7 @@ export const UnControlledNumericColumnFilter = ({
 export const UnControlledNumericColumnFilterBetween = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -517,7 +517,7 @@ export const UnControlledNumericColumnFilterBetween = () => {
 export const ControlledNumericRangeFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
   const [value, setValue] = useState<[string, string]>(["35", "45.3"]);
 
@@ -595,7 +595,7 @@ export const ControlledTimeRangeFilter = ({
 }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
   const [value, setValue] = useState<[string, string]>(valueProp);
   const { record, recorder } = useCallbackRecorder();
@@ -715,7 +715,7 @@ export const ContainerManagedTextColumnFilter = ({
 }: FilterContainerPassthroughProps) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
   const { record, recorder } = useCallbackRecorder();
 
@@ -749,7 +749,7 @@ export const ContainerManagedTextColumnFilter = ({
             <FormFieldLabel>BBG</FormFieldLabel>
             <FilterContainerColumnFilter
               column={{ name: "bbg", serverDataType: "string" }}
-              table={{ module: "SIMUL", table: "instruments" }}
+              table={{ module: "SIMUL", table: "instrumentsExtended" }}
               defaultValue=""
             />
           </FormField>
@@ -851,7 +851,7 @@ export const ContainerManagedNumericColumnFilter = ({
   }, [onFilterCleared, record]);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
 
   return (
@@ -866,7 +866,7 @@ export const ContainerManagedNumericColumnFilter = ({
             <FormFieldLabel>{label}</FormFieldLabel>
             <FilterContainerColumnFilter
               column={column}
-              table={{ module: "SIMUL", table: "instruments" }}
+              table={{ module: "SIMUL", table: "instrumentsExtended" }}
             />
           </FormField>
         </FilterContainer>
@@ -879,8 +879,8 @@ export const ContainerManagedNumericColumnFilter = ({
 
 export const ContainerManagedScaledDecimalColumnFilter = () => (
   <ContainerManagedNumericColumnFilter
-    column={{ name: "price", serverDataType: "scaleddecimal6" }}
-    label="Price"
+    column={{ name: "fxRate", serverDataType: "scaleddecimal6" }}
+    label="FX rate"
   />
 );
 
@@ -900,7 +900,7 @@ export const ContainerManagedNumericRangeFilter = ({
   const clearFilter = () => setFilter(undefined);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -924,7 +924,7 @@ export const ContainerManagedNumericRangeFilter = ({
               column={{ name: "lotSize", serverDataType: "int" }}
               onColumnFilterChange={handleColumnFilterChange}
               operator="between"
-              table={{ module: "SIMUL", table: "instruments" }}
+              table={{ module: "SIMUL", table: "instrumentsExtended" }}
             />
           </FormField>
         </FilterContainer>
@@ -1037,7 +1037,7 @@ export const ContainerManagedBooleanToggleFilter = ({
   }, [record]);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
 
   const column: ColumnDescriptor = {
@@ -1059,7 +1059,7 @@ export const ContainerManagedBooleanToggleFilter = ({
             <FilterContainerColumnFilter
               column={column}
               labels={labels}
-              table={{ module: "SIMUL", table: "instruments" }}
+              table={{ module: "SIMUL", table: "instrumentsExtended" }}
               values={values}
               variant="toggle"
             />
@@ -1126,7 +1126,7 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
   }, [record]);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -1151,7 +1151,7 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
               extendedFilterOptions={{ date: "today", type: "TimeString" }}
               onColumnFilterChange={handleColumnFilterChange}
               operator={op}
-              table={{ module: "SIMUL", table: "instruments" }}
+              table={{ module: "SIMUL", table: "instrumentsExtended" }}
             />
           </FormField>
         </FilterContainer>
@@ -1228,11 +1228,11 @@ export const ContainerManagedMultipleColumnFilters = () => {
   );
   const clearFilter = () => setFilter(undefined);
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: instrumentsSchema.table });
+    return new VuuDataSource({ table: instrumentsExtendedSchema.table });
   }, [VuuDataSource]);
 
   const table = useMemo<TableSchemaTable>(
-    () => ({ module: "SIMUL", table: "instruments" }),
+    () => ({ module: "SIMUL", table: "instrumentsExtended" }),
     [],
   );
 

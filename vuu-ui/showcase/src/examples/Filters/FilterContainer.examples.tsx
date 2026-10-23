@@ -28,7 +28,7 @@ import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 
-const schema = getSchema("instruments");
+const schema = getSchema("instrumentsExtended");
 const filterColumnsByName = getColumnsByNameForFilter(schema);
 
 const typeaheadPropsZero: ColumnFilterProps["TypeaheadProps"] = {
@@ -40,6 +40,17 @@ const typeaheadPropsOne: ColumnFilterProps["TypeaheadProps"] = {
   selectOnTab: false,
 };
 
+const comparisonOperators: ColumnFilterProps["operators"] = [
+  "=",
+  "!=",
+  ">",
+  ">=",
+  "<",
+  "<=",
+  "between",
+  "between-inclusive",
+];
+
 const SimpleFilterContainerTemplate = ({
   filter: filterProp,
   showOperatorPicker = false,
@@ -49,9 +60,10 @@ const SimpleFilterContainerTemplate = ({
   const [filter, setFilter] =
     useState<FilterContainerProps["filter"]>(filterProp);
 
-  const [columns, [vuuCreatedTime, bbg, currency, exchange, lotSize]] = useMemo<
-    [ColumnDescriptor[], ColumnDescriptor[]]
-  >(() => {
+  const [
+    columns,
+    [vuuCreatedTime, bbg, currency, exchange, lotSize, notional],
+  ] = useMemo<[ColumnDescriptor[], ColumnDescriptor[]]>(() => {
     const cols: ColumnDescriptor[] = [
       {
         label: "Vuu Created Time",
@@ -63,6 +75,7 @@ const SimpleFilterContainerTemplate = ({
       { name: "currency", serverDataType: "string" },
       { name: "exchange", serverDataType: "string" },
       { name: "lotSize", serverDataType: "int" },
+      { name: "notional", serverDataType: "scaleddecimal2" },
     ];
     return [cols, cols];
   }, []);
@@ -77,7 +90,7 @@ const SimpleFilterContainerTemplate = ({
   );
 
   const table = useMemo<TableSchemaTable>(
-    () => ({ module: "SIMUL", table: "instruments" }),
+    () => ({ module: "SIMUL", table: "instrumentsExtended" }),
     [],
   );
 
@@ -161,9 +174,16 @@ const SimpleFilterContainerTemplate = ({
             column={lotSize}
             defaultOperator={showOperatorPicker ? ">" : undefined}
             operator={showOperatorPicker ? undefined : "between"}
-            operators={[
-              "=", "!=", ">", ">=", "<", "<=", "between", "between-inclusive",
-            ]}
+            operators={comparisonOperators}
+            showOperatorPicker={showOperatorPicker}
+          />
+        </FormField>
+        <FormField>
+          <FormFieldLabel>Notional</FormFieldLabel>
+          <FilterContainerColumnFilter
+            column={notional}
+            defaultOperator={showOperatorPicker ? ">" : undefined}
+            operators={comparisonOperators}
             showOperatorPicker={showOperatorPicker}
           />
         </FormField>
@@ -272,7 +292,7 @@ const TableWithFiltersTemplate = () => {
   );
 
   const table = useMemo<TableSchemaTable>(
-    () => ({ module: "SIMUL", table: "instruments" }),
+    () => ({ module: "SIMUL", table: "instrumentsExtended" }),
     [],
   );
 
