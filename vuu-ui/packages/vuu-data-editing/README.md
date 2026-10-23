@@ -182,6 +182,7 @@ editSession.undoRowChange(key, action);
    - `action === "addRow"` OR
    - Row key exists in private `#addedRowKeys`
    - Decrements `addCount` and removes `key` from `#addedRowKeys`.
+   - **Deselects the row**: If selection is active (`selectedRowsCount !== 0`), dispatches `dataSource.select({ type: "DESELECT_ROW", rowKey: key, preserveExistingSelection: true })` so that the undone row does not leave a phantom selection behind.
 
 > **Robust Add-Delete-Undo**: Even if a row was added, then soft-deleted (`action` became `"deleteRow"`), and the server purges the row on undo without returning any special flag, `EditSession` identifies the row via `#addedRowKeys` and decrements **both** `deleteCount` and `addCount`, returning `editState` cleanly to `"clean"`.
 

@@ -182,7 +182,7 @@ Server-side contract: when soft-deleting a row whose `vuuAction` is `"addRow"` (
 
 When `undoRowChange(key, action)` is called on a row:
 - If `action === "deleteRow"`, `deleteCount` is decremented.
-- If the row was an inserted row (`action === "addRow"` or key exists in `#addedRowKeys`), `addCount` is also decremented and the key is removed from `#addedRowKeys`.
+- If the row was an inserted row (`action === "addRow"` or key exists in `#addedRowKeys`), `addCount` is also decremented and the key is removed from `#addedRowKeys`. In addition, if selection is active (`selectedRowsCount !== 0`), `dataSource.select({ type: "DESELECT_ROW", rowKey: key, preserveExistingSelection: true })` is dispatched so that removing the row does not leave behind a stale selection count that would keep the Delete button enabled.
 
 This decouples the client from requiring the remote server to return an extra response flag: when an added row is soft-deleted and then undone, the client correctly decrements both counters and returns `editState` to `"clean"`.
 

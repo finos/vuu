@@ -267,6 +267,67 @@ describe("EditSession", () => {
     expect(insertedRowSession.addCount).toBe(0);
   });
 
+  it("deselects the row when an added row is undone", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      type: "SUCCESS_RESULT",
+    });
+    const select = vi.fn();
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: { key: "row-001" },
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      endEditSession: vi.fn(),
+      select,
+      undoRowChange,
+    } as unknown as DataSource;
+    const insertedRowSession = new EditSession({ dataSource: editApi });
+    await insertedRowSession.begin();
+    await insertedRowSession.addRow({ id: "row-001" });
+
+    await insertedRowSession.undoRowChange("row-001", "addRow");
+
+    expect(undoRowChange).toHaveBeenCalledWith("row-001");
+    expect(select).toHaveBeenCalledWith({
+      preserveExistingSelection: true,
+      rowKey: "row-001",
+      type: "DESELECT_ROW",
+    });
+    expect(insertedRowSession.addCount).toBe(0);
+  });
+
+  it("skips deselecting the row when an added row is undone and selectedRowsCount is 0", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      type: "SUCCESS_RESULT",
+    });
+    const select = vi.fn();
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: { key: "row-001" },
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      endEditSession: vi.fn(),
+      select,
+      selectedRowsCount: 0,
+      undoRowChange,
+    } as unknown as DataSource;
+    const insertedRowSession = new EditSession({ dataSource: editApi });
+    await insertedRowSession.begin();
+    await insertedRowSession.addRow({ id: "row-001" });
+
+    await insertedRowSession.undoRowChange("row-001", "addRow");
+
+    expect(undoRowChange).toHaveBeenCalledWith("row-001");
+    expect(select).not.toHaveBeenCalled();
+    expect(insertedRowSession.addCount).toBe(0);
+  });
+
   it("decrements addCount when an added row is deleted and then undone", async () => {
     const undoRowChange = vi.fn().mockResolvedValue({
       data: undefined,
