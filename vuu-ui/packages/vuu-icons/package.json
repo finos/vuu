@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-icons",
-  "version": "3.5.17",
+  "version": "3.5.18",
   "description": "css embedded svg icons plus icon components for Vuu",
   "main": "src/index.ts",
   "license": "Apache-2.0",
