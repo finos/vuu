@@ -14,7 +14,7 @@ import type {
   VuuSortType,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import type { DateTimePattern, RowClassNameGenerator } from "@vuu-ui/vuu-utils";
+import type { DateTimePattern } from "@vuu-ui/vuu-utils";
 import type {
   ComponentType,
   CSSProperties,
@@ -552,7 +552,6 @@ export interface BaseRowProps {
 }
 
 export interface RowProps extends BaseRowProps {
-  classNameGenerator?: RowClassNameGenerator;
   dataRow: DataRow;
   groupToggleTarget?: GroupToggleTarget;
   highlighted?: boolean;

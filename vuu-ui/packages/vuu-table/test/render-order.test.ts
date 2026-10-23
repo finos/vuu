@@ -131,4 +131,37 @@ describe("getRowsInRenderOrder", () => {
       expect(flagsByRowIndex(rows)).toEqual({ 0: "p--", 2: "-s-" });
     });
   });
+
+  describe("neighbouring rows (in row order, not render order)", () => {
+    const neighboursByRowIndex = (dataRows: DataRow[]) =>
+      Object.fromEntries(
+        getRowsInRenderOrder(dataRows).map(
+          ({ dataRow, previousDataRow, nextDataRow }) => [
+            dataRow.index,
+            [previousDataRow?.index, nextDataRow?.index],
+          ],
+        ),
+      );
+
+    it("provides the rows either side in row order", () => {
+      const rows = [row(10, 2), row(11, 0), row(12, 1)];
+      expect(neighboursByRowIndex(rows)).toEqual({
+        10: [undefined, 11],
+        11: [10, 12],
+        12: [11, undefined],
+      });
+    });
+
+    it("does not treat rows either side of a hole as neighbours", () => {
+      const rows: DataRow[] = [];
+      rows[0] = row(0, 0);
+      rows[1] = row(1, 1);
+      rows[3] = row(3, 2);
+      expect(neighboursByRowIndex(rows)).toEqual({
+        0: [undefined, 1],
+        1: [0, undefined],
+        3: [undefined, undefined],
+      });
+    });
+  });
 });

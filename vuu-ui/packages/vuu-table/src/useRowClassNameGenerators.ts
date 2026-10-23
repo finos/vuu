@@ -15,10 +15,13 @@ const createClassNameGenerator = (
       functions.push(fn.fn);
     }
   });
-  return (dataRow) => {
+  if (functions.length === 0) {
+    return undefined;
+  }
+  return (dataRow, previousDataRow, nextDataRow) => {
     const classNames: string[] = [];
-    functions?.forEach((fn) => {
-      const className = fn(dataRow);
+    functions.forEach((fn) => {
+      const className = fn(dataRow, previousDataRow, nextDataRow);
       if (className) {
         classNames.push(className);
       }

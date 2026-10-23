@@ -20,7 +20,6 @@ const classBase = "vuuTableRow";
 export const Row = memo(
   ({
     className: classNameProp,
-    classNameGenerator,
     columns,
     dataRow,
     groupToggleTarget = "group-column",
@@ -58,7 +57,6 @@ export const Row = memo(
     const className = cx(
       classBase,
       classNameProp,
-      classNameGenerator?.(dataRow),
       {
         [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
         [`${classBase}-highlighted`]: highlighted,

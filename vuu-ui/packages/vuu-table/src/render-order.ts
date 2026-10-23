@@ -8,6 +8,10 @@ export interface RenderEntry {
   selectionEnd: boolean;
   /** non-selected row whose successor (in row order) is selected */
   precedesSelection: boolean;
+  /** the row immediately before dataRow in row order, if loaded */
+  previousDataRow: DataRow | undefined;
+  /** the row immediately after dataRow in row order, if loaded */
+  nextDataRow: DataRow | undefined;
 }
 
 const createEntry = (
@@ -22,6 +26,10 @@ const createEntry = (
     selectionStart: selected && prev !== undefined && !prev.isSelected,
     selectionEnd: selected && next !== undefined && !next.isSelected,
     precedesSelection: !selected && Boolean(next?.isSelected),
+    // prev and next are the nearest loaded rows, which may not be adjacent if
+    // dataRows is sparse
+    previousDataRow: prev?.index === dataRow.index - 1 ? prev : undefined,
+    nextDataRow: next?.index === dataRow.index + 1 ? next : undefined,
   };
 };
 

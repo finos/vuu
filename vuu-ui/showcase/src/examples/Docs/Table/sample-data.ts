@@ -62,6 +62,70 @@ export const stockData: VuuRowDataItemType[][] = [
   ["NOVN.S", "Novartis AG", "Healthcare", "SIX", "CHF", 98.33, 0.0056, 2_880_150, T - 12 * min, true],
 ];
 
+export const tradeColumns: ColumnDescriptor[] = [
+  { name: "execId", label: "Exec ID", serverDataType: "string", width: 80 },
+  { name: "tradeId", label: "Trade ID", serverDataType: "string", width: 90 },
+  { name: "side", label: "Side", serverDataType: "string", width: 60 },
+  { name: "ric", label: "RIC", serverDataType: "string", width: 90 },
+  { name: "quantity", label: "Quantity", serverDataType: "long", width: 90 },
+  { name: "price", label: "Price", serverDataType: "double", width: 90 },
+  { name: "account", label: "Account", serverDataType: "string", width: 110 },
+];
+
+/**
+ * Each trade has a buy row and a sell row, which share a tradeId. execId
+ * identifies each row.
+ */
+// prettier-ignore
+export const tradeData: VuuRowDataItemType[][] = [
+  ["E-01", "T-1001", "BUY", "AAPL.OQ", 500, 227.5, "ACC-ALPHA"],
+  ["E-02", "T-1001", "SELL", "AAPL.OQ", 500, 227.5, "ACC-BRAVO"],
+  ["E-03", "T-1002", "BUY", "VOD.L", 12000, 74.6, "ACC-CHARLIE"],
+  ["E-04", "T-1002", "SELL", "VOD.L", 12000, 74.6, "ACC-ALPHA"],
+  ["E-05", "T-1003", "BUY", "SAP.DE", 800, 204.1, "ACC-DELTA"],
+  ["E-06", "T-1003", "SELL", "SAP.DE", 800, 204.1, "ACC-ECHO"],
+  ["E-07", "T-1004", "BUY", "MSFT.OQ", 250, 438.1, "ACC-BRAVO"],
+  ["E-08", "T-1004", "SELL", "MSFT.OQ", 250, 438.1, "ACC-DELTA"],
+  ["E-09", "T-1005", "BUY", "BP.L", 20000, 391.4, "ACC-ECHO"],
+  ["E-10", "T-1005", "SELL", "BP.L", 20000, 391.4, "ACC-CHARLIE"],
+  ["E-11", "T-1006", "BUY", "MC.PA", 100, 701.4, "ACC-ALPHA"],
+  ["E-12", "T-1006", "SELL", "MC.PA", 100, 701.4, "ACC-DELTA"],
+];
+
+export const orderColumns: ColumnDescriptor[] = [
+  { name: "orderId", label: "Order ID", serverDataType: "string", width: 90 },
+  {
+    name: "massOrderId",
+    label: "Mass order ID",
+    serverDataType: "string",
+    width: 120,
+  },
+  { name: "side", label: "Side", serverDataType: "string", width: 60 },
+  { name: "ric", label: "RIC", serverDataType: "string", width: 90 },
+  { name: "quantity", label: "Quantity", serverDataType: "long", width: 90 },
+  { name: "price", label: "Price", serverDataType: "double", width: 90 },
+];
+
+/**
+ * Orders placed by a mass order request share a massOrderId. Orders placed
+ * individually have an empty massOrderId.
+ */
+// prettier-ignore
+export const orderData: VuuRowDataItemType[][] = [
+  ["O-2001", "M-01", "BUY", "AAPL.OQ", 100, 227.4],
+  ["O-2002", "M-01", "BUY", "MSFT.OQ", 50, 438.0],
+  ["O-2003", "M-01", "BUY", "NVDA.OQ", 200, 121.4],
+  ["O-2004", "M-01", "BUY", "AMZN.OQ", 75, 186.3],
+  ["O-2005", "", "SELL", "VOD.L", 5000, 74.7],
+  ["O-2006", "", "BUY", "BARC.L", 3000, 226.7],
+  ["O-2007", "M-02", "SELL", "SAP.DE", 400, 204.2],
+  ["O-2008", "M-02", "SELL", "SIE.DE", 300, 181.4],
+  ["O-2009", "M-02", "SELL", "ALV.DE", 150, 291.5],
+  ["O-2010", "", "BUY", "JPM.N", 120, 210.8],
+  ["O-2011", "M-03", "BUY", "XOM.N", 600, 117.3],
+  ["O-2012", "M-03", "BUY", "CVX.N", 400, 147.2],
+];
+
 const sectors = ["Technology", "Financials", "Energy", "Healthcare", "Consumer"];
 const currencies = ["USD", "GBP", "EUR", "CHF", "JPY"];
 

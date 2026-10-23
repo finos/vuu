@@ -539,7 +539,9 @@ const TableCore = ({
               {getRowsInRenderOrder(dataRows).map(
                 ({
                   dataRow,
+                  nextDataRow,
                   precedesSelection,
+                  previousDataRow,
                   selectionEnd,
                   selectionStart,
                 }) => {
@@ -547,7 +549,14 @@ const TableCore = ({
                   return (
                     <Row
                       aria-rowindex={ariaRowIndex}
-                      classNameGenerator={rowClassNameGenerator}
+                      // Row is memoised, passing the generated class name rather
+                      // than neighbouring rows means a change to a neighbour only
+                      // re-renders this row if its class name changes.
+                      className={rowClassNameGenerator?.(
+                        dataRow,
+                        previousDataRow,
+                        nextDataRow,
+                      )}
                       columns={scrollProps.columnsWithinViewport}
                       // These are used for styling selection only. Rows are rendered
                       // in renderIndex order, not row order, so CSS sibling selectors
