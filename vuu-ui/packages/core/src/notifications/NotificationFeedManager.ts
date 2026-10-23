@@ -46,21 +46,53 @@ const matchModules = (
 };
 
 /**
- * One module: that module. Several: those the notification names, else all
- * of them. The portal's own server: only those the notification names, so
- * that portal notifications don't badge every app on that server.
+ * Topic routing: the modules, of those given, whose `notificationTopics`
+ * include the notification's `topic`. `[]` when none claims it, i.e. the
+ * notification is unclaimed. `undefined` when topic routing does not apply:
+ * the notification has no topic, or none of the modules declares any
+ * topics.
+ */
+export const matchTopicModules = (
+  { topic }: Pick<PortalNotification, "topic">,
+  modules: RemoteModuleDescriptor[],
+): ModuleId[] | undefined => {
+  if (!topic || !modules.some((m) => (m.notificationTopics?.length ?? 0) > 0)) {
+    return undefined;
+  }
+  return modules
+    .filter(({ notificationTopics }) => notificationTopics?.includes(topic))
+    .map(({ id }) => id);
+};
+
+/**
+ * The modules are those using the notification's server. In order:
+ *
+ * 1. The modules the notification names (`module` or `clientIdentifier`).
+ * 2. With a `topic`, when any of the modules declares `notificationTopics`:
+ *    those claiming the topic, possibly none (unclaimed, shown only in the
+ *    bell and panel).
+ * 3. Otherwise, one module: that module; several: all of them; the portal's
+ *    own server: none, so that portal notifications don't badge every app
+ *    on that server.
+ *
+ * Topics are matched per connection: a module claims a topic only for
+ * notifications from the servers it uses.
  */
 export const defaultNotificationAttribution =
   (portalConnectionId: string): NotificationAttribution =>
   (notification, modules) => {
+    const named = matchModules(notification, modules);
+    if (named.length > 0) {
+      return named;
+    }
+    const claimed = matchTopicModules(notification, modules);
+    if (claimed) {
+      return claimed;
+    }
     if (notification.origin.connectionId === portalConnectionId) {
-      return matchModules(notification, modules);
+      return [];
     }
-    if (modules.length <= 1) {
-      return modules.map(({ id }) => id);
-    }
-    const matched = matchModules(notification, modules);
-    return matched.length > 0 ? matched : modules.map(({ id }) => id);
+    return modules.map(({ id }) => id);
   };
 
 /** Data scope for a remote server, as `ConnectionDataScope` provides. */

@@ -274,3 +274,72 @@ describe("NotificationStore", () => {
     expect(store.unreadCount()).toBe(1);
   });
 });
+
+describe("unreadSeverity", () => {
+  it("is the worst unread level over the modules: error > warning > unread", () => {
+    const store = new NotificationStore();
+    expect(store.unreadSeverity(["a", "b"])).toBeUndefined();
+    store.upsert(notification("1", { level: "success", moduleIds: ["a"] }));
+    expect(store.unreadSeverity(["a"])).toBe("unread");
+    store.upsert(notification("2", { level: "warning", moduleIds: ["b"] }));
+    expect(store.unreadSeverity(["a"])).toBe("unread");
+    expect(store.unreadSeverity(["a", "b"])).toBe("warning");
+    store.upsert(notification("3", { level: "error", moduleIds: ["a", "c"] }));
+    expect(store.unreadSeverity(["a", "b"])).toBe("error");
+    expect(store.unreadSeverity(["c"])).toBe("error");
+    expect(store.unreadSeverity(["d"])).toBeUndefined();
+  });
+
+  it("only counts unread notifications", () => {
+    const store = new NotificationStore();
+    store.upsert(notification("1", { level: "error" }));
+    store.upsert(notification("2", { level: "warning" }));
+    store.markRead(["s1:1"]);
+    expect(store.unreadSeverity(["a"])).toBe("warning");
+    store.markRead("all");
+    expect(store.unreadSeverity(["a"])).toBeUndefined();
+    store.markRead(["s1:1"], false);
+    expect(store.unreadSeverity(["a"])).toBe("error");
+  });
+
+  it("follows level changes, reattribution, deletion and clear", () => {
+    const store = new NotificationStore();
+    store.upsert(notification("1", { level: "info" }));
+    store.upsert(notification("1", { level: "error" }));
+    expect(store.unreadSeverity(["a"])).toBe("error");
+    store.reattribute(() => ["b"]);
+    expect(store.unreadSeverity(["a"])).toBeUndefined();
+    expect(store.unreadSeverity(["b"])).toBe("error");
+    store.delete(["s1:1"]);
+    expect(store.unreadSeverity(["b"])).toBeUndefined();
+    store.upsert(notification("2", { level: "warning" }));
+    store.clear();
+    expect(store.unreadSeverity(["a"])).toBeUndefined();
+  });
+
+  it("ignores notifications attributed to the open module", () => {
+    const store = new NotificationStore();
+    store.setOpenModule("a");
+    store.upsert(notification("1", { level: "error", moduleIds: ["a", "b"] }));
+    expect(store.unreadSeverity(["b"])).toBeUndefined();
+  });
+});
+
+describe("topic", () => {
+  it("updates a notification whose topic changes", () => {
+    const store = new NotificationStore();
+    const events: string[] = [];
+    store.subscribe((event) => events.push(event.type));
+    store.upsert(notification("1", { topic: "orders" }));
+    store.upsert(notification("1", { topic: "risk" }));
+    expect(store.get("s1:1")?.topic).toBe("risk");
+    expect(events).toEqual(["added", "updated"]);
+  });
+
+  it("matches the topic in text queries", () => {
+    const store = new NotificationStore();
+    store.upsert(notification("1", { topic: "orders" }));
+    store.upsert(notification("2"));
+    expect(store.query({ text: "ORDERS" }).map(({ id }) => id)).toEqual(["1"]);
+  });
+});

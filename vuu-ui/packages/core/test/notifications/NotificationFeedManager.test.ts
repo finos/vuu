@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ModuleServerMap } from "../../src/connection-management/ModuleServerMap";
 import {
   defaultNotificationAttribution,
+  matchTopicModules,
   NotificationFeedManager,
 } from "../../src/notifications/NotificationFeedManager";
 import { NotificationStore } from "../../src/notifications/NotificationStore";
@@ -25,6 +26,7 @@ const COLUMNS = [
   "type",
   "module",
   "vuuCreatedTimestamp",
+  "topic",
 ];
 
 type Values = {
@@ -32,6 +34,7 @@ type Values = {
   title?: string;
   module?: string;
   vuuCreatedTimestamp?: number;
+  topic?: string;
 };
 
 const toRow = (index: number, v: Values): DataSourceRow =>
@@ -53,6 +56,7 @@ const toRow = (index: number, v: Values): DataSourceRow =>
     "toast",
     v.module ?? "",
     v.vuuCreatedTimestamp ?? 1000,
+    v.topic ?? "",
   ] as unknown as DataSourceRow;
 
 const fakeScope = ({ supported = true } = {}) => {
@@ -205,12 +209,16 @@ describe("ServerNotificationFeed", () => {
 describe("NotificationFeedManager", () => {
   const createMap = (
     configs: Record<string, RemoteModuleConnection | undefined>,
+    topics: Record<string, string[]> = {},
   ) => {
     const map = new ModuleServerMap({
       loadConfig: async (mfUrl: string) => ({
         vuu: configs[mfUrl.split("/").pop() as string],
       }),
-      modules: Object.keys(configs).map((id) => testModule(id)),
+      modules: Object.keys(configs).map((id) => ({
+        ...testModule(id),
+        notificationTopics: topics[id],
+      })),
       portalConnectionId: "portal",
     });
     map.start();
@@ -221,8 +229,9 @@ describe("NotificationFeedManager", () => {
 
   const setup = async (
     configs: Record<string, RemoteModuleConnection | undefined>,
+    topics?: Record<string, string[]>,
   ) => {
-    const map = createMap(configs);
+    const map = createMap(configs, topics);
     await flush();
     const store = new NotificationStore();
     const feeds = new Map<string, ReturnType<typeof fakeScope>>();
@@ -329,5 +338,152 @@ describe("NotificationFeedManager", () => {
       origin: { connectionId: "s1", moduleIds: [], source: "server" },
     } as never;
     expect(attribution(n, modules)).toEqual(["b"]);
+  });
+
+  describe("topic routing", () => {
+    it("attributes a topic to the modules on the server that claim it", async () => {
+      const { attach, store } = await setup(
+        { a: server("s1"), b: server("s1"), c: server("s1") },
+        { a: ["orders", "risk"], b: ["orders"], c: ["risk"] },
+      );
+      const source = await attach("s1");
+      source.send([
+        { id: "1", topic: "orders" },
+        { id: "2", topic: "risk" },
+      ]);
+      expect(store.get("s1:1")?.topic).toBe("orders");
+      expect(store.get("s1:1")?.origin.moduleIds).toEqual(["a", "b"]);
+      expect(store.get("s1:2")?.origin.moduleIds).toEqual(["a", "c"]);
+      expect(store.unreadCount({ moduleIds: ["a"] })).toBe(2);
+    });
+
+    it("keeps connection-wide attribution without a topic", async () => {
+      const { attach, store } = await setup(
+        { a: server("s1"), b: server("s1") },
+        { a: ["orders"] },
+      );
+      const source = await attach("s1");
+      source.send([{ id: "1" }, { id: "2", topic: "" }]);
+      expect(store.get("s1:1")?.origin.moduleIds).toEqual(["a", "b"]);
+      expect(store.get("s1:2")?.origin.moduleIds).toEqual(["a", "b"]);
+      expect(store.get("s1:2")?.topic).toBeUndefined();
+    });
+
+    it("keeps connection-wide attribution when no module declares topics", async () => {
+      const { attach, store } = await setup({
+        a: server("s1"),
+        b: server("s1"),
+      });
+      const source = await attach("s1");
+      source.send([{ id: "1", topic: "orders" }]);
+      expect(store.get("s1:1")?.origin.moduleIds).toEqual(["a", "b"]);
+    });
+
+    it("leaves a topic no module claims unattributed", async () => {
+      const { attach, store } = await setup(
+        { a: server("s1"), b: server("s1") },
+        { a: ["orders"] },
+      );
+      const source = await attach("s1");
+      source.send([{ id: "1", topic: "compliance" }]);
+      expect(store.get("s1:1")?.origin.moduleIds).toEqual([]);
+      expect(store.unreadPortalCount).toBe(1);
+      expect(store.unreadCount()).toBe(1);
+    });
+
+    it("routes portal server notifications by topic", async () => {
+      const { attach, store } = await setup(
+        { a: undefined, b: undefined },
+        { b: ["risk"] },
+      );
+      const source = await attach("portal");
+      source.send([
+        { id: "1", topic: "risk" },
+        { id: "2", topic: "orders" },
+        { id: "3" },
+      ]);
+      expect(store.get("portal:1")?.origin.moduleIds).toEqual(["b"]);
+      expect(store.get("portal:2")?.origin.moduleIds).toEqual([]);
+      expect(store.get("portal:3")?.origin.moduleIds).toEqual([]);
+    });
+
+    it("matches topics per connection", async () => {
+      const { attach, store } = await setup(
+        { a: server("s1"), b: server("s2") },
+        { a: ["orders"], b: ["orders"] },
+      );
+      const source = await attach("s2");
+      source.send([{ id: "1", topic: "orders" }]);
+      expect(store.get("s2:1")?.origin.moduleIds).toEqual(["b"]);
+    });
+
+    it("prefers modules the notification names to its topic", async () => {
+      const { attach, store } = await setup(
+        { a: server("s1"), b: server("s1") },
+        { a: ["orders"] },
+      );
+      const source = await attach("s1");
+      source.send([{ id: "1", module: "b", topic: "orders" }]);
+      expect(store.get("s1:1")?.origin.moduleIds).toEqual(["b"]);
+    });
+
+    it("marks a notification the open module claims read for every module", async () => {
+      const { attach, store } = await setup(
+        { a: server("s1"), b: server("s1"), c: server("s1") },
+        { a: ["orders"], b: ["orders"], c: ["risk"] },
+      );
+      store.setOpenModule("b");
+      const source = await attach("s1");
+      source.send([
+        { id: "1", topic: "orders" },
+        { id: "2", topic: "risk" },
+      ]);
+      expect(store.get("s1:1")?.read).toBe(true);
+      expect(store.unreadCount({ moduleIds: ["a"] })).toBe(0);
+      expect(store.unreadSeverity(["a"])).toBeUndefined();
+      expect(store.get("s1:2")?.read).toBe(false);
+      expect(store.unreadCount({ moduleIds: ["c"] })).toBe(1);
+    });
+
+    it("marks read what an entry claims when it is opened", async () => {
+      const { attach, store } = await setup(
+        { a: server("s1"), b: server("s1"), c: server("s1") },
+        { a: ["orders"], b: ["orders"], c: ["risk"] },
+      );
+      const source = await attach("s1");
+      source.send([
+        { id: "1", topic: "orders" },
+        { id: "2", topic: "risk" },
+      ]);
+      expect(store.unreadCount({ moduleIds: ["a"] })).toBe(1);
+      store.setOpenModule("b");
+      expect(store.get("s1:1")?.read).toBe(true);
+      expect(store.unreadCount({ moduleIds: ["a"] })).toBe(0);
+      expect(store.get("s1:2")?.read).toBe(false);
+    });
+
+    it("matchTopicModules", () => {
+      const modules = [
+        { ...testModule("a"), notificationTopics: ["orders"] },
+        testModule("b"),
+      ];
+      expect(matchTopicModules({ topic: "orders" }, modules)).toEqual(["a"]);
+      expect(matchTopicModules({ topic: "risk" }, modules)).toEqual([]);
+      expect(matchTopicModules({}, modules)).toBeUndefined();
+      expect(
+        matchTopicModules({ topic: "orders" }, [testModule("b")]),
+      ).toBeUndefined();
+      const attribution = defaultNotificationAttribution("portal");
+      expect(
+        attribution(
+          {
+            attributes: {},
+            origin: { connectionId: "s1", moduleIds: [], source: "server" },
+            topic: "orders",
+          } as never,
+          modules,
+        ),
+      ).toEqual(["a"]);
+    });
   });
 });

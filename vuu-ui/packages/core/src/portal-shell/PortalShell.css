@@ -1,16 +1,34 @@
 .vuuPortalShell {
   column-gap: var(--salt-spacing-50);
   display: grid;
-  grid-template-columns: 56px 1fr;
+  grid-template-columns: var(--vuuPortalShell-navWidth, 56px) 1fr;
   grid-template-rows: 56px auto 1fr;
   grid-template-areas:
     "nav header"
     "nav banners"
     "nav content";
+  /* The track count never changes, so a nav width change can animate. */
+  transition: grid-template-columns
+    var(--vuuPortalShell-navTransitionDuration, 0s)
+    var(--vuuPortalShell-navTransitionTimingFunction, ease);
 
   height: 100vh;
   padding: var(--vuuPortalShell-padding, var(--salt-spacing-50));
   width: 100vw;
+
+  /* The column is sized by a PortalNav, which animates by default. */
+  &.vuuPortalShell-managedNav {
+    transition: grid-template-columns
+      var(--vuuPortalShell-navTransitionDuration, 180ms)
+      var(--vuuPortalShell-navTransitionTimingFunction, ease);
+  }
+
+  &.vuuPortalShell-noHeader {
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "nav banners"
+      "nav content";
+  }
 
   .vuuNavContainer {
     grid-area: nav;
