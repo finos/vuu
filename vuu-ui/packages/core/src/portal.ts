@@ -11,6 +11,33 @@ export {
   type PortalAppSwitcherProps,
 } from "./portal-app-switcher/PortalAppSwitcher";
 export {
+  buildNavSections,
+  type PortalNavItem,
+  type PortalNavSection,
+} from "./portal-app-switcher/nav-section-utils";
+export { PortalNav } from "./portal-nav/PortalNav";
+export {
+  DISPLAY_MODE_WIDTHS as PORTAL_NAV_WIDTHS,
+  type PortalNavCollapsedMode,
+  type PortalNavDensity,
+  type PortalNavDisplayMode,
+  type PortalNavProps,
+  type PortalNavSectionStyle,
+  type PortalNavSlot,
+  type PortalNavSlotContext,
+} from "./portal-nav/portal-nav-types";
+export { NAV_DISPLAY_MODE_KEY } from "./portal-nav/usePortalNavDisplayMode";
+export {
+  type PortalNavIndicator,
+  type PortalNavIndicatorSeverity,
+  usePortalNavIndicator,
+} from "./portal-nav/usePortalNavIndicator";
+export { NAV_COLLAPSED_SECTIONS_KEY } from "./portal-nav/usePortalNavSectionCollapse";
+export {
+  type PortalShellNavContextValue,
+  usePortalShellNav,
+} from "./portal-shell/PortalShellNavContext";
+export {
   WindowHost,
   type WindowHostProps,
 } from "./window-host/WindowHost";
@@ -62,9 +89,21 @@ export {
   type PortalUserMenuProps,
 } from "./portal-header/PortalUserMenu";
 export {
+  PortalConnectionStatus,
+  type PortalConnectionDescriptor,
+  type PortalConnectionStatusProps,
+  PortalNavUserMenu,
+  PortalNavUserMenuItem,
+  type PortalNavUserMenuItemProps,
+  type PortalNavUserMenuProps,
+  type PortalNavFooterVariant,
+} from "./portal-nav-footer";
+export {
   ClearSavedStateConfirmation,
   type ClearSavedStateConfirmationProps,
   getApplicationKey,
+  SavedStateContext,
+  type SavedStateContextValue,
   SavedStateDialog,
   type SavedStateDialogProps,
   SavedStateProvider,
@@ -76,6 +115,7 @@ export {
 } from "./saved-state";
 export {
   useModuleServerStatus,
+  useRetryConnection,
   useVuuServerStatus,
   useVuuServerStatuses,
   VuuServerMonitorProvider,
@@ -87,4 +127,5 @@ export type {
   VuuServerPresence,
   VuuServerStatus,
   VuuServerStatusDetail,
+  VuuServerStatusSource,
 } from "./connection-management/server-status";

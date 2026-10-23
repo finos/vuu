@@ -1,14 +1,17 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import clsx from "clsx";
 import {
   Children,
   createContext,
   isValidElement,
   type ReactElement,
+  type CSSProperties,
   type ReactNode,
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import {
   createBrowserRouter,
@@ -48,6 +51,10 @@ import {
   PortalLandingPage,
   type PortalLandingPageProps,
 } from "./PortalLandingPage";
+import {
+  PortalShellNavContext,
+  type PortalShellNavContextValue,
+} from "./PortalShellNavContext";
 
 import portalShellCss from "./PortalShell.css";
 
@@ -64,7 +71,21 @@ const isPortalLandingPage = (
 
 export interface PortalShellProps extends CommonShellProps {
   children?: ReactNode;
+  /**
+   * Whether the layout has a header row for a `PortalHeader`. `false`
+   * removes the row so the navigation and content take the full height.
+   * Defaults to `true`.
+   */
+  header?: boolean;
   id?: string;
+  /**
+   * Width of the navigation column, a number of pixels or a CSS length.
+   * Sets `--vuuPortalShell-navWidth`, which defaults to `56px`. Changes
+   * animate over `--vuuPortalShell-navTransitionDuration` (default `0s`).
+   * A `PortalNav` child sizes the column to its display mode, unless this
+   * is set.
+   */
+  navWidth?: number | string;
   /**
    * Notifications from the applications' servers, shown as badges in the
    * navigation. `false` disables them.
@@ -139,7 +160,9 @@ const CloseContextPanelOnNavigation = () => {
 const PortalLayout = () => {
   const {
     children,
+    header = true,
     id,
+    navWidth,
     notifications,
     portalId = id,
     remoteModules,
@@ -149,6 +172,18 @@ const PortalLayout = () => {
   } = usePortalShellProps();
   const targetWindow = useWindow();
   const openModuleId = useOpenModuleId(remoteModules);
+  // Width requested by a PortalNav child; the navWidth prop takes precedence.
+  const [managedNavWidth, setNavWidth] = useState<string | undefined>();
+  const navContext = useMemo<PortalShellNavContextValue>(
+    () => ({ setNavWidth }),
+    [],
+  );
+  const columnWidth =
+    navWidth === undefined
+      ? managedNavWidth
+      : typeof navWidth === "number"
+        ? `${navWidth}px`
+        : navWidth;
   const [
     [landingPage = <PortalLandingPage />, ...unexpectedLandingPages],
     portalChromeElements,
@@ -179,8 +214,24 @@ const PortalLayout = () => {
         >
           <ShellContextPanelProvider>
             <CloseContextPanelOnNavigation />
-            <div className={classBase} id={id}>
-              {portalChromeElements}
+            <div
+              className={clsx(classBase, {
+                [`${classBase}-noHeader`]: !header,
+                [`${classBase}-managedNav`]:
+                  navWidth === undefined && managedNavWidth !== undefined,
+              })}
+              id={id}
+              style={
+                columnWidth === undefined
+                  ? undefined
+                  : ({
+                      "--vuuPortalShell-navWidth": columnWidth,
+                    } as CSSProperties)
+              }
+            >
+              <PortalShellNavContext.Provider value={navContext}>
+                {portalChromeElements}
+              </PortalShellNavContext.Provider>
               <div className={`${classBase}-banners`}>
                 <PortalNotificationBanners />
               </div>
