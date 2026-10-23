@@ -61,6 +61,145 @@ omits it, and another module renders it with `RemoteModule`. The table viewer
 nested in the table browser is an example. `isNestedModule(descriptor)` tests
 for this.
 
+### Layout
+
+The shell is a grid with a nav column, then header, banners and content rows.
+The nav column is `56px` by default. Set the `navWidth` prop (a number of
+pixels or a CSS length), or the `--vuuPortalShell-navWidth` CSS variable, to
+change it. Width changes animate over
+`--vuuPortalShell-navTransitionDuration` (default `0s`, i.e. none) with
+`--vuuPortalShell-navTransitionTimingFunction` (default `ease`). A
+`PortalNav` child sizes the column itself and animates by default (see
+[PortalNav](#portalnav)).
+
+Set `header={false}` to remove the header row, so the navigation and content
+take the full height. The root then has the `vuuPortalShell-noHeader` class.
+Don't render a `PortalHeader` in this case.
+
+### Navigation sections
+
+`buildNavSections(modules)` builds the model for a sectioned navigation from
+the descriptors. `buildNavItems`, used by `PortalAppSwitcher`, is unchanged.
+
+- Each first `navLocation` segment is a section (`id` `/Trading`, `title`
+  `Trading`). The remaining segments, joined with `": "`, are the item title.
+  A single-segment location (`/Reports`) gives an item titled `Reports` in the
+  `Reports` section.
+- Nested modules are excluded.
+- Items are ordered by `navOrder`, lowest first, then registration order.
+- Sections are ordered by the lowest `navOrder` of their items. Sections with
+  no `navOrder` follow, in order of first appearance. Number `navOrder`
+  across the whole registry to order sections and items together.
+- Each item carries `moduleId`, `title`, `href` (the `path` without a trailing
+  `/*`), `navIconName`, `navIconUrl`, `navOrder`, `navBadge` (a key the app
+  maps to a live value) and `notificationTopics`.
+
+### PortalNav
+
+`PortalNav` is a sectioned left navigation built on `buildNavSections`. It is
+an alternative to `NavContainer` with `PortalAppSwitcher`, which are
+unchanged. Render it as a child of `PortalShell`, typically with
+`header={false}`:
+
+```tsx
+<PortalShell header={false} remoteModules={remoteModules} title="Portal">
+  <PortalNav
+    brand={<MyBrand />}
+    footer={({ displayMode }) => <MyFooter compact={displayMode === "icons"} />}
+    remoteModules={remoteModules}
+    renderBadge={(item) => liveValues[item.navBadge ?? ""]}
+  />
+  <PortalLandingPage>…</PortalLandingPage>
+</PortalShell>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `remoteModules` | | Descriptors, as for `PortalShell`. |
+| `displayMode` / `onDisplayModeChange` | | Controlled mode. |
+| `defaultDisplayMode` | `icons-and-text` | Uncontrolled initial mode, when nothing is saved. |
+| `allowedDisplayModes` | all four | Modes the user can switch to. A mode that isn't allowed falls back to the first allowed mode. |
+| `collapseTo` | `icons` | `icons` or `minimized`: the target of the collapse button and ⌘B / Ctrl+B. |
+| `autoCollapseBelow` | | Below this viewport width (px) an expanded mode shows as the `icons` rail. The user's chosen mode is kept. |
+| `density` | `comfortable` | 32px rows, or 26px for `compact`. |
+| `sections` | `headings` | `headings`, `collapsible` headings, or `none`. |
+| `brand`, `footer` | | Nodes, or functions of `{ displayMode, allowedDisplayModes, setDisplayMode }`. The footer is pinned at the bottom. |
+| `renderBadge` | | A live value for an item, usually chosen by `item.navBadge`. |
+| `width` | `248` | Width (px) of `icons-and-text`. |
+
+**Display modes.** `icons-and-text` (248px), `text` (208px), `icons` (a 60px
+rail) and `minimized` (0px). The widths are exported as `PORTAL_NAV_WIDTHS`.
+⌘B / Ctrl+B and the header chevron toggle between the last expanded mode and
+`collapseTo`. In the rail, items show a tooltip on hover and sections are
+separated by rules. When minimized, a 14px handle on the left edge opens the
+nav as an overlay. The overlay closes on navigation, Escape, or a click
+outside it. Its pin button keeps the nav open, in `icons-and-text` (or `text` if that is the only expanded mode allowed). Arrow keys,
+Home and End move between the nav's links and buttons.
+
+**Shell width.** `PortalShell` provides a `PortalShellNavContext`
+(`usePortalShellNav()`). `PortalNav` reports its mode's width through
+`setNavWidth`. The shell sets `--vuuPortalShell-navWidth` on its root and adds
+`vuuPortalShell-managedNav`. That class animates the column over
+`--vuuPortalShell-navTransitionDuration`, which defaults to `180ms`
+(`--vuuPortalShell-navTransitionTimingFunction`, default `ease`). An explicit
+`navWidth` prop on the shell wins. Outside a shell, `PortalNav` sizes itself.
+
+**Saved state.** The uncontrolled mode is saved under `nav/displayMode`
+(labelled **Navigation display mode**). Collapsed sections are saved under
+`nav/collapsedSections`. `nav/expanded`, used by `PortalAppSwitcher`, is
+unchanged. The exported key constants are `NAV_DISPLAY_MODE_KEY` and
+`NAV_COLLAPSED_SECTIONS_KEY`.
+
+**Badges and indicators.**
+
+- `renderBadge` output is shown after the label in `icons-and-text` and
+  `text`. A number shows as a count chip.
+- In the rail, a count above zero shows as a pip on the icon, and other
+  badge content is hidden.
+- The notification indicator is a dot on the icon, or after the label in
+  `text` mode. A collapsed section heading shows a dot for its items, and the
+  minimized handle shows one for the whole nav.
+- The dot replaces the rail pip. It is not shown for the active item.
+- An application whose server is unavailable is greyed out, with the same
+  status badge and **Retry** detail as in `PortalAppSwitcher`. It shows no
+  badge or dot.
+
+`usePortalNavIndicator(moduleIds)` is the single seam for the dot. It returns
+`{ count, severity }` or `undefined`: the unread notifications attributed to
+the modules and their worst severity, `error` > `warning` > `unread` (info or
+success), from `useModulesUnreadSeverity`. Only unread notifications count.
+The dot renders as `vuuPortalNav-indicator-{severity}`.
+
+Notifications reach entries by **topic** when modules declare
+`notificationTopics`: a server notification with a `topic` is attributed to
+the modules on its server that claim the topic (see §7.4 of
+[portal-notifications-design.md](./portal-notifications-design.md)). With no
+topic, or no module declaring topics, attribution stays connection-wide. A
+topic no module claims badges no entry. If the open module claims a topic,
+its notifications are read, so no other entry shows a dot for them.
+
+**Bell.** With `PortalShell header={false}` there is no `PortalHeader`, so
+place `NotificationsIndicator` in the `brand` slot, with `scope="unclaimed"`
+so its badge counts only notifications no entry claims:
+
+```tsx
+<PortalNav
+  brand={({ displayMode }) => (
+    <>
+      <MyLogo />
+      {displayMode === "icons" ? null : <MyProductName />}
+      <NotificationsIndicator compactStyle="bell" scope="unclaimed" />
+    </>
+  )}
+  remoteModules={modules}
+/>
+```
+
+The brand is shown in every mode. In `icons-and-text` and `text` the bell
+sits at the end of the brand row (the ticker is hidden there). In the
+`icons` rail the brand content is stacked (logo, then bell) above the expand
+button, so render compact content for `displayMode === "icons"`.
+
 Use `PortalLink` from `@vuu-ui/core/portal` for links within a remote module.
 It behaves like React Router's `NavLink` in the portal and maps absolute links
 under the module's portal route to the matching path under `/window/:moduleId`
@@ -75,6 +214,19 @@ renders `NotificationsIndicator`, a bell with the unread count (see
 [Server status and notifications](#server-status-and-notifications)). Set
 `notificationsIndicator={false}` to hide it, or pass an object of
 `NotificationsIndicatorProps`.
+
+For a left-nav footer, `@vuu-ui/core/portal` provides two components that take
+`variant="expanded"` or `variant="rail"` (the icons-only nav):
+
+- `PortalConnectionStatus` shows a dot for the worst state across the
+  monitored Vuu connections, and a label such as "Connected" or "Trading
+  reconnecting…". Click it, or hover for 400ms, for a breakdown with a row per
+  connection and Retry. Pass `connections` to give connections friendly
+  labels, an `impact` and a `detail`.
+- `PortalNavUserMenu` is a hover menu (opening after 300ms) with the user's
+  identity and roles, **Saved state…** with the time state was last saved,
+  any `PortalNavUserMenuItem` children, and **Log out**. Pass `account` for
+  app-supplied text such as the trading account.
 
 ## WindowHost and module launch menus
 

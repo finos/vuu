@@ -1,6 +1,16 @@
-import { type ReactNode, createContext, useContext, useMemo } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useSyncExternalStore,
+} from "react";
 import type { ApplicationStateStore } from "./ApplicationStateStore";
-import type { PortalPersistenceService } from "./PortalPersistenceService";
+import type {
+  PortalPersistenceService,
+  PortalSaveStatus,
+} from "./PortalPersistenceService";
 import type { EntryMetadata, JsonValue } from "./StateDocument";
 import { useStoreReady } from "./useStoreReady";
 
@@ -35,6 +45,27 @@ export function useOptionalPortalPersistence():
   | PortalPersistenceService
   | undefined {
   return useContext(PortalPersistenceContext);
+}
+
+const noSubscription = () => () => undefined;
+const noSaveStatus = () => undefined;
+
+/**
+ * Whether saved state is being written, and when it was last written.
+ * Undefined outside a portal shell.
+ */
+export function usePortalSaveStatus(): PortalSaveStatus | undefined {
+  const service = useContext(PortalPersistenceContext);
+  const subscribe = useCallback(
+    (listener: () => void) =>
+      service ? service.subscribeSaveStatus(listener) : noSubscription(),
+    [service],
+  );
+  const getSnapshot = useCallback(
+    () => (service ? service.getSaveStatus() : noSaveStatus()),
+    [service],
+  );
+  return useSyncExternalStore(subscribe, getSnapshot);
 }
 
 /**

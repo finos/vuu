@@ -571,6 +571,7 @@ export interface PortalNotification {
   expired: boolean;             // server deleted the row
   initial: boolean;             // part of the first snapshot
   read: boolean;
+  topic?: string;               // `topic` column, for topic routing (§7.4)
   attributes: Record<string, unknown>; // additional columns, e.g. source, priority
 }
 
@@ -583,6 +584,8 @@ export interface NotificationOrigin {
 
 - `level` maps `INFO→info`, `WARNING→warning`, `ERROR→error`, unknown → `info`.
 - `type` maps `toast→toast`, `banner→banner`, anything else → `silent`.
+- `topic` (optional column, `""` when unset) maps to `topic`; an empty or
+  missing value means no topic. It is not copied to `attributes`.
 - Rows in the **initial snapshot** are `initial: true`. They are added as
   unread unless their key is in the persisted read set (§8.4) or their module
   is currently open (§7.6), and they never toast (banners still show, §9.3).
@@ -615,20 +618,47 @@ export type NotificationAttribution = (
 ) => RemoteModuleDescriptor["id"][];
 ```
 
-Default:
+Default (`defaultNotificationAttribution`), over the modules on the
+notification's server:
 
-1. One module on the server → that module.
-2. Several modules: if the notification has an attribute `module` /
-   `clientIdentifier` matching a module's `clientIdentifier`, that module;
-   otherwise all modules on the server.
-3. Portal-server notifications not matching a module are attributed to the
+1. If the notification has an attribute `module` / `clientIdentifier`
+   matching modules' `clientIdentifier`, those modules.
+2. **Topic routing.** If the notification has a `topic` and any module on
+   the server declares `notificationTopics`, the modules whose
+   `notificationTopics` include the topic. If none claims it, the
+   notification is **unclaimed**: attributed to no module, it badges no nav
+   item and shows only in the bell and panel. `matchTopicModules` implements
+   this step and is exported for custom attributions.
+3. Otherwise (no topic, or no module on the server declares topics) the
+   connection-wide rules are unchanged: one module on the server → that
+   module; several → all of them.
+4. Portal-server notifications not matched by 1 or 2 are attributed to the
    **portal** itself (shown in the viewer and header, not on any nav item).
-4. A server with no module in the map (only reached through a `vuu`
+5. A server with no module in the map (only reached through a `vuu`
    override, e.g. a table viewer embedded in `VuuTableBrowser`) is attributed
    to the module that **hosts** the override. That is the nearest
    `NotificationOriginProvider` (§7.5) that acquired the connection, so the
    badge appears on the table browser item. If no host is known, the
    notification goes to the portal.
+
+Topics are matched **per connection**: a module claims a topic only for
+notifications from servers it uses. This keeps the attribution signature
+unchanged and avoids two servers' unrelated topics of the same name badging
+each other's modules. A module that wants another server's topic must use
+that server.
+
+Example (vuu-demo publishes OMS notifications with topic `orders`, RISK with
+`risk`):
+
+| Module        | `notificationTopics`                  |
+| ------------- | ------------------------------------- |
+| Trader        | `orders`, `fills`, `marketdata`, `risk` |
+| Orders        | `orders`                              |
+| Positions     | `positions`, `risk`                   |
+| Exposure      | `risk`                                |
+
+An `orders` notification badges Trader and Orders; a `risk` one Trader,
+Positions and Exposure; a `compliance` one no nav item, only the bell.
 
 ### 7.5 Client notifications
 
@@ -639,7 +669,7 @@ so it is known only after `config.json` has loaded. The provider is
 therefore mounted **inside** the config `use()` boundary, beside the
 `vuu-connection` `AuthenticationProvider`. Nested `RemoteModule`s (e.g. table
 viewers) mount their own provider, and it records its host module as
-`parentModuleId` for attribution rule 4 (§7.4).
+`parentModuleId` for attribution rule 5 (§7.4).
 `useNotifications().showNotification`
 inside a remote then records a `PortalNotification` with
 `origin.source = "client"` before presenting it, so:
@@ -673,8 +703,11 @@ application:
 - While it remains active, newly arriving notifications for it are stored as
   already read (they are still toasted, §9.2), so the badge never appears on
   the app the user is looking at.
-- Notifications attributed to several modules (rare shared-server case) are
-  marked read when any of them is opened.
+- Notifications attributed to several modules (a shared server, or a topic
+  several modules claim) are marked read when any of them is opened. So if
+  the open module claims a topic, its notifications count as read
+  everywhere: no other entry claiming the topic shows a dot, and the open
+  page shows them (toast or inline) as usual.
 - The viewer can still mark items unread again; that is honoured until the
   module is next opened.
 
@@ -702,6 +735,9 @@ export interface NotificationStore {
   query(q?: NotificationQuery): readonly PortalNotification[]; // newest first
   latest(): PortalNotification | undefined;
   unreadCount(filter?: Pick<NotificationQuery, "moduleIds" | "connectionIds">): number;
+  /** Worst unread level over the modules: error > warning > unread. */
+  unreadSeverity(moduleIds: ModuleId[]): NotificationUnreadSeverity | undefined;
+  readonly unreadPortalCount: number; // unread, attributed to no module
   subscribe(listener: (event: NotificationStoreEvent) => void): () => void;
   getSnapshot(): number; // version, for useSyncExternalStore
 }
@@ -713,8 +749,10 @@ export type NotificationStoreEvent =
   | { type: "read-state"; keys: string[] | "all" };
 ```
 
-Derived counts (`unreadByModule`, `unreadByConnection`) are maintained
-incrementally so badge rendering is O(1).
+Derived counts (`unreadByModule`, `unreadByConnection`, and unread counts
+per module by severity) are maintained incrementally so badge rendering is
+O(1) per module. `NotificationUnreadSeverity` is `"error" | "warning" |
+"unread"`; `unread` covers info and success.
 
 ### 8.2 Hooks
 
@@ -725,6 +763,8 @@ usePortalNotifications(): {
 useNotificationList(query?: NotificationQuery): readonly PortalNotification[];
 useUnreadCount(filter?): number;
 useModuleUnreadCount(moduleId): number;
+useModulesUnreadSeverity(moduleIds): NotificationUnreadSeverity | undefined;
+useUnclaimedUnreadCount(): number; // attributed to no module
 useLatestNotification(): PortalNotification | undefined;
 ```
 
@@ -954,6 +994,13 @@ menu) by default, also exported for custom chrome.
 - Clicking the ticker opens the panel scrolled to that notification.
 - Polite `aria-live` region announces "New warning from Risk: Risk Limit
   Alert".
+- `scope: "all" | "unclaimed"` (default `all`). With `unclaimed` the badge
+  counts, and the ticker shows, only notifications attributed to no module,
+  e.g. a topic no module claims. Use it where nav entries show the rest,
+  e.g. in the `PortalNav` `brand` slot when `PortalShell header={false}`.
+  Announcements and the panel still cover all notifications.
+- In the `PortalNav` brand slot the bell sits at the end of the brand row,
+  without the ticker; in the icon rail it is stacked below the logo.
 
 ### 10.3 Expanded viewer — `NotificationsPanel`
 
@@ -1290,7 +1337,7 @@ are the places where it differs from, or adds to, the design above:
   the server statuses.
 - `PortalHeaderProps.notificationsIndicator` is `true` by default; `false`
   hides the bell, and an object passes `NotificationsIndicatorProps`
-  (`compactStyle`, `tickerDurationMs`). The ticker and the polite live
+  (`compactStyle`, `scope`, `tickerDurationMs`). The ticker and the polite live
   announcement are only for notifications that arrive while the portal is
   open, not for the initial snapshot.
 - The nav item context menu has "Show notifications" and "Mark

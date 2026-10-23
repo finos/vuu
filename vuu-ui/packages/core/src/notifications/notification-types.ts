@@ -5,6 +5,12 @@ import type { PresentationPolicy } from "./presentation-policy";
 export type NotificationLevel = "info" | "warning" | "error" | "success";
 export type NotificationKind = "toast" | "banner" | "silent";
 
+/**
+ * The worst level among unread notifications: `error` > `warning` >
+ * `unread` (info or success).
+ */
+export type NotificationUnreadSeverity = "error" | "warning" | "unread";
+
 export interface NotificationOrigin {
   source: "server" | "client";
   /** The server that published the notification, for server notifications. */
@@ -33,6 +39,11 @@ export interface PortalNotification {
   /** Part of the snapshot received when the feed subscribed. */
   initial: boolean;
   read: boolean;
+  /**
+   * The server's `topic` column, e.g. `orders`. Routes the notification to
+   * the modules whose `notificationTopics` include it. Empty means none.
+   */
+  topic?: string;
   /** Additional columns, e.g. source, priority. */
   attributes: Record<string, unknown>;
 }

@@ -55,7 +55,21 @@ export interface VuuModuleDescriptor {
    * Full icon encapsulated in a data URL, represented as SVG or base64-encoded SVG.
    */
   navIconUrl?: string;
+  /**
+   * Key of a live badge source, e.g. `"workingOrders"`. The application maps
+   * it to a value; the portal does not interpret it.
+   */
+  navBadge?: string;
   navLocation: string;
+  /**
+   * Order within the module's navigation section, lowest first. Modules
+   * without a value follow those with one, in registration order.
+   */
+  navOrder?: number;
+  /**
+   * Notification topics the module claims, e.g. `["orders"]`.
+   */
+  notificationTopics?: string[];
   accessRole: string;
   mfComponent: string;
   mfScope: string;

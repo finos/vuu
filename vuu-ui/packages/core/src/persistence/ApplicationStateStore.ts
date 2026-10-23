@@ -124,6 +124,11 @@ export interface StoreHost {
   listVersions(applicationKey: string): Promise<readonly number[]>;
   onChange(ref: DocumentRef, event: StateChangeEvent): void;
   onCodeUnavailable(store: ApplicationStateStoreImpl): void;
+  /**
+   * A write was scheduled, started or finished. `saved` is true when a
+   * write has just succeeded.
+   */
+  onSaveStatusChange?(store: ApplicationStateStoreImpl, saved?: boolean): void;
 }
 
 export const isDevelopment = () => {
@@ -180,6 +185,7 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
   #sequence = 0;
   #timer: ReturnType<typeof setTimeout> | undefined;
   #saving: Promise<void> | undefined;
+  #writing = false;
   #listeners = new Set<(event: StateChangeEvent) => void>();
   #resolveReady!: () => void;
   #carryForward: CarryForwardReport | undefined;
@@ -552,6 +558,7 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       this.#timer = undefined;
       this.flush().catch(() => undefined);
     }, this.#host.debounceMs);
+    this.#host.onSaveStatusChange?.(this);
   }
 
   #flushSoon() {
@@ -562,6 +569,11 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
 
   get hasPendingChanges() {
     return this.#dirty.size > 0 || this.#notCarriedForwardDirty;
+  }
+
+  /** True while a write is scheduled or in progress. */
+  get isSaving() {
+    return this.#writing || this.#timer !== undefined;
   }
 
   /** Runs operations one at a time, so saves never overlap. */
@@ -582,11 +594,25 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       this.#timer = undefined;
     }
     await this.#enqueue(() => this.#persist().catch(() => undefined));
+    this.#host.onSaveStatusChange?.(this);
   }
 
   /** Writes pending changes; rejects if they couldn't be written. */
   async #persist() {
     if (this.#loadFailed || !this.hasPendingChanges) return;
+    this.#writing = true;
+    this.#host.onSaveStatusChange?.(this);
+    let saved = false;
+    try {
+      await this.#persistPending();
+      saved = true;
+    } finally {
+      this.#writing = false;
+      this.#host.onSaveStatusChange?.(this, saved);
+    }
+  }
+
+  async #persistPending() {
     const pending = new Map(this.#dirty);
     const notCarriedForwardPending = this.#notCarriedForwardDirty;
     const document = { ...this.snapshot(), updatedAt: this.#host.now() };

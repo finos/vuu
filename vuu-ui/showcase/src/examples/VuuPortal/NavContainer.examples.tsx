@@ -123,6 +123,38 @@ export const PortalShellWithNavLandingPage = () => (
   </AuthenticationProvider>
 );
 
+/**
+ * No header row, and a wider nav column set through `navWidth` (the
+ * `--vuuPortalShell-navWidth` CSS variable).
+ */
+export const PortalShellWithoutHeader = () => (
+  <AuthenticationProvider mode="local" registry={remoteModules}>
+    <PortalShell
+      header={false}
+      id="portal-demo"
+      navWidth={220}
+      remoteModules={remoteModules.modules}
+      title="Portal Demo"
+    >
+      <NavContainer>
+        <PortalLogo alt="Portal home" style={{ gridArea: "logo" }}>
+          <VuuLogo size={30} />
+        </PortalLogo>
+        <PortalAppSwitcher
+          displayStyle="icon text"
+          remoteModules={remoteModules.modules}
+        />
+      </NavContainer>
+      <PortalLandingPage>
+        <main>
+          <h1>Welcome to Portal Demo</h1>
+          <p>Select an application to get started.</p>
+        </main>
+      </PortalLandingPage>
+    </PortalShell>
+  </AuthenticationProvider>
+);
+
 export const NavContainerAsContent = () => (
   <MemoryRouter>
     <NavContainer mode="dashboard">
