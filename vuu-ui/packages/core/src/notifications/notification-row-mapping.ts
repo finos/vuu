@@ -17,6 +17,7 @@ const MAPPED_COLUMNS = new Set([
   "level",
   "message",
   "title",
+  "topic",
   "type",
   "vuuCreatedTimestamp",
   "vuuMsg",
@@ -43,6 +44,9 @@ export const toNotificationKind = (value: unknown): NotificationKind =>
 
 const toEpoch = (value: unknown) =>
   typeof value === "number" && value > 0 ? value : undefined;
+
+const toTopic = (value: unknown) =>
+  typeof value === "string" && value.trim() !== "" ? value.trim() : undefined;
 
 export const serverNotificationKey = (connectionId: string, id: string) =>
   `${connectionId}:${id}`;
@@ -85,5 +89,6 @@ export const toPortalNotification = (
     read: false,
     receivedAt,
     title: values.title === undefined ? "" : String(values.title),
+    topic: toTopic(values.topic),
   };
 };

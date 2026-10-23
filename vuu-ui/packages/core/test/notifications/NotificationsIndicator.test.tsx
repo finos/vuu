@@ -131,6 +131,40 @@ describe("NotificationsIndicator", () => {
     );
   });
 
+  it("counts only unclaimed notifications with scope unclaimed", async () => {
+    await render(
+      <NotificationsIndicator scope="unclaimed" tickerDurationMs={50} />,
+    );
+    await upsert(notification("4"));
+    expect(bell()?.getAttribute("aria-label")).toBe("Notifications");
+    expect(container.querySelector(".saltBadge")).toBeNull();
+    expect(ticker()).toBeNull();
+    // Claimed notifications are still announced.
+    expect(container.querySelector("[aria-live]")?.textContent).toContain(
+      "title 4",
+    );
+    await upsert(
+      notification("5", {
+        origin: { connectionId: "simul", moduleIds: [], source: "server" },
+      }),
+    );
+    expect(bell()?.getAttribute("aria-label")).toBe("Notifications, 1 unread");
+    expect(ticker()?.textContent).toContain("title 5");
+    await act(async () => api?.store.markRead(["simul:5"]));
+    expect(bell()?.getAttribute("aria-label")).toBe("Notifications");
+  });
+
+  it("counts all notifications by default", async () => {
+    await render(<NotificationsIndicator compactStyle="bell" />);
+    await upsert(notification("6"));
+    await upsert(
+      notification("7", {
+        origin: { connectionId: "simul", moduleIds: [], source: "server" },
+      }),
+    );
+    expect(bell()?.getAttribute("aria-label")).toBe("Notifications, 2 unread");
+  });
+
   it("renders nothing without notifications", async () => {
     await act(async () => root.render(<NotificationsIndicator />));
     expect(container.innerHTML).toBe("");

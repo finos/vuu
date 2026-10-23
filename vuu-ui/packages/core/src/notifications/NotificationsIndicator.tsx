@@ -10,6 +10,7 @@ import {
   useLatestNotification,
   useNotificationPresentation,
   usePortalNotifications,
+  useUnclaimedUnreadCount,
   useUnreadCount,
 } from "./PortalNotificationsProvider";
 import type { PortalNotification } from "./notification-types";
@@ -24,6 +25,13 @@ export interface NotificationsIndicatorProps extends HTMLAttributes<HTMLDivEleme
    * for `tickerDurationMs` after it arrives. Default `bell-and-latest`.
    */
   compactStyle?: "bell" | "bell-and-latest";
+  /**
+   * The notifications the badge counts and the ticker shows: `all`
+   * (default), or `unclaimed`, those attributed to no module, e.g. a topic
+   * no module claims. Use `unclaimed` when nav entries show the others, as
+   * in `PortalNav`. The panel always lists all notifications.
+   */
+  scope?: "all" | "unclaimed";
   /** Default 10000. */
   tickerDurationMs?: number;
 }
@@ -41,6 +49,7 @@ const formatAge = (time: number, now: number) => {
 export const NotificationsIndicator = ({
   className,
   compactStyle = "bell-and-latest",
+  scope = "all",
   tickerDurationMs = 10_000,
   ...htmlAttributes
 }: NotificationsIndicatorProps) => {
@@ -54,7 +63,10 @@ export const NotificationsIndicator = ({
   const api = usePortalNotifications();
   const presentation = useNotificationPresentation();
   const moduleServerMap = useOptionalIdentityContext()?.moduleServerMap;
-  const unreadCount = useUnreadCount();
+  const allUnreadCount = useUnreadCount();
+  const unclaimedUnreadCount = useUnclaimedUnreadCount();
+  const unreadCount =
+    scope === "unclaimed" ? unclaimedUnreadCount : allUnreadCount;
   const latest = useLatestNotification();
   const [ticker, setTicker] = useState<PortalNotification>();
   const [announcement, setAnnouncement] = useState("");
@@ -75,12 +87,13 @@ export const NotificationsIndicator = ({
       "Portal",
     );
     setAnnouncement(`New ${latest.level} from ${source}: ${latest.title}`);
-    if (compactStyle === "bell-and-latest") {
+    const inScope = scope === "all" || latest.origin.moduleIds.length === 0;
+    if (compactStyle === "bell-and-latest" && inScope) {
       setTicker(latest);
       const timer = setTimeout(() => setTicker(undefined), tickerDurationMs);
       return () => clearTimeout(timer);
     }
-  }, [compactStyle, latest, moduleServerMap, tickerDurationMs]);
+  }, [compactStyle, latest, moduleServerMap, scope, tickerDurationMs]);
 
   if (!api || !presentation) {
     return null;
@@ -92,7 +105,11 @@ export const NotificationsIndicator = ({
       : presentation.openPanel();
 
   return (
-    <div className={cx(classBase, className)} {...htmlAttributes}>
+    <div
+      className={cx(classBase, className)}
+      data-scope={scope}
+      {...htmlAttributes}
+    >
       {ticker && !ticker.read ? (
         <Button
           appearance="transparent"

@@ -10,6 +10,7 @@ export {
   useModuleRegistry,
   useLogout,
   useOptionalAuthenticatedUser,
+  useOptionalVuuAuthorizations,
   useOptionalVuuConnectionId,
   usePortalVuuAuthTarget,
   useVuuServers,

@@ -3,6 +3,7 @@ import type {
   NotificationCountFilter,
   NotificationQuery,
   NotificationStoreEvent,
+  NotificationUnreadSeverity,
   PortalNotification,
 } from "./notification-types";
 
@@ -51,6 +52,7 @@ const sameContent = (a: PortalNotification, b: PortalNotification) =>
   a.message === b.message &&
   a.level === b.level &&
   a.kind === b.kind &&
+  a.topic === b.topic &&
   a.createdAt === b.createdAt &&
   a.expiresAt === b.expiresAt &&
   a.expired === b.expired &&
@@ -60,6 +62,14 @@ const sameContent = (a: PortalNotification, b: PortalNotification) =>
 
 const newestFirst = (a: PortalNotification, b: PortalNotification) =>
   b.createdAt - a.createdAt || b.receivedAt - a.receivedAt;
+
+/** Unread notifications by severity, for one module. */
+type SeverityCounts = Record<NotificationUnreadSeverity, number>;
+
+const toSeverity = ({
+  level,
+}: PortalNotification): NotificationUnreadSeverity =>
+  level === "error" || level === "warning" ? level : "unread";
 
 const trimOldest = (map: Map<string, number>, before: number, max: number) => {
   for (const [key, time] of map) {
@@ -80,6 +90,7 @@ const matchesText = (notification: PortalNotification, text: string) => {
   return (
     notification.title.toLowerCase().includes(pattern) ||
     notification.message.toLowerCase().includes(pattern) ||
+    (notification.topic?.toLowerCase().includes(pattern) ?? false) ||
     Object.values(notification.attributes).some((value) =>
       String(value).toLowerCase().includes(pattern),
     )
@@ -104,6 +115,7 @@ export class NotificationStore {
   readonly #tombstones = new Map<string, number>();
   readonly #unreadByConnection = new Map<string, number>();
   readonly #unreadByModule = new Map<ModuleId, number>();
+  readonly #unreadSeverityByModule = new Map<ModuleId, SeverityCounts>();
   #openModuleId: ModuleId | undefined;
   #sorted: PortalNotification[] | undefined;
   #unreadPortal = 0;
@@ -355,6 +367,29 @@ export class NotificationStore {
     return this.#unreadTotal;
   }
 
+  /**
+   * The worst severity of the unread notifications attributed to any of the
+   * modules: `error` > `warning` > `unread` (info or success). `undefined`
+   * when none is unread.
+   */
+  unreadSeverity(
+    moduleIds: readonly ModuleId[],
+  ): NotificationUnreadSeverity | undefined {
+    let worst: NotificationUnreadSeverity | undefined;
+    for (const moduleId of moduleIds) {
+      const counts = this.#unreadSeverityByModule.get(moduleId);
+      if (counts?.error) {
+        return "error";
+      }
+      if (counts?.warning) {
+        worst = "warning";
+      } else if (counts?.unread && worst === undefined) {
+        worst = "unread";
+      }
+    }
+    return worst;
+  }
+
   /** Unread notifications attributed to no module. */
   get unreadPortalCount() {
     return this.#unreadPortal;
@@ -428,6 +463,7 @@ export class NotificationStore {
     this.#tombstones.clear();
     this.#unreadByConnection.clear();
     this.#unreadByModule.clear();
+    this.#unreadSeverityByModule.clear();
     this.#unreadPortal = 0;
     this.#unreadTotal = 0;
     this.#openModuleId = undefined;
@@ -512,11 +548,18 @@ export class NotificationStore {
     if (moduleIds.length === 0) {
       this.#unreadPortal += delta;
     }
+    const severity = toSeverity(notification);
     for (const moduleId of moduleIds) {
       this.#unreadByModule.set(
         moduleId,
         (this.#unreadByModule.get(moduleId) ?? 0) + delta,
       );
+      let counts = this.#unreadSeverityByModule.get(moduleId);
+      if (!counts) {
+        counts = { error: 0, unread: 0, warning: 0 };
+        this.#unreadSeverityByModule.set(moduleId, counts);
+      }
+      counts[severity] += delta;
     }
     if (connectionId !== undefined) {
       this.#unreadByConnection.set(

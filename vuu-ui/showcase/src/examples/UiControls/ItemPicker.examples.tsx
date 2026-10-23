@@ -225,7 +225,7 @@ export const LabelsDifferFromNames = () => {
   const selectedItems = useMemo(() => [], []);
 
   return (
-    <StatefulParent
+    <StatefulParentTemplate
       allItems={allItems}
       initialSelectedItems={selectedItems}
       itemTypeName={"column"}

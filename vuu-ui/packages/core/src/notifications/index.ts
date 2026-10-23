@@ -1,5 +1,6 @@
 export {
   defaultNotificationAttribution,
+  matchTopicModules,
   NotificationFeedManager,
   type NotificationFeedManagerProps,
   remoteNotificationScope,
@@ -24,6 +25,7 @@ export type {
   NotificationOrigin,
   NotificationQuery,
   NotificationStoreEvent,
+  NotificationUnreadSeverity,
   PortalNotification,
   PortalNotificationsOptions,
 } from "./notification-types";
@@ -39,11 +41,13 @@ export {
   PortalNotificationsProvider,
   type PortalNotificationsProviderProps,
   useLatestNotification,
+  useModulesUnreadSeverity,
   useModuleUnreadCount,
   useNotificationList,
   useNotificationPresentation,
   usePortalNotifications,
   useRegisterNotificationHost,
+  useUnclaimedUnreadCount,
   useUnreadCount,
 } from "./PortalNotificationsProvider";
 export {

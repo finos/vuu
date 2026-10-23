@@ -35,3 +35,17 @@
     width: 1px;
   }
 }
+
+/* In the PortalNav brand slot: after the brand, bell only. */
+.vuuPortalNav-brand > .vuuNotificationsIndicator {
+  flex: none;
+  margin-left: auto;
+
+  .vuuNotificationsIndicator-ticker {
+    display: none;
+  }
+}
+
+.vuuPortalNav-icons .vuuPortalNav-brand > .vuuNotificationsIndicator {
+  margin-left: 0;
+}
