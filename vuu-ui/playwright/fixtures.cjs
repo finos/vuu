@@ -1,6 +1,7 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test: base, expect } = require("@playwright/test");
+const { createCoverageMap } = require("istanbul-lib-coverage");
 
 const coverageDirectory = path.resolve("playwright/coverage-data");
 
@@ -28,17 +29,13 @@ const test = base.extend({
         return;
       }
 
-      const coverage = {};
+      const coverageMap = createCoverageMap({});
       for (const page of context.pages()) {
         try {
           const pageCoverage = await page.evaluate(
             () => globalThis.__coverage__ ?? {},
           );
-          for (const [file, fileCoverage] of Object.entries(pageCoverage)) {
-            coverage[file] = coverage[file]
-              ? mergeFileCoverage(coverage[file], fileCoverage)
-              : fileCoverage;
-          }
+          coverageMap.merge(pageCoverage);
         } catch {
           // A page can be closed by a failed test before coverage is collected.
         }
@@ -48,22 +45,11 @@ const test = base.extend({
       const fileName = `${testInfo.testId}-${testInfo.retry}-${testInfo.workerIndex}.json`;
       await fs.writeFile(
         path.join(coverageDirectory, fileName),
-        JSON.stringify(coverage),
+        JSON.stringify(coverageMap.toJSON()),
       );
     },
     { auto: true },
   ],
 });
-
-function mergeFileCoverage(left, right) {
-  const merged = { ...left };
-  for (const metric of ["s", "f", "b"]) {
-    merged[metric] = { ...left[metric] };
-    for (const [key, value] of Object.entries(right[metric] ?? {})) {
-      merged[metric][key] = (merged[metric][key] ?? 0) + value;
-    }
-  }
-  return merged;
-}
 
 module.exports = { test, expect };
