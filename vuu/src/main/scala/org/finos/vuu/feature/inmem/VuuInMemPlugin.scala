@@ -30,7 +30,7 @@ class VuuInMemPlugin extends DefaultPlugin {
 
     val sourceTables = joinTableMap ++ baseTableMap
 
-    val joinTable = new JoinTable(table, sourceTables, joinTableProvider)(metrics, timeProvider)
+    val joinTable = new JoinTable(table, sourceTables, joinTableProvider)(using metrics, timeProvider)
 
     tableContainer.addTable(joinTable)
     joinTableProvider.addJoinTable(joinTable)
@@ -43,7 +43,7 @@ class VuuInMemPlugin extends DefaultPlugin {
   override def filterFactory: FilterFactory = ???
   override def sortFactory: SortFactory = ???
   override def tableFactory(implicit metrics: MetricsProvider): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
-    val table = new InMemDataTable(tableDef, joinTableProvider)(metrics, tableContainer.timeProvider)
+    val table = new InMemDataTable(tableDef, joinTableProvider)(using metrics, tableContainer.timeProvider)
     tableContainer.addTable(table)
     table
   }

@@ -35,7 +35,7 @@ class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped:
 
 object TreeSessionTable {
   def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock): TreeSessionTableImpl = {
-    new TreeSessionTableImpl(source, session, joinProvider)(metrics, clock)
+    new TreeSessionTableImpl(source, session, joinProvider)(using metrics, clock)
   }
 }
 

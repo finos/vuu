@@ -8,7 +8,7 @@ class JsonSerializerTest extends AnyFeatureSpec with Matchers {
 
   Feature("Check we can serialize and deserialize messages"){
 
-    val serializer = JsonSerializer[JsonViewServerMessage]()
+    val serializer = JsonSerializer[JsonViewServerMessage]
 
     Scenario("Default module"){
 

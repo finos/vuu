@@ -50,7 +50,7 @@
         <vuu.metrics.version>4.2.40</vuu.metrics.version>
         <vuu.netty.version>4.2.19.Final</vuu.netty.version>
         <vuu.roaring.bitmap.version>1.6.14</vuu.roaring.bitmap.version>
-        <vuu.scala.version>3.3.8</vuu.scala.version> <!-- Scala LTS -->
+        <vuu.scala.version>3.9.0</vuu.scala.version> <!-- Scala LTS -->
         <vuu.scala.logging.version>3.9.6</vuu.scala.logging.version>
         <vuu.scalatest.version>3.2.20</vuu.scalatest.version>
         <vuu.slf4j.version>2.0.20</vuu.slf4j.version>
@@ -140,7 +140,7 @@
         <plugins>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.4.0</version>
+                    <version>3.5.0</version>
                 </plugin>
 
                 <plugin>
@@ -155,12 +155,12 @@
 
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>3.1.4</version>
+                    <version>3.2.0</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.21.0</version>
+                    <version>3.22.0</version>
                 </plugin>
 
                 <plugin>
@@ -170,12 +170,12 @@
 
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.4</version>
+                    <version>3.5.6</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.9.0</version>
+                    <version>3.11.0</version>
                 </plugin>
 
                 <plugin>
@@ -192,17 +192,12 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.6.3</version>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.6.1</version>
+                    <version>3.6.4</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.5.1</version>
                 </plugin>
 
                 <plugin>
@@ -228,7 +223,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.6.1</version>
+                    <version>3.6.2</version>
                 </plugin>
 
                 <plugin>
@@ -246,7 +241,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.14</version>
+                    <version>0.8.15</version>
                 </plugin>
 
             </plugins>
@@ -256,7 +251,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.16.0</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
                     <showWarnings>true</showWarnings>

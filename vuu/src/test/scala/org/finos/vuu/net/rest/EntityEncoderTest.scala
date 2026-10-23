@@ -57,7 +57,7 @@ class EntityEncoderTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
 
   Feature("JsonEntityEncoder") {
 
-    val encoder = JsonEntityEncoder[UserData]()
+    val encoder = JsonEntityEncoder[UserData]
 
     Scenario("Encoding and decoding a case class") {
       Given("a JsonEntityEncoder for UserData")

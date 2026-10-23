@@ -151,7 +151,7 @@ class VuuServer(config: VuuServerConfig)
       override def serializationMixin: AnyRef = module.serializationMixin
       override def restServicesUnrealized: List[AbstractVuuServer => RestService] = module.restServicesUnrealized
       override def getProviderForTable(table: DataTable, viewserver: AbstractVuuServer)(using time: Clock, life: LifecycleContainer): Provider = {
-        module.getProviderForTable(table, viewserver)(time, life)
+        module.getProviderForTable(table, viewserver)(using time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = module.viewPortDefs

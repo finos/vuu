@@ -95,9 +95,9 @@ class ImmutableArraySetTest extends AnyFunSuite with Matchers {
 
     val numbers = (0 to 100000).map(_.toString)
 
-    val array1 = set(numbers: _*)
-    val array2 = set(numbers: _*)
-    val array3 = set(numbers.slice(0, 100): _*)
+    val array1 = set(numbers*)
+    val array2 = set(numbers*)
+    val array3 = set(numbers.slice(0, 100)*)
 
     array1 shouldEqual array1
 

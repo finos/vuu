@@ -26,7 +26,7 @@ object DataType {
   final val ScaledDecimal8Type: Class[ScaledDecimal8] = classOf[ScaledDecimal8]
   final val NoDataType: Class[AnyRef] = classOf[AnyRef]
 
-  def fromString(s: String): Class[_] = {
+  def fromString(s: String): Class[?] = {
     s.trim.toLowerCase match {
       case "char" => CharDataType
       case "string" => StringDataType
@@ -43,7 +43,7 @@ object DataType {
     }
   }
 
-  def asString(c: Class[_]): String = {
+  def asString(c: Class[?]): String = {
     c.getTypeName match {
       case "java.lang.String" => "string"
       case "org.finos.vuu.core.table.datatype.EpochTimestamp" => "epochtimestamp"
@@ -138,7 +138,7 @@ trait Column {
 
   def index: Int
 
-  def dataType: Class[_]
+  def dataType: Class[?]
 
   def getData(data: RowData): Any
 
@@ -156,7 +156,7 @@ trait JoinColumn extends Column {
 
 object JoinColumn {
 
-  def apply(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column, isAlias: Boolean): JoinColumn = {
+  def apply(name: String, index: Int, dataType: Class[?], sourceTable: TableDef, sourceColumn: Column, isAlias: Boolean): JoinColumn = {
     if (isAlias) {
       AliasedJoinColumn(name, index, dataType, sourceTable, sourceColumn)
     } else {
@@ -171,7 +171,7 @@ case class NoColumn() extends Column {
 
   override def index: Int = -1
 
-  override def dataType: Class[_] = DataType.NoDataType
+  override def dataType: Class[?] = DataType.NoDataType
 
   override def getData(data: RowData): Any = None
 
@@ -188,7 +188,7 @@ case class NoColumn() extends Column {
 
 }
 
-case class SimpleColumn(name: String, index: Int, dataType: Class[_], override val isEditable: Boolean = false) extends Column {
+case class SimpleColumn(name: String, index: Int, dataType: Class[?], override val isEditable: Boolean = false) extends Column {
   override def getData(data: RowData): Any = {
     data.get(name)
   }
@@ -210,7 +210,7 @@ case class SimpleColumn(name: String, index: Int, dataType: Class[_], override v
 
 }
 
-private case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
+private case class SimpleJoinColumn(name: String, index: Int, dataType: Class[?], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
   private val fullyQualifiedName = sourceTable.fullyQuallifiedColumnName(name)
 
@@ -236,7 +236,7 @@ private case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_]
   }
 }
 
-private case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
+private case class AliasedJoinColumn(name: String, index: Int, dataType: Class[?], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
   private val fullyQualifiedName = sourceTable.fullyQuallifiedColumnName(sourceColumn.name)
 
@@ -263,7 +263,7 @@ private case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_
 
 }
 
-case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column with StrictLogging {
+case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[?]) extends Column with StrictLogging {
 
   override def getData(data: RowData): Any = clause.calculate(data).fold[Any](
     errMsg => {

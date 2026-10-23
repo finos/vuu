@@ -4,9 +4,9 @@ import scala.reflect.ClassTag
 
 object ImmutableArray {
 
-  def from[T <: Object](iterable: IterableOnce[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
+  def from[T <: Object](iterable: IterableOnce[T])(using c: ClassTag[T]): ImmutableArray[T] = {
     if (iterable.knownSize == 0) {
-      empty()
+      empty[T]
     } else if (iterable.knownSize == 1) {
       of(iterable.iterator.next())
     } else {
@@ -14,11 +14,11 @@ object ImmutableArray {
     }
   }
   
-  def empty[T <: Object](implicit c: ClassTag[T]): ImmutableArray[T] = {
+  def empty[T <: Object](using c: ClassTag[T]): ImmutableArray[T] = {
     VectorImmutableArray.empty()
   }
 
-  def of[T <: Object](element: T)(implicit c: ClassTag[T]): ImmutableArray[T] = {
+  def of[T <: Object](element: T)(using c: ClassTag[T]): ImmutableArray[T] = {
     VectorImmutableArray.of(element)
   }
 
@@ -26,7 +26,7 @@ object ImmutableArray {
 
 object ImmutableArrays{
   def empty[T <: Object :ClassTag](i: Int): Array[ImmutableArray[T]] = {
-    (0 until i).map(i => ImmutableArray.empty()).toArray
+    (0 until i).map(i => ImmutableArray.empty[T]).toArray
   }
 }
 

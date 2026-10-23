@@ -9,7 +9,7 @@ object FilterSpecParser extends StrictLogging {
 
   // Lexer doesn't support error-handling policy, so we make do with listener (see https://github.com/antlr/antlr4/issues/3849)
   private class BailOnErrorListener extends BaseErrorListener{
-    override def syntaxError(recognizer: Recognizer[_, _], offendingSymbol: Any, line: Int, charPositionInLine: Int, msg: String, e: RecognitionException): Unit =
+    override def syntaxError(recognizer: Recognizer[?, ?], offendingSymbol: Any, line: Int, charPositionInLine: Int, msg: String, e: RecognitionException): Unit =
       throw new ParseCancellationException(e)
   }
 

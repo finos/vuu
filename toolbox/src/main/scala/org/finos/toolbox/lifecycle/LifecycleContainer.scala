@@ -221,7 +221,7 @@ abstract class DefaultLifecycleEnabled extends LifecycleEnabled {
   override val lifecycleId: String = ""
 }
 
-class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
+class LifecycleContainer(using clock: Clock) extends StrictLogging {
 
   val thread = new Runner("lifeCycleJoinRunner", () => {Thread.sleep(1000)})
   thread.runInBackground()

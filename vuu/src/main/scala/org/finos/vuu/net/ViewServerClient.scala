@@ -18,7 +18,7 @@ trait ViewServerClient extends LifecycleEnabled {
 
 class WebSocketViewServerClient(val ws: WebSocketClient)(implicit lifecycle: LifecycleContainer) extends ViewServerClient with StrictLogging {
 
-  private val serializer = JsonSerializer[ViewServerMessage]()
+  private val serializer = JsonSerializer[ViewServerMessage]
 
   lifecycle(this).dependsOn(ws)
 

@@ -6,7 +6,7 @@ import org.finos.vuu.core.index.IndexedField
 
 trait JoinTableIndices {
 
-  def indexForColumn(column: Column): Option[IndexedField[_]]
+  def indexForColumn(column: Column): Option[IndexedField[?]]
 
 }
 
@@ -22,7 +22,7 @@ object JoinTableIndices extends StrictLogging {
     JoinTableIndicesImpl(baseTableIndices)
   }
 
-  private def collectBaseTableIndices(joinTableDef: JoinTableDef, sourceTables: Map[String, DataTable]): Map[Column, IndexedField[_]] = {
+  private def collectBaseTableIndices(joinTableDef: JoinTableDef, sourceTables: Map[String, DataTable]): Map[Column, IndexedField[?]] = {
     joinTableDef.joinColumns.collect {
       case jc: JoinColumn if jc.sourceTable == joinTableDef.baseTable => jc
     }.flatMap {
@@ -32,9 +32,9 @@ object JoinTableIndices extends StrictLogging {
 
 }
 
-private case class JoinTableIndicesImpl(indices: Map[Column, IndexedField[_]]) extends JoinTableIndices {
+private case class JoinTableIndicesImpl(indices: Map[Column, IndexedField[?]]) extends JoinTableIndices {
 
-  override def indexForColumn(column: Column): Option[IndexedField[_]] = {
+  override def indexForColumn(column: Column): Option[IndexedField[?]] = {
     indices.get(column)
   }
 

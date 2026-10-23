@@ -21,7 +21,7 @@ trait ExternalEntitySchema {
    * The method doesn't check for the types of passed values and would skip any fields
    * that do not have a corresponding value e.g. when `values.length` < `fields.length`.
    * */
-  def toMap(values: List[_]): Map[FieldName, Any] = fields.map(_.name).zip(values).toMap
+  def toMap(values: List[?]): Map[FieldName, Any] = fields.map(_.name).zip(values).toMap
 }
 
 private case class DefaultExternalEntitySchema (override val fields: List[SchemaField],
@@ -30,7 +30,7 @@ private case class DefaultExternalEntitySchema (override val fields: List[Schema
 object EntitySchema {
   type FieldName = String
   type IndexName = String
-  type ExternalDataType = Class[_]
+  type ExternalDataType = Class[?]
 }
 
 object ExternalEntitySchemaBuilder {
@@ -55,7 +55,7 @@ case class ExternalEntitySchemaBuilder (fields: ListBuffer[(FieldName, ExternalD
   def withIndex(indexName: IndexName, fields: List[FieldName]): ExternalEntitySchemaBuilder =
     this.copy(indexes = indexes :+ SchemaIndex(indexName, fields))
 
-  def withEntity(cls: Class[_]): ExternalEntitySchemaBuilder = {
+  def withEntity(cls: Class[?]): ExternalEntitySchemaBuilder = {
     val namesToTypes = cls.getDeclaredFields.filter(!_.isSynthetic).map(f => (f.getName, f.getType))
     this.copy(fields = fields.addAll(namesToTypes))
   }
