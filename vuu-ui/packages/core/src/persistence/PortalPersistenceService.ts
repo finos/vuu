@@ -75,8 +75,18 @@ export interface PortalPersistenceService {
     applicationVersion: number,
   ): CarryForwardReport | undefined;
   isDisposed(): boolean;
+  /** Whether saved state is being written, and when it was last written. */
+  getSaveStatus(): PortalSaveStatus;
+  subscribeSaveStatus(listener: () => void): () => void;
   /** Flushes pending writes, then stops the service (FR-6, FR-15). */
   dispose(): void;
+}
+
+export interface PortalSaveStatus {
+  /** True while a write is scheduled (debounced) or in progress. */
+  saving: boolean;
+  /** Epoch ms of the most recent successful write in this session. */
+  lastSavedAt?: number;
 }
 
 export interface PortalPersistenceServiceOptions {
@@ -116,6 +126,8 @@ class DefaultPortalPersistenceService
   #cleanup: Array<() => void> = [];
   #attached = false;
   #targetWindow: Window | null;
+  #saveStatus: PortalSaveStatus = { saving: false };
+  #saveStatusListeners = new Set<() => void>();
 
   constructor({
     backend,
@@ -216,6 +228,39 @@ class DefaultPortalPersistenceService
       this.#stores.delete(id);
       store.dispose();
     }
+  }
+
+  onSaveStatusChange(_store: ApplicationStateStoreImpl, saved?: boolean) {
+    const saving = [...this.#stores.values()].some((store) => store.isSaving);
+    const lastSavedAt = saved
+      ? this.#now().getTime()
+      : this.#saveStatus.lastSavedAt;
+    if (
+      saving === this.#saveStatus.saving &&
+      lastSavedAt === this.#saveStatus.lastSavedAt
+    ) {
+      return;
+    }
+    this.#saveStatus =
+      lastSavedAt === undefined ? { saving } : { lastSavedAt, saving };
+    for (const listener of [...this.#saveStatusListeners]) {
+      try {
+        listener();
+      } catch (error) {
+        console.error("[PortalPersistenceService] listener failed", error);
+      }
+    }
+  }
+
+  getSaveStatus() {
+    return this.#saveStatus;
+  }
+
+  subscribeSaveStatus(listener: () => void) {
+    this.#saveStatusListeners.add(listener);
+    return () => {
+      this.#saveStatusListeners.delete(listener);
+    };
   }
 
   // --------------------------------------------------------------- stores

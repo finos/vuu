@@ -90,12 +90,15 @@ const getDropPositionAtPoint = (
   clientX: number,
   clientY: number,
   orientation: orientationType,
+  draggedEl?: HTMLElement,
 ): DropPosition | undefined => {
+  // The dragged tab stays in the container, possibly at the pointer, but is
+  // never a drop target.
   const tabs = [
     ...containerEl.querySelectorAll<HTMLElement>(
       ".vuuDraggableItem[data-grid-layout-item-id]",
     ),
-  ];
+  ].filter((tab) => tab !== draggedEl);
   const target = tabs.reduce<HTMLElement | undefined>((closest, tab) => {
     if (!closest) {
       return tab;
@@ -117,6 +120,11 @@ const getDropPositionAtPoint = (
       : closest;
   }, undefined);
   return getDropPosition(target ?? null, clientX, clientY, orientation);
+};
+
+const getDraggedTab = (dragContext: DragContext) => {
+  const { dragSource } = dragContext;
+  return sourceIsTabbedComponent(dragSource) ? dragSource.element : undefined;
 };
 
 export function initializeDragContainer(
@@ -288,6 +296,7 @@ export function initializeDragContainer(
         e.clientX,
         e.clientY,
         orientation,
+        getDraggedTab(dragContext),
       );
       const target = position
         ? containerEl.querySelector<HTMLElement>(
@@ -328,7 +337,13 @@ export function initializeDragContainer(
         clientY,
         orientation,
       ) ??
-      getDropPositionAtPoint(containerEl, clientX, clientY, orientation) ??
+      getDropPositionAtPoint(
+        containerEl,
+        clientX,
+        clientY,
+        orientation,
+        getDraggedTab(dragContext),
+      ) ??
       spaceMan.dropPosition ??
       getDropPositionAtEnd(e.target as HTMLElement, containerEl);
 
