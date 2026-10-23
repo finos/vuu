@@ -5,6 +5,7 @@ import type {
   ColumnFilterValue,
   ExtendedFilterOptions,
   FilterContainerFilter,
+  TimeDateFilterOptions,
 } from "@vuu-ui/vuu-filter-types";
 import {
   ColumnFilter,
@@ -247,7 +248,7 @@ export const TimeColumnFiltersOtherDays = () => {
     () => ({ type: "TimeString", date: "yesterday" }),
     [],
   );
-  const twoDaysAgo = useMemo<ExtendedFilterOptions>(() => {
+  const twoDaysAgo = useMemo<TimeDateFilterOptions>(() => {
     const d = new Date(Date.now() - 2 * 86_400_000);
     const pad = (n: number) => `${n}`.padStart(2, "0");
     return {

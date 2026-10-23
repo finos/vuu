@@ -12,6 +12,7 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import {
   filtersAreEqual,
+  getScaledDecimalCellFilter,
   getTemporalCellFilter,
   getTemporalInfo,
   withDateTimePattern,
@@ -94,6 +95,12 @@ export const useFilterContextMenu = ({
         if (temporalCellFilter) {
           return { column: filterColumn ?? column, ...temporalCellFilter };
         }
+      }
+      // A scaled decimal is filtered as displayed in the Table, e.g a cell
+      // displaying 1.23 matches every value that displays as 1.23.
+      const scaledDecimalCellFilter = getScaledDecimalCellFilter(column, value);
+      if (scaledDecimalCellFilter) {
+        return { column, ...scaledDecimalCellFilter };
       }
       return { column, label: `${value}`, op: "=", value };
     },

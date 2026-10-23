@@ -35,6 +35,10 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
     rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "SIMUL", table: "instruments" },
   },
+  /**
+   * Covers every Vuu column data type, so it is the preferred table for
+   * filter tests and examples. Client-side only, not defined in the Vuu server.
+   */
   instrumentsExtended: {
     columns: [
       { name: "bbg", serverDataType: "string" },
@@ -44,11 +48,16 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
       { name: "isin", serverDataType: "string" },
       { name: "lotSize", serverDataType: "int" },
       { name: "ric", serverDataType: "string" },
+      { name: "side", serverDataType: "char" },
       { name: "supported", serverDataType: "boolean" },
       { name: "wishlist", serverDataType: "boolean" },
       { name: "lastUpdated", serverDataType: "long" },
       { name: "price", serverDataType: "double" },
-      { name: "date", serverDataType: "long" },
+      { name: "notional", serverDataType: "scaleddecimal2" },
+      { name: "closePrice", serverDataType: "scaleddecimal4" },
+      { name: "fxRate", serverDataType: "scaleddecimal6" },
+      { name: "weight", serverDataType: "scaleddecimal8" },
+      { name: "tradeDate", serverDataType: "epochtimestamp" },
       ...VUU_DEFAULT_COLUMNS,
     ],
     key: "ric",

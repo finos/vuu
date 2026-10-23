@@ -88,7 +88,14 @@ test.describe("FilterContainer operator examples", () => {
     const pickers = page
       .locator('[data-field="operator"]')
       .getByRole("combobox");
-    await expect(pickers).toHaveText([">=", "starts", "=", "contains", ">"]);
+    await expect(pickers).toHaveText([
+      ">=",
+      "starts",
+      "=",
+      "contains",
+      ">",
+      ">",
+    ]);
     await expect(page.getByTestId("vuu-filter-query")).toBeEmpty();
     await pickers.nth(2).click();
     await expect(page.getByRole("option")).toHaveText(["=", "!="]);
@@ -117,7 +124,7 @@ test.describe("FilterContainer operator examples", () => {
     const filters = page.locator(".vuuColumnFilter");
     await expect(
       page.locator('[data-field="operator"]').getByRole("combobox"),
-    ).toHaveText([">=", "starts", "!=", "contains", "between-inclusive"]);
+    ).toHaveText([">=", "starts", "!=", "contains", "between-inclusive", ">"]);
     await expect(filters.nth(1).locator("input")).toHaveValue("AA");
     await expect(filters.nth(2).locator("input")).toHaveValue("GBP");
     await expect(filters.nth(3).locator("input")).toHaveValue("XLON");

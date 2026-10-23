@@ -62,7 +62,8 @@ export interface DataItemEditControlProps {
    * unavailable options are not offered.
    * Recommended for toggle filters, not usually necessary for other
    * filter variants. Boolean values are supported for toggle filters on
-   * boolean columns, where values default to [true, false].
+   * boolean columns, where values default to [true, false]. A toggle filter
+   * on a char column requires values, which are not validated.
    */
   values?: ToggleFilterValue[];
   variant?: FilterControlVariant;
@@ -244,7 +245,8 @@ export const getDataItemEditControl = ({
     );
   } else if (
     variant === "toggle" &&
-    dataDescriptor.serverDataType === "boolean"
+    (dataDescriptor.serverDataType === "boolean" ||
+      (dataDescriptor.serverDataType === "char" && values?.length))
   ) {
     return (
       <ToggleFilter

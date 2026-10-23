@@ -33,7 +33,7 @@ import {
 import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import { useAutoLoginToVuuServer } from "../utils";
 
-const schema = getSchema("instruments");
+const schema = getSchema("instrumentsExtended");
 
 const typeaheadPropsZero: ColumnFilterProps["TypeaheadProps"] = {
   minCharacterCountToTriggerSuggestions: 0,
@@ -81,7 +81,7 @@ export const MultipleTabbedFilterContainers = () => {
   }, []);
 
   const table = useMemo<TableSchemaTable>(
-    () => ({ module: "SIMUL", table: "instruments" }),
+    () => ({ module: "SIMUL", table: "instrumentsExtended" }),
     [],
   );
 
@@ -246,7 +246,7 @@ const TableWithTabbedFilterContainerTemplate = ({
   columns: columnsProp,
   dataSource: dataSourceProp,
   selectionModel,
-  table = "instruments",
+  table = "instrumentsExtended",
 }: Pick<TabbedFilterContainerProps, "children" | "SavedFilterPanelProps"> &
   Pick<TableProps, "selectionModel"> & {
     columns?: ColumnDescriptor[];
@@ -330,13 +330,14 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
   selectionModel,
 }: Pick<TableProps, "selectionModel">) => {
   const table = useMemo<TableSchemaTable>(
-    () => ({ module: "SIMUL", table: "instruments" }),
+    () => ({ module: "SIMUL", table: "instrumentsExtended" }),
     [],
   );
 
   const [
     SavedFilterPanelProps,
-    [vuuCreatedTimestamp, bbg, currency, exchange, lotSize, price],
+    // prettier-ignore
+    [vuuCreatedTimestamp, bbg, currency, exchange, lotSize, notional, closePrice, fxRate, weight],
   ] = useMemo<
     [
       TabbedFilterContainerProps["SavedFilterPanelProps"],
@@ -354,7 +355,10 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
       { name: "currency", serverDataType: "string" },
       { name: "exchange", serverDataType: "string" },
       { name: "lotSize", serverDataType: "int" },
-      { name: "price", serverDataType: "scaleddecimal6" },
+      { name: "notional", serverDataType: "scaleddecimal2" },
+      { name: "closePrice", serverDataType: "scaleddecimal4" },
+      { name: "fxRate", serverDataType: "scaleddecimal6" },
+      { name: "weight", serverDataType: "scaleddecimal8" },
     ];
     return [{ availableColumns: columns }, columns];
   }, []);
@@ -414,8 +418,20 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
                 />
               </FormField>
               <FormField>
-                <FormFieldLabel>Price</FormFieldLabel>
-                <FilterContainerColumnFilter column={price} />
+                <FormFieldLabel>Notional (scaleddecimal2)</FormFieldLabel>
+                <FilterContainerColumnFilter column={notional} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Close Price (scaleddecimal4)</FormFieldLabel>
+                <FilterContainerColumnFilter column={closePrice} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>FX Rate (scaleddecimal6)</FormFieldLabel>
+                <FilterContainerColumnFilter column={fxRate} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Weight (scaleddecimal8)</FormFieldLabel>
+                <FilterContainerColumnFilter column={weight} />
               </FormField>
             </TableWithTabbedFilterContainerTemplate>
           </ContextPanelProvider>
@@ -719,7 +735,7 @@ export const SingleTabbedFilterContainers = () => {
   }, []);
 
   const table = useMemo<TableSchemaTable>(
-    () => ({ module: "SIMUL", table: "instruments" }),
+    () => ({ module: "SIMUL", table: "instrumentsExtended" }),
     [],
   );
 

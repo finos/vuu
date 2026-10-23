@@ -26,6 +26,7 @@ import { getDefaultTimeZone } from "./date/time-zone";
 import type { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import { isTypeDescriptor } from "./column-utils";
 import { queryClosest } from "./html-utils";
+import { isValidDecimalString } from "./filters/scaled-decimal-filter";
 import { ExtendedFilterOptions } from "@vuu-ui/vuu-filter-types";
 import {
   type ScaledDecimal,
@@ -102,6 +103,13 @@ export function getTypedRange(
     getTypedValue(value2, dataType, false, options),
   ];
 }
+
+const ScaledDecimalFactory = {
+  scaleddecimal2: ScaledDecimal2,
+  scaleddecimal4: ScaledDecimal4,
+  scaleddecimal6: ScaledDecimal6,
+  scaleddecimal8: ScaledDecimal8,
+};
 
 const getActualType = (
   value: string | number | boolean,
@@ -187,13 +195,22 @@ export function getTypedValue(
     }
 
     case "scaleddecimal2":
-      return ScaledDecimal2(value);
     case "scaleddecimal4":
-      return ScaledDecimal4(value);
     case "scaleddecimal6":
-      return ScaledDecimal6(value);
-    case "scaleddecimal8":
-      return ScaledDecimal8(value);
+    case "scaleddecimal8": {
+      // An empty value is a valid (null) scaled decimal
+      if (value === "" || isValidDecimalString(value)) {
+        return ScaledDecimalFactory[type](value);
+      } else if (throwIfInvalid) {
+        throw new DataValidationError(
+          `value ${value} is not a valid ${type}`,
+          "decimal",
+          getActualType(value),
+        );
+      } else {
+        return undefined;
+      }
+    }
     case "double":
     case "number": {
       if (stringIsValidDecimal(value)) {

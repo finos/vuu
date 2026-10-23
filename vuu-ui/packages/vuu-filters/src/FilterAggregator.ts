@@ -8,7 +8,9 @@ import {
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
+  DataValidationError,
   EpochTimestamp,
+  getScaledDecimalFilterOptions,
   getTemporalInfo,
   getTypedValueForDescriptor,
   isAndFilter,
@@ -16,7 +18,9 @@ import {
   isBetweenOperator,
   isExtendedFilter,
   isMultiClauseFilter,
+  isScaledDecimalFilterOptions,
   isSingleValueFilter,
+  isValidDecimalString,
   type TemporalInfo,
 } from "@vuu-ui/vuu-utils";
 import { ExtendedSingleValueFilterClause } from "./filter-container/ExtendedSingleValueFilterClause";
@@ -64,12 +68,19 @@ function installExtendedFilters(
  * today's date when the filter query is created (unless client provides
  * alternative options). This ensures a persisted time filter is not tied to
  * the date on which it was created.
+ * Scaled decimal columns are filtered at the precision with which the column
+ * displays values, so a value entered as displayed matches every underlying
+ * value that displays that way.
  */
 const getExtendedFilterOptions = (
+  column: ColumnDescriptor,
   temporalInfo: TemporalInfo | undefined,
   extendedFilterOptions?: ExtendedFilterOptions,
 ): ExtendedFilterOptions | undefined => {
-  if (temporalInfo?.kind === "time") {
+  const scaledDecimalOptions = getScaledDecimalFilterOptions(column);
+  if (scaledDecimalOptions) {
+    return scaledDecimalOptions;
+  } else if (temporalInfo?.kind === "time") {
     return {
       type: "TimeString",
       date: "today",
@@ -99,10 +110,31 @@ const getFilterValue = (
     return undefined;
   } else if (options?.type === "TimeString") {
     return asFilterTimeString(value, temporalInfo, throwIfInvalid);
+  } else if (isScaledDecimalFilterOptions(options)) {
+    return asFilterDecimalString(value, throwIfInvalid);
   } else {
     return getTypedValueForDescriptor(value, column, throwIfInvalid) as
       | VuuRowDataItemType
       | undefined;
+  }
+};
+
+/**
+ * Scaled decimal filter values are held as decimal strings, as entered, so the
+ * precision of the value is preserved and the filter can be persisted as JSON.
+ */
+const asFilterDecimalString = (
+  value: string,
+  throwIfInvalid: boolean,
+): string | undefined => {
+  if (isValidDecimalString(value)) {
+    return value;
+  } else if (throwIfInvalid) {
+    throw new DataValidationError(
+      `value ${value} is not a valid decimal`,
+      "decimal",
+      "string",
+    );
   }
 };
 
@@ -192,6 +224,7 @@ export class FilterAggregator {
   ) {
     const temporalInfo = getTemporalInfo(column);
     const options = getExtendedFilterOptions(
+      column,
       temporalInfo,
       extendedFilterOptions,
     );
