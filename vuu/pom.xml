@@ -300,11 +300,6 @@
                         <goals>
                             <goal>add-third-party</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/third-party</outputDirectory>
-                            <thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
-                            <addOutputDirectoryAsResourceDir>false</addOutputDirectoryAsResourceDir>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
