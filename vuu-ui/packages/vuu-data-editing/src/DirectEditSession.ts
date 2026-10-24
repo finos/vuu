@@ -6,8 +6,18 @@ import type {
   TableEditSessionEvents,
 } from "./TableEditSession";
 
+/**
+ * Checks a value before it is sent. Return an error message to reject it.
+ */
+export type DirectEditValidator = (
+  key: string,
+  columnName: string,
+  value: VuuRowDataItemType,
+) => string | undefined;
+
 export type DirectEditSessionConstructorProps = {
   dataSource: DataSource;
+  validate?: DirectEditValidator;
 };
 
 /**
@@ -21,10 +31,12 @@ export class DirectEditSession
   implements TableEditSession
 {
   #dataSource: DataSource;
+  #validate?: DirectEditValidator;
 
-  constructor({ dataSource }: DirectEditSessionConstructorProps) {
+  constructor({ dataSource, validate }: DirectEditSessionConstructorProps) {
     super();
     this.#dataSource = dataSource;
+    this.#validate = validate;
   }
 
   get dataSource() {
@@ -56,6 +68,10 @@ export class DirectEditSession
   ): Promise<RpcResult> {
     if (!isValid) {
       return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
+    }
+    const errorMessage = this.#validate?.(key, columnName, typedValue);
+    if (errorMessage) {
+      return { errorMessage, type: "ERROR_RESULT" };
     }
     const editCell = this.#dataSource.editCell;
     if (editCell === undefined) {

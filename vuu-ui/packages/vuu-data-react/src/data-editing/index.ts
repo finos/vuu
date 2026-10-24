@@ -1,4 +1,11 @@
-export * from "./get-data-item-edit-control";
+/** @deprecated import from @vuu-ui/vuu-data-editing */
+export {
+  getDataItemEditControl,
+  type DataItemEditControlProps,
+  type DataItemEditControlPurpose,
+  type DataItemEditControlVariant,
+  type ValidationStatus,
+} from "@vuu-ui/vuu-data-editing";
 export * from "./EditForm";
 export * from "./edit-rule-validation-checker";
 export * from "./UnsavedChangesReport";

@@ -3,6 +3,7 @@ export {
   type ColumnFilterProps,
 } from "./column-filter/ColumnFilter";
 export * from "./filter-bar";
+export * from "./filter-control";
 export * from "./filter-clause";
 export { ExtendedSingleValueFilterClause } from "./filter-container/ExtendedSingleValueFilterClause";
 export {
@@ -20,7 +21,7 @@ export { FilterDisplay } from "./filter-display/FilterDisplay";
 export * from "./filter-editor";
 export { FilterPanel } from "./filter-panel/FilterPanel";
 export * from "./filter-pill";
-export { type FilterPermissions } from "./filter-pill/FilterMenu";
+export type { FilterPermissions } from "./filter-pill/FilterMenu";
 export {
   FilterPillNext,
   type FilterPillNextProps,

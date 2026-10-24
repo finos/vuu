@@ -45,3 +45,36 @@ export {
   TableSettingsPanel,
   type TableDisplayAttributeChangeHandler,
 } from "./table-settings-panel/TableSettingsPanel";
+export {
+  type BulkEditDialogHookProps,
+  useBulkEditDialog,
+} from "./bulk-edit-dialog/useBulkEditDialog";
+export {
+  EditableTable,
+  type EditableTableBaseProps,
+  type EditableTableComposedProps,
+  type EditableTableCreateLayoutProps,
+  type EditableTableCreateStrategy,
+  type EditableTableDefaultLayoutProps,
+  type EditableTableEditModel,
+  type EditableTableEditStrategy,
+  type EditableTableField,
+  type EditableTableFormLayoutProps,
+  type EditableTableInlineLayoutProps,
+  type EditableTableMode,
+  type EditableTablePanelVisibility,
+  type EditableTableProps,
+  type EditableTableSessionLayoutProps,
+  type EditableTableSessionOnlyProps,
+} from "./editable-table/EditableTable";
+export {
+  EditableTableFooter,
+  type EditableTableFooterProps,
+  EditableTableMain,
+  type EditableTableMainProps,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+  type EditableTablePanelHeaderProps,
+  type EditableTablePanelProps,
+} from "./editable-table/EditableTableLayout";
+export * from "./table-editor";

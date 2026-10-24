@@ -1,7 +1,13 @@
 import type {
   DataValueDescriptor,
+  DataValueEditor,
   TableSchemaTable,
+  TypeaheadEditor,
 } from "@vuu-ui/vuu-data-types";
+import type {
+  LookupRenderer,
+  ValueListRenderer,
+} from "@vuu-ui/vuu-table-types";
 import {
   VuuDatePicker,
   VuuInput,
@@ -23,15 +29,31 @@ import {
   type TimeStringMillis,
 } from "@vuu-ui/vuu-utils";
 import type { InputProps } from "@salt-ds/core";
-import { ToggleFilter, type ToggleFilterValue } from "@vuu-ui/vuu-filters";
+import { EditControlCheckbox } from "./EditControlCheckbox";
+import { EditControlDropdown } from "./EditControlDropdown";
+import { EditControlLookupDropdown } from "./EditControlLookupDropdown";
 
 /**
- * variant can be used to provide a rendering hint to the filter control rendered.
- * 'toggle' for A ToggleButtonGroup, only suitable for up to 3 value choices
- * 'search' to render a search icon and require at least one character to be entered.
- * 'pick' to show a dropdown list, even before any text is entered, best for smaller lists
+ * A rendering hint for the typeahead used in filters, shorthand for
+ * `minCharacterCountToTriggerSuggestions`.
+ * 'search' needs a character typed before suggestions show (1),
+ * 'pick' shows them on focus, like a dropdown (0).
  */
-export type FilterControlVariant = "search" | "pick" | "toggle";
+export type DataItemEditControlVariant = "search" | "pick";
+
+const VARIANT_MIN_CHARACTER_COUNT: Record<
+  DataItemEditControlVariant | "default",
+  0 | 1 | undefined
+> = { default: undefined, pick: 0, search: 1 };
+
+/**
+ * - "edit" (default): editing a value. Booleans are edited with a checkbox,
+ *   and a typeahead is used only when the descriptor's `editor` asks for one.
+ * - "filter": entering a filter value. Every string column on a Vuu table
+ *   gets a typeahead, suggesting the values present in the table.
+ */
+export type DataItemEditControlPurpose = "edit" | "filter";
+
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
   TypeaheadProps?: Pick<
@@ -44,29 +66,31 @@ export interface DataItemEditControlProps {
   commitOnBlur?: boolean;
   commitWhenCleared?: boolean;
   /**
-   * A table column or form field Descriptor.
+   * A table column or form field Descriptor. Its `editor`, when present,
+   * determines the control.
    */
   dataDescriptor: DataValueDescriptor;
   editOperation?: "insert" | "update";
   errorMessage?: string;
-  /**
-   * Optional labels, only used with 'toggle' variant. If provided, must
-   * have same number of items as values. Defaults to values.
-   */
-  labels?: string[];
   onCommit: CommitHandler<HTMLElement>;
+  /** @default "edit" */
+  purpose?: DataItemEditControlPurpose;
+  /** The table the value belongs to. Required for a typeahead. */
   table?: TableSchemaTable;
-  /**
-   * Where provided, only these values will be offered as suggestions.
-   * They will be validated against server with Typeahead service, so
-   * unavailable options are not offered.
-   * Recommended for toggle filters, not usually necessary for other
-   * filter variants. Boolean values are supported for toggle filters on
-   * boolean columns, where values default to [true, false].
-   */
-  values?: ToggleFilterValue[];
-  variant?: FilterControlVariant;
+  variant?: DataItemEditControlVariant;
 }
+
+const isTypeaheadEditor = (
+  editor?: DataValueEditor,
+): editor is TypeaheadEditor => editor?.name === "typeahead";
+const isValueListEditor = (
+  editor?: DataValueEditor,
+): editor is ValueListRenderer =>
+  Array.isArray((editor as ValueListRenderer | undefined)?.values);
+const isLookupEditor = (editor?: DataValueEditor): editor is LookupRenderer =>
+  (editor as LookupRenderer | undefined)?.lookup !== undefined;
+const isCheckboxEditor = (editor?: DataValueEditor) =>
+  editor?.name === "checkbox-cell" || editor?.name === "toggle-cell";
 
 const timeOfDayPattern = /^\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?$/;
 
@@ -127,8 +151,6 @@ function toTimeString(
   }
 }
 
-const BOOLEAN_TOGGLE_VALUES: ToggleFilterValue[] = [true, false];
-
 export type ValidationStatus = "initial" | true | string;
 
 export const getDataItemEditControl = ({
@@ -140,16 +162,15 @@ export const getDataItemEditControl = ({
   dataDescriptor,
   editOperation = "update",
   errorMessage,
-  labels,
   onCommit,
+  purpose = "edit",
   table,
-  values,
   variant,
 }: DataItemEditControlProps) => {
-  const dataVariant = variant && variant !== "toggle" ? variant : undefined;
+  const { editor } = dataDescriptor;
   const temporalInfo = getTemporalInfo(dataDescriptor);
+  const value = InputProps?.value ?? InputProps?.inputProps?.value;
 
-  // WOnb't this prevent a filter on an non-editable field ?
   if (!isDataValueEditable(dataDescriptor, editOperation, true)) {
     return (
       <VuuInput
@@ -243,51 +264,61 @@ export const getDataItemEditControl = ({
       />
     );
   } else if (
-    variant === "toggle" &&
-    dataDescriptor.serverDataType === "boolean"
+    purpose === "edit" &&
+    (isCheckboxEditor(editor) ||
+      (editor === undefined && dataDescriptor.serverDataType === "boolean"))
   ) {
     return (
-      <ToggleFilter
+      <EditControlCheckbox
+        className={className}
+        onCommit={onCommit}
+        value={value}
+      />
+    );
+  } else if (isLookupEditor(editor)) {
+    return (
+      <EditControlLookupDropdown
+        className={className}
+        lookup={editor.lookup}
+        onCommit={onCommit}
+        value={value}
+      />
+    );
+  } else if (isValueListEditor(editor)) {
+    return (
+      <EditControlDropdown
+        className={className}
+        onCommit={onCommit}
+        value={value}
+        values={editor.values}
+      />
+    );
+  } else if (
+    table &&
+    (isTypeaheadEditor(editor) ||
+      (purpose === "filter" && dataDescriptor.serverDataType === "string"))
+  ) {
+    const minCharacterCountToTriggerSuggestions =
+      TypeaheadProps?.minCharacterCountToTriggerSuggestions ??
+      (isTypeaheadEditor(editor)
+        ? editor.minCharacterCountToTriggerSuggestions
+        : undefined) ??
+      VARIANT_MIN_CHARACTER_COUNT[variant ?? "default"];
+    return (
+      <VuuTypeaheadInput
+        {...InputProps}
+        {...TypeaheadProps}
         className={className}
         column={dataDescriptor.name}
         data-edit-control
-        // typeahead only supports string columns
-        disableTypeahead
-        labels={labels}
+        data-variant={variant}
+        minCharacterCountToTriggerSuggestions={
+          minCharacterCountToTriggerSuggestions
+        }
         onCommit={onCommit}
         table={table}
-        values={values?.length ? values : BOOLEAN_TOGGLE_VALUES}
-        value={InputProps?.inputProps?.value ?? "all"}
       />
     );
-  } else if (dataDescriptor.serverDataType === "string" && table) {
-    if (variant === "toggle" && values?.length) {
-      return (
-        <ToggleFilter
-          className={className}
-          column={dataDescriptor.name}
-          data-edit-control
-          labels={labels}
-          onCommit={onCommit}
-          table={table}
-          values={values}
-          value={InputProps?.inputProps?.value ?? "all"}
-        />
-      );
-    } else {
-      return (
-        <VuuTypeaheadInput
-          {...InputProps}
-          {...TypeaheadProps}
-          className={className}
-          column={dataDescriptor.name}
-          data-edit-control
-          data-variant={dataVariant}
-          onCommit={onCommit}
-          table={table}
-        />
-      );
-    }
   }
 
   return (

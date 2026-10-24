@@ -6,19 +6,13 @@ import {
   Tabs,
   TabTrigger,
   Text,
-  ToggleButton,
-  ToggleButtonGroup,
 } from "@salt-ds/core";
+import { EditField } from "@vuu-ui/vuu-data-editing";
 import {
-  DataEditingProvider,
-  EditButtons,
-  EditField,
-  useEditable,
-  useEditMode,
-} from "@vuu-ui/vuu-data-editing";
-import type { DataSource } from "@vuu-ui/vuu-data-types";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { useCallback } from "react";
+  TableEditorButtons,
+  TableEditorModeToggle,
+  useTableEditor,
+} from "@vuu-ui/vuu-table-extras";
 import { ModulePicker } from "../module-picker/ModulePicker";
 import { useUserEditForm } from "./useUserEditForm";
 
@@ -26,57 +20,31 @@ import "./UserEditForm.css";
 
 const classBase = "vuuUserEditForm";
 
-export interface UserEditFormProps {
-  dataRow: DataRow;
-  dataSource: DataSource;
-}
-
-export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
-  const { isEditMode, setEditMode } = useEditMode();
-  const exitEditMode = useCallback(() => setEditMode(false), [setEditMode]);
-  const {
-    editSession,
-    onCancel: cancelEdit,
-    onSave,
-  } = useEditable({
-    dataSource,
-    onCancel: exitEditMode,
-    onSave: exitEditMode,
-  });
-  const {
-    allModules,
-    modulePermissions,
-    onSelectedModulesChange,
-    resetModulePermissions,
-  } = useUserEditForm(dataRow, dataSource, editSession);
-  const onCancel = useCallback(() => {
-    resetModulePermissions();
-    cancelEdit();
-  }, [cancelEdit, resetModulePermissions]);
-
-  const onToggleEditMode = useCallback(() => {
-    setEditMode(!isEditMode);
-  }, [isEditMode, setEditMode]);
+/**
+ * The content of the user form, rendered within a `TableEditorForm`. Fields
+ * edit the selected row; module permissions are committed to the same edit
+ * session, so they are saved, or discarded, along with them.
+ */
+export const UserEditForm = () => {
+  const { dataSource, isEditing, selectedRow } = useTableEditor();
+  if (selectedRow === undefined) {
+    throw Error("UserEditForm must be rendered within a TableEditorForm");
+  }
+  const { allModules, modulePermissions, onSelectedModulesChange } =
+    useUserEditForm(selectedRow, dataSource);
 
   return (
-    <DataEditingProvider editSession={editSession}>
+    <>
       <div className="vuuIdentityAdmin-mode">
         <Text color="secondary" styleAs="label">
-          {isEditMode
+          {isEditing
             ? "Editing. Save or cancel your changes."
             : "Switch to Edit to change this user."}
         </Text>
-        <ToggleButtonGroup
-          aria-label="Mode"
-          onChange={onToggleEditMode}
-          value={isEditMode ? "edit" : "view"}
-        >
-          <ToggleButton value="view">View</ToggleButton>
-          <ToggleButton value="edit">Edit</ToggleButton>
-        </ToggleButtonGroup>
+        <TableEditorModeToggle />
       </div>
 
-      <form className={classBase}>
+      <div className={classBase}>
         <Tabs defaultValue="UserDetails">
           <TabBar divider>
             <TabList>
@@ -89,30 +57,12 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
             </TabList>
           </TabBar>
           <TabPanel value="UserDetails">
+            <EditField label="Username" name="username" readOnly required />
+            <EditField label="Email" name="email" required type="email" />
+            <EditField label="First name" name="first_name" />
+            <EditField label="Last name" name="last_name" />
+            <EditField label="Enabled" name="enabled" type="checkbox" />
             <EditField
-              dataRow={dataRow}
-              label="Username"
-              name="username"
-              readOnly
-              required
-            />
-            <EditField
-              dataRow={dataRow}
-              label="Email"
-              name="email"
-              required
-              type="email"
-            />
-            <EditField dataRow={dataRow} label="First name" name="first_name" />
-            <EditField dataRow={dataRow} label="Last name" name="last_name" />
-            <EditField
-              dataRow={dataRow}
-              label="Enabled"
-              name="enabled"
-              type="checkbox"
-            />
-            <EditField
-              dataRow={dataRow}
               label="Temporary password"
               name="temporary_password"
               type="password"
@@ -126,21 +76,15 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
               modulePermissions={modulePermissions}
               onSelectedModulesChange={onSelectedModulesChange}
               permissionMultiselect
-              readOnly={!isEditMode}
+              readOnly={!isEditing}
               searchForm={false}
             />
           </TabPanel>
         </Tabs>
-      </form>
-      <div className="vuuIdentityAdmin-panelFooter">
-        <EditButtons
-          canCancel={editSession.canCancel}
-          canSave={editSession.canSave}
-          editSession={editSession}
-          onCancel={onCancel}
-          onSave={onSave}
-        />
       </div>
-    </DataEditingProvider>
+      <div className="vuuIdentityAdmin-panelFooter">
+        <TableEditorButtons />
+      </div>
+    </>
   );
 };
