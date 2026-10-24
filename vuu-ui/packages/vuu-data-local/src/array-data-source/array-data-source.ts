@@ -194,7 +194,8 @@ export class ArrayDataSource
     this.#filterColumnsByName = getColumnsByName(columnDescriptors);
     this.dataMap = dataMap;
     this.key = keyColumn
-      ? this.columnDescriptors.findIndex((col) => col.name === keyColumn)
+      ? (dataMap?.[keyColumn] ??
+        this.columnDescriptors.findIndex((col) => col.name === keyColumn))
       : 0;
     this.rangeChangeRowset = rangeChangeRowset;
     this.tableSchema = buildTableSchema(columnDescriptors, keyColumn);
@@ -271,8 +272,14 @@ export class ArrayDataSource
     this.emit("subscribed", subscribedMessage);
 
     if (hasConfigProps) {
+      if (range) {
+        this.constrainRangeToMaxRangeEnd(range);
+        this.#range = range;
+        this.#keys.reset(this.rangeWithBufferWithinMaxRangeEnd);
+      }
       // invoke setter to action config
       this.config = config;
+      this.sendRowsToClient(true);
     } else {
       this.sendSizeUpdateToClient();
       this.emit(
@@ -878,7 +885,7 @@ export class ArrayDataSource
       // maybe update this in place
       this.#data[dataIndex] = dataSourceRow;
 
-      const { from, to } = this.#range;
+      const { from, to } = this.rangeWithBufferWithinMaxRangeEnd;
 
       const isFiltered = hasFilter(this.config) || hasBaseFilter(this.config);
       const isSorted = hasSort(this.config);

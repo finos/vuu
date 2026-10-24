@@ -1,9 +1,8 @@
-import { buildDataColumnMap } from "../../Table";
+import { buildDataColumnMap, Table } from "../../Table";
 import { BaseUpdateGenerator } from "../../UpdateGenerator";
 import { schemas, SimulTableName } from "../../simul/simul-schemas";
 import basketConstituentData from "./constituents";
 import { initBidAsk, nextRandomDouble, random } from "../../data-utils";
-import tableContainer from "../../core/table/TableContainer";
 
 export type ask = number;
 export type askSize = number;
@@ -42,40 +41,42 @@ const pricesUpdateGenerator = new BaseUpdateGenerator({
 });
 
 const prices: PricesDataRow[] = [];
+const seen = new Set<string>();
 
-// prettier-ignore
-for (const [,,,lastTrade,ric] of basketConstituentData) {
+for (const [, , , lastTrade, ric] of basketConstituentData) {
+  if (seen.has(String(ric))) continue;
   const priceSeed = parseFloat(String(lastTrade));
-  if (!isNaN(priceSeed)){
-  const [bid, ask] = initBidAsk(5,nextRandomDouble)
-  const askSize = random(1000, 3000);
-  const bidSize = random(1000, 3000);
-  const close = priceSeed + random(0, 1) / 10;
-  const last = priceSeed + random(0, 1) / 10;
-  const open = priceSeed + random(0, 1) / 10;
-  const phase = "C";
-  const scenario = "close";
-  prices.push([
-    ask,
-    askSize,
-    bid,
-    bidSize,
-    close,
-    last,
-    open,
-    phase,
-    ric as string,
-    scenario,
-  ]);
-
+  if (!isNaN(priceSeed)) {
+    seen.add(String(ric));
+    const [bid, ask] = initBidAsk(5, nextRandomDouble);
+    const askSize = random(1000, 3000);
+    const bidSize = random(1000, 3000);
+    const close = priceSeed + random(0, 1) / 10;
+    const last = priceSeed + random(0, 1) / 10;
+    const open = priceSeed + random(0, 1) / 10;
+    const phase = "C";
+    const scenario = "close";
+    prices.push([
+      ask,
+      askSize,
+      bid,
+      bidSize,
+      close,
+      last,
+      open,
+      phase,
+      ric as string,
+      scenario,
+    ]);
   }
 }
 
-const pricesTable = tableContainer.createTable(
+const pricesTable = new Table(
   schemas.prices,
   prices,
   buildDataColumnMap<SimulTableName>(schemas, "prices"),
   pricesUpdateGenerator,
 );
+pricesUpdateGenerator.setRange({ from: 0, to: prices.length });
 
 export default pricesTable;

@@ -94,9 +94,13 @@ class FakeRegistry {
     };
   }
 
-  setState(connectionId: string, state: VuuServerConnectionState) {
+  setState(
+    connectionId: string,
+    state: VuuServerConnectionState,
+    error?: Error,
+  ) {
     this.states.set(connectionId, state);
-    this.#emit(connectionId, state);
+    this.#emit(connectionId, state, error);
   }
 
   settle(connectionId: string, error?: unknown) {
@@ -111,9 +115,9 @@ class FakeRegistry {
     }
   }
 
-  #emit(connectionId: string, state: VuuServerConnectionState) {
+  #emit(connectionId: string, state: VuuServerConnectionState, error?: Error) {
     for (const listener of this.#listeners) {
-      listener(connectionId, state);
+      listener(connectionId, state, error);
     }
   }
 }
@@ -442,6 +446,34 @@ describe("VuuServerMonitor", () => {
     expect(acquiredIds(registry)).toEqual(["s0"]);
   });
 
+  it("reports session limits without automatic probes and allows manual retry", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { probeIntervalMs: 1000 },
+    });
+    registry.settle("s0", new Error("User session limit exceeded"));
+    await vi.advanceTimersByTimeAsync(5000);
+    monitor.setDisplayOrder(["m0"]);
+    monitor.setVisibleModules(["m0"]);
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(monitor.getModuleStatus("m0")).toMatchObject({
+      presence: "offline",
+      detail: {
+        error: "User session limit exceeded",
+        reason: "User session limit exceeded. Close another session and retry.",
+      },
+    });
+    expect(monitor.getModuleStatus("m0").detail?.nextAttemptAt).toBeUndefined();
+    expect(acquiredIds(registry)).toEqual(["s0"]);
+
+    monitor.retryModule("m0");
+    expect(acquiredIds(registry)).toEqual(["s0", "s0"]);
+    registry.settle("s0");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(monitor.getModuleStatus("m0").presence).toBe("online");
+  });
+
   it("releases and probes a held server when the registry gives up", async () => {
     const { monitor, registry } = await setup({
       count: 1,
@@ -460,6 +492,30 @@ describe("VuuServerMonitor", () => {
     });
     await vi.advanceTimersByTimeAsync(1100);
     expect(acquiredIds(registry)).toEqual(["s0", "s0"]);
+  });
+
+  it("preserves a held server's session-limit error without probing or publishing repeated updates", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { probeIntervalMs: 1000 },
+    });
+    registry.settle("s0");
+    await vi.advanceTimersByTimeAsync(0);
+    registry.setState("s0", "failed", new Error("User session limit exceeded"));
+
+    expect(monitor.getModuleStatus("m0")).toMatchObject({
+      presence: "offline",
+      detail: {
+        error: "User session limit exceeded",
+        reason: "User session limit exceeded. Close another session and retry.",
+      },
+    });
+    expect(registry.getRefCount("s0")).toBe(0);
+    const listener = vi.fn();
+    monitor.subscribe(listener);
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(acquiredIds(registry)).toEqual(["s0"]);
+    expect(listener).not.toHaveBeenCalled();
   });
 
   it("reports a module with a failed config as unavailable and retries it", async () => {

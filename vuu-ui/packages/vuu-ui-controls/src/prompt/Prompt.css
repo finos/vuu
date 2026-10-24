@@ -1,46 +1,42 @@
 .vuuPrompt {
-    min-height: var(--vuuPrompt-minHeight, 257px);
-    min-width: var(--vuuPrompt-minWidth,380px);
+  max-width: var(--vuuPrompt-maxWidth);
+  min-height: var(--vuuPrompt-minHeight, 257px);
+  min-width: var(--vuuPrompt-minWidth, 380px);
 
-    .saltDialogHeader {
-
-        .saltDialogHeader-header {
-            align-items: center;
-            display: flex;
-            gap: var(--salt-spacing-100);
-        }
-        .vuuIcon {
-            --vuu-icon-color: var(--vuuPrompt-icon-color);
-            --vuu-icon-size: var(--vuuPrompt-icon-size, 24px);
-        }
+  .saltDialogHeader {
+    .saltDialogHeader-header {
+      align-items: center;
+      display: flex;
+      gap: var(--salt-spacing-100);
     }
-
-    .saltDialogActions {
-        align-items: center;
-        .vuuIcon {
-            --vuu-icon-size: var(--vuuPrompt-close-size, 20px);
-            width: 20px;
-        }
+    .vuuIcon {
+      --vuu-icon-color: var(--vuuPrompt-icon-color);
+      --vuu-icon-size: var(--vuuPrompt-icon-size, 24px);
     }
+  }
 
+  .saltDialogActions {
+    align-items: center;
+    .vuuIcon {
+      --vuu-icon-size: var(--vuuPrompt-close-size, 20px);
+      width: 20px;
+    }
+  }
 }
 
 .vuuPrompt.saltDialog-warning {
+  border-radius: 4px !important;
+  padding-top: 0 !important;
 
-    border-radius: 4px !important;
-    padding-top:0 !important;
+  .saltDialogHeader {
+    padding-left: var(--salt-spacing-100);
+    padding-bottom: var(--salt-spacing-100);
+    padding-right: var(--salt-spacing-100);
+  }
 
-    .saltDialogHeader {
-        padding-left: var(--salt-spacing-100);
-        padding-bottom: var(--salt-spacing-100);
-        padding-right: var(--salt-spacing-100);
-
-    }
-
-    .saltDialogContent {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-    } 
+  .saltDialogContent {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
 }
-

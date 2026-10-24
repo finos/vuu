@@ -393,6 +393,36 @@ describe("VuuConnectionRegistry", () => {
     registry.release(target.connectionId);
   });
 
+  it.each([
+    new Error("User session limit exceeded"),
+    "User session limit exceeded",
+  ])("stops reconnecting after a session-limit rejection (%s)", async (error) => {
+    const connectionClient = new TestConnectionClient();
+    const connect = vi.spyOn(connectionClient, "connectWithLoginResponseTo");
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken: vi.fn().mockResolvedValue(session),
+      retryIntervals: [0, 0, 0],
+    });
+    await registry.acquire(authHandler, target);
+    const errorListener = vi.fn();
+    registry.subscribe(target.connectionId, vi.fn(), errorListener);
+    connect.mockRejectedValue(error);
+    connectionClient.connected = false;
+    connectionClient.listener?.("disconnected");
+    await vi.waitFor(() => expect(errorListener).toHaveBeenCalledOnce());
+    expect(connect).toHaveBeenCalledTimes(2);
+    expect(errorListener).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "User session limit exceeded" }),
+    );
+    expect(registry.getState(target.connectionId)).toBe("failed");
+    connectionClient.listener?.("disconnected");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(connect).toHaveBeenCalledTimes(2);
+    expect(errorListener).toHaveBeenCalledOnce();
+    registry.release(target.connectionId);
+  });
+
   it("uses the configured direct VUU session resolver", async () => {
     const connectionClient = new TestConnectionClient();
     const exchangeToken = vi.fn();

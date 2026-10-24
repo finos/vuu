@@ -1,17 +1,22 @@
-import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { registerComponent } from "@vuu-ui/vuu-utils";
-import { ColHeaderAddSymbol } from "../cell-renderers";
-
-import "./BasketTableEdit.css";
 import {
   ContextMenuProvider,
-  MenuActionHandler,
-  MenuBuilder,
+  type MenuActionHandler,
+  type MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
 import {
+  DataEditingProvider,
+  DirectEditSession,
+} from "@vuu-ui/vuu-data-editing";
+import { Table, type TableProps } from "@vuu-ui/vuu-table";
+import type {
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
+import { registerComponent } from "@vuu-ui/vuu-utils";
+import { useMemo } from "react";
+import { ColHeaderAddSymbol } from "../cell-renderers";
+
+import "./BasketTableEdit.css";
 
 registerComponent(
   "col-header-add-symbol",
@@ -31,18 +36,27 @@ export interface BasketTableEditProps extends TableProps {
 
 export const BasketTableEdit = ({
   contextMenuConfig,
+  dataSource,
   ...props
 }: BasketTableEditProps) => {
+  const editSession = useMemo(
+    () => new DirectEditSession({ dataSource }),
+    [dataSource],
+  );
+
   return (
     <ContextMenuProvider {...contextMenuConfig}>
-      <Table
-        {...props}
-        allowDragDrop="drop-only"
-        id="basket-constituents"
-        renderBufferSize={20}
-        className={classBase}
-        rowHeight={21}
-      />
+      <DataEditingProvider editSession={editSession}>
+        <Table
+          {...props}
+          allowDragDrop="drop-only"
+          dataSource={dataSource}
+          id="basket-constituents"
+          renderBufferSize={20}
+          className={classBase}
+          rowHeight={21}
+        />
+      </DataEditingProvider>
     </ContextMenuProvider>
   );
 };

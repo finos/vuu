@@ -5,7 +5,7 @@ import {
   queryByText,
   waitFor,
 } from "@testing-library/dom";
-import { SaltProvider } from "@salt-ds/core";
+import { MenuItem, SaltProvider } from "@salt-ds/core";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -327,12 +327,78 @@ describe("Saved state dialog", () => {
     expect(
       getByRole(document.body, "menuitem", { name: "Log out" }),
     ).toBeTruthy();
+    await act(async () => {
+      item.focus();
+      fireEvent.keyDown(item, { key: "ArrowDown" });
+    });
+    expect(document.activeElement).toBe(
+      getByRole(document.body, "menuitem", { name: "Log out" }),
+    );
     await act(async () => fireEvent.click(item));
     await waitFor(() => expect(dialog()).toBeTruthy());
+    expect(queryByRole(document.body, "menu")).toBeNull();
   });
 });
 
 describe("PortalUserMenu without saved state", () => {
+  it("supports extra items, skips disabled items and closes after selection", async () => {
+    // @ts-expect-error React test flag
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const onSettings = vi.fn();
+    try {
+      await act(async () =>
+        root.render(
+          <SaltProvider>
+            <PortalUserMenu>
+              <MenuItem onClick={onSettings}>
+                Settings
+              </MenuItem>
+              <MenuItem disabled>
+                Unavailable
+              </MenuItem>
+            </PortalUserMenu>
+          </SaltProvider>,
+        ),
+      );
+      const trigger = getByRole(container, "button", { name: /steve/ });
+      await act(async () => fireEvent.click(trigger));
+      const settings = await waitFor(() =>
+        getByRole(document.body, "menuitem", { name: "Settings" }),
+      );
+      expect(trigger.getAttribute("aria-expanded")).toBe("true");
+      await act(async () => {
+        settings.focus();
+        fireEvent.keyDown(settings, { key: "ArrowDown" });
+      });
+      const logout = getByRole(document.body, "menuitem", { name: "Log out" });
+      expect(document.activeElement).toBe(logout);
+      await act(async () => fireEvent.keyDown(logout, { key: "ArrowUp" }));
+      expect(document.activeElement).toBe(settings);
+      await act(async () => fireEvent.click(settings));
+      expect(onSettings).toHaveBeenCalledOnce();
+      await waitFor(() =>
+        expect(queryByRole(document.body, "menu")).toBeNull(),
+      );
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+      await act(async () => fireEvent.click(trigger));
+      await waitFor(() =>
+        getByRole(document.body, "menuitem", { name: "Settings" }),
+      );
+      await act(async () =>
+        fireEvent.keyDown(document.activeElement!, { key: "Escape" }),
+      );
+      await waitFor(() =>
+        expect(queryByRole(document.body, "menu")).toBeNull(),
+      );
+    } finally {
+      act(() => root.unmount());
+      container.remove();
+    }
+  });
+
   it("only offers Log out", async () => {
     // @ts-expect-error React test flag
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;

@@ -4,6 +4,7 @@ import {
   type VuuConnectionResult,
 } from "@vuu-ui/vuu-data-remote";
 import type { AuthHandler } from "../auth/AuthHandler";
+import { SESSION_LIMIT_EXCEEDED } from "@vuu-ui/vuu-utils";
 import {
   exchangeVuuToken,
   VuuTokenExchangeError,
@@ -80,7 +81,15 @@ const isAuthorizationDenied = (error: unknown) =>
 const toError = (error: unknown, connectionId: string) =>
   error instanceof Error
     ? error
-    : new Error(`VUU connection ${connectionId} failed`, { cause: error });
+    : new Error(
+        typeof error === "string"
+          ? error
+          : `VUU connection ${connectionId} failed`,
+        { cause: error },
+      );
+
+export const isSessionLimitExceeded = (error: unknown) =>
+  (error instanceof Error ? error.message : error) === SESSION_LIMIT_EXCEEDED;
 
 const connectionFailed = (status: ConnectionStatus) =>
   status === "connection-failed" ||
@@ -331,6 +340,8 @@ export class VuuConnectionRegistry {
         if (
           !entry.intentionalDisconnect &&
           entry.refCount > 0 &&
+          entry.state !== "failed" &&
+          entry.state !== "unauthorized" &&
           connectionFailed(nextStatus)
         ) {
           this.#reconnect(entry);
@@ -367,14 +378,8 @@ export class VuuConnectionRegistry {
           return;
         } catch (error) {
           this.#settleReconnectAttempt(entry);
-          lastError =
-            error instanceof Error
-              ? error
-              : new Error(
-                  `VUU connection ${entry.target.connectionId} failed to reconnect`,
-                  { cause: error },
-                );
-          if (isAuthorizationDenied(error)) {
+          lastError = toError(error, entry.target.connectionId);
+          if (isAuthorizationDenied(error) || isSessionLimitExceeded(error)) {
             break;
           }
         }

@@ -119,6 +119,46 @@ describe("ModuleServerMap", () => {
     expect(map.get("a")).toMatchObject({ status: "resolved" });
   });
 
+  it("groups explicit portal websocket aliases under the portal connection", async () => {
+    const { loadConfig, pending } = deferredLoader();
+    const websocketUrl = "wss://localhost:8091/websocket-portal";
+    const map = new ModuleServerMap({
+      loadConfig,
+      modules: [
+        testModule("admin"),
+        testModule("tables"),
+        testModule("orders"),
+      ],
+      portalConnectionId: "portal",
+      portalWebsocketUrl: websocketUrl,
+    });
+    map.start();
+    pending.get("http://localhost:5010/admin")?.resolve({
+      vuu: {
+        connectionId: "module-admin",
+        restUrl: "https://localhost:8443/api/authn",
+        websocketUrl,
+      },
+    });
+    pending.get("http://localhost:5010/tables")?.resolve({});
+    pending.get("http://localhost:5010/orders")?.resolve({
+      vuu: {
+        connectionId: "orders",
+        restUrl: "https://localhost:8444/api/authn",
+        websocketUrl: "wss://localhost:8092/websocket-orders",
+      },
+    });
+    await flush();
+
+    expect(map.get("admin")).toEqual({
+      status: "resolved",
+      connectionId: "portal",
+    });
+    expect(map.modulesFor("portal")).toEqual(["admin", "tables"]);
+    expect(map.modulesFor("module-admin")).toEqual([]);
+    expect(map.modulesFor("orders")).toEqual(["orders"]);
+  });
+
   it("reports a server that can't be used as an error", async () => {
     const { loadConfig, pending } = deferredLoader();
     const map = new ModuleServerMap({

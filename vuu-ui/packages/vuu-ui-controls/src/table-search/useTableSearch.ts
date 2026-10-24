@@ -1,14 +1,21 @@
-import { FormEventHandler, useCallback, useMemo, useState } from "react";
+import {
+  FormEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { TableSearchProps } from "./TableSearch";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 
 export interface TableSearchHookProps
-  extends Pick<TableSearchProps, "searchColumns"> {
+  extends Pick<TableSearchProps, "searchColumns" | "baseFilter"> {
   dataSource: DataSource;
   label?: string;
 }
 
 export const useTableSearch = ({
+  baseFilter = "",
   dataSource,
   searchColumns,
 }: TableSearchHookProps) => {
@@ -32,14 +39,18 @@ export const useTableSearch = ({
         searchText: value,
         filter,
       });
-      if (dataSource) {
-        dataSource.filter = {
-          filter,
-        };
-      }
     },
-    [baseFilterPattern, dataSource],
+    [baseFilterPattern],
   );
+
+  useEffect(() => {
+    dataSource.filter = {
+      filter: [baseFilter, searchState.filter]
+        .filter(Boolean)
+        .map((filter) => `(${filter})`)
+        .join(" and "),
+    };
+  }, [baseFilter, dataSource, searchState.filter]);
 
   return {
     dataSource,
