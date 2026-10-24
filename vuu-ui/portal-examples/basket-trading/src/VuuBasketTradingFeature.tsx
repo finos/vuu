@@ -1,16 +1,22 @@
 import { FlexboxLayout, Stack } from "@vuu-ui/vuu-layout";
+import { SlotContextPanelProvider } from "@vuu-ui/core";
+import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
 import { EmptyBasketsPanel } from "./empty-baskets-panel";
 import { useBasketTrading } from "./useBasketTrading";
+import { ActiveBasketContext } from "./cell-renderers/col-header-add-symbol/ConstituentSearch";
 
 import "./VuuBasketTradingFeature.css";
 
-const classBase = "VuuBasketTradingFeature";
+const classBase = "vuuBasketTradingFeature";
 
 export type BasketStatus = "design" | "on-market";
 const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
+const dragSources = {
+  "basket-instruments": { dropTargets: "basket-constituents" },
+};
 
 const VuuBasketTradingFeature = () => {
   const basketTradingProps = useBasketTrading();
@@ -54,44 +60,52 @@ const VuuBasketTradingFeature = () => {
   const activeTabIndex = basket?.status === "ON_MARKET" ? 1 : 0;
 
   return (
-    <>
-      <FlexboxLayout
-        className={classBase}
-        style={{ flexDirection: "column", height: "100%" }}
-      >
-        <BasketToolbar
-          basket={basket}
-          BasketSelectorProps={basketSelectorProps}
-          basketStatus={basketStatus[activeTabIndex]}
-          onCommit={onCommitBasketChange}
-          onSendToMarket={onSendToMarket}
-          onTakeOffMarket={onTakeOffMarket}
-        />
-        <Stack
-          active={activeTabIndex}
-          className={`${classBase}-stack`}
-          showTabs={false}
-          style={{ flex: 1 }}
+    <ActiveBasketContext.Provider value={basket?.instanceId}>
+      <SlotContextPanelProvider>
+        <FlexboxLayout
+          className={classBase}
+          style={{ flexDirection: "column", height: "100%" }}
         >
-          <BasketTableEdit
-            config={editConfig}
-            data-tab-title="Design"
-            contextMenuConfig={basketDesignContextMenuConfig}
-            dataSource={dataSourceBasketTradingConstituentJoin}
-            onConfigChange={onConfigChangeEdit}
-            onDrop={onDropInstrument}
+          <BasketToolbar
+            basket={basket}
+            BasketSelectorProps={basketSelectorProps}
+            basketStatus={basketStatus[activeTabIndex]}
+            onCommit={onCommitBasketChange}
+            onSendToMarket={onSendToMarket}
+            onTakeOffMarket={onTakeOffMarket}
           />
-          <BasketTableLive
-            config={liveConfig}
-            data-tab-title="On Market"
-            dataSource={dataSourceBasketTradingConstituentJoin}
-            onConfigChange={onConfigChangeLive}
-          />
-        </Stack>
-      </FlexboxLayout>
-      {dialog}
-    </>
+          <Stack
+            active={activeTabIndex}
+            className={`${classBase}-stack`}
+            showTabs={false}
+            style={{ flex: 1 }}
+          >
+            <BasketTableEdit
+              config={editConfig}
+              data-tab-title="Design"
+              contextMenuConfig={basketDesignContextMenuConfig}
+              dataSource={dataSourceBasketTradingConstituentJoin}
+              onConfigChange={onConfigChangeEdit}
+              onDrop={onDropInstrument}
+            />
+            <BasketTableLive
+              config={liveConfig}
+              data-tab-title="On Market"
+              dataSource={dataSourceBasketTradingConstituentJoin}
+              onConfigChange={onConfigChangeLive}
+            />
+          </Stack>
+        </FlexboxLayout>
+        {dialog}
+      </SlotContextPanelProvider>
+    </ActiveBasketContext.Provider>
   );
 };
 
-export default VuuBasketTradingFeature;
+const BasketTradingWithDragDrop = () => (
+  <DragDropProvider dragSources={dragSources}>
+    <VuuBasketTradingFeature />
+  </DragDropProvider>
+);
+
+export default BasketTradingWithDragDrop;
