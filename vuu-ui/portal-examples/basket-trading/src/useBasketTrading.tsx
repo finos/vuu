@@ -6,8 +6,8 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
-import type { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
 import type {
+  DataRow,
   TableConfig,
   TableConfigChangeHandler,
 } from "@vuu-ui/vuu-table-types";
@@ -47,7 +47,7 @@ export class Basket {
     this.dataSourceRow = data;
     this.basketId = data[columnMap.basketId] as string;
     this.basketName = data[columnMap.basketName] as string;
-    this.pctFilled = data[columnMap.pctFilled] as number;
+    this.pctFilled = data[columnMap.filledPct] as number;
     this.fxRateToUsd = data[columnMap.fxRateToUsd] as number;
     this.instanceId = data[columnMap.instanceId] as string;
     this.side = data[columnMap.side] as string;
@@ -98,7 +98,6 @@ export const useBasketTrading = () => {
   }, [load]);
 
   const {
-    basketConstituentMap,
     basketSchema,
     basketTradingMap,
     dataSourceBasketTradingControl,
@@ -261,41 +260,49 @@ export const useBasketTrading = () => {
   };
 
   const handleDropInstrument = useCallback(
-    (dragDropState: DragDropState) => {
-      const constituentRow = dragDropState.payload as VuuDataRow;
-      if (constituentRow && basketConstituentMap) {
-        const ric = constituentRow[basketConstituentMap.ric] as string;
-        dataSourceBasketTradingConstituentJoin
-          ?.rpcRequest?.({
-            params: { ric },
+    async (dragDropState: DragDropState) => {
+      const constituentRow = dragDropState.payload as Partial<DataRow> | null;
+      try {
+        if (
+          !constituentRow ||
+          typeof constituentRow !== "object" ||
+          typeof constituentRow.ric !== "string" ||
+          !basket ||
+          !dataSourceBasketTradingConstituentJoin?.rpcRequest
+        ) {
+          throw Error("Drop a constituent onto an active basket");
+        }
+        const { ric } = constituentRow;
+        const response =
+          await dataSourceBasketTradingConstituentJoin.rpcRequest({
+            params: { ric, basketInstanceId: basket.instanceId },
             rpcName: "addConstituent",
             type: "RPC_REQUEST",
-          })
-          .then((response) => {
-            if (response?.type === "SUCCESS_RESULT") {
-              showNotification?.({
-                content: `${ric} added to basket`,
-                header: "Add Constituent to Basket",
-                status: "success",
-                type: NotificationType.Toast,
-              });
-            } else if (response?.type === "ERROR_RESULT") {
-              showNotification?.({
-                content:
-                  response?.errorMessage ?? `Failed to add ${ric} to basket`,
-                header: "Add Constituent to Basket",
-                status: "error",
-                type: NotificationType.Toast,
-              });
-            }
           });
+        if (response?.type !== "SUCCESS_RESULT") {
+          throw Error(
+            response?.type === "ERROR_RESULT"
+              ? response.errorMessage
+              : `Failed to add ${ric} to basket`,
+          );
+        }
+        showNotification({
+          content: `${ric} added to basket`,
+          showCloseButton: true,
+          header: "Add Constituent to Basket",
+          status: "success",
+          type: NotificationType.Toast,
+        });
+      } catch (error: unknown) {
+        showNotification({
+          content: error instanceof Error ? error.message : String(error),
+          header: "Add Constituent to Basket",
+          status: "error",
+          type: NotificationType.Toast,
+        });
       }
     },
-    [
-      basketConstituentMap,
-      dataSourceBasketTradingConstituentJoin,
-      showNotification,
-    ],
+    [basket, dataSourceBasketTradingConstituentJoin, showNotification],
   );
 
   const handleConfigChangeEdit = useCallback<TableConfigChangeHandler>(

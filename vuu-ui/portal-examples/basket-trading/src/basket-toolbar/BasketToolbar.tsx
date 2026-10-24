@@ -24,7 +24,7 @@ const formatNotional = (notional?: number) => {
   if (notional === undefined) {
     return "";
   } else {
-    return notional.toLocaleString();
+    return notional.toLocaleString(undefined, { maximumFractionDigits: 2 });
   }
 };
 
@@ -115,11 +115,13 @@ export const BasketToolbar = ({
     <FormField className={`${classBase}-sideField`} key="side">
       <FormFieldLabel>Side</FormFieldLabel>
       <CycleStateButton
+        appearance="solid"
+        aria-label={`Basket side: ${basket?.side ?? "BUY"}. Click to switch`}
         className={`${classBase}-side`}
         onCommit={handleSideCommit}
         value={basket?.side ?? ""}
         values={["BUY", "SELL"]}
-        variant="cta"
+        sentiment="neutral"
       />
     </FormField>
   );
@@ -148,18 +150,18 @@ export const BasketToolbar = ({
   );
   const notionalUSD = (
     <FormField className={`${classBase}-notionalUsdField`} key="usd">
-      <FormFieldLabel>Total USD Not</FormFieldLabel>
+      <FormFieldLabel>Notional (USD)</FormFieldLabel>
       <span className={`${classBase}-notional`}>
-        {formatNotional(basket?.totalNotional)}
+        {formatNotional(basket?.totalNotionalUsd)}
       </span>
     </FormField>
   );
 
   const notional = (
     <FormField className={`${classBase}-notionalField`} key="notional">
-      <FormFieldLabel>Total Not</FormFieldLabel>
+      <FormFieldLabel>Notional (local)</FormFieldLabel>
       <span className={`${classBase}-notional`}>
-        {formatNotional(basket?.totalNotionalUsd)}
+        {formatNotional(basket?.totalNotional)}
       </span>
     </FormField>
   );
@@ -168,7 +170,9 @@ export const BasketToolbar = ({
     <FormField className={`${classBase}-pctFilledField`} key="filled">
       <FormFieldLabel>% Filled</FormFieldLabel>
       <span className={`${classBase}-pctFilled`}>
-        {basket?.pctFilled ?? ""}
+        {basket?.pctFilled === undefined
+          ? ""
+          : `${basket.pctFilled.toFixed(1)}%`}
       </span>
     </FormField>
   );
@@ -186,9 +190,11 @@ export const BasketToolbar = ({
       className={`${classBase}-sendToMarket`}
       key="to-market"
       onClick={handleSendToMarket}
-      variant="cta"
+      appearance="solid"
+      sentiment="accented"
+      disabled={!basket?.instanceId}
     >
-      send to market
+      Send to market
       <Icon name="arrow-right" />
     </Button>
   );
@@ -198,35 +204,37 @@ export const BasketToolbar = ({
       className={`${classBase}-takeOffMarket`}
       key="off-market"
       onClick={handleTakeOffMarket}
-      variant="primary"
+      appearance="bordered"
+      sentiment="neutral"
+      disabled={!basket?.instanceId}
     >
-      off market
+      Take off market
     </Button>
   );
 
+  const marketActions = (
+    <div className={`${classBase}-marketActions`} key="market-actions">
+      {basketMenu}
+      {takeOffMarket}
+    </div>
+  );
+
   const getToolbarItems = () => {
-    const toolbarItems = [basketSelector];
-    if (basketStatus === "design") {
-      toolbarItems.push(
-        inputSide,
-        inputUnits,
-        notionalUSD,
-        notional,
-        sendToMarket,
-      );
-    } else {
-      toolbarItems.push(
-        readOnlyStatus,
-        readOnlySide,
-        readOnlyUnits,
-        notionalUSD,
-        notional,
-        pctFilled,
-        basketMenu,
-        takeOffMarket,
-      );
-    }
-    return toolbarItems;
+    const designing = basketStatus === "design";
+    return [
+      basketSelector,
+      <div className={`${classBase}-tradeControls`} key="trade-controls">
+        {designing ? null : readOnlyStatus}
+        {designing ? inputSide : readOnlySide}
+        {designing ? inputUnits : readOnlyUnits}
+      </div>,
+      <div className={`${classBase}-metrics`} key="metrics">
+        {notionalUSD}
+        {notional}
+        {designing ? null : pctFilled}
+      </div>,
+      designing ? sendToMarket : marketActions,
+    ];
   };
 
   return (

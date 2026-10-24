@@ -1,61 +1,68 @@
 .vuuBasketSelectorRow {
-  border-bottom: solid 1px var(--vuu-color-gray-05);
-  border-left: solid var(--salt-spacing-100) transparent;
+  border-bottom: 1px solid color-mix(in srgb, var(--salt-content-primary-foreground) 12%, transparent);
+  border-left: 4px solid transparent;
+  box-sizing: border-box;
   height: var(--row-height);
-  padding: 0 12px;
-  width: 100%;
+  padding: 0 8px 0 4px;
+  width: 100cqw;
 }
 
 .vuuBasketSelectorRow:hover {
-  background-color: var(--vuu-color-gray-10);
+  background-color: var(--salt-selectable-background-hover);
 }
 
 .vuuBasketSelectorRow-highlighted {
-  background-color: var(--vuu-color-gray-10);
+  background-color: var(--salt-selectable-background-hover);
 }
 
 .vuuBasketSelectorRow-selected {
-  border-left: solid var(--salt-spacing-100)
-    var(--salt-selectable-borderColor-selected);
+  border-left-color: var(--salt-selectable-borderColor-selected);
 }
 
 .vuuBasketSelectorRow .vuuTableCell {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 24px 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 22px 16px;
   line-height: 1.5;
-  padding: 3px 0;
+  padding: 4px 0;
   width: 100%;
 }
 
 .vuuBasketSelectorRow-name {
   font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .vuuBasketSelectorRow-status {
   align-items: center;
   align-self: center;
-  background-color: var(--vuu-color-green-60);
+  background-color: var(--salt-color-green-500);
   border-radius: 24px;
   color: white;
   display: flex;
   font-size: 10px;
+  font-weight: var(--salt-text-fontWeight-strong);
   height: 16px;
   justify-self: flex-end;
-  padding: 0 12px;
+  padding: 0 8px;
   width: fit-content;
   text-align: right;
 }
 
 .vuuBasketSelectorRow-symbolContainer {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  grid-column: 1 / -1;
+  color: var(--salt-content-secondary-foreground);
+  font-size: 12px;
 }
 
 .vuuBasketSelectorRow-symbolLabel {
-  color: var(--vuu-color-gray-50);
+  color: inherit;
 }
 .vuuBasketSelectorRow-basketId {
-  color: var(--vuu-color-gray-80);
+  color: inherit;
   display: flex;
   gap: 3px;
 }

@@ -30,7 +30,7 @@ export const useBasketSelector = ({
   const { context, elements, ...floatingUIProps } = useFloatingUI({
     open,
     onOpenChange: setOpen,
-    placement: "bottom",
+    placement: "bottom-start",
     strategy: "fixed",
     middleware: [
       size({
@@ -74,11 +74,6 @@ export const useBasketSelector = ({
           { name: "instanceId", width: 380 },
           { name: "basketId", width: 100, hidden: true },
           {
-            name: "name",
-            width: 200,
-            hidden: true,
-          },
-          {
             name: "basketName",
             width: 100,
             type: {
@@ -97,7 +92,7 @@ export const useBasketSelector = ({
         ],
       },
       onRowClick: handleRowClick,
-      rowHeight: 47,
+      rowHeight: 46,
       tabIndex: -1,
     }),
     [dataSourceBasketTradingSearch, handleRowClick],
