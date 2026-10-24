@@ -149,7 +149,7 @@ const Brand = ({ displayMode, setDisplayMode }: PortalNavSlotContext) => (
   <>
     {displayMode === "icons" ? (
       <button
-        aria-label="Expand navigation"
+        aria-label="Vuu Trader: show full navigation"
         onClick={() => setDisplayMode("icons-and-text")}
         style={{
           background: "none",
@@ -158,7 +158,7 @@ const Brand = ({ displayMode, setDisplayMode }: PortalNavSlotContext) => (
           display: "flex",
           padding: 0,
         }}
-        title="Expand"
+        title="Show full navigation"
         type="button"
       >
         <VuuLogo size={28} />
