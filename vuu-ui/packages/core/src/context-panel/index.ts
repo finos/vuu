@@ -10,7 +10,10 @@ export {
   type ResolveContextPanelComponent,
   type ShowContextPanel,
 } from "./ContextPanelProvider";
-export type { ContextPanelPlacement } from "./ContextPanelSlot";
+export {
+  SlotContextPanelProvider,
+  type ContextPanelPlacement,
+} from "./ContextPanelSlot";
 export {
   SHELL_CONTEXT_PANEL_HOST_ID,
   ShellContextPanel,

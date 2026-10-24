@@ -29,6 +29,19 @@ describe("normalizeVuuAuthTarget", () => {
     );
   });
 
+  it("reuses the portal session for another connection ID targeting its websocket", () => {
+    expect(
+      normalizeVuuAuthTarget(
+        {
+          connectionId: "module-admin",
+          restUrl: `${portalTarget.restUrl}/module-admin`,
+          websocketUrl: portalTarget.websocketUrl,
+        },
+        portalTarget,
+      ),
+    ).toBe(portalTarget);
+  });
+
   it.each([
     {
       connectionId: "module-admin",

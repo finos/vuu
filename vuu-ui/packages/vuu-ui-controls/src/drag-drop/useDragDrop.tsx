@@ -490,6 +490,7 @@ export const useDragDrop: DragDropHook = ({
 
         const containerRect = scrollableContainer.getBoundingClientRect();
         const draggableRect = dragElement.getBoundingClientRect();
+        const dragElementStyle = getComputedStyle(dragElement);
 
         const dragDropState = (dragDropStateRef.current = new DragDropState(
           mousePosition,
@@ -512,7 +513,12 @@ export const useDragDrop: DragDropHook = ({
               onDropped={terminateDrag}
               onTransitionEnd={terminateDrag}
               ref={dragDropState.setDraggable}
-              style={constrainRect(draggableRect, containerRect)}
+              style={{
+                ...constrainRect(draggableRect, containerRect),
+                backgroundColor: dragElementStyle.backgroundColor,
+                color: dragElementStyle.color,
+                font: dragElementStyle.font,
+              }}
               wrapperClassName={draggableClassName}
             />
           ),

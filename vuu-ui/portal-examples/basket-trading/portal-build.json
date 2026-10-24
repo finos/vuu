@@ -21,6 +21,25 @@
       "websocketUrl": "wss://localhost:8093/websocket-basket-trading"
     }
   },
+  "cssInline": {
+    "include": [
+      "/packages/core/",
+      "/packages/grid-layout/",
+      "/packages/vuu-datatable/",
+      "/packages/vuu-context-menu/",
+      "/packages/vuu-data-react/",
+      "/packages/vuu-filters/",
+      "/packages/vuu-layout/",
+      "/packages/vuu-notifications/",
+      "/packages/vuu-popups/",
+      "/packages/vuu-shell/",
+      "/packages/vuu-chart/",
+      "/packages/vuu-table/",
+      "/packages/vuu-table-extras/",
+      "/packages/vuu-ui-controls/"
+    ],
+    "exclude": [".stories.tsx"]
+  },
   "moduleFederation": {
     "name": "basketTrading",
     "dts": false,

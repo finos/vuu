@@ -84,8 +84,13 @@ This document specifies:
   whose config fails is treated as having no server. This is local hook
   state: it doesn't expose a per-module mapping, and each caller repeats the
   work (the fetches themselves are cached).
-- Modules whose config is `{}`, or whose `connectionId` equals the portal's
-  connection ID, use the **portal connection**, which is always open.
+- Modules whose config is `{}`, whose `connectionId` equals the portal's
+  connection ID, or whose `websocketUrl` matches the portal's endpoint use
+  the **portal connection**, which is always open. An explicit connection
+  ID such as `module-admin` does not create another session on that endpoint:
+  module loading, monitoring and notification attribution use the portal ID.
+  Such modules inherit the portal session's authorizations rather than
+  exchanging a second token via their configured REST endpoint.
 - In `local` mode, servers are simulated (`LocalVuuServer`) and there are no
   websockets. A module is matched to a local server by the `connectionId` in
   its `config.json`.
@@ -318,8 +323,8 @@ interface ModuleServerMap {
   It uses the existing cache, so `RemoteModule` later opens without another
   fetch, and failed loads are retried by `retry` (via
   `forgetRemoteModuleConfig`).
-- `{}` and configs whose `connectionId` is the portal's resolve to the
-  portal server.
+- `{}` and configs whose `connectionId` or `websocketUrl` identifies the
+  portal resolve to the portal server.
 - `useVuuServers()` is reimplemented on top of the map, so configs are loaded
   once per page and the hook's current behaviour stays the same.
 - `RemoteModule`'s `vuu` prop override (e.g. a table viewer embedded by
@@ -428,7 +433,11 @@ interface VuuConnectionRegistry {
 - After the registry gives up (`failed`), the **monitor** keeps probing at a
   slow interval (`probeIntervalMs`, default 60 s, with jitter) by releasing
   and re-acquiring, so a server that comes back is detected. Probing stops for
-  `unauthorized`.
+  `unauthorized` and for the login error `User session limit exceeded`.
+  Session-limit failures retain their error in the status details, explain
+  the limit in the UI, and require manual Retry rather than repeatedly
+  creating sessions. The registry also stops its reconnect sequence on this
+  error; subsequent disconnect notifications do not restart that sequence.
 - `onStateChange` lets feeds attach to connections acquired by **anyone** —
   including remotes over the monitoring cap — which is what satisfies "no
   additional websockets for notifications" (§7.1).

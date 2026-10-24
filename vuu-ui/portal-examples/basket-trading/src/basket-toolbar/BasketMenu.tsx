@@ -63,12 +63,12 @@ export const BasketMenu = ({
   return (
     <PopupMenu
       className={cx(classBase, className)}
+      appearance="bordered"
       label="actions"
       menuBuilder={menuBuilder}
       menuActionHandler={onMenuAction}
       menuLocation={cx("basket-menu", location)}
       onMenuClose={onMenuClose}
-      tabIndex={-1}
     />
   );
 };
