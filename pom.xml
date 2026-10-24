@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.finos.vuu</groupId>
     <artifactId>vuu-parent</artifactId>
@@ -137,7 +138,7 @@
     <build>
 
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-        <plugins>
+            <plugins>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.4.0</version>
@@ -238,15 +239,35 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>2.7.0</version>
-                </plugin>
-
-                <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>0.8.14</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>2.7.1</version>
+                    <configuration>
+                        <failOnBlacklist>true</failOnBlacklist>
+                        <failOnMissing>true</failOnMissing>
+                        <includedScopes>compile,runtime</includedScopes>
+                        <outputDirectory>${project.build.outputDirectory}/META-INF/third-party</outputDirectory>
+                        <thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
+                        <addOutputDirectoryAsResourceDir>false</addOutputDirectoryAsResourceDir>
+                        <licenseMerges>
+                            <licenseMerge>Apache 2.0|Apache License, Version 2.0|The Apache Software License, Version 2.0|The Apache License, Version 2.0|Apache 2|Apache 2.0 License|Apache License 2.0|Apache-2.0</licenseMerge>
+                            <licenseMerge>MIT License|MIT|The MIT License</licenseMerge>
+                            <licenseMerge>BSD-2-Clause|BSD 2-Clause License</licenseMerge>
+                            <licenseMerge>BSD-3-Clause|BSD 3-Clause License</licenseMerge>
+                        </licenseMerges>
+                        <includedLicenses>
+                            <includedLicense>Apache 2.0</includedLicense>
+                            <includedLicense>MIT License</includedLicense>
+                            <includedLicense>BSD-2-Clause</includedLicense>
+                            <includedLicense>BSD-3-Clause</includedLicense>
+                        </includedLicenses>
+                    </configuration>
                 </plugin>
 
             </plugins>
@@ -265,60 +286,6 @@
                         <arg>-Xlint:all,-processing,-serial</arg>
                     </compilerArgs>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>2.7.1</version>
-                <executions>
-                    <!-- Retain third party information. -->
-                    <execution>
-                        <id>generate-third-party-file</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>add-third-party</goal>
-                        </goals>
-                        <configuration>
-                            <includedScopes>compile,runtime</includedScopes>
-                            <thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
-                            <addOutputDirectoryAsResourceDir>false</addOutputDirectoryAsResourceDir>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/third-party</outputDirectory>
-                        </configuration>
-                    </execution>
-
-                    <!-- Prevent using forbidden licenses -->
-                    <execution>
-                        <id>enforce-allowed-licenses</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>add-third-party</goal>
-                        </goals>
-                        <configuration>
-                            <includedScopes>compile,runtime</includedScopes>
-                            <failOnBlacklist>true</failOnBlacklist>
-                            <failOnMissing>true</failOnMissing>
-
-                            <!-- 1. Map all spelling variants into a single canonical name -->
-                            <licenseMerges>
-                                <licenseMerge>Apache 2.0|Apache License, Version 2.0|The Apache Software License, Version 2.0|The Apache License, Version 2.0|Apache 2|Apache 2.0 License|Apache License 2.0|Apache-2.0</licenseMerge>
-                                <licenseMerge>MIT License|MIT|The MIT License</licenseMerge>
-                                <licenseMerge>BSD-2-Clause|BSD 2-Clause License</licenseMerge>
-                                <licenseMerge>BSD-3-Clause|BSD 3-Clause License</licenseMerge>
-                            </licenseMerges>
-
-                            <!-- 2. Just check the clean, canonical names -->
-                            <includedLicenses>
-                                <includedLicense>Apache 2.0</includedLicense>
-                                <includedLicense>MIT License</includedLicense>
-                                <includedLicense>BSD-2-Clause</includedLicense>
-                                <includedLicense>BSD-3-Clause</includedLicense>
-                                <includedLicense>GNU General Public License (GPL), version 2, with the Classpath exception</includedLicense>
-                            </includedLicenses>
-
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
         </plugins>
