@@ -120,7 +120,9 @@ const waitFrames = async (n: number) => {
 
 /**
  * Wraps a scenario body with the measurements common to every scenario:
- * frame times, long animation frames and (instrumented pass) DOM changes.
+ * frame times, long animation frames and, in the instrumented pass, DOM
+ * changes, DOM API calls (when the runner installed the DOM probe) and React
+ * renders (profiling build).
  */
 const measured = async (
   { table }: ScenarioContext,
@@ -130,9 +132,13 @@ const measured = async (
   const frames = new FrameRecorder();
   const longFrames = new LongFrameObserver();
   const dom = options.instrument ? new DomChangeCounter() : undefined;
+  const domProbe = options.instrument ? window.__vuuDomProbe : undefined;
+  const reactProbe = options.instrument ? window.__vuuReactProbe : undefined;
 
   await waitFrames(2);
   dom?.start(table);
+  domProbe?.reset();
+  reactProbe?.reset();
   longFrames.start();
   frames.start();
   const start = performance.now();
@@ -141,12 +147,15 @@ const measured = async (
 
   const durationMs = performance.now() - start;
   const frameTimes = frames.stop();
+  const domStats = dom?.stop();
+  if (domStats && domProbe) domStats.api = domProbe.read();
   return {
     ...result,
     durationMs: Math.round(durationMs),
     frames: frameStats(frameTimes),
     longFrames: longFrames.stop(),
-    dom: dom?.stop(),
+    dom: domStats,
+    react: reactProbe?.read(),
     samples: options.keepSamples
       ? { frames: Array.from(frameTimes), latencies }
       : undefined,

@@ -31,8 +31,13 @@ export const serveDirectory = async (directory: string) => {
       res.writeHead(403).end();
       return;
     }
-    const info = await stat(filePath).catch(() => undefined);
-    if (!info || info.isDirectory()) filePath = join(rootDir, "index.html");
+    let info = await stat(filePath).catch(() => undefined);
+    if (info?.isDirectory()) {
+      // a folder with its own app, e.g. /profiling/
+      filePath = join(filePath, "index.html");
+      info = await stat(filePath).catch(() => undefined);
+    }
+    if (!info) filePath = join(rootDir, "index.html");
     res.writeHead(200, {
       "content-type":
         CONTENT_TYPES[extname(filePath)] ?? "application/octet-stream",

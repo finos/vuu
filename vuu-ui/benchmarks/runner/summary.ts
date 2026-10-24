@@ -38,6 +38,78 @@ export const flattenRun = (run: BenchRun): MetricSummary => {
   return metrics;
 };
 
+const lowerFirst = (name: string) => name[0].toLowerCase() + name.slice(1);
+
+/**
+ * Counts from the instrumented run: DOM changes, DOM API calls and React
+ * renders, with ratios per frame, per update (tick) and per row scrolled
+ * (vertical scroll-smooth).
+ */
+const instrumentedSummary = (run: BenchRun): MetricSummary => {
+  const summary: MetricSummary = {};
+  const { dom, react, rowsScrolled, updatesEmitted: updates } = run.result;
+  const frames = Math.max(1, run.result.frames.count);
+  const ratios = (name: string, count: number) => {
+    summary[`perUnit.${name}PerFrame`] = round(count / frames, 3);
+    if (updates)
+      summary[`perUnit.${name}PerUpdate`] = round(count / updates, 3);
+    if (rowsScrolled) {
+      summary[`perUnit.${name}PerRowScrolled`] = round(count / rowsScrolled, 3);
+    }
+  };
+
+  if (dom) {
+    const { api, ...counts } = dom;
+    for (const [key, value] of Object.entries(counts)) {
+      summary[`dom.${key}`] = value;
+    }
+    if (rowsScrolled) {
+      summary["perUnit.rowMountsPerRowScrolled"] = round(
+        dom.rowMounts / rowsScrolled,
+        3,
+      );
+      summary["perUnit.elementsInsertedPerRowScrolled"] = round(
+        dom.elementsInserted / rowsScrolled,
+        3,
+      );
+    }
+    if (updates) {
+      summary["perUnit.mutationsPerUpdate"] = round(
+        (dom.textChanges + dom.attributeChanges + dom.elementsInserted) /
+          updates,
+        3,
+      );
+    }
+    if (api) {
+      let calls = 0;
+      for (const [key, value] of Object.entries(api)) {
+        summary[`dom.api.${key}`] = value;
+        calls += value;
+      }
+      summary["dom.api.total"] = calls;
+      ratios("domApiCalls", calls);
+    }
+  }
+  summary["perUnit.layoutsPerFrame"] = round(run.cdp.layoutCount / frames, 3);
+
+  if (react) {
+    summary["react.commits"] = react.commits;
+    summary["react.renderMs"] = react.renderMs;
+    ratios("commits", react.commits);
+    summary["perUnit.reactRenderMsPerFrame"] = round(
+      react.renderMs / frames,
+      3,
+    );
+    for (const [name, c] of Object.entries(react.components)) {
+      summary[`react.${name}.renders`] = c.renders;
+      summary[`react.${name}.mounts`] = c.mounts;
+      summary[`react.${name}.selfMs`] = c.selfMs;
+      ratios(`${lowerFirst(name)}Renders`, c.renders);
+    }
+  }
+  return summary;
+};
+
 /**
  * Medians of every metric across timing runs. DOM and per-unit counts come
  * from the instrumented run, its timings are discarded.
@@ -53,35 +125,6 @@ export const summarise = (runs: BenchRun[]): MetricSummary => {
   // worker CPU is profiled in the instrumented pass only
   const workerCpuMs = instrumented?.worker?.cpuMs;
   if (workerCpuMs !== undefined) summary["worker.cpuMs"] = workerCpuMs;
-  const dom = instrumented?.result.dom;
-  if (instrumented && dom) {
-    for (const [key, value] of Object.entries(dom)) {
-      summary[`dom.${key}`] = value;
-    }
-    const { rowsScrolled } = instrumented.result;
-    if (rowsScrolled) {
-      summary["perUnit.rowMountsPerRowScrolled"] = round(
-        dom.rowMounts / rowsScrolled,
-        3,
-      );
-      summary["perUnit.elementsInsertedPerRowScrolled"] = round(
-        dom.elementsInserted / rowsScrolled,
-        3,
-      );
-    }
-    const updates = instrumented.result.updatesEmitted;
-    if (updates) {
-      summary["perUnit.mutationsPerUpdate"] = round(
-        (dom.textChanges + dom.attributeChanges + dom.elementsInserted) /
-          updates,
-        3,
-      );
-    }
-    summary["perUnit.layoutsPerFrame"] = round(
-      instrumented.cdp.layoutCount /
-        Math.max(1, instrumented.result.frames.count),
-      3,
-    );
-  }
+  if (instrumented) Object.assign(summary, instrumentedSummary(instrumented));
   return summary;
 };
