@@ -155,6 +155,9 @@ export const normalizeVuuAuthTarget = (
   connection: RemoteModuleConnection,
   portalTarget: VuuAuthTarget,
 ): VuuAuthTarget => {
+  if (connection.websocketUrl === portalTarget.websocketUrl) {
+    return portalTarget;
+  }
   const isPortalConnection =
     connection.connectionId === portalTarget.connectionId;
   const restUrl =
@@ -219,6 +222,9 @@ const useModuleServerMapInstance = (
           unusableServerReason(connection, portalTarget, localServers),
         modules: modulesRef.current ?? [],
         portalConnectionId: portalTarget.connectionId,
+        portalWebsocketUrl: localServers
+          ? undefined
+          : portalTarget.websocketUrl,
       }),
     [localServers, portalTarget, modulesKey],
   );

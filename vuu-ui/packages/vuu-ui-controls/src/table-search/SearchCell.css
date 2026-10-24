@@ -4,14 +4,15 @@
   --vuu-icon-size: 16px;
   --vuu-icon-top: -1px;
   align-items: center;
-  color: var(--background-cell-color);
+  color: inherit;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
   display: flex;
   padding: 0 8px 0 8px;
   position: relative;
-  z-index: -1;
 
   [data-icon]{
     margin-right: 4px;
   }
 }
-
