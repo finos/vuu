@@ -1,5 +1,5 @@
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import constituents from "./constituents.json";
+import constituents from "./constituent-data.json";
 import { schemas } from "../basket-schemas";
 
 const basketConstituentData: VuuRowDataItemType[][] = constituents.map(

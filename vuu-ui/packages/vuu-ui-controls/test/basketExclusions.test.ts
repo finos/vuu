@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
-import constituents from "../../vuu-data-test/src/basket/reference-data/constituents.json";
+import constituents from "../../vuu-data-test/src/basket/reference-data/constituent-data.json";
 import { constituentFilter } from "../../../portal-examples/basket-trading/src/cell-renderers/col-header-add-symbol/constituentFilter";
 
 it("parses exclusions for all basket definitions", () => {

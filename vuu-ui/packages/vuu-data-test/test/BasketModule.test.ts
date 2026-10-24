@@ -3,7 +3,7 @@ import { TickingArrayDataSource } from "../src/TickingArrayDataSource";
 import { metadataKeys, Range } from "@vuu-ui/vuu-utils";
 import type { BasketModule } from "../src/basket/BasketModule";
 import type { BasketsTableName } from "../src/basket/basket-schemas";
-import constituents from "../src/basket/reference-data/constituents.json";
+import constituents from "../src/basket/reference-data/constituent-data.json";
 
 let module: BasketModule;
 

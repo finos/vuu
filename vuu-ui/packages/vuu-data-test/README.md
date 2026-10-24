@@ -5,11 +5,13 @@
 Constituent reference data is generated from the server's four CSV files in
 `example/main/src/main/resources/static/`. From `vuu-ui`, run
 `npm run generate:basket-data` after editing those files and commit the resulting
-`src/basket/reference-data/constituents.json`. Use
+`src/basket/reference-data/constituent-data.json`. Use
 `npm run generate:basket-data -- --check` to verify it is up to date.
 The converter preserves source weights (without normalizing their units),
 maps the differing price/change column names, and rejects invalid CSV records.
 The browser loads only the generated JSON, not the CSV parser.
+The JSON and its `constituents.ts` adapter use different basenames so their
+JavaScript build outputs cannot collide.
 
 The `BASKET` module provides its own simulated constituent prices, including
 updates for all basket instruments. Its constituent join retains

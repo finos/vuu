@@ -7,7 +7,7 @@ const sourceDirectory = new URL(
   import.meta.url,
 );
 const output = new URL(
-  "../packages/vuu-data-test/src/basket/reference-data/constituents.json",
+  "../packages/vuu-data-test/src/basket/reference-data/constituent-data.json",
   import.meta.url,
 );
 
