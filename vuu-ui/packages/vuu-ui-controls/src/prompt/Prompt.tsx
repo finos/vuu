@@ -4,16 +4,16 @@ import {
   DialogActions,
   DialogContent,
   DialogHeader,
-  DialogHeaderProps,
-  DialogProps,
+  type DialogHeaderProps,
+  type DialogProps,
 } from "@salt-ds/core";
 import cx from "clsx";
 import {
-  HTMLAttributes,
-  MouseEventHandler,
-  ReactNode,
-  RefCallback,
-  RefObject,
+  type HTMLAttributes,
+  type MouseEventHandler,
+  type ReactNode,
+  type RefCallback,
+  type RefObject,
   useCallback,
 } from "react";
 import { Icon, IconButton } from "../icon-button";
@@ -68,11 +68,11 @@ const getHeader = (
 
 export interface PromptProps
   extends Pick<
-    DialogProps,
-    "disableDismiss" | "onOpenChange" | "open" | "status"
-  >,
-  Pick<DialogHeaderProps, "disableAccent">,
-  Omit<HTMLAttributes<HTMLDivElement>, "content" | "title"> {
+      DialogProps,
+      "disableDismiss" | "onOpenChange" | "open" | "status"
+    >,
+    Pick<DialogHeaderProps, "disableAccent">,
+    Omit<HTMLAttributes<HTMLDivElement>, "content" | "title"> {
   /**
    * For simple configuration, where just a cancel button label is required.
    */

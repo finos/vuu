@@ -40,6 +40,8 @@ export interface ModuleServerMapOptions {
   modules: RemoteModuleDescriptor[];
   now?: () => number;
   portalConnectionId: string;
+  /** Modules targeting this endpoint share the portal's existing session. */
+  portalWebsocketUrl?: string;
 }
 
 const LOADING: ModuleServerResolution = { status: "loading" };
@@ -58,6 +60,7 @@ export class ModuleServerMap {
   readonly #modules: Map<ModuleId, RemoteModuleDescriptor>;
   readonly #now: () => number;
   readonly #portalConnectionId: string;
+  readonly #portalWebsocketUrl?: string;
   readonly #resolutions = new Map<ModuleId, ModuleServerResolution>();
   #active = false;
   #byConnection?: Map<string, ModuleId[]>;
@@ -71,6 +74,7 @@ export class ModuleServerMap {
     modules,
     now = Date.now,
     portalConnectionId,
+    portalWebsocketUrl,
   }: ModuleServerMapOptions) {
     this.#forgetConfig = forgetConfig;
     this.#getUnusableReason = getUnusableReason;
@@ -78,6 +82,7 @@ export class ModuleServerMap {
     this.#modules = new Map(modules.map((module) => [module.id, module]));
     this.#now = now;
     this.#portalConnectionId = portalConnectionId;
+    this.#portalWebsocketUrl = portalWebsocketUrl;
   }
 
   get portalConnectionId() {
@@ -187,7 +192,11 @@ export class ModuleServerMap {
     module: RemoteModuleDescriptor,
     vuu?: RemoteModuleConnection,
   ): ModuleServerResolution {
-    if (!vuu) {
+    if (
+      !vuu ||
+      (this.#portalWebsocketUrl !== undefined &&
+        vuu.websocketUrl === this.#portalWebsocketUrl)
+    ) {
       return { status: "resolved", connectionId: this.#portalConnectionId };
     }
     const reason = this.#getUnusableReason?.(vuu);

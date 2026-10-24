@@ -55,8 +55,6 @@ export const BasketSelectorRow = ({
           <label className={`${classBase}-symbolLabel`}>Symbol</label>
           <span className={`${classBase}-basketId`}>{basketId}</span>
         </div>
-        <span></span>
-        <div className={`${classBase}-symbol`}></div>
       </div>
     </div>
   );

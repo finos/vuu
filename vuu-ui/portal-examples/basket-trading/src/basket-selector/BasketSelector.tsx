@@ -115,8 +115,10 @@ export const BasketSelector = ({
         <Button
           {...getReferenceProps()}
           className={`${classBase}-trigger`}
+          aria-label="Select basket"
           data-icon="chevron-down"
-          variant="secondary"
+          appearance="transparent"
+          sentiment="neutral"
         />
       </div>
       <FloatingSelector
@@ -124,10 +126,10 @@ export const BasketSelector = ({
         collapsed={!open}
         id={selectorId}
         open={open}
-        left={x + 3}
+        left={x}
         position={strategy}
         ref={floating}
-        top={y + 3}
+        top={y}
       >
         <div className={`${classBase}-searchContainer`}>
           <TableSearch
@@ -138,7 +140,11 @@ export const BasketSelector = ({
             searchColumns={["basketName"]}
           />
           <div className={`${classBase}-buttonBar`}>
-            <Button onClick={onClickAddBasket} variant="secondary">
+            <Button
+              onClick={onClickAddBasket}
+              appearance="bordered"
+              sentiment="neutral"
+            >
               Add New Basket
             </Button>
           </div>
