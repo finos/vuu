@@ -165,11 +165,40 @@ unchanged. The exported key constants are `NAV_DISPLAY_MODE_KEY` and
   badge or dot.
 
 `usePortalNavIndicator(moduleIds)` is the single seam for the dot. It returns
-`{ count, severity }` or `undefined`. It currently reports unread
-notifications for the modules with severity `unread`. Severity-aware topic
-routing can replace its body to return the worst unread `error` or `warning`.
-The dot already renders all three severities, as
-`vuuPortalNav-indicator-{severity}`, and their descriptions.
+`{ count, severity }` or `undefined`: the unread notifications attributed to
+the modules and their worst severity, `error` > `warning` > `unread` (info or
+success), from `useModulesUnreadSeverity`. Only unread notifications count.
+The dot renders as `vuuPortalNav-indicator-{severity}`.
+
+Notifications reach entries by **topic** when modules declare
+`notificationTopics`: a server notification with a `topic` is attributed to
+the modules on its server that claim the topic (see §7.4 of
+[portal-notifications-design.md](./portal-notifications-design.md)). With no
+topic, or no module declaring topics, attribution stays connection-wide. A
+topic no module claims badges no entry. If the open module claims a topic,
+its notifications are read, so no other entry shows a dot for them.
+
+**Bell.** With `PortalShell header={false}` there is no `PortalHeader`, so
+place `NotificationsIndicator` in the `brand` slot, with `scope="unclaimed"`
+so its badge counts only notifications no entry claims:
+
+```tsx
+<PortalNav
+  brand={({ displayMode }) => (
+    <>
+      <MyLogo />
+      {displayMode === "icons" ? null : <MyProductName />}
+      <NotificationsIndicator compactStyle="bell" scope="unclaimed" />
+    </>
+  )}
+  remoteModules={modules}
+/>
+```
+
+The brand is shown in every mode. In `icons-and-text` and `text` the bell
+sits at the end of the brand row (the ticker is hidden there). In the
+`icons` rail the brand content is stacked (logo, then bell) above the expand
+button, so render compact content for `displayMode === "icons"`.
 
 Use `PortalLink` from `@vuu-ui/core/portal` for links within a remote module.
 It behaves like React Router's `NavLink` in the portal and maps absolute links

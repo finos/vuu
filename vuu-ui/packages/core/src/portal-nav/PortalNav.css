@@ -59,6 +59,8 @@
 
 .vuuPortalNav-brand {
   align-items: center;
+  /* Full header height, so badges on brand content are not clipped. */
+  align-self: stretch;
   display: flex;
   flex: 1 1 auto;
   gap: 10px;
@@ -308,11 +310,24 @@
 
 /* Icons: the rail. */
 .vuuPortalNav-icons {
+  /* Brand content (e.g. logo, then bell) stacks above the expand button. */
   .vuuPortalNav-header {
+    flex-direction: column;
+    gap: 6px;
+    height: auto;
     justify-content: center;
-    padding: 0;
+    min-height: 54px;
+    padding: 10px 0 6px;
 
     .vuuPortalNav-brand {
+      align-self: center;
+      flex: none;
+      flex-direction: column;
+      gap: 6px;
+      overflow: visible;
+    }
+
+    .vuuPortalNav-brand:empty {
       display: none;
     }
 

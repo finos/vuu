@@ -39,6 +39,7 @@ import {
 import type {
   NotificationCountFilter,
   NotificationQuery,
+  NotificationUnreadSeverity,
   PortalNotification,
   PortalNotificationsOptions,
 } from "./notification-types";
@@ -382,6 +383,30 @@ export const useModuleUnreadCount = (moduleId: ModuleId | undefined) => {
     store && moduleId !== undefined
       ? store.unreadCount({ moduleIds: [moduleId] })
       : 0,
+  );
+};
+
+/**
+ * The worst severity of the unread notifications attributed to any of the
+ * modules, `error` > `warning` > `unread`; `undefined` when none is unread.
+ */
+export const useModulesUnreadSeverity = (
+  moduleIds: readonly ModuleId[],
+): NotificationUnreadSeverity | undefined => {
+  const store = useContext(PortalNotificationsContext)?.store;
+  return useSyncExternalStore(store?.subscribe ?? noSubscription, () =>
+    store?.unreadSeverity(moduleIds),
+  );
+};
+
+/**
+ * Unread notifications attributed to no module, e.g. a server notification
+ * whose topic no module claims.
+ */
+export const useUnclaimedUnreadCount = () => {
+  const store = useContext(PortalNotificationsContext)?.store;
+  return useSyncExternalStore(store?.subscribe ?? noSubscription, () =>
+    store ? store.unreadPortalCount : 0,
   );
 };
 

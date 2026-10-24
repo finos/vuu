@@ -33,7 +33,10 @@ const modules = [
 );
 
 let nextId = 0;
-const notification = (moduleIds: string[]): PortalNotification => {
+const notification = (
+  moduleIds: string[],
+  level: PortalNotification["level"] = "info",
+): PortalNotification => {
   const id = String(nextId++);
   return {
     attributes: {},
@@ -43,7 +46,7 @@ const notification = (moduleIds: string[]): PortalNotification => {
     initial: false,
     key: `test:${id}`,
     kind: "toast",
-    level: "info",
+    level,
     message: `message ${id}`,
     origin: { connectionId: "test", moduleIds, source: "server" },
     read: false,
@@ -478,6 +481,72 @@ describe("PortalNav", () => {
       await act(async () => notifications.upsert(notification(["m2"])));
       expect(dot(handle)).not.toBeNull();
       expect(description(handle)).toContain("1 unread notification.");
+    });
+  });
+
+  describe("notification severity", () => {
+    it("shows the worst unread severity on an item", async () => {
+      await render();
+      await act(async () => notifications.upsert(notification(["m0"])));
+      expect(dot(link("Orders"))?.getAttribute("data-severity")).toBe("unread");
+      await act(async () =>
+        notifications.upsert(notification(["m0"], "warning")),
+      );
+      expect(dot(link("Orders"))?.getAttribute("data-severity")).toBe(
+        "warning",
+      );
+      expect(dot(link("Orders"))?.classList).toContain(
+        "vuuPortalNav-indicator-warning",
+      );
+      const error = notification(["m0"], "error");
+      await act(async () => notifications.upsert(error));
+      expect(dot(link("Orders"))?.getAttribute("data-severity")).toBe("error");
+      await act(async () => notifications.markRead([error.key]));
+      expect(dot(link("Orders"))?.getAttribute("data-severity")).toBe(
+        "warning",
+      );
+      await act(async () => notifications.markRead("all"));
+      expect(dot(link("Orders"))).toBeNull();
+    });
+
+    it("aggregates the worst severity on a collapsed section heading", async () => {
+      appState.set(NAV_COLLAPSED_SECTIONS_KEY, ["/Trading"]);
+      await render({ sections: "collapsible" });
+      const heading = container.querySelector<HTMLElement>(
+        ".vuuPortalNav-sectionToggle",
+      )!;
+      await act(async () => notifications.upsert(notification(["m0"])));
+      await act(async () =>
+        notifications.upsert(notification(["m1"], "error")),
+      );
+      expect(dot(heading)?.getAttribute("data-severity")).toBe("error");
+    });
+
+    it("shows no dot for notifications the active item claims", async () => {
+      await render({}, { path: "/m0" });
+      notifications.setOpenModule("m0");
+      await act(async () =>
+        notifications.upsert(notification(["m0", "m1"], "error")),
+      );
+      expect(dot(link("Fills"))).toBeNull();
+      await act(async () =>
+        notifications.upsert(notification(["m1"], "warning")),
+      );
+      expect(dot(link("Fills"))?.getAttribute("data-severity")).toBe("warning");
+    });
+  });
+
+  describe("brand", () => {
+    it("renders the brand in the rail, passing the display mode", async () => {
+      const brand = vi.fn(({ displayMode }: { displayMode: string }) => (
+        <span className="test-brand">{displayMode}</span>
+      ));
+      await render({ brand, defaultDisplayMode: "icons" });
+      expect(container.querySelector(".test-brand")?.textContent).toBe("icons");
+      await click(button("Expand navigation"));
+      expect(container.querySelector(".test-brand")?.textContent).toBe(
+        "icons-and-text",
+      );
     });
   });
 

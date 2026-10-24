@@ -10,6 +10,9 @@ import {
   type PortalNavProps,
   type PortalNavSectionStyle,
   type PortalNavSlotContext,
+  type NotificationLevel,
+  matchTopicModules,
+  NotificationsIndicator,
   PortalLandingPage,
   PortalNav,
   PortalShell,
@@ -74,22 +77,35 @@ const navModule = (
 /** The information architecture of the PortalNav design. */
 const registry = {
   modules: [
-    navModule("/Workspaces/Trader", workspaceIcon),
+    navModule("/Workspaces/Trader", workspaceIcon, {
+      notificationTopics: ["orders", "fills", "marketdata", "risk"],
+    }),
     navModule("/Trading/Watchlist", watchlistIcon),
-    navModule("/Trading/Orders", ordersIcon, { navBadge: "workingOrders" }),
+    navModule("/Trading/Orders", ordersIcon, {
+      navBadge: "workingOrders",
+      notificationTopics: ["orders"],
+    }),
     navModule("/Trading/Executions", executionsIcon, {
       navBadge: "executions",
+      notificationTopics: ["fills"],
     }),
     navModule("/Trading/Price ladder", priceLadderIcon),
     navModule("/Market/Market depth", marketDepthIcon),
     navModule("/Market/Time & sales", timeAndSalesIcon),
     navModule("/Market/Chart", chartIcon),
     navModule("/Market/Depth chart", depthChartIcon),
-    navModule("/Portfolio/Positions", positionsIcon, { navBadge: "dayPnl" }),
+    navModule("/Portfolio/Positions", positionsIcon, {
+      navBadge: "dayPnl",
+      notificationTopics: ["positions", "risk"],
+    }),
     navModule("/Portfolio/P&L", pnlIcon),
-    navModule("/Portfolio/Exposure", exposureIcon),
+    navModule("/Portfolio/Exposure", exposureIcon, {
+      notificationTopics: ["risk"],
+    }),
     navModule("/Portfolio/Execution quality", executionQualityIcon),
-    navModule("/Oversight/Desk overview", deskOverviewIcon),
+    navModule("/Oversight/Desk overview", deskOverviewIcon, {
+      notificationTopics: ["risk", "orders"],
+    }),
   ],
 } satisfies PortalModuleRegistry;
 
@@ -125,9 +141,31 @@ const useLiveBadges = () => {
   } as Record<string, ReactNode>;
 };
 
-const Brand = ({ displayMode }: PortalNavSlotContext) => (
+/**
+ * Logo, name and environment, then the bell for notifications no nav entry
+ * claims. In the rail: the logo (click to expand), with the bell below.
+ */
+const Brand = ({ displayMode, setDisplayMode }: PortalNavSlotContext) => (
   <>
-    <VuuLogo size={28} />
+    {displayMode === "icons" ? (
+      <button
+        aria-label="Vuu Trader: show full navigation"
+        onClick={() => setDisplayMode("icons-and-text")}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          padding: 0,
+        }}
+        title="Show full navigation"
+        type="button"
+      >
+        <VuuLogo size={28} />
+      </button>
+    ) : (
+      <VuuLogo size={28} />
+    )}
     {displayMode === "icons" ? null : (
       <>
         <span style={{ fontSize: 14, fontWeight: 650 }}>Vuu Trader</span>
@@ -145,6 +183,7 @@ const Brand = ({ displayMode }: PortalNavSlotContext) => (
         </span>
       </>
     )}
+    <NotificationsIndicator compactStyle="bell" scope="unclaimed" />
   </>
 );
 
@@ -184,11 +223,106 @@ const SimulateNotification = ({ compact }: { compact: boolean }) => {
   );
 };
 
+/** Server notifications the simulator might publish, routed by topic. */
+const TOPIC_NOTIFICATIONS: {
+  label: string;
+  level: NotificationLevel;
+  message: string;
+  short: string;
+  title: string;
+  topic: string;
+}[] = [
+  {
+    label: "Order rejected",
+    level: "error",
+    message: "ORD-1042 rejected: price outside band",
+    short: "E",
+    title: "Order rejected",
+    topic: "orders",
+  },
+  {
+    label: "Risk warning",
+    level: "warning",
+    message: "Desk delta at 92% of limit",
+    short: "W",
+    title: "Risk limit warning",
+    topic: "risk",
+  },
+  {
+    label: "Unclaimed info",
+    level: "info",
+    message: "Compliance attestation due Friday",
+    short: "I",
+    title: "Compliance reminder",
+    topic: "compliance",
+  },
+];
+
+/**
+ * Publishes a server notification with a topic, attributed as the portal
+ * attributes notifications from a server all modules use.
+ */
+const TopicNotifications = ({ compact }: { compact: boolean }) => {
+  const notifications = usePortalNotifications();
+  const publish = ({
+    level,
+    message,
+    title,
+    topic,
+  }: (typeof TOPIC_NOTIFICATIONS)[number]) => {
+    const id = `topic-${notificationId++}`;
+    const now = Date.now();
+    const moduleIds =
+      matchTopicModules({ topic }, remoteModules) ??
+      remoteModules.map(({ id }) => id);
+    notifications?.store.upsert({
+      attributes: {},
+      createdAt: now,
+      expired: false,
+      id,
+      initial: false,
+      key: `showcase:${id}`,
+      kind: "silent",
+      level,
+      message,
+      origin: { connectionId: "showcase", moduleIds, source: "server" },
+      read: false,
+      receivedAt: now,
+      title,
+      topic,
+    });
+  };
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: compact ? "column" : "row",
+        flexWrap: "wrap",
+        gap: 4,
+      }}
+    >
+      {TOPIC_NOTIFICATIONS.map((notification) => (
+        <Button
+          appearance="bordered"
+          aria-label={`Publish ${notification.label.toLowerCase()} (${notification.topic})`}
+          key={notification.topic}
+          onClick={() => publish(notification)}
+          sentiment="neutral"
+          title={`${notification.title} · topic ${notification.topic}`}
+        >
+          {compact ? notification.short : notification.label}
+        </Button>
+      ))}
+    </div>
+  );
+};
+
 /** Stands in for UI-4's PortalConnectionStatus and PortalUserMenu. */
 const PlaceholderFooter = ({ displayMode }: PortalNavSlotContext) => {
   const rail = displayMode === "icons";
   return (
     <>
+      <TopicNotifications compact={rail} />
       <SimulateNotification compact={rail} />
       <div
         style={{
@@ -314,6 +448,13 @@ const NavShell = ({
             <p>
               ⌘B / Ctrl+B toggles the nav. Selecting an application loads its
               (unavailable) remote module.
+            </p>
+            <p>
+              The footer buttons publish server notifications by topic: an order
+              rejection (<code>orders</code>: Trader, Orders, Desk overview), a
+              risk warning (<code>risk</code>: Trader, Positions, Exposure, Desk
+              overview) and an info no entry claims, which only the bell counts.
+              Notifications for the open page are read everywhere.
             </p>
             {children}
           </main>
