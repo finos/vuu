@@ -298,30 +298,24 @@
                             <includedScopes>compile,runtime</includedScopes>
                             <failOnBlacklist>true</failOnBlacklist>
                             <failOnMissing>true</failOnMissing>
+
+                            <!-- 1. Map all spelling variants into a single canonical name -->
+                            <licenseMerges>
+                                <licenseMerge>Apache 2.0|Apache License, Version 2.0|The Apache Software License, Version 2.0|The Apache License, Version 2.0|Apache 2|Apache 2.0 License|Apache License 2.0|Apache-2.0</licenseMerge>
+                                <licenseMerge>MIT License|MIT|The MIT License</licenseMerge>
+                                <licenseMerge>BSD-2-Clause|BSD 2-Clause License</licenseMerge>
+                                <licenseMerge>BSD-3-Clause|BSD 3-Clause License</licenseMerge>
+                            </licenseMerges>
+
+                            <!-- 2. Just check the clean, canonical names -->
                             <includedLicenses>
-                                <!-- Apache Variants -->
-                                <includedLicense>Apache License, Version 2.0</includedLicense>
-                                <includedLicense>The Apache Software License, Version 2.0</includedLicense>
                                 <includedLicense>Apache 2.0</includedLicense>
-                                <includedLicense>Apache 2</includedLicense>
-                                <includedLicense>Apache 2.0 License</includedLicense>
-                                <includedLicense>Apache License 2.0</includedLicense>
-                                <includedLicense>Apache-2.0</includedLicense>
-
-                                <!-- MIT Variants -->
                                 <includedLicense>MIT License</includedLicense>
-                                <includedLicense>MIT</includedLicense>
-                                <includedLicense>The MIT License</includedLicense>
-
-                                <!-- BSD Variants -->
-                                <includedLicense>BSD 2-Clause License</includedLicense>
                                 <includedLicense>BSD-2-Clause</includedLicense>
-                                <includedLicense>BSD 3-Clause License</includedLicense>
                                 <includedLicense>BSD-3-Clause</includedLicense>
-
-                                <!-- GPL with the Classpath exception only -->
                                 <includedLicense>GNU General Public License (GPL), version 2, with the Classpath exception</includedLicense>
                             </includedLicenses>
+
                         </configuration>
                     </execution>
                 </executions>
