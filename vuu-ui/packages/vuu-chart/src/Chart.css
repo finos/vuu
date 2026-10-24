@@ -1,6 +1,28 @@
 
 
 .vuuChart {
+  /* Theme tokens, resolved at runtime and passed to ECharts. Override in application css. */
+  --vuuChart-foreground: var(--salt-content-primary-foreground);
+  --vuuChart-secondaryForeground: var(--salt-content-secondary-foreground);
+  --vuuChart-background: transparent;
+  --vuuChart-axisLineColor: var(--salt-separable-primary-borderColor);
+  --vuuChart-splitLineColor: var(--salt-separable-tertiary-borderColor);
+  --vuuChart-crosshairColor: var(--salt-content-secondary-foreground);
+  --vuuChart-fontFamily: var(--salt-text-fontFamily);
+  --vuuChart-tooltip-background: var(--salt-container-primary-background);
+  --vuuChart-tooltip-borderColor: var(--salt-selectable-borderColor-selected);
+  --vuuChart-upColor: var(--salt-sentiment-positive-foreground-decorative);
+  --vuuChart-downColor: var(--salt-sentiment-negative-foreground-decorative);
+  --vuuChart-heatmap-lowColor: var(--salt-container-secondary-background);
+  --vuuChart-heatmap-highColor: var(--salt-accent-background, #1b4f9c);
+  --vuuChart-color-1: #4676bf;
+  --vuuChart-color-2: #ab6528;
+  --vuuChart-color-3: #9f55c2;
+  --vuuChart-color-4: #2a8285;
+  --vuuChart-color-5: #697694;
+  --vuuChart-color-6: #b0549d;
+  --vuuChart-color-7: #c69d26;
+  --vuuChart-color-8: #5c8a3a;
 
     .vuuChartTooltip {
         background-color: var(--salt-container-primary-background) !important;

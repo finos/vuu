@@ -1,7 +1,7 @@
 import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { ColumnMap, itemsChanged } from "@vuu-ui/vuu-utils";
-import { type EChartsCoreOption } from "echarts";
-import { useMemo, useState } from "react";
+import { type EChartsCoreOption } from "echarts/core";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ChartSelectionModel,
   ItemColorFunction,
@@ -70,7 +70,9 @@ export const useChartOptions = ({
   symbolSizeFunction: symbolSize,
 }: ChartOptionsProps) => {
   const [, forceRender] = useState({});
+  const frameRef = useRef<number | undefined>(undefined);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: series is recreated only when dataSource or config change
   const chartSeries = useMemo(() => {
     const cs = new ChartSeries({
       config: combineConfig(config, { itemColorFunction, symbolSize }),
@@ -78,9 +80,40 @@ export const useChartOptions = ({
       dataSource,
       palette,
     });
-    cs.on("update", () => forceRender({}));
+    // re-render at most once per animation frame
+    cs.on("update", () => {
+      if (frameRef.current === undefined) {
+        frameRef.current = requestAnimationFrame(() => {
+          frameRef.current = undefined;
+          forceRender({});
+        });
+      }
+    });
     return cs;
   }, [dataSource, config]);
+
+  const chartSeriesRef = useRef(chartSeries);
+  chartSeriesRef.current = chartSeries;
+
+  useEffect(() => {
+    chartSeries.subscribe();
+    return () => {
+      if (frameRef.current !== undefined) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
+      }
+      // If the DataSource is being replaced, leave it subscribed, the
+      // caller owns it and may still depend on it.
+      chartSeries.detach();
+    };
+  }, [chartSeries]);
+
+  useEffect(
+    () => () => {
+      chartSeriesRef.current.dispose();
+    },
+    [],
+  );
 
   useMemo(() => {
     if (categoryColumnName !== chartSeries.categoryColumn) {

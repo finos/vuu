@@ -7,7 +7,7 @@ import {
 } from "@vuu-ui/vuu-ui-controls";
 import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { getInstanceByDom, init } from "echarts";
+import { getInstanceByDom, init } from "./echarts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useChartContextMenu } from "./useChartContextMenu";
 import { type ChartOptionsProps, useChartOptions } from "./useChartOptions";
@@ -65,7 +65,7 @@ export const Chart = ({
 }: ChartProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-toast-notification",
+    testId: "vuu-chart",
     css: chartCss,
     window: targetWindow,
   });
