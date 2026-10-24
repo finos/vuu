@@ -23,6 +23,7 @@ const defaultConfig = {
 export interface TableSearchProps extends HTMLAttributes<HTMLDivElement> {
   TableProps: TableProps;
   autoFocus?: boolean;
+  baseFilter?: string;
   placeHolder?: string;
   searchColumns: string[];
 }
@@ -32,6 +33,7 @@ const searchIcon = <span data-icon="search" />;
 export const TableSearch = ({
   TableProps: { dataSource: dataSourceProp, ...TableProps },
   autoFocus = false,
+  baseFilter,
   className,
   placeHolder,
   searchColumns,
@@ -54,6 +56,7 @@ export const TableSearch = ({
   );
 
   const { dataSource, onChange, searchState } = useTableSearch({
+    baseFilter,
     dataSource: dataSourceProp,
     searchColumns,
   });
@@ -71,6 +74,7 @@ export const TableSearch = ({
     <div {...htmlAttributes} className={cx(classBase, className)}>
       <div className={`${classBase}-inputField`}>
         <Input
+          bordered
           inputProps={{ onKeyDown }}
           endAdornment={searchIcon}
           placeholder={placeHolder}

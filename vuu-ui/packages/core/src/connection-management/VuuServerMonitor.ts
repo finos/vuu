@@ -18,6 +18,7 @@ import type {
   VuuConnectionRegistry,
   VuuServerConnectionState,
 } from "./VuuConnectionRegistry";
+import { isSessionLimitExceeded } from "./VuuConnectionRegistry";
 
 export const DEFAULT_SERVER_MONITOR_OPTIONS: Required<ServerMonitorOptions> = {
   enabled: true,
@@ -33,6 +34,7 @@ const REASON = {
   notResponding: "Server not responding",
   unauthorized: "You don't have access to this application's server",
   unavailable: "Application configuration could not be loaded",
+  sessionLimit: "User session limit exceeded. Close another session and retry.",
 } as const;
 
 type Scheduler = {
@@ -286,8 +288,8 @@ export class VuuServerMonitor extends ServerStatusStore {
       return;
     }
     this.#running = true;
-    this.#unsubscribeRegistry = this.#registry.onStateChange((id, state) =>
-      this.#handleStateChange(id, state),
+    this.#unsubscribeRegistry = this.#registry.onStateChange(
+      (id, state, error) => this.#handleStateChange(id, state, error),
     );
     super.start();
     this.#evaluate();
@@ -433,8 +435,9 @@ export class VuuServerMonitor extends ServerStatusStore {
               lastOnlineAt: record?.lastOnlineAt,
               nextAttemptAt:
                 presence === "unauthorized" ? undefined : record?.nextAttemptAt,
-              reason:
-                presence === "unauthorized"
+              reason: isSessionLimitExceeded(record?.failure?.error)
+                ? REASON.sessionLimit
+                : presence === "unauthorized"
                   ? REASON.unauthorized
                   : record?.wasOnline
                     ? REASON.connectionLost
@@ -551,7 +554,11 @@ export class VuuServerMonitor extends ServerStatusStore {
         continue;
       }
       if (record.failure) {
-        if (record.failure.presence === "offline" && !record.probeTimer) {
+        if (
+          record.failure.presence === "offline" &&
+          !isSessionLimitExceeded(record.failure.error) &&
+          !record.probeTimer
+        ) {
           this.#scheduleProbe(record);
         }
       } else {
@@ -643,16 +650,29 @@ export class VuuServerMonitor extends ServerStatusStore {
   #fail(record: ServerRecord, error: unknown) {
     const unauthorized = isAuthorizationDenied(error);
     record.failure = {
-      error: error instanceof Error ? error : undefined,
+      error:
+        error instanceof Error
+          ? error
+          : typeof error === "string"
+            ? new Error(error)
+            : undefined,
       presence: unauthorized ? "unauthorized" : "offline",
     };
-    if (!unauthorized && this.#selected.has(record.connectionId)) {
+    if (
+      !unauthorized &&
+      !isSessionLimitExceeded(error) &&
+      this.#selected.has(record.connectionId)
+    ) {
       this.#scheduleProbe(record);
     }
     this.refresh();
   }
 
-  #handleStateChange(connectionId: string, state: VuuServerConnectionState) {
+  #handleStateChange(
+    connectionId: string,
+    state: VuuServerConnectionState,
+    error?: Error,
+  ) {
     if (state === "reconnecting") {
       this.#markLost(connectionId);
     } else {
@@ -675,12 +695,13 @@ export class VuuServerMonitor extends ServerStatusStore {
         this.#registry.release(connectionId);
         this.#fail(
           record,
-          state === "unauthorized"
-            ? new VuuTokenExchangeError(
-                `VUU authorization denied for ${connectionId}`,
-                403,
-              )
-            : new Error(`VUU connection ${connectionId} failed`),
+          error ??
+            (state === "unauthorized"
+              ? new VuuTokenExchangeError(
+                  `VUU authorization denied for ${connectionId}`,
+                  403,
+                )
+              : new Error(`VUU connection ${connectionId} failed`)),
         );
         return;
       }

@@ -3,12 +3,20 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AuthenticationProvider,
+  useAuthenticatedUser,
   useVuuConnectionId,
   useVuuServers,
 } from "../../src/auth/AuthenticationProvider";
 import type { AuthConfig } from "../../src/auth/AuthConfig";
 import type { AuthHandler } from "../../src/auth/AuthHandler";
-import type { VuuConnectionRegistry } from "../../src/connection-management/VuuConnectionRegistry";
+import {
+  VuuConnectionRegistry,
+  type VuuConnectionClient,
+} from "../../src/connection-management/VuuConnectionRegistry";
+import {
+  VuuServerMonitorProvider,
+  useModuleServerStatus,
+} from "../../src/server-monitor/VuuServerMonitorProvider";
 import type { PortalModuleRegistry } from "../../src/RemoteModuleDescriptor";
 import type {
   LocalVuuServer,
@@ -298,6 +306,141 @@ describe("Vuu servers", () => {
         { ...ordersConnection, moduleTitles: ["blotter", "tickets"] },
         { connectionId: "portal", moduleTitles: ["portal-tables"] },
       ]);
+    });
+
+    it("shares one portal websocket and keeps the shell stable when another server hits its session limit", async () => {
+      const connection = {
+        connectionId: "module-admin",
+        restUrl: authConfig.restUrl,
+        websocketUrl: authConfig.websocketUrl,
+      };
+      const moduleRegistry = {
+        modules: [
+          moduleDescriptor("module-admin", connection),
+          moduleDescriptor("tables", { ...connection, connectionId: "tables" }),
+          moduleDescriptor("orders", {
+            connectionId: "orders",
+            restUrl: "https://orders.example.test/api/authn",
+            websocketUrl: "wss://orders.example.test/websocket",
+          }),
+        ],
+      };
+      const connected = new Set<string>();
+      const connectionClient: VuuConnectionClient = {
+        connectWithLoginResponseTo: vi.fn(async (connectionId) => {
+          if (connectionId === "orders") {
+            throw new Error("User session limit exceeded");
+          }
+          connected.add(connectionId);
+          return {
+            status: "connected",
+            loginResponse: {
+              type: "LOGIN_SUCCESS",
+              sessionId: "portal-session",
+              vuuServerId: "portal",
+              moduleRegistry,
+            },
+          };
+        }),
+        connectedFor: (connectionId) => connected.has(connectionId),
+        destroyConnection: vi.fn(async (connectionId) => {
+          connected.delete(connectionId);
+        }),
+        onConnectionStatus: () => () => undefined,
+      };
+      const exchangeToken = vi.fn(async () => ({
+        authorizations: [],
+        token: "portal-token",
+        user: { userName: "steve" },
+      }));
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken,
+      });
+      const Probe = () => {
+        const connectionId = useVuuConnectionId();
+        const status = useModuleServerStatus("module-admin");
+        const ordersStatus = useModuleServerStatus("orders");
+        return (
+          <>
+            <output>{`${connectionId}:${status.presence}`}</output>
+            <span data-orders-status={ordersStatus.presence}>
+              {ordersStatus.detail?.reason}
+            </span>
+          </>
+        );
+      };
+      const shellRender = vi.fn();
+      const ShellProbe = () => {
+        const user = useAuthenticatedUser();
+        shellRender();
+        return <header>{user.userName}</header>;
+      };
+      const render = () => (
+        <AuthenticationProvider
+          authConfig={authConfig}
+          authHandlerClass={TestAuthHandler}
+          mode="identity"
+          registry={registry}
+        >
+          <ShellProbe />
+          <VuuServerMonitorProvider
+            options={{ probeIntervalMs: 10, staggerMs: 0 }}
+          >
+            <ServersProbe />
+            <AuthenticationProvider
+              connection={connection}
+              mode="vuu-connection"
+            >
+              <Probe />
+            </AuthenticationProvider>
+          </VuuServerMonitorProvider>
+        </AuthenticationProvider>
+      );
+      await act(async () => root.render(render()));
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      });
+      await act(async () => root.render(render()));
+
+      const shell = container.querySelector("header");
+      const shellRenderCount = shellRender.mock.calls.length;
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+      expect(container.querySelector("output")?.textContent).toBe(
+        "portal:online",
+      );
+      expect(container.querySelector("[data-orders-status]")?.textContent).toBe(
+        "User session limit exceeded. Close another session and retry.",
+      );
+      expect(
+        container
+          .querySelector("[data-orders-status]")
+          ?.getAttribute("data-orders-status"),
+      ).toBe("offline");
+      expect(container.querySelector("header")).toBe(shell);
+      expect(shellRender).toHaveBeenCalledTimes(shellRenderCount);
+      expect(servers).toEqual([
+        {
+          connectionId: "orders",
+          restUrl: "https://orders.example.test/api/authn",
+          websocketUrl: "wss://orders.example.test/websocket",
+          moduleTitles: ["orders"],
+        },
+      ]);
+      expect(exchangeToken).toHaveBeenCalledTimes(2);
+      expect(connectionClient.connectWithLoginResponseTo).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(connectionClient.connectWithLoginResponseTo).toHaveBeenCalledWith(
+        "portal",
+        { token: "portal-token", url: authConfig.websocketUrl },
+        true,
+      );
+      expect(registry.getRefCount("portal")).toBe(2);
+      expect(registry.getRefCount("module-admin")).toBe(0);
+      expect(registry.getRefCount("tables")).toBe(0);
     });
   });
 

@@ -8,6 +8,7 @@ import {
 import tableContainer from "../core/table/TableContainer";
 import { BasketsTableName, schemas } from "./basket-schemas";
 import basketConstituentData from "./reference-data/constituents";
+import pricesTable from "./reference-data/prices";
 import { type Table } from "../Table";
 
 const { createTable } = tableContainer;
@@ -113,7 +114,7 @@ export class BasketModule extends VuuModule<BasketsTableName> {
     basketTradingConstituentJoin: tableContainer.createJoinTable(
       { module: "BASKET", table: "basketTradingConstituentJoin" },
       { module: "BASKET", table: "basketTradingConstituent" },
-      { module: "SIMUL", table: "prices" },
+      pricesTable,
       "ric",
     ),
     priceStrategyType: createTable(
@@ -130,6 +131,46 @@ export class BasketModule extends VuuModule<BasketsTableName> {
 
   constructor() {
     super("BASKET");
+    const table = this.tables.basketTrading;
+    const update = table.update.bind(table);
+    table.update = (key, column, value) => {
+      if (column !== "side" && column !== "units") {
+        return update(key, column, value);
+      }
+      const basket = table.findByKey(key);
+      if (!basket) {
+        throw Error(`[BasketModule] basket ${key} not found`);
+      }
+      if (basket[table.map[column]] === value) {
+        return;
+      }
+      if (
+        column === "units" &&
+        (typeof value !== "number" || !Number.isInteger(value))
+      ) {
+        throw Error("[BasketModule] units must be an integer");
+      }
+      update(key, column, value);
+      const constituents = this.tables.basketTradingConstituent;
+      for (const row of constituents.data) {
+        if (row[constituents.map.instanceId] === key) {
+          const constituentKey = String(row[constituents.map.instanceIdRic]);
+          if (column === "side") {
+            constituents.update(
+              constituentKey,
+              "side",
+              row[constituents.map.side] === "BUY" ? "SELL" : "BUY",
+            );
+          } else if (typeof value === "number") {
+            constituents.update(
+              constituentKey,
+              "quantity",
+              Math.trunc(Number(row[constituents.map.weighting]) * value),
+            );
+          }
+        }
+      }
+    };
   }
 
   get menus(): Record<BasketsTableName, VuuMenu | undefined> {
@@ -214,57 +255,77 @@ export class BasketModule extends VuuModule<BasketsTableName> {
 
     const { instanceId } = tableMaps.basketTrading;
 
-    constituents.forEach(
-      ([, , description, , ric, , , quantity, weighting]) => {
-        const algo = "";
-        const algoParams = "";
-        const limitPrice = 95;
-        const notionalLocal = 0;
-        const notionalUsd = 0;
-        const pctFilled = 0;
-        const priceSpread = 0;
-        const priceStrategyId = "";
-        const side = "BUY";
-        const venue = "venue";
+    constituents.forEach(([, , description, , ric, , , , weighting]) => {
+      this.insertTradingConstituent(
+        basketTradingRow,
+        String(ric),
+        String(description),
+        Number(weighting),
+      );
+    });
 
-        const basketInstanceId = basketTradingRow[instanceId];
-        const basketTradingConstituentRow: Array<bigint | VuuRowDataItemType> =
-          [
-            algo,
-            algoParams,
-            basketId,
-            description,
-            basketInstanceId,
-            `${basketInstanceId}-${ric}`,
-            limitPrice,
-            notionalLocal,
-            notionalUsd,
-            pctFilled,
-            priceSpread,
-            priceStrategyId,
-            quantity,
-            ric,
-            side,
-            venue,
-            weighting,
-          ];
-        basketTradingConstituent.insert(basketTradingConstituentRow);
-      },
-    );
-
-    // return the key
     return basketTradingRow[instanceId] as string;
+  }
+
+  private insertTradingConstituent(
+    basketTradingRow: Array<bigint | VuuRowDataItemType>,
+    ric: string,
+    description: string,
+    weighting: number,
+  ) {
+    const { basketId, instanceId } = tableMaps.basketTrading;
+    const quantity = Math.trunc(
+      Number(weighting) *
+        Number(basketTradingRow[tableMaps.basketTrading.units]),
+    );
+    const algo = "";
+    const algoParams = "";
+    const limitPrice = 95;
+    const notionalLocal = 0;
+    const notionalUsd = 0;
+    const pctFilled = 0;
+    const priceSpread = 0;
+    const priceStrategyId = 2;
+    const side = "BUY";
+    const status = "OFF-MARKET";
+    const venue = "venue";
+
+    const basketInstanceId = basketTradingRow[instanceId];
+    const basketTradingConstituentRow: Array<bigint | VuuRowDataItemType> = [
+      algo,
+      algoParams,
+      basketTradingRow[basketId],
+      description,
+      basketInstanceId,
+      `${basketInstanceId}-${ric}`,
+      limitPrice,
+      notionalLocal,
+      notionalUsd,
+      pctFilled,
+      priceSpread,
+      priceStrategyId,
+      quantity,
+      ric,
+      side,
+      status,
+      venue,
+      weighting,
+      "PENDING",
+      0,
+    ];
+    basketTradingConstituent.insert(basketTradingConstituentRow);
+    return `${basketInstanceId}-${ric}`;
   }
 
   private createNewBasket: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
-      const { sourceBasketId, tradeBasketName } = rpcRequest.params as {
+      const { sourceBasketId, basketTradeName } = rpcRequest.params as {
         sourceBasketId: string;
-        tradeBasketName: string;
+        basketTradeName: string;
       };
       const key = this.createTradingBasket(
         sourceBasketId as string,
-        tradeBasketName as string,
+        basketTradeName as string,
       );
       return {
         type: "SUCCESS_RESULT",
@@ -285,6 +346,7 @@ export class BasketModule extends VuuModule<BasketsTableName> {
         "status",
         "ON_MARKET",
       );
+      this.updateConstituentStatus(basketInstanceId, "ON_MARKET", "ACKED");
       return {
         type: "SUCCESS_RESULT",
         data: undefined,
@@ -303,6 +365,7 @@ export class BasketModule extends VuuModule<BasketsTableName> {
         "status",
         "OFF-MARKET",
       );
+      this.updateConstituentStatus(basketInstanceId, "OFF-MARKET", "CANCELLED");
       return {
         type: "SUCCESS_RESULT",
         data: undefined,
@@ -312,9 +375,70 @@ export class BasketModule extends VuuModule<BasketsTableName> {
     }
   };
 
-  private addConstituent: ServiceHandler = async () => {
-    throw Error(`addConstituent not implemented`);
+  private addConstituent: ServiceHandler = async (request) => {
+    const { params } = request;
+    const ric = "ric" in params ? params.ric : undefined;
+    const basketInstanceId =
+      "basketInstanceId" in params ? params.basketInstanceId : undefined;
+    if (
+      request.context.type !== "VIEWPORT_CONTEXT" ||
+      typeof ric !== "string" ||
+      typeof basketInstanceId !== "string"
+    ) {
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: "Invalid add constituent request",
+      };
+    }
+    const basket = this.tables.basketTrading.findByKey(basketInstanceId);
+    if (!basket) {
+      return { type: "ERROR_RESULT", errorMessage: "Basket not found" };
+    }
+    if (basket[tableMaps.basketTrading.status] === "ON_MARKET") {
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: "Take the basket off market before adding constituents",
+      };
+    }
+    const source = this.tables.basketConstituent;
+    const reference = source.data.find((row) => row[source.map.ric] === ric);
+    if (!reference) {
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: `Unknown constituent ${ric}`,
+      };
+    }
+    const key = `${basketInstanceId}-${ric}`;
+    if (this.tables.basketTradingConstituent.findByKey(key)) {
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: `${ric} is already in this basket`,
+      };
+    }
+    // Manually added constituents start at 0.1, as in the basket server.
+    this.insertTradingConstituent(
+      basket,
+      ric,
+      String(reference[source.map.description]),
+      0.1,
+    );
+    return { type: "SUCCESS_RESULT", data: key };
   };
+
+  private updateConstituentStatus(
+    basketInstanceId: string,
+    status: string,
+    orderStatus: string,
+  ) {
+    const table = this.tables.basketTradingConstituent;
+    for (const row of table.data) {
+      if (row[table.map.instanceId] === basketInstanceId) {
+        const key = String(row[table.map.instanceIdRic]);
+        table.update(key, "status", status);
+        table.update(key, "orderStatus", orderStatus);
+      }
+    }
+  }
 }
 
 export const basketModule = new BasketModule();

@@ -18,6 +18,10 @@ import React, {
 import { ModuleContextPanel } from "../context-panel/ModuleContextPanel";
 import type { ContextPanelPlacement } from "../context-panel/ContextPanelSlot";
 import {
+  normalizeVuuAuthTarget,
+  useOptionalIdentityContext,
+} from "../auth/AuthenticationProvider";
+import {
   ApplicationStateProvider,
   useOptionalPortalPersistence,
 } from "../persistence/PersistenceContext";
@@ -296,7 +300,7 @@ function RemoteModuleContent(props: RemoteModuleProps) {
     ...remoteProps
   } = props;
   const store = useRemoteModuleState(props);
-  useRegisterNotificationHost(vuu?.connectionId);
+  const { localServers, portalTarget } = useOptionalIdentityContext() ?? {};
   const moduleId = useContext(PortalModuleIdContext);
   const RemoteComponent = getRemoteComponent(
     mfUrl,
@@ -304,7 +308,15 @@ function RemoteModuleContent(props: RemoteModuleProps) {
     mfComponent,
     mfExport,
   );
-  const connection = vuu ?? use(getRemoteConfig(mfUrl)).vuu;
+  const configuredConnection = vuu ?? use(getRemoteConfig(mfUrl)).vuu;
+  const connection = useMemo(
+    () =>
+      configuredConnection && portalTarget && !localServers
+        ? normalizeVuuAuthTarget(configuredConnection, portalTarget)
+        : configuredConnection,
+    [configuredConnection, localServers, portalTarget],
+  );
+  useRegisterNotificationHost(connection?.connectionId);
   const lostStatus = useLostConnectionStatus(connection?.connectionId);
   const remoteComponent = (
     <ModuleContextPanel placement={contextPanelPlacement}>

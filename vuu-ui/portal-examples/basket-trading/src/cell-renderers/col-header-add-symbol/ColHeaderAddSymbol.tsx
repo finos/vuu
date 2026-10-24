@@ -1,19 +1,16 @@
 import { Button } from "@salt-ds/core";
+import { useContextPanel } from "@vuu-ui/core";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
-import { SetPropsAction, useLayoutProviderDispatch } from "@vuu-ui/vuu-layout";
-import { TableSearch } from "@vuu-ui/vuu-ui-controls";
-import type { TableSearchProps } from "@vuu-ui/vuu-ui-controls/src";
-import { registerComponent, VuuShellLocation } from "@vuu-ui/vuu-utils";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { MouseEventHandler, useCallback, useMemo } from "react";
+import { ConstituentSearch } from "./ConstituentSearch";
 
 import "./ColHeaderAddSymbol.css";
-
-registerComponent("TableSearch", TableSearch, "view");
 
 const classBase = "vuuColHeaderAddSymbol";
 
 export const ColHeaderAddSymbol = () => {
-  const dispatchLayoutAction = useLayoutProviderDispatch();
+  const showContextPanel = useContextPanel();
   const { getDataSource } = useSessionDataSource();
 
   const dataSource = useMemo(() => {
@@ -30,40 +27,26 @@ export const ColHeaderAddSymbol = () => {
   const handleClick = useCallback<MouseEventHandler>(
     (e) => {
       e.stopPropagation();
-      dispatchLayoutAction({
-        type: "set-props",
-        path: `#${VuuShellLocation.ContextPanel}`,
-        props: {
-          expanded: true,
-          content: {
-            type: "TableSearch",
-            props: {
-              TableProps: {
-                allowDragDrop: "drag-copy",
-                config: {
-                  columns: [{ name: "description" }],
-                },
-                dataSource,
-                id: "basket-instruments",
-              },
-              searchColumns: ["description"],
-            } as TableSearchProps,
-          },
-          title: "Add Ticker",
-        },
-      } as SetPropsAction);
+      showContextPanel(
+        <ConstituentSearch dataSource={dataSource} />,
+        "Add constituent",
+      );
     },
-    [dataSource, dispatchLayoutAction],
+    [dataSource, showContextPanel],
   );
 
   return (
     <span className={classBase}>
       <Button
-        appearance="solid"
-        data-icon="add"
+        appearance="transparent"
+        aria-label="Add constituent"
+        title="Add constituent"
+        onMouseDown={(event) => event.stopPropagation()}
         onClick={handleClick}
         sentiment="neutral"
-      />
+      >
+        <Icon name="add" />
+      </Button>
     </span>
   );
 };

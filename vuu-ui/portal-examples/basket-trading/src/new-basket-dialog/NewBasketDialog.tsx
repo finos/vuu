@@ -1,19 +1,24 @@
 import {
   Prompt,
   TablePicker,
-  TablePickerProps,
+  type TablePickerProps,
   VuuInput,
 } from "@vuu-ui/vuu-ui-controls";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "clsx";
-import { HTMLAttributes, RefCallback, useCallback, useMemo } from "react";
 import {
-  NewBasketDialogHookProps,
+  type HTMLAttributes,
+  type RefCallback,
+  useCallback,
+  useMemo,
+} from "react";
+import {
+  type NewBasketDialogHookProps,
   useNewBasketDialog,
 } from "./useNewBasketDialog";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
 
 import "./NewBasketDialog.css";
-import { DataRow } from "@vuu-ui/vuu-table-types";
 
 const classBase = "vuuBasketNewBasketDialog";
 

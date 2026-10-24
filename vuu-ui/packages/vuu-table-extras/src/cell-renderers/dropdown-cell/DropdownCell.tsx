@@ -113,7 +113,8 @@ export const DropdownCell = memo(
         className={cx(classBase, {
           [`${classBase}-edited`]: editedDuringCurrentSession === true,
         })}
-        data-icon="triangle-down"
+        OverlayProps={{ className: `${classBase}-options` }}
+        title={selectedOption?.label}
         onClick={handleClick}
         onKeyDownCapture={handleKeyDown}
         onOpenChange={handleOpenChange}
