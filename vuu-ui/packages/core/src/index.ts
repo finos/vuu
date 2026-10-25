@@ -28,3 +28,4 @@ export {
   type TableSourceStatus,
   useTableRegistration,
 } from "./context-definitions/TableRegistrationContext";
+export * from "./workspace";

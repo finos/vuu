@@ -34,25 +34,25 @@ export const createWorkspaceComponentRegistries = <T,>(
 };
 
 export const jsonValueWorkspaceComponentCodec: GridComponentSettingsCodec<JsonValue> =
-{
-  decode: (value) => ({ ok: true, value }),
-  encode: (value) => ({ ok: true, value }),
-  isSettings: (value): value is JsonValue => {
-    if (
-      value === null ||
-      typeof value === "string" ||
-      typeof value === "number" ||
-      typeof value === "boolean"
-    ) {
-      return true;
-    }
-    if (Array.isArray(value)) {
-      return value.every(jsonValueWorkspaceComponentCodec.isSettings);
-    }
-    return (
-      typeof value === "object" &&
-      Object.values(value).every(jsonValueWorkspaceComponentCodec.isSettings)
-    );
-  },
-  version: 1,
-};
+  {
+    decode: (value) => ({ ok: true, value }),
+    encode: (value) => ({ ok: true, value }),
+    isSettings: (value): value is JsonValue => {
+      if (
+        value === null ||
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        return true;
+      }
+      if (Array.isArray(value)) {
+        return value.every(jsonValueWorkspaceComponentCodec.isSettings);
+      }
+      return (
+        typeof value === "object" &&
+        Object.values(value).every(jsonValueWorkspaceComponentCodec.isSettings)
+      );
+    },
+    version: 1,
+  };

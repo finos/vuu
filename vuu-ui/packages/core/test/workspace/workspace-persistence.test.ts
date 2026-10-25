@@ -6,7 +6,7 @@ import {
   WorkspacePersistenceError,
   type UserPersistenceScope,
   type WorkspacePersistenceService,
-} from "../../src/persistence-manager";
+} from "../../src/workspace";
 import {
   WorkspaceRepository,
   WorkspaceRepositoryDisposedError,
@@ -19,7 +19,7 @@ import {
   type WorkspaceSnapshotRecordV1,
   type WorkspaceSnapshotV1,
   WorkspaceValidationError,
-} from "../../src/workspace-management";
+} from "../../src/workspace";
 
 const scope: UserPersistenceScope = {
   applicationNamespace: "com.finos",

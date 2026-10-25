@@ -1,4 +1,4 @@
-import type { WorkspacePersistenceService } from "../persistence-manager";
+import type { WorkspacePersistenceService } from "./WorkspacePersistenceService";
 import {
   WORKSPACE_SNAPSHOT_RECORD_VERSION,
   cloneWorkspaceValue,

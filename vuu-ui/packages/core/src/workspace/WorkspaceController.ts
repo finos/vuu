@@ -5,7 +5,7 @@ import {
   type GridLayoutDocument,
   type GridLayoutDocumentChange,
 } from "@vuu-ui/grid-layout";
-import type { WorkspacePersistenceService } from "../persistence-manager";
+import type { WorkspacePersistenceService } from "./WorkspacePersistenceService";
 import { WorkspacePersistentStateStore } from "./WorkspacePersistentState";
 import { WorkspaceRepository } from "./WorkspaceRepository";
 import {
@@ -18,6 +18,12 @@ export interface WorkspaceControllerOptions {
   readonly instanceId: string;
   name: string;
   readonly onError: (error: Error) => void;
+  /**
+   * Invoked with the latest snapshot whenever the user edits the workspace.
+   * Changes that leave the workspace identical to its initial snapshot are
+   * not reported until a real edit has occurred.
+   */
+  readonly onEdit?: (snapshot: WorkspaceSnapshotV1) => void;
   readonly renderers: GridComponentRendererRegistry;
   readonly service: WorkspacePersistenceService;
   readonly settingsCodecs: GridComponentSettingsRegistry;
@@ -37,6 +43,8 @@ export class WorkspaceController {
   #disposed = false;
   #savingStructure = false;
   readonly #onError: (error: Error) => void;
+  readonly #onEdit?: (snapshot: WorkspaceSnapshotV1) => void;
+  #baseline: string | undefined;
   readonly #unsubscribe: () => void;
 
   constructor(options: WorkspaceControllerOptions) {
@@ -46,17 +54,18 @@ export class WorkspaceController {
     this.renderers = options.renderers;
     this.settingsCodecs = options.settingsCodecs;
     this.#onError = options.onError;
+    this.#onEdit = options.onEdit;
     this.repository = new WorkspaceRepository(
       options.service,
       options.instanceId,
       options.revision === undefined
         ? undefined
         : {
-          revision: options.revision,
-          snapshot: options.snapshot,
-          version: 1,
-          workspaceInstanceId: options.instanceId,
-        },
+            revision: options.revision,
+            snapshot: options.snapshot,
+            version: 1,
+            workspaceInstanceId: options.instanceId,
+          },
     );
     // State is hydrated synchronously before the document can be rendered.
     this.persistentState = new WorkspacePersistentStateStore(
@@ -65,6 +74,9 @@ export class WorkspaceController {
     this.documentController = new GridLayoutDocumentController(
       options.snapshot.layout,
     );
+    if (this.#onEdit) {
+      this.#baseline = JSON.stringify(this.snapshot);
+    }
     this.#unsubscribe = this.persistentState.subscribe(() => {
       if (!this.#savingStructure) {
         this.#save();
@@ -118,7 +130,9 @@ export class WorkspaceController {
 
   #save(): void {
     if (!this.#disposed) {
-      void this.repository.save(this.snapshot).catch((cause: unknown) => {
+      const snapshot = this.snapshot;
+      this.#notifyEdit(snapshot);
+      void this.repository.save(snapshot).catch((cause: unknown) => {
         if (!this.#disposed) {
           this.#onError(
             cause instanceof Error
@@ -127,6 +141,25 @@ export class WorkspaceController {
           );
         }
       });
+    }
+  }
+
+  #notifyEdit(snapshot: WorkspaceSnapshotV1): void {
+    if (!this.#onEdit) {
+      return;
+    }
+    if (this.#baseline !== undefined) {
+      if (JSON.stringify(snapshot) === this.#baseline) {
+        return;
+      }
+      this.#baseline = undefined;
+    }
+    try {
+      this.#onEdit(snapshot);
+    } catch (cause: unknown) {
+      this.#onError(
+        cause instanceof Error ? cause : new Error("Workspace edit failed"),
+      );
     }
   }
 }

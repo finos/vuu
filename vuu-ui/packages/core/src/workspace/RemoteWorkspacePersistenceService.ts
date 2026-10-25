@@ -8,7 +8,7 @@ import {
   type NamedWorkspaceDefinitionV1,
   type NamedWorkspaceMetadataV1,
   type WorkspaceSnapshotRecordV1,
-} from "../workspace-management/workspace-schemas";
+} from "./workspace-schemas";
 import type {
   UserPersistenceScope,
   WorkspacePersistenceService,

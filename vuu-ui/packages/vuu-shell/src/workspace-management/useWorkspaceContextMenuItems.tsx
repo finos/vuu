@@ -8,7 +8,7 @@ import { type TabContextMenuOptions } from "@vuu-ui/vuu-ui-controls";
 import type { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";
-import { useWorkspace } from "./WorkspaceProvider";
+import { useWorkspace } from "@vuu-ui/core";
 
 export const useWorkspaceContextMenuItems = () => {
   const { activeWorkspace, closeWorkspace, saveActiveWorkspaceAs } =
