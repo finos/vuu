@@ -15,9 +15,13 @@ const integerFormat = new Intl.NumberFormat();
 const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER.toString();
 const MAX_INTEGER_DIGITS = MAX_SAFE_INTEGER.length;
 
-export const exceedsMaxSafeInteger = (value: string) =>
-  value.length > MAX_INTEGER_DIGITS ||
-  (value.length === MAX_INTEGER_DIGITS && value > MAX_SAFE_INTEGER);
+export const exceedsMaxSafeInteger = (value: string) => {
+  const digits = value.startsWith("-") ? value.slice(1) : value;
+  return (
+    digits.length > MAX_INTEGER_DIGITS ||
+    (digits.length === MAX_INTEGER_DIGITS && digits > MAX_SAFE_INTEGER)
+  );
+};
 
 /**
  * Round the digits of a fraction, half up, to the given number of decimals.
