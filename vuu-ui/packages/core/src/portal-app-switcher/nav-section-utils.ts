@@ -1,12 +1,24 @@
-import {
-  isNestedModule,
-  type RemoteModuleDescriptor,
-} from "../RemoteModuleDescriptor";
-import { toNavigationPath } from "./nav-item-utils";
+import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import { isNavigableModule, toNavigationPath } from "./nav-item-utils";
 
 export interface PortalNavItem {
   href: string;
+  /**
+   * The module's Module Federation scope (`mfScope`), e.g.
+   * `"vuuTableBrowser"`. Use it to recognise a particular module, e.g. in
+   * `renderItemChildren`: it is set by the module's own build and must
+   * match for the module to load, so it is the same whichever registry
+   * supplies the module. The `moduleId` is not: a server-supplied registry
+   * assigns its own, often numeric, ids.
+   */
+  mfScope: string;
+  /**
+   * The module's id in the registry that supplied it. It may be an opaque,
+   * e.g. numeric, id; prefer `mfScope` to recognise a module.
+   */
   moduleId: RemoteModuleDescriptor["id"];
+  /** The module's unique name in its registry. */
+  moduleName: string;
   navBadge?: string;
   navIconName?: string;
   navIconUrl?: string;
@@ -41,7 +53,8 @@ const lowestNavOrder = ({ items }: PortalNavSection) =>
 /**
  * Groups modules into navigation sections by the first `navLocation` segment.
  *
- * - Nested modules (empty or `/` `navLocation`) are excluded.
+ * - Nested modules (empty or `/` `navLocation`) and palette-only modules
+ *   (no `path`) are excluded.
  * - An item's title is the remaining segments joined with `": "`. A
  *   single-segment location (`/Reports`) gives an item titled with that
  *   segment, in the section of the same name.
@@ -55,11 +68,13 @@ export const buildNavSections = (
   const sections = new Map<string, PortalNavSection>();
 
   for (const module of registeredModules) {
-    if (isNestedModule(module)) {
+    if (!isNavigableModule(module)) {
       continue;
     }
     const {
       id,
+      mfScope,
+      name,
       navBadge,
       navIconName,
       navIconUrl,
@@ -83,7 +98,9 @@ export const buildNavSections = (
     }
     section.items.push({
       href,
+      mfScope,
       moduleId: id,
+      moduleName: name,
       navBadge,
       navIconName,
       navIconUrl,

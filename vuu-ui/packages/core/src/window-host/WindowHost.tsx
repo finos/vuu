@@ -28,7 +28,7 @@ export const WindowHost = (props: WindowHostProps) => {
     >
       {descriptor ? (
         <PortalLinkProvider
-          modulePath={descriptor.path}
+          modulePath={descriptor.path ?? "/"}
           windowPath={getWindowHostPath(descriptor.id)}
         >
           <PortalModuleRegistryProvider remoteModules={modules}>

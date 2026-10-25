@@ -382,10 +382,11 @@ describe("PortalPersistenceRoot", () => {
     });
     const service = captured;
     await act(async () => root.unmount());
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(service?.isDisposed()).toBe(true);
-    const [summary] = await backend.list("anonymous");
-    expect(summary.entries.map(({ key }) => key)).toEqual(["nav/expanded"]);
+    await vi.waitFor(async () => {
+      expect(service?.isDisposed()).toBe(true);
+      const [summary] = await backend.list("anonymous");
+      expect(summary.entries.map(({ key }) => key)).toEqual(["nav/expanded"]);
+    });
     root = createRoot(container);
   });
 });

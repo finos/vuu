@@ -9,9 +9,12 @@ import {
   type GridLayoutDocument,
   GridLayoutItem,
   GridLayoutProvider,
+  GridLayoutStackedItem,
   type TemplateSource,
+  type TemplateDragState,
   useDraggable,
   useGridLayoutDragStartHandler,
+  useTemplateDragState,
 } from "../src";
 
 class TestDataTransfer {
@@ -219,6 +222,38 @@ const PaletteFixture = () => (
   </GridLayoutProvider>
 );
 
+const StackedPaletteFixture = () => (
+  <GridLayoutProvider options={{ newChildItem: { header: true } }}>
+    <GridLayout
+      colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
+      id="stacked-palette-grid"
+    >
+      <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
+        <TemplatePalette />
+      </GridLayoutItem>
+      <GridLayoutStackedItem id="tabs" style={{ gridArea: "1/2/2/3" }} />
+      <GridLayoutItem
+        contentVisible
+        data-drop-target
+        id="first"
+        stackId="tabs"
+        title="First"
+      >
+        <div>First content</div>
+      </GridLayoutItem>
+      <GridLayoutItem
+        contentVisible={false}
+        data-drop-target
+        id="second"
+        stackId="tabs"
+        title="Second"
+      >
+        <div>Second content</div>
+      </GridLayoutItem>
+    </GridLayout>
+  </GridLayoutProvider>
+);
+
 const PlaceholderFixture = () => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     <GridLayout
@@ -318,6 +353,70 @@ const ScopedNestedPaletteFixture = ({
           onDocumentChange={onNestedChange}
           settingsCodecs={typedCodecs}
         >
+          <GridLayout
+            colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
+            id="workspace-grid"
+          >
+            <GridLayoutItem
+              data-drop-target
+              header
+              id="workspace-target"
+              resizeable="hv"
+              style={{ gridArea: "1/1/2/2" }}
+              title="Target"
+            >
+              <span>Target</span>
+            </GridLayoutItem>
+          </GridLayout>
+        </GridLayoutProvider>
+      </GridLayoutItem>
+    </GridLayout>
+  </GridLayoutProvider>
+);
+
+const TemplateDragStateObserver = ({
+  onRender,
+}: {
+  onRender: (state: TemplateDragState) => void;
+}) => {
+  const state = useTemplateDragState();
+  onRender(state);
+  return (
+    <div data-dragging={state.dragging} data-testid="drag-state">
+      {state.template?.label ?? ""}
+    </div>
+  );
+};
+
+const TemplateDragStateFixture = ({
+  onNestedRender,
+  onShellRender,
+}: {
+  onNestedRender: (state: TemplateDragState) => void;
+  onShellRender: (state: TemplateDragState) => void;
+}) => (
+  <GridLayoutProvider>
+    <TemplateDragStateObserver onRender={onShellRender} />
+    <GridLayout
+      colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
+      id="static-shell"
+    >
+      <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
+        <TypedTemplatePalette />
+      </GridLayoutItem>
+      <GridLayoutItem id="workspace-owner" style={{ gridArea: "1/2/2/3" }}>
+        <GridLayoutProvider
+          componentRenderers={typedRenderers}
+          componentSettings={[
+            {
+              id: "workspace-target",
+              settings: { label: "Target" },
+              type: "label",
+            },
+          ]}
+          settingsCodecs={typedCodecs}
+        >
+          <TemplateDragStateObserver onRender={onNestedRender} />
           <GridLayout
             colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
             id="workspace-grid"
@@ -750,5 +849,203 @@ describe("GridLayout React drag/drop lifecycle", () => {
     expect(
       container.querySelector("#nested-grid [data-testid='template-content']"),
     ).toBeNull();
+  });
+  it("exposes template drag state outside the grid without re-rendering on pointer moves", () => {
+    const shellStates: TemplateDragState[] = [];
+    const nestedStates: TemplateDragState[] = [];
+    act(() =>
+      root.render(
+        <TemplateDragStateFixture
+          onNestedRender={(state) => nestedStates.push(state)}
+          onShellRender={(state) => shellStates.push(state)}
+        />,
+      ),
+    );
+    const source = container.querySelector(
+      "[data-testid='typed-palette-item']",
+    );
+    const target = container.querySelector(
+      "#workspace-target .vuuGridLayoutItemContent",
+    );
+    if (!source || !target) {
+      throw Error("template drag state fixture did not render");
+    }
+    expect(shellStates.at(-1)).toEqual({ dragging: false });
+    expect(nestedStates.at(-1)).toEqual({ dragging: false });
+    setTargetRect(source);
+    setTargetRect(target);
+    const dataTransfer = new TestDataTransfer();
+
+    dispatchDrag(source, "dragstart", dataTransfer);
+    flushAnimationFrames();
+
+    const expectedTemplate = {
+      component: {
+        settings: { label: "Typed template" },
+        type: "label",
+        version: 1,
+      },
+      label: "Typed template",
+    };
+    expect(shellStates.at(-1)).toEqual({
+      dragging: true,
+      template: expectedTemplate,
+    });
+    expect(nestedStates.at(-1)).toBe(shellStates.at(-1));
+    expect(
+      container.querySelector("[data-testid='drag-state']")?.textContent,
+    ).toBe("Typed template");
+
+    const shellRendersDuringDrag = shellStates.length;
+    const nestedRendersDuringDrag = nestedStates.length;
+    for (const clientX of [60, 70, 80, 90]) {
+      dispatchDrag(target, "dragover", dataTransfer, { clientX, clientY: 50 });
+      flushAnimationFrames();
+    }
+    expect(shellStates).toHaveLength(shellRendersDuringDrag);
+    expect(nestedStates).toHaveLength(nestedRendersDuringDrag);
+
+    dispatchDrag(target, "drop", dataTransfer, { clientX: 90, clientY: 50 });
+    dispatchDrag(source, "dragend", dataTransfer);
+
+    expect(shellStates.at(-1)).toEqual({ dragging: false });
+    expect(nestedStates.at(-1)).toEqual({ dragging: false });
+  });
+
+  it("clears template drag state when a template drag is cancelled", () => {
+    const states: TemplateDragState[] = [];
+    act(() =>
+      root.render(
+        <TemplateDragStateFixture
+          onNestedRender={() => undefined}
+          onShellRender={(state) => states.push(state)}
+        />,
+      ),
+    );
+    const source = container.querySelector(
+      "[data-testid='typed-palette-item']",
+    );
+    if (!source) {
+      throw Error("template drag state fixture did not render");
+    }
+    setTargetRect(source);
+
+    dispatchDrag(source, "dragstart", new TestDataTransfer());
+    expect(states.at(-1)?.dragging).toBe(true);
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    });
+    expect(states.at(-1)).toEqual({ dragging: false });
+  });
+  describe("template drop positions", () => {
+    const startTemplateDrag = () => {
+      act(() => root.render(<PaletteFixture />));
+      const source = container.querySelector("[data-testid='palette-item']");
+      const target = container.querySelector(
+        "#target .vuuGridLayoutItemContent",
+      );
+      const header = container.querySelector(
+        "#target .vuuGridLayoutItemHeader",
+      );
+      if (!source || !target || !header) {
+        throw Error("template drag fixture did not render");
+      }
+      setTargetRect(source);
+      setTargetRect(target);
+      setTargetRect(header);
+      const dataTransfer = new TestDataTransfer();
+      dispatchDrag(source, "dragstart", dataTransfer);
+      flushAnimationFrames();
+      return { dataTransfer, header, source, target };
+    };
+
+    it("splits the panel when dropped near an edge", () => {
+      const { dataTransfer, source, target } = startTemplateDrag();
+      const point = { clientX: 90, clientY: 50 };
+      dispatchDrag(target, "dragenter", dataTransfer, point);
+      const dragOver = dispatchDrag(target, "dragover", dataTransfer, point);
+      expect(target.classList.contains("vuuDropTarget-east")).toBe(true);
+      expect(dragOver.defaultPrevented).toBe(true);
+
+      dispatchDrag(target, "drop", dataTransfer, point);
+      dispatchDrag(source, "dragend", dataTransfer);
+
+      expect(
+        container.querySelector("[data-testid='template-content']"),
+      ).not.toBeNull();
+      expect(container.querySelector("#target")).not.toBeNull();
+      expect(container.querySelectorAll("[role='tab']")).toHaveLength(0);
+    });
+
+    it("replaces the panel when dropped on the centre", () => {
+      const { dataTransfer, source, target } = startTemplateDrag();
+      const point = { clientX: 50, clientY: 50 };
+      dispatchDrag(target, "dragenter", dataTransfer, point);
+      dispatchDrag(target, "dragover", dataTransfer, point);
+      expect(target.classList.contains("vuuDropTarget-centre")).toBe(true);
+
+      dispatchDrag(target, "drop", dataTransfer, point);
+      dispatchDrag(source, "dragend", dataTransfer);
+
+      expect(
+        container.querySelector("[data-testid='template-content']"),
+      ).not.toBeNull();
+      expect(container.querySelector("#target")).toBeNull();
+      expect(container.querySelectorAll("[role='tab']")).toHaveLength(0);
+    });
+
+    it("stacks with the panel, as a tab, when dropped on the header", () => {
+      const { dataTransfer, header, source } = startTemplateDrag();
+      const point = { clientX: 50, clientY: 10 };
+      dispatchDrag(header, "dragenter", dataTransfer, point);
+      dispatchDrag(header, "dragover", dataTransfer, point);
+      expect(header.classList.contains("vuuDropTarget-header")).toBe(true);
+
+      dispatchDrag(header, "drop", dataTransfer, point);
+      dispatchDrag(source, "dragend", dataTransfer);
+
+      expect(
+        container.querySelector("[data-testid='template-content']"),
+      ).not.toBeNull();
+      expect(
+        [...container.querySelectorAll("[role='tab']")].map(
+          (tab) => tab.textContent,
+        ),
+      ).toEqual(expect.arrayContaining(["Target", "Template"]));
+    });
+    it("replaces a stacked panel's tab when dropped on its centre", () => {
+      act(() => root.render(<StackedPaletteFixture />));
+      const source = container.querySelector("[data-testid='palette-item']");
+      const target = container.querySelector(
+        "#first .vuuGridLayoutItemContent",
+      );
+      if (!source || !target) {
+        throw Error("stacked template drag fixture did not render");
+      }
+      setTargetRect(source);
+      setTargetRect(target);
+      const dataTransfer = new TestDataTransfer();
+      const point = { clientX: 50, clientY: 50 };
+      dispatchDrag(source, "dragstart", dataTransfer);
+      flushAnimationFrames();
+      dispatchDrag(target, "dragenter", dataTransfer, point);
+      dispatchDrag(target, "dragover", dataTransfer, point);
+      expect(target.classList.contains("vuuDropTarget-centre")).toBe(true);
+
+      dispatchDrag(target, "drop", dataTransfer, point);
+      dispatchDrag(source, "dragend", dataTransfer);
+
+      expect(
+        container.querySelector("[data-testid='template-content']"),
+      ).not.toBeNull();
+      expect(container.querySelector("#first")).toBeNull();
+      const tabs = [...container.querySelectorAll("[role='tab']")];
+      expect(tabs.map((tab) => tab.textContent)).toEqual([
+        "Template",
+        "Second",
+      ]);
+      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+    });
   });
 });

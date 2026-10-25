@@ -61,6 +61,12 @@ omits it, and another module renders it with `RemoteModule`. The table viewer
 nested in the table browser is an example. `isNestedModule(descriptor)` tests
 for this.
 
+A top-level descriptor (`parentModuleId` 0) with no `navLocation` and no
+`path`, carrying only `workspace` metadata, is a *palette-only* module: it is
+listed only in the Panels palette and rendered by the `portal-module`
+renderer. The navigation and the shell's routes skip it. `isRoutedModule` and
+`isPaletteOnlyModule` test for these cases.
+
 ### Layout
 
 The shell is a grid with a nav column, then header, banners and content rows.
@@ -124,8 +130,11 @@ unchanged. Render it as a child of `PortalShell`, typically with
 | `density` | `comfortable` | 32px rows, or 26px for `compact`. |
 | `sections` | `headings` | `headings`, `collapsible` headings, or `none`. |
 | `brand`, `footer` | | Nodes, or functions of `{ displayMode, allowedDisplayModes, setDisplayMode }`. The footer is pinned at the bottom. |
+| `brandHref` | `/` | Where clicking the brand goes, on the portal router (so a router basename applies). The link sits behind the brand content, so controls in the brand, e.g. the bell, keep their own behaviour. `false` for no link. |
+| `brandLabel` | `Home` | Accessible name of the brand link. |
 | `renderBadge` | | A live value for an item, usually chosen by `item.navBadge`. |
 | `width` | `248` | Width (px) of `icons-and-text`. |
+| `workspaces` | `true` | Show the [Workspaces](#workspaces) section when a workspace model is provided. |
 
 **Display modes.** `icons-and-text` (248px), `text` (208px), `icons` (a 60px
 rail) and `minimized` (0px). The widths are exported as `PORTAL_NAV_WIDTHS`.
@@ -228,6 +237,263 @@ For a left-nav footer, `@vuu-ui/core/portal` provides two components that take
   any `PortalNavUserMenuItem` children, and **Log out**. Pass `account` for
   app-supplied text such as the trading account.
 
+## Workspaces
+
+A workspace is a named grid layout of panels, managed by the workspace model
+in `src/workspace` (`WorkspaceProvider`, `useWorkspace`). The portal shows
+them in a Workspaces section of `PortalNav` and renders the open one at
+`/workspaces/:workspaceId`. The code is in `src/portal-workspaces`.
+
+Turn workspaces on with the `workspaces` option of `PortalShell`:
+
+```tsx
+<PortalShell
+  header={false}
+  remoteModules={remoteModules}
+  title="Portal"
+  workspaces={{
+    componentRenderers,
+    headerActions: <AddPanelButton />,
+    settingsCodecs,
+    systemWorkspaces: [defaultWorkspace],
+  }}
+>
+  <PortalNav remoteModules={remoteModules} />
+</PortalShell>
+```
+
+| Option | | |
+| --- | --- | --- |
+| `systemWorkspaces` | | Workspaces shipped with the portal (`NamedWorkspaceDefinitionV1`). |
+| `componentRenderers`, `settingsCodecs` | | The panels a workspace can contain, as for `GridLayout`. |
+| `headerActions` | | Content for the actions slot of the workspace header, e.g. `<AddPanelButton />`, which opens the [Panels palette](#panels-palette). |
+| `persistenceService` | local storage | Where workspaces are saved. The default `LocalWorkspacePersistenceService` is scoped to the portal id and the signed-in user (namespace `PORTAL_WORKSPACE_NAMESPACE`). Pass a stable instance. |
+
+Without the option the shell renders no `WorkspaceProvider` and no
+workspace route, and `PortalNav` has no Workspaces section. A
+`WorkspaceProvider` rendered by the app works too. `PortalNav` and
+`PortalWorkspace` use `useOptionalWorkspace()`, which is `undefined` when no
+provider is mounted.
+
+**Kinds.** A *system* workspace ships with the portal. The first edit saves a
+personal copy with the same id, and the shipped definition is never changed.
+View state is saved but is not an edit: selecting a tab in a stack does not
+create a copy or mark it edited. Creating the copy keeps panels mounted, so
+scrolled tables keep their position.
+A *named* workspace belongs to the user. `WorkspaceSummary` has `kind`,
+`isPersonalCopy` and `isModified` for each.
+
+### Nav section
+
+The Workspaces section comes first in `PortalNav` (`WORKSPACES_SECTION_ID`,
+`"workspaces"`). It lists system workspaces, then named ones. The heading has
+a count and a **+** button. It follows the `sections` style, so it can
+collapse.
+
+- Each row is a link to `/workspaces/:id`. The open workspace is highlighted
+  (`aria-current="page"`).
+- A system row shows a **default** chip, or a **Your copy** tag (title
+  "Your copy · edited") when the user has a personal copy.
+- A named row has a ⋯ menu (also on right-click and Shift+F10) with
+  **Rename** and **Delete…**. Rename edits the name in place: Enter or blur
+  saves, Escape cancels. Delete asks for confirmation in a dialog. Deleting
+  the open workspace navigates to another workspace, or to `/`.
+- **+ New workspace**, the last row, creates an empty named workspace called
+  "Untitled workspace" ("Untitled workspace 2"… when taken), opens it and
+  puts its name in edit mode in the header.
+- Rows are not drop targets. Panels are dropped on the workspace itself.
+- In the `icons` rail, rows show an icon with a tooltip, the section has no
+  heading, and named rows have no menu: rename in the header. The section
+  works the same in the `minimized` overlay.
+
+### Workspace route
+
+`PortalWorkspace` renders at `WORKSPACE_ROUTE` (`/workspaces/:workspaceId`;
+build paths with `getWorkspacePath(id)`). The URL is the source of truth:
+opening the route calls `setActiveWorkspace(id)`, so a deep link, the nav,
+and back and forward all select the workspace. An id that isn't a known
+workspace shows **Workspace not found**, with a button to open the first
+workspace. The grid is `PortalWorkspaceGrid`, a `GridLayout` with the
+workspace's saved component state; an empty workspace shows
+`WorkspaceStartPanel`, or, when there is an `AddPanelButton`, the
+workspace's empty content: `WorkspaceDropZone` by default.
+
+**Empty content.** Hosts replace the drop zone with `PortalShell`'s
+`workspaces.emptyContent`, which `PortalWorkspace` (`emptyContent`) passes
+to `PortalWorkspaceGrid`. It is a `WorkspaceEmptyContent`: a React node, or
+a function that receives `{ openPalette }` and returns one. It is shown only
+when the palette is available; otherwise the workspace shows
+`WorkspaceStartPanel`. It is the content of the empty workspace's
+placeholder, which stays a drop target for palette rows.
+
+```tsx
+const workspaces: PortalWorkspacesOptions = {
+  headerActions: <AddPanelButton />,
+  emptyContent: ({ openPalette }) => (
+    <WorkspaceDropZone title="Nothing here yet">
+      Drag a panel here, or{" "}
+      <Button onClick={openPalette}>browse panels</Button>.
+    </WorkspaceDropZone>
+  ),
+};
+```
+
+`PortalWorkspaceHeader` shows a **Workspaces /** crumb and the name. A named
+workspace's name is a button that edits it in place, and its status is
+**Saved**. A system workspace shows **Default**, or **Your copy** with the
+time of the last edit. `headerActions` are rendered before **Reset to
+default**.
+
+### Reset to default
+
+When the open workspace is a system workspace with a personal copy, the
+header shows **Reset to default**. It opens a popover:
+
+- **Reset** deletes the personal copy (`resetToDefault(id)`), restoring the
+  shipped layout.
+- **Cancel** closes the popover.
+- **Save as new…** asks for a name (default "{name} copy"), saves the current
+  layout as a named workspace (`saveActiveWorkspaceAs`), resets the system
+  workspace, then opens the new workspace.
+
+### Panels palette
+
+The Panels palette adds panels to the open workspace. It is in
+`src/panels-palette`, exported from `@vuu-ui/core/portal`. Put
+`<AddPanelButton />` in `headerActions`; its presence makes the palette
+available, and `PortalWorkspace` renders `PanelsPalette` within the
+workspace grid's providers. `PortalWorkspace` provides the palette's open
+state (`PanelsPaletteStateProvider`, `usePanelsPaletteState`) and the click
+rule (`OpenPanelProvider`) for the open workspace. **+ New workspace** opens
+the palette.
+
+**Add panel** toggles the palette, which is displayed in the shell's
+[context panel](#context-panel), titled **Panels**, with the panel's close
+button. The palette claims the panel (`useContextPanelSlot().claim`) and
+renders into it with a React portal, so it stays in the workspace's React
+tree, under its GridLayoutProvider, and dragging rows onto the grid works.
+Opening the palette doesn't move focus, so a new workspace's name stays in
+edit mode. The palette claims the panel with an `inline` placement (see
+[Inline or overlay](#inline-or-overlay)): the panel takes its own column and
+the workspace shrinks beside it, so the palette never covers a drop target
+or the empty workspace's drop zone. Clicking the workspace
+doesn't close it.
+It has a search box with the pin button, its tabs and a footer hint. Outside a shell context panel (e.g. in tests) the
+palette renders in place, with its own header.
+
+The context panel has one owner at a time:
+
+- A module showing its context panel replaces the palette. **Add panel** is
+  no longer pressed, and the palette stays pinned if it was.
+- Opening the palette replaces a module's content.
+- The layout follows the owner: a module's panel overlays the content (the
+  default), the palette is inline.
+- The panel's close button, or Escape, closes and unpins the palette.
+
+Navigation:
+
+- Switching between workspaces (`/workspaces/:id` routes) keeps the palette
+  open. The palette claims the panel with `keepOnNavigation`, so the shell's
+  close-on-navigation (`closeOnNavigation()`) leaves it open.
+  `PortalWorkspace` stays mounted between workspaces.
+- Any other route unmounts `PortalWorkspace`, which releases the panel.
+  Returning to a workspace reopens the palette only if it is pinned.
+- Module content still closes on every navigation, including between
+  workspaces.
+
+**Tabs.** `PanelsPalette`'s `tabs` prop chooses the tabs, in order, from
+`"modules"`, `"tables"` and `"recent"`. The default
+(`DEFAULT_PANELS_PALETTE_TABS`) is `["modules", "recent"]`: **Tables**,
+which offers the raw tables of a Vuu server, is opt-in. It is a development
+tool; a host that wants a table in production packages it as a
+pre-configured module, offered on the Modules tab. `defaultTab` chooses the
+initial tab (default: the first). With a single tab, the tab strip is not
+shown. The search box reads "Search panels & tables" when Tables is offered,
+"Search panels" otherwise.
+
+Hosts set the palette's props with `PortalShell`'s `workspaces.palette`,
+which `PortalWorkspace` (`paletteProps`) passes to `PortalWorkspaceGrid`:
+
+```tsx
+const workspaces: PortalWorkspacesOptions = {
+  headerActions: <AddPanelButton />,
+  palette: { tabs: ["modules", "tables", "recent"] },
+};
+```
+
+A page rendering its own `PortalWorkspaceGrid`, such as the table browser,
+passes `paletteProps` to it directly.
+
+- **Modules** lists `usePaletteModules()`: modules whose descriptor has
+  `workspace.paletteGroup`, grouped by it, with `workspace.iconUrl` or the
+  nav icon. Each row is a `portal-module` template.
+- **Tables** has a server picker and lists that server's tables, grouped by
+  Vuu module, by name only. Each row is a `vuu-table` template. Servers
+  are the portal's own server, the current connection and the servers of
+  registered modules, or the local servers in local mode. Tables are
+  listed through the portal's connection management (`ServerTablesLoader`,
+  which uses `useVuuServerConnection`). The chosen server is saved.
+- **Recent** lists the last 10 panels the user added.
+
+The search filters the current tab; every word must match a row's name,
+description or group. Groups collapse. The list is a listbox: ↑ ↓ Home End
+move, Enter opens the active row, Shift+Enter or **+** adds it, and Escape
+closes the palette (in place, unless pinned; the context panel always closes
+on Escape). The search box passes ↑ ↓ Enter and Escape to the list.
+The pin button keeps the palette open after a panel is added, and reopens it
+on returning to a workspace; otherwise it closes after a panel is added.
+
+Every row can be:
+
+- **dragged** onto the workspace (`usePortalDragSource`). The GridLayout
+  ghost shows where it will go: near an edge of a panel splits it on that
+  side, the centre of a panel replaces it (in a stack, it replaces that
+  tab), and the panel header stacks with it, as a tab (or adds a tab, on a
+  stack's tabs). While a template is dragged (`useTemplateDragState`),
+  `TemplateDragHint` shows "Drop on a panel edge to split, centre to
+  replace, header to add a tab", and an empty workspace's
+  `WorkspaceDropZone` is highlighted. Dragging never prompts.
+- **added** with **+**. This fills the empty workspace's placeholder, or
+  splits the focused panel. A module's `workspace.defaultSize` chooses the
+  side: wider than tall goes below, taller than wide goes beside, otherwise
+  the focused panel's longer side is split (`getSplitPosition`).
+- **clicked**, which follows the click rule.
+
+Panels added to a workspace get a header with their title and a close
+button (`PortalWorkspace` sets the grid's `newChildItem.header` option).
+
+**The click rule.** With no panels, a click adds the panel. With one, it
+replaces it. With several, a prompt anchored to the focused panel offers
+**Replace "‹focused panel›"** (R) or **Open as new tab** (T), which stacks
+the new panel with the focused one. ↑ ↓ and Enter choose, and Escape or a
+click outside cancels. The focused panel is the last panel the user clicked
+or focused, or else the last panel.
+
+The rule is `useOpenPanel()`, for any component inside an
+`OpenPanelProvider` (`useOptionalOpenPanel()` outside one):
+
+```tsx
+const { addPanel, openPanel } = useOpenPanel();
+const result = await openPanel(vuuTableTemplate({ module, serverId, table }));
+// result.action: "add" | "replace" | "stack" | "cancel", result.itemId
+```
+
+`OpenPanelProvider` takes the `gridId` of its GridLayout and uses
+`useGridLayoutCommands(gridId)` from `@vuu-ui/grid-layout`. These commands
+let code outside the grid read its items and `insertTemplate(template,
+placement)`, where placement replaces, splits or stacks with a target item.
+
+Saved state (user-scoped `ApplicationStateProvider` keys):
+
+| Key | |
+| --- | --- |
+| `workspace/palettePinned` | Whether the palette is pinned open. |
+| `workspace/paletteServer` | The server chosen on the Tables tab. |
+| `workspace/recentPanels` | The Recent tab. |
+
+The `VuuPortal/PanelsPalette` showcase example combines `PortalShell`
+`workspaces`, the palette, a few modules and local tables.
+
 ## WindowHost and module launch menus
 
 `PortalAppSwitcher` module links provide **Open in new Tab** and **Open in new
@@ -296,7 +562,8 @@ layout flags allows the two shells to evolve independently.
 ## Context panel
 
 Both `PortalShell` and `WindowShell` host a context panel: a slide-out drawer
-overlaying the right edge of the shell, used for content such as a table
+at the right edge of the shell (in `PortalShell`, overlaying the content or
+[inline](#inline-or-overlay) beside it), used for content such as a table
 column picker or filter container. It is rendered in the `vuu-shell-context`
 landmark element, and the panel itself has the id `context-panel`
 (`VuuShellLocation.ContextPanel`).
@@ -332,6 +599,44 @@ the previous owner's content is removed, and that owner can no longer close the
 panel. The panel also closes when its owner unmounts, on **Escape**, from its
 close button, or when the portal navigates to another route. Focus returns to
 the element that was focused when it opened.
+
+Owners within the shell can claim the panel directly, with
+`useContextPanelSlot()` from `src/context-panel/ContextPanelSlot`:
+`claim(owner, title, onRelease, { autoFocus, keepOnNavigation, placement })` and
+`release(owner)`. With `autoFocus: false` the panel leaves focus where it
+is when it opens, rather than moving it to the close button.
+`onRelease` receives `"close"` (close button, Escape or navigation) or
+`"replaced"` (another owner claimed the panel). An owner claiming with
+`keepOnNavigation` keeps the panel when the portal navigates, and must
+release it when it unmounts. The Panels palette does this.
+
+### Inline or overlay
+
+The shell's panel has a placement, chosen by the owner that claims it:
+
+- `"overlay"` (the default): the panel slides out over the right edge of the
+  shell, covering part of the content.
+- `"inline"`: the panel takes its own column at the right of the shell's grid
+  and the header, banners and content columns shrink to make room. The
+  column's width follows the panel's as it slides out, so the content
+  resizes with the animation, and anything that measures the content (e.g. a
+  GridLayout's drop targets) sees the smaller area.
+
+Neither placement has a scrim: clicking the content doesn't close the panel.
+The panel closes from its close button, Escape, or its owner. The placement
+is applied while the owner holds the panel and kept until the next claim, so
+an inline panel slides closed in its own column. When a claim with a
+different placement replaces the owner, the layout switches. With
+`prefers-reduced-motion: reduce` the panel opens and closes without
+animating.
+
+`claim(..., { placement })` sets it per claim. Claims without one, including
+module content shown with `useContextPanel()`, use the shell's default,
+`PortalShell contextPanel={{ placement }}` (`"overlay"` unless set). The
+host element (`vuu-shell-context`) has `data-placement`, and the panel the
+`vuuContextPanel-overlay` or `vuuContextPanel-inline` class. This is
+separate from a module's `contextPanelPlacement` below, which chooses between
+the shell's panel and one in the module's frame.
 
 ### Placement
 
@@ -517,17 +822,20 @@ core/
 |   |-- context-definitions/
 |   |-- modal-provider/
 |   |-- notifications/
+|   |-- panels-palette/
 |   |-- persistence/
 |   |-- portal-app-switcher/
 |   |-- portal-header/
 |   |-- portal-module-registry/
 |   |-- portal-nav/
 |   |-- portal-shell/
+|   |-- portal-workspaces/
 |   |-- remote-module/
 |   |-- saved-state/
 |   |-- server-monitor/
 |   |-- window-host/
 |   |-- window-shell/
+|   |-- workspace/
 |   |-- index.ts
 |   |-- portal.ts
 |   `-- RemoteModuleDescriptor.ts

@@ -24,6 +24,24 @@ import type {
 } from "../../src/VuuServerDescriptor";
 import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 
+/** Lets React flush pending work until `assertion` passes. */
+const waitForAct = async (assertion: () => void, timeout = 1000) => {
+  const start = Date.now();
+  for (;;) {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    try {
+      assertion();
+      return;
+    } catch (error) {
+      if (Date.now() - start > timeout) {
+        throw error;
+      }
+    }
+  }
+};
+
 /** The config.json served by each module, keyed by its URL. */
 const remoteConfigs = new Map<string, string>();
 // Configs are cached by URL, so every module gets a URL of its own.
@@ -397,10 +415,16 @@ describe("Vuu servers", () => {
           </VuuServerMonitorProvider>
         </AuthenticationProvider>
       );
+      const settled = () => {
+        expect(container.querySelector("output")?.textContent).toBe(
+          "portal:online",
+        );
+        expect(
+          container.querySelector("[data-orders-status]")?.textContent,
+        ).toBe("User session limit exceeded. Close another session and retry.");
+      };
       await act(async () => root.render(render()));
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-      });
+      await waitForAct(settled);
       await act(async () => root.render(render()));
 
       const shell = container.querySelector("header");
@@ -408,12 +432,7 @@ describe("Vuu servers", () => {
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
       });
-      expect(container.querySelector("output")?.textContent).toBe(
-        "portal:online",
-      );
-      expect(container.querySelector("[data-orders-status]")?.textContent).toBe(
-        "User session limit exceeded. Close another session and retry.",
-      );
+      settled();
       expect(
         container
           .querySelector("[data-orders-status]")

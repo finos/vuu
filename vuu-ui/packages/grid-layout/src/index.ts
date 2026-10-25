@@ -7,6 +7,10 @@ export {
   useDragContext,
   useOptionalDragContext,
 } from "./drag-drop-next/DragDropProviderNext";
+export {
+  useTemplateDragState,
+  type TemplateDragState,
+} from "./drag-drop-next/TemplateDragSession";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
   GridDragCoordinator,
@@ -59,8 +63,16 @@ export {
 export { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 export { GridLayoutItem } from "./GridLayoutItem";
 export {
+  GridLayoutCommandsRegistry,
+  type GridLayoutCommands,
+  type GridTemplatePlacement,
+} from "./GridLayoutCommands";
+export {
   GridLayoutProvider,
   GridLayoutDocumentController,
+  useGridComponentSettingsUpdater,
+  useGridLayoutCommands,
+  type GridComponentSettingsUpdater,
   type GridLayoutDocumentChange,
   type GridLayoutDocumentChangeHandler,
   type GridLayoutDocumentStoreListener,

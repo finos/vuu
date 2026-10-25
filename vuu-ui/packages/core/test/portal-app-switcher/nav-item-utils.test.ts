@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   isNestedModule,
+  isPaletteOnlyModule,
+  isRoutedModule,
   type RemoteModuleDescriptor,
 } from "../../src/RemoteModuleDescriptor";
 import { buildNavItems } from "../../src/portal-app-switcher/nav-item-utils";
@@ -34,6 +36,45 @@ describe("isNestedModule", () => {
         isNestedModule({ navLocation }),
       ),
     ).toEqual([false, false, false]);
+  });
+});
+
+describe("isPaletteOnlyModule", () => {
+  const workspace = { paletteGroup: "Trading" };
+  it("is true for a module with workspace metadata and no route", () => {
+    expect(isPaletteOnlyModule({ workspace })).toBe(true);
+    expect(isPaletteOnlyModule({ path: "", workspace })).toBe(true);
+    expect(isPaletteOnlyModule({ path: "/orders", workspace })).toBe(false);
+    expect(isPaletteOnlyModule({})).toBe(false);
+  });
+
+  it("is distinct from a routed module", () => {
+    expect(isRoutedModule({ path: "/orders" })).toBe(true);
+    expect(isRoutedModule({})).toBe(false);
+    expect(isRoutedModule({ path: "" })).toBe(false);
+  });
+});
+
+describe("buildNavItems with palette-only modules", () => {
+  const {
+    navLocation: _n,
+    path: _p,
+    ...paletteOnly
+  } = remoteModule("", "", "palette-only");
+  const modules = [
+    remoteModule("/Trading/Orders", "/orders"),
+    { ...paletteOnly, workspace: { paletteGroup: "Trading" } },
+  ];
+  it.each([
+    "single-level",
+    "two-level",
+  ] as const)("skips them in a %s menu", (menuStyle) => {
+    expect(
+      JSON.stringify(buildNavItems(modules, menuStyle)).includes(
+        "palette-only",
+      ),
+    ).toBe(false);
+    expect(buildNavItems(modules, menuStyle)).toHaveLength(1);
   });
 });
 

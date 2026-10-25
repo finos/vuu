@@ -1,5 +1,6 @@
 export {
   buildPortal,
+  defaultRemoteServeConfig,
   type BuildPortalOptions,
 } from "./build.js";
 export {
@@ -17,6 +18,7 @@ export {
 export {
   createPortalBuildPlan,
   loadPortalBuildConfig,
+  mergeConfigValues,
   parsePortalBuildConfig,
   resolveSharedDependencies,
   type BuildVariantConfig,

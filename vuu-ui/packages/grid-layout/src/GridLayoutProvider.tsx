@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import type {
   GridComponentRendererRegistry,
@@ -40,6 +41,10 @@ import {
 import type { ComponentTemplate } from "./GridLayoutContext";
 import { isTypedComponentTemplate } from "./GridLayoutContext";
 import type { GridCommittedTransition } from "./GridController";
+import {
+  type GridLayoutCommands,
+  GridLayoutCommandsRegistry,
+} from "./GridLayoutCommands";
 
 type GridLayoutOptions = {
   newChildItem: {
@@ -54,6 +59,7 @@ export type DeserializedGridLayout = LegacyDeserializedGridLayout;
 export type { SerializedGridLayout } from "./GridLayoutLegacyCompatibility";
 
 interface GridLayoutProviderContext {
+  commandsRegistry?: GridLayoutCommandsRegistry;
   /**
    * Returns a 'deserialized' copy of a grid layout. Deserialized means the
    * child gridItems have already been reconstituted as React Elements
@@ -65,11 +71,21 @@ interface GridLayoutProviderContext {
     placeholderIds: readonly string[],
   ) => void;
   releaseTemplateComponent?: (id: string) => void;
+  updateComponentSettings?: GridComponentSettingsUpdater;
   renderTemplateComponent?: (
     template: ComponentTemplate,
     id: string,
   ) => ReactElement | undefined;
 }
+
+/**
+ * Replaces the persisted settings of a rendered component. Returns false if
+ * the component is unknown or the settings can't be encoded.
+ */
+export type GridComponentSettingsUpdater = (
+  componentId: string,
+  settings: unknown,
+) => boolean;
 
 const GridLayoutProviderContext = createContext<GridLayoutProviderContext>({});
 
@@ -98,7 +114,11 @@ export interface GridLayoutProviderProps {
 
 export interface GridLayoutDocumentChange {
   readonly document: GridLayoutDocument;
-  readonly kind: GridCommittedTransition["kind"];
+  /**
+   * `settings` when only the settings of a component changed, see
+   * `useGridComponentSettingsUpdater`.
+   */
+  readonly kind: GridCommittedTransition["kind"] | "settings";
   readonly removedComponentInstanceIds: readonly string[];
   readonly revision: number;
 }
@@ -253,6 +273,9 @@ export const GridLayoutProvider = (
     new Map<string, GridComponentSettingsInput>(),
   );
   const templateComponentIds = useRef(new Set<string>());
+  const lastDocument = useRef<
+    { document: GridLayoutDocument; revision: number } | undefined
+  >(undefined);
   const documentResolution = useMemo(
     () => resolveDocument(document, settingsCodecs, componentRenderers),
     [componentRenderers, document, settingsCodecs],
@@ -280,6 +303,12 @@ export const GridLayoutProvider = (
         }
       }
       runtimeComponentSettings.current = nextSettings;
+      if (documentResolution.value) {
+        lastDocument.current = {
+          document: documentResolution.value.document,
+          revision: documentResolution.value.snapshot.revision,
+        };
+      }
       if (
         documentController &&
         documentResolution.value &&
@@ -390,6 +419,8 @@ export const GridLayoutProvider = (
     templateComponentIds.current.delete(id);
   }, []);
 
+  const commandsRegistry = useMemo(() => new GridLayoutCommandsRegistry(), []);
+
   const onCommittedSnapshot = useCallback(
     (
       transition: GridCommittedTransition,
@@ -443,6 +474,10 @@ export const GridLayoutProvider = (
           removedComponentInstanceIds,
           revision: snapshot.revision,
         };
+        lastDocument.current = {
+          document: encoded.value,
+          revision: snapshot.revision,
+        };
         documentController?.publish(change);
         onDocumentChange?.(encoded.value, change);
         for (const componentId of removedComponentInstanceIds) {
@@ -458,15 +493,70 @@ export const GridLayoutProvider = (
     [documentController, onDocumentChange, onDocumentError, settingsCodecs],
   );
 
+  const updateComponentSettings = useCallback<GridComponentSettingsUpdater>(
+    (componentId, settings) => {
+      const current = runtimeComponentSettings.current.get(componentId);
+      if (!current || !settingsCodecs) {
+        return false;
+      }
+      const next: GridComponentSettingsInput = {
+        id: componentId,
+        settings,
+        type: current.type,
+      };
+      const encoded = settingsCodecs.encode(next);
+      if (!encoded.ok) {
+        onDocumentError?.({
+          code: "COMPONENT_SETTINGS_ERROR",
+          componentError: encoded.error,
+          message: encoded.error.message,
+          path: "$.components",
+          version: encoded.error.version,
+        });
+        return false;
+      }
+      runtimeComponentSettings.current.set(componentId, next);
+      const last = lastDocument.current;
+      const index =
+        last?.document.components.findIndex(({ id }) => id === componentId) ??
+        -1;
+      if (!last || index === -1) {
+        // Not yet committed, the settings are included in the next commit.
+        return true;
+      }
+      const components = [...last.document.components];
+      components[index] = encoded.value;
+      const document = immutableGridLayoutDocument({
+        ...last.document,
+        components,
+      });
+      lastDocument.current = { document, revision: last.revision };
+      if (onDocumentChange || documentController) {
+        const change: GridLayoutDocumentChange = {
+          document,
+          kind: "settings",
+          removedComponentInstanceIds: [],
+          revision: last.revision,
+        };
+        documentController?.publish(change);
+        onDocumentChange?.(document, change);
+      }
+      return true;
+    },
+    [documentController, onDocumentChange, onDocumentError, settingsCodecs],
+  );
+
   return (
     <TemplateDragSessionContext.Provider value={templateDragSession}>
       <GridLayoutProviderContext.Provider
         value={{
+          commandsRegistry,
           getSavedGrid,
           onCommittedSnapshot,
           options,
           releaseTemplateComponent,
           renderTemplateComponent,
+          updateComponentSettings,
         }}
       >
         {document !== undefined && decodedDocument === undefined
@@ -489,6 +579,43 @@ export const useGridChangeHandler = () => {
     renderTemplateComponent,
   };
 };
+
+/** @internal used by useGridLayout to register its commands. */
+export const useGridLayoutCommandsRegistry = () =>
+  useContext(GridLayoutProviderContext).commandsRegistry;
+
+const NO_COMMANDS_VERSION = () => 0;
+const NO_SUBSCRIPTION = () => () => undefined;
+
+/**
+ * The commands of a GridLayout mounted within the nearest GridLayoutProvider.
+ * Without a gridId, the first mounted GridLayout. Undefined until the
+ * GridLayout has mounted, or outside a GridLayoutProvider.
+ */
+export const useGridLayoutCommands = (
+  gridId?: string,
+): GridLayoutCommands | undefined => {
+  const registry = useGridLayoutCommandsRegistry();
+  useSyncExternalStore(
+    registry?.subscribe ?? NO_SUBSCRIPTION,
+    registry?.getVersion ?? NO_COMMANDS_VERSION,
+    registry?.getVersion ?? NO_COMMANDS_VERSION,
+  );
+  return registry?.get(gridId);
+};
+
+const NO_SETTINGS_UPDATE: GridComponentSettingsUpdater = () => false;
+
+/**
+ * Lets a component rendered from a GridComponentRendererRegistry replace its
+ * own persisted settings, e.g. to save column configuration. The change is
+ * published as a GridLayoutDocumentChange of kind `settings`. Outside a
+ * GridLayoutProvider the updater does nothing and returns false.
+ */
+export const useGridComponentSettingsUpdater =
+  (): GridComponentSettingsUpdater =>
+    useContext(GridLayoutProviderContext).updateComponentSettings ??
+    NO_SETTINGS_UPDATE;
 
 export const useSavedGrid = () => {
   const { getSavedGrid } = useContext(GridLayoutProviderContext);

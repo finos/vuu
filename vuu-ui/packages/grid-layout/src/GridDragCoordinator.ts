@@ -31,6 +31,11 @@ export type GridDragSource =
 
 export type GridDropIntent =
   | { readonly kind: "replace" }
+  /**
+   * Replace a member of a stack: the dropped item takes the target's tab,
+   * selected, and the target is closed. The drop target is the member.
+   */
+  | { readonly kind: "replace-stack-member"; readonly stackId: StackId }
   | {
       readonly kind: "split";
       readonly position: "east" | "north" | "south" | "west";
@@ -127,6 +132,19 @@ export const createGridDropPlan = (
         stackId: target.targetId,
         type: "select-stack-item",
       });
+    } else if (target.intent.kind === "replace-stack-member") {
+      commands.push({
+        item: source.item,
+        position: "after",
+        stackId: target.intent.stackId,
+        targetItemId: target.targetId,
+        type: "add-stack-item",
+      });
+      commands.push({
+        itemId: source.item.id,
+        stackId: target.intent.stackId,
+        type: "select-stack-item",
+      });
     } else {
       commands.push({ item: source.item, type: "add-item" });
     }
@@ -169,6 +187,34 @@ export const createGridDropPlan = (
         });
       }
       break;
+    case "replace-stack-member": {
+      const { stackId } = target.intent;
+      if (itemId === target.targetId) {
+        return {
+          code: "UNSUPPORTED_DROP",
+          message: "A stack member cannot replace itself",
+        };
+      }
+      if (source.kind === "stack-member" && source.stackId === stackId) {
+        commands.push({ itemId, stackId, type: "select-stack-item" });
+      } else if (source.kind !== "palette-template") {
+        commands.push({
+          fromStackId:
+            source.kind === "stack-member" ? source.stackId : undefined,
+          itemId,
+          position: "after",
+          stackId,
+          targetItemId: target.targetId,
+          type: "move-item-to-stack",
+        });
+      }
+      commands.push({
+        itemId: target.targetId,
+        stackId,
+        type: "remove-stack-item",
+      });
+      break;
+    }
     case "create-stack":
       if (source.kind === "stack-member") {
         return {

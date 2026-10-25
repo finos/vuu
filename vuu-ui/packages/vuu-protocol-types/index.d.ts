@@ -42,6 +42,19 @@ export interface VuuLoginRequest {
   type: "LOGIN";
 }
 
+/**
+ * How a module can be added to a workspace. A module is listed in the
+ * workspace palette only if its descriptor includes this.
+ */
+export interface VuuModuleWorkspaceDescriptor {
+  /** Heading of the palette group the module is listed under. */
+  paletteGroup: string;
+  /** Palette icon as a data URL. Defaults to `navIconUrl`. */
+  iconUrl?: string;
+  /** Initial size, in grid tracks, of an item added to a workspace. */
+  defaultSize?: { cols?: number; rows?: number };
+}
+
 export interface VuuModuleDescriptor {
   clientIdentifier: string;
   description: string;
@@ -60,7 +73,12 @@ export interface VuuModuleDescriptor {
    * it to a value; the portal does not interpret it.
    */
   navBadge?: string;
-  navLocation: string;
+  /**
+   * Where the module appears in the navigation. Optional for a palette-only
+   * module, i.e. one with `workspace` metadata that is only added to
+   * workspaces from the Panels palette.
+   */
+  navLocation?: string;
   /**
    * Order within the module's navigation section, lowest first. Modules
    * without a value follow those with one, in registration order.
@@ -75,9 +93,15 @@ export interface VuuModuleDescriptor {
   mfScope: string;
   mfUrl: string;
   name: string;
-  path: string;
+  /**
+   * The module's route. Optional for a palette-only module, which has no
+   * route and no navigation entry.
+   */
+  path?: string;
   title: string;
   version: number;
+  /** Set to make the module available in the workspace palette. */
+  workspace?: VuuModuleWorkspaceDescriptor;
 }
 
 export interface VuuModuleRecord extends VuuModuleDescriptor {

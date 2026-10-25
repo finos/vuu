@@ -19,6 +19,8 @@ import contextPanelCss from "./ContextPanel.css";
 const classBase = "vuuContextPanel";
 
 export interface ContextPanelProps {
+  /** Focus the close button when the panel expands. Default `true`. */
+  readonly autoFocus?: boolean;
   readonly className?: string;
   readonly content?: ReactElement;
   /** The element within which content is displayed, for a React portal. */
@@ -32,6 +34,7 @@ export interface ContextPanelProps {
 }
 
 export const ContextPanel = ({
+  autoFocus = true,
   className,
   content,
   contentRef,
@@ -72,10 +75,10 @@ export const ContextPanel = ({
   }, [handleClose]);
 
   useLayoutEffect(() => {
-    if (expanded) {
+    if (expanded && autoFocus) {
       closeButtonRef.current?.focus();
     }
-  }, [expanded]);
+  }, [autoFocus, expanded]);
 
   return (
     <div

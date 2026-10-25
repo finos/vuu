@@ -20,11 +20,11 @@ const GRIDITEM_QUERY = ".vuuGridLayoutItem";
 const DROPTARGET_QUERY = "[data-drop-target]";
 
 const removeDropTargetPositionClassName = (el: HTMLElement) => {
-  el.classList.forEach((className) => {
+  for (const className of [...el.classList]) {
     if (className.match(/(north|east|south|west|centre|tabs|header)$/)) {
       el.classList.remove(className);
     }
-  });
+  }
 };
 
 const addDropTargetPositionClassName = (
@@ -318,10 +318,13 @@ export const useAsDropTarget = () => {
       if (dragContext.dragSource === undefined) {
         return;
       }
-      const { dropTarget: currentDropTarget, rect: currentDropTargetRect } = dropTargetStateRef.current;
+      const { dropTarget: currentDropTarget, rect: currentDropTargetRect } =
+        dropTargetStateRef.current;
 
-      if (currentDropTarget?.target && !boxContainsPoint(currentDropTargetRect, evt.clientX, evt.clientY)) {
-
+      if (
+        currentDropTarget?.target &&
+        !boxContainsPoint(currentDropTargetRect, evt.clientX, evt.clientY)
+      ) {
         dropTargetStateRef.current.dropTarget = undefined;
         dropTargetStateRef.current.accepted = false;
         dropTargetStateRef.current.position = undefined;
@@ -329,8 +332,6 @@ export const useAsDropTarget = () => {
 
         removeDropTargetPositionClassName(currentDropTarget.target);
       }
-
-
     },
     [dragContext, leave],
   );
