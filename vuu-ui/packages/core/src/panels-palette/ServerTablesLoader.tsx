@@ -8,6 +8,7 @@ import {
 } from "../auth/AuthenticationProvider";
 import { useData } from "../context-definitions/DataProvider";
 import { useVuuServerConnection } from "../portal-components/vuu-table-component";
+import { useManualVuuServers } from "../portal-servers/ManualVuuServers";
 
 export interface PanelsServerOption {
   readonly connectionId: string;
@@ -17,12 +18,14 @@ export interface PanelsServerOption {
 /**
  * The Vuu servers the portal knows about: the current connection, the
  * portal's own server (or local servers), and the servers used by
- * registered modules. In order, without duplicates.
+ * registered modules, then the servers the user has added. In order, without
+ * duplicates.
  */
 export const usePanelsServerOptions = (): PanelsServerOption[] => {
   const currentConnectionId = useOptionalVuuConnectionId();
   const identity = useOptionalIdentityContext();
   const servers = useVuuServers();
+  const { servers: manualServers } = useManualVuuServers();
   return useMemo(() => {
     const options = new Map<string, PanelsServerOption>();
     const add = (connectionId: string | undefined, websocketUrl?: string) => {
@@ -38,20 +41,23 @@ export const usePanelsServerOptions = (): PanelsServerOption[] => {
       for (const connectionId of identity.localServers.keys()) {
         add(connectionId);
       }
-      return Array.from(options.values());
+    } else {
+      if (identity) {
+        add(
+          identity.portalTarget.connectionId,
+          identity.portalTarget.websocketUrl,
+        );
+      }
+      add(currentConnectionId);
+      for (const { connectionId, websocketUrl } of servers) {
+        add(connectionId, websocketUrl);
+      }
     }
-    if (identity) {
-      add(
-        identity.portalTarget.connectionId,
-        identity.portalTarget.websocketUrl,
-      );
-    }
-    add(currentConnectionId);
-    for (const { connectionId, websocketUrl } of servers) {
+    for (const { connectionId, websocketUrl } of manualServers) {
       add(connectionId, websocketUrl);
     }
     return Array.from(options.values());
-  }, [currentConnectionId, identity, servers]);
+  }, [currentConnectionId, identity, manualServers, servers]);
 };
 
 export type ServerTablesState =

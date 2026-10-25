@@ -38,6 +38,8 @@ import {
   ShellContextPanel,
   ShellContextPanelProvider,
 } from "../context-panel/ShellContextPanel";
+import { ManualVuuServersProvider } from "../portal-servers/ManualVuuServers";
+import { VuuTableChangeServerDialog } from "../portal-servers/VuuTableChangeServerDialog";
 import {
   useOpenModuleId,
   useTrackOpenModule,
@@ -256,78 +258,81 @@ const PortalLayout = () => {
         remoteModules={remoteModules}
       >
         <OpenModuleTracker remoteModules={remoteModules} />
-        <PortalNotificationsProvider
-          openModuleId={openModuleId}
-          options={notifications}
-          portalId={portalId}
-        >
-          <OptionalWorkspaces options={workspaces} portalId={portalId}>
-            <ShellContextPanelProvider
-              defaultPlacement={contextPanel?.placement}
-            >
-              <CloseContextPanelOnNavigation />
-              <div
-                className={clsx(classBase, {
-                  [`${classBase}-noHeader`]: !header,
-                  [`${classBase}-managedNav`]:
-                    navWidth === undefined && managedNavWidth !== undefined,
-                })}
-                id={id}
-                style={
-                  columnWidth === undefined
-                    ? undefined
-                    : ({
-                        "--vuuPortalShell-navWidth": columnWidth,
-                      } as CSSProperties)
-                }
+        <ManualVuuServersProvider>
+          <PortalNotificationsProvider
+            openModuleId={openModuleId}
+            options={notifications}
+            portalId={portalId}
+          >
+            <OptionalWorkspaces options={workspaces} portalId={portalId}>
+              <ShellContextPanelProvider
+                defaultPlacement={contextPanel?.placement}
               >
-                <PortalShellNavContext.Provider value={navContext}>
-                  {portalChromeElements}
-                </PortalShellNavContext.Provider>
-                <div className={`${classBase}-banners`}>
-                  <PortalNotificationBanners />
-                </div>
-                <div className={`${classBase}-content`}>
-                  <Routes>
-                    <Route path="/" element={landingPage} />
-                    <Route path="*" element={landingPage} />
-                    {workspaces ? (
-                      <Route
-                        path={WORKSPACE_ROUTE}
-                        element={
-                          <PortalWorkspace
-                            headerActions={workspaces.headerActions}
-                          />
-                        }
-                      />
-                    ) : null}
-                    {remoteModules.map(({ id, path, ...feature }) => {
-                      return (
+                <CloseContextPanelOnNavigation />
+                {workspaces ? <VuuTableChangeServerDialog /> : null}
+                <div
+                  className={clsx(classBase, {
+                    [`${classBase}-noHeader`]: !header,
+                    [`${classBase}-managedNav`]:
+                      navWidth === undefined && managedNavWidth !== undefined,
+                  })}
+                  id={id}
+                  style={
+                    columnWidth === undefined
+                      ? undefined
+                      : ({
+                          "--vuuPortalShell-navWidth": columnWidth,
+                        } as CSSProperties)
+                  }
+                >
+                  <PortalShellNavContext.Provider value={navContext}>
+                    {portalChromeElements}
+                  </PortalShellNavContext.Provider>
+                  <div className={`${classBase}-banners`}>
+                    <PortalNotificationBanners />
+                  </div>
+                  <div className={`${classBase}-content`}>
+                    <Routes>
+                      <Route path="/" element={landingPage} />
+                      <Route path="*" element={landingPage} />
+                      {workspaces ? (
                         <Route
-                          key={id}
-                          path={getRemoteRoutePath(path)}
+                          path={WORKSPACE_ROUTE}
                           element={
-                            <PortalModuleIdContext.Provider value={id}>
-                              <PortalLinkProvider modulePath={path}>
-                                <PortalModuleRegistryProvider
-                                  remoteModules={remoteModules}
-                                >
-                                  <RemoteModule {...feature} />
-                                </PortalModuleRegistryProvider>
-                              </PortalLinkProvider>
-                            </PortalModuleIdContext.Provider>
+                            <PortalWorkspace
+                              headerActions={workspaces.headerActions}
+                            />
                           }
                         />
-                      );
-                    })}
-                  </Routes>
+                      ) : null}
+                      {remoteModules.map(({ id, path, ...feature }) => {
+                        return (
+                          <Route
+                            key={id}
+                            path={getRemoteRoutePath(path)}
+                            element={
+                              <PortalModuleIdContext.Provider value={id}>
+                                <PortalLinkProvider modulePath={path}>
+                                  <PortalModuleRegistryProvider
+                                    remoteModules={remoteModules}
+                                  >
+                                    <RemoteModule {...feature} />
+                                  </PortalModuleRegistryProvider>
+                                </PortalLinkProvider>
+                              </PortalModuleIdContext.Provider>
+                            }
+                          />
+                        );
+                      })}
+                    </Routes>
+                  </div>
+                  <ShellContextPanel className={`${classBase}-context`} />
+                  <NotificationsPanel />
                 </div>
-                <ShellContextPanel className={`${classBase}-context`} />
-                <NotificationsPanel />
-              </div>
-            </ShellContextPanelProvider>
-          </OptionalWorkspaces>
-        </PortalNotificationsProvider>
+              </ShellContextPanelProvider>
+            </OptionalWorkspaces>
+          </PortalNotificationsProvider>
+        </ManualVuuServersProvider>
       </CommonShell>
     </VuuServerMonitorProvider>
   );

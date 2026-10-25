@@ -1,7 +1,7 @@
 {
   "name": "vuu-table-viewer",
   "version": "1.0.0",
-  "description": "Display a table from a host-scoped Vuu server connection",
+  "description": "Display a Vuu table, given by props or by its route",
   "scripts": {
     "prebuild": "npm run build --workspace @vuu-ui/portal-build",
     "build": "portal-build --config ./portal-build.json",
@@ -27,7 +27,8 @@
     "@vuu-ui/vuu-filters": "4.0.0-alpha.20",
     "@vuu-ui/vuu-protocol-types": "4.0.0-alpha.20",
     "@vuu-ui/vuu-table-types": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-utils": "4.0.0-alpha.20"
+    "@vuu-ui/vuu-utils": "4.0.0-alpha.20",
+    "react-router-dom": "7.18.3"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

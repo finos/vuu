@@ -421,22 +421,27 @@ directly: a `connectionId` plus a `DataSourceProvider` component.
 distinct configured servers, with the titles of the modules that use each one.
 It returns `[]` until configs have loaded and skips modules whose config fails
 to load. The developer modules `vuu-table-browser` and `vuu-table-viewer` use
-it to browse every server's tables. The browser renders one viewer remote per
-server with that server passed as an explicit `vuu` override, and shares the
-selected table through `TableRegistrationContext`; descriptors can't pass props
-to a module. The viewer is registered as a nested module, with an empty
-`navLocation`, so it has no navigation entry of its own.
+it to browse every server's tables. Under Tables › Browse, the nav lists the
+servers (`PortalNavVuuServers`, rendered through `PortalNav
+renderItemChildren`), with their status. Selecting one opens its Browse page,
+`/tables/browse/<server>`: an unsaved workspace with the Panels palette pinned
+on the Tables tab and that server selected. Click, drag or **+** a table to
+open it as a `vuu-table` item, then **Save as workspace** to keep the layout
+as a named workspace. The viewer shows one table, from its props (`serverId`,
+`module`, `table`) or from its own route,
+`/tables/view/<server>/<module>/<table>`. It is registered as a nested module,
+with an empty `navLocation`, so it has no navigation entry of its own.
 
-To browse a Vuu server that no module uses, choose **Add server** in the
-table browser and enter a name, the server's WebSocket URL, and its
+To browse a Vuu server that no module uses, choose **Add server** under
+Tables › Browse and enter a name, the server's WebSocket URL, and its
 authentication (REST) URL. The name must differ from the servers already
-listed. The browser saves these servers with `usePersistedState`, under the
-key `manualServers`, so they are restored next time, and each one can be
-removed from its navigation entry. They are known only to the browser: nothing
-is added to the module registry or the Vuu protocol. The portal authenticates
-to them with the same token exchange as any other server, so the server must
-accept it. In local mode, a manually added server fails to connect unless its
-name matches a local server.
+listed. `PortalShell` saves these servers in the user's saved portal state,
+under the key `servers/manual`, so they are restored next time, and each one
+can be removed from its navigation entry. They are known only to the portal:
+nothing is added to the module registry or the Vuu protocol. The portal
+authenticates to them with the same token exchange as any other server, so the
+server must accept it. In local mode, a manually added server is offline
+unless its name matches a local server.
 
 ### Server status and notifications
 
@@ -782,8 +787,8 @@ The following portal examples demonstrate the complete pattern:
 - `portal-examples/feature-simple-div`: saved state with `usePersistedState`
   and an exported `stateMigrations`;
 - `portal-examples/vuu-table-browser` and `vuu-table-viewer`: developer
-  modules that browse the tables of every server from `useVuuServers()`, with
-  one viewer remote per server, bound through an explicit `vuu` override;
+  modules that browse the tables of every server as an unsaved workspace of
+  `vuu-table` items, and show a single table given by props or route;
 - `portal-examples/portal-host/src/local-vuu-servers.ts`: local servers built
   with `createLocalVuuServer`; and
 - `packages/vuu-data-test/src/user-admin`: a browser-local multi-table VUU

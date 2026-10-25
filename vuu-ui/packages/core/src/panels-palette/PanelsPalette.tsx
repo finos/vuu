@@ -71,6 +71,12 @@ const RECENT_GROUP = "Recently added";
 
 export interface PanelsPaletteProps {
   className?: string;
+  /**
+   * The server initially selected on the Tables tab, instead of the user's
+   * saved choice. Selected even if it is not one of the known servers, so an
+   * unreachable server shows its error.
+   */
+  defaultServerId?: string;
   /** The tab shown initially. Default `"modules"`. */
   defaultTab?: PanelsPaletteTab;
 }
@@ -206,6 +212,7 @@ const LOADING: ServerTablesState = { status: "loading" };
  */
 export const PanelsPalette = ({
   className,
+  defaultServerId,
   defaultTab = "modules",
 }: PanelsPaletteProps) => {
   useComponentCssInjection({
@@ -228,16 +235,27 @@ export const PanelsPalette = ({
     () => new Set(),
   );
   const [activeKey, setActiveKey] = useState<string>();
-  const [savedServerId, setSavedServerId] = useState(() =>
-    load<string>(PANELS_PALETTE_SERVER_KEY),
+  const [savedServerId, setSavedServerId] = useState(
+    () => defaultServerId ?? load<string>(PANELS_PALETTE_SERVER_KEY),
   );
   const [tablesState, setTablesState] = useState<ServerTablesState>(LOADING);
   const listRef = useRef<HTMLDivElement>(null);
   const idBase = useId();
 
   const serverId =
-    servers.find(({ connectionId }) => connectionId === savedServerId)
-      ?.connectionId ?? servers[0]?.connectionId;
+    savedServerId !== undefined &&
+    (savedServerId === defaultServerId ||
+      servers.some(({ connectionId }) => connectionId === savedServerId))
+      ? savedServerId
+      : servers[0]?.connectionId;
+  const serverOptions = useMemo(
+    () =>
+      serverId === undefined ||
+      servers.some(({ connectionId }) => connectionId === serverId)
+        ? servers
+        : [...servers, { connectionId: serverId }],
+    [serverId, servers],
+  );
 
   const groups = useMemo<PanelItemGroup[]>(() => {
     switch (tab) {
@@ -539,13 +557,13 @@ export const PanelsPalette = ({
             </button>
           ))}
         </div>
-        {tab === "tables" && servers.length > 0 ? (
+        {tab === "tables" && serverOptions.length > 0 ? (
           <label className={`${classBase}-server`}>
             <span>Server</span>
             <span className={`${classBase}-serverSelect`}>
               <DatabaseIcon aria-hidden />
               <select onChange={handleServerChange} value={serverId}>
-                {servers.map(({ connectionId, websocketUrl }) => (
+                {serverOptions.map(({ connectionId, websocketUrl }) => (
                   <option key={connectionId} value={connectionId}>
                     {websocketUrl
                       ? `${connectionId} · ${websocketUrl}`

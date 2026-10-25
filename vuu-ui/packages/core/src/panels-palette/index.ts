@@ -49,4 +49,7 @@ export {
   RECENT_PANELS_KEY,
   useRecentPanels,
 } from "./useRecentPanels";
-export { WorkspaceDropZone } from "./WorkspaceDropZone";
+export {
+  WorkspaceDropZone,
+  type WorkspaceDropZoneProps,
+} from "./WorkspaceDropZone";

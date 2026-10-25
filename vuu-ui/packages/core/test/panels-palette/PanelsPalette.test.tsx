@@ -24,7 +24,9 @@ import {
   OpenPanelProvider,
   type OpenPanelResult,
   PANELS_PALETTE_PINNED_KEY,
+  PANELS_PALETTE_SERVER_KEY,
   PanelsPalette,
+  type PanelsPaletteProps,
   PanelsPaletteStateProvider,
   RECENT_PANELS_KEY,
   type RemoteModuleDescriptor,
@@ -199,10 +201,14 @@ describe("PanelsPalette", () => {
 
   const render = async ({
     defaultOpen = true,
+    defaultPinned,
     panels = [ORDERS, CHART],
+    paletteProps,
   }: {
     defaultOpen?: boolean;
+    defaultPinned?: boolean;
     panels?: readonly Panel[];
+    paletteProps?: PanelsPaletteProps;
   } = {}) => {
     await act(async () =>
       root.render(
@@ -212,7 +218,10 @@ describe("PanelsPalette", () => {
             mode="local"
             registry={{ modules }}
           >
-            <PanelsPaletteStateProvider defaultOpen={defaultOpen}>
+            <PanelsPaletteStateProvider
+              defaultOpen={defaultOpen}
+              defaultPinned={defaultPinned}
+            >
               <AddPanelButton />
               <GridLayoutProvider
                 componentRenderers={renderers}
@@ -228,7 +237,7 @@ describe("PanelsPalette", () => {
                     }
                   />
                   <TemplateDragHint />
-                  <PanelsPalette />
+                  <PanelsPalette {...paletteProps} />
                   <CaptureOpenPanel />
                 </OpenPanelProvider>
               </GridLayoutProvider>
@@ -419,6 +428,33 @@ describe("PanelsPalette", () => {
       expect(rowLabels()).toEqual(["Chart"]);
     });
 
+    it("opens on the Tables tab of a given server, not the saved one", async () => {
+      appState.set(PANELS_PALETTE_SERVER_KEY, "other");
+      await render({
+        paletteProps: { defaultServerId: "local-a", defaultTab: "tables" },
+      });
+      expect(button("Tables").getAttribute("aria-selected")).toBe("true");
+      expect(
+        query<HTMLSelectElement>(".vuuPanelsPalette-server select")?.value,
+      ).toBe("local-a");
+      await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
+    });
+
+    it("selects a given server that isn't known, to show its error", async () => {
+      await render({
+        paletteProps: { defaultServerId: "uat", defaultTab: "tables" },
+      });
+      const server = query<HTMLSelectElement>(
+        ".vuuPanelsPalette-server select",
+      );
+      expect(server?.value).toBe("uat");
+      expect([...(server?.options ?? [])].map(({ value }) => value)).toEqual([
+        "local-a",
+        "uat",
+      ]);
+      expect(getTableList).not.toHaveBeenCalled();
+    });
+
     it("collapses and expands a group", async () => {
       await render();
       await click(button("Trading"));
@@ -570,6 +606,16 @@ describe("PanelsPalette", () => {
       expect(query(".vuuPanelsPalette")).not.toBeNull();
       await click(button("Close panels"));
       expect(query(".vuuPanelsPalette")).toBeNull();
+      expect(appState.get(PANELS_PALETTE_PINNED_KEY)).toBe(false);
+    });
+    it("opens pinned by defaultPinned, without saving the pin", async () => {
+      appState.set(PANELS_PALETTE_PINNED_KEY, false);
+      await render({ defaultOpen: false, defaultPinned: true, panels: [] });
+      expect(query(".vuuPanelsPalette")).not.toBeNull();
+      await click(button("Add Orders"));
+      expect(query(".vuuPanelsPalette")).not.toBeNull();
+      await click(button("Unpin panels"));
+      await click(button("Pin panels open"));
       expect(appState.get(PANELS_PALETTE_PINNED_KEY)).toBe(false);
     });
   });

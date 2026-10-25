@@ -24,6 +24,7 @@ export const localPortalModuleRegistry = {
       path: "/administration/modules",
       title: "Module administration",
       version: 1,
+      workspace: { paletteGroup: "Administration" },
     },
 
     {
@@ -41,6 +42,7 @@ export const localPortalModuleRegistry = {
       path: "/administration/users",
       title: "User administration",
       version: 1,
+      workspace: { paletteGroup: "Administration" },
     },
     {
       clientIdentifier: "vuu-table-browser",
@@ -60,10 +62,11 @@ export const localPortalModuleRegistry = {
     },
     {
       clientIdentifier: "vuu-table-viewer",
-      description: "View a table selected in the Vuu Table Browser",
+      description:
+        "View one Vuu table, at /tables/view/<server>/<module>/<table>",
       enabled: true,
       id: "vuu-table-viewer",
-      // Nested module: rendered by vuu-table-browser, not shown in the nav.
+      // Not in the nav: opened by a direct link to a single table.
       navLocation: "",
       accessRole: "vuu-table-viewer-access",
       mfComponent: "VuuTableViewer",
@@ -89,6 +92,7 @@ export const localPortalModuleRegistry = {
       path: "/trading/baskets",
       title: "Basket Trading",
       version: 1,
+      workspace: { defaultSize: { cols: 2, rows: 1 }, paletteGroup: "Trading" },
     },
     {
       clientIdentifier: "vuu-feature-simple-div",
@@ -105,6 +109,7 @@ export const localPortalModuleRegistry = {
       path: "/examples/saved-state-demo",
       title: "Saved state demo",
       version: 1,
+      workspace: { paletteGroup: "Examples" },
     },
   ],
 } satisfies PortalModuleRegistry;

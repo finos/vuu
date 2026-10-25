@@ -7,21 +7,22 @@ import {
 } from "@salt-ds/core";
 import { type FormEvent, type SyntheticEvent, useState } from "react";
 
-/** A Vuu server entered by the user rather than referenced by a module. */
-export type ManualServer = {
-  connectionId: string;
-  restUrl: string;
-  websocketUrl: string;
-};
+import type { ManualVuuServer } from "./ManualVuuServers";
 
+type ManualServer = ManualVuuServer;
 type Field = keyof ManualServer;
-type FieldErrors = Partial<Record<Field, string>>;
+export type ManualServerErrors = Partial<Record<Field, string>>;
 
 const EMPTY_SERVER: ManualServer = {
   connectionId: "",
   restUrl: "",
   websocketUrl: "",
 };
+
+export const INVALID_WEBSOCKET_URL_MESSAGE =
+  "Enter a WebSocket URL (wss or ws)";
+export const INVALID_AUTH_URL_MESSAGE =
+  "Enter an authentication URL (https or http)";
 
 const hasProtocol = (value: string, protocols: string[], base?: string) => {
   try {
@@ -31,25 +32,29 @@ const hasProtocol = (value: string, protocols: string[], base?: string) => {
   }
 };
 
+/**
+ * Checks a server entered by the user: a unique name, a websocket URL and an
+ * authentication URL. Returns an error message per invalid field.
+ */
 export const validateManualServer = (
   server: ManualServer,
   existingIds: ReadonlySet<string>,
-): FieldErrors => {
-  const errors: FieldErrors = {};
+): ManualServerErrors => {
+  const errors: ManualServerErrors = {};
   if (!server.connectionId) {
     errors.connectionId = "Enter a name for the server";
   } else if (existingIds.has(server.connectionId)) {
     errors.connectionId = "A server with this name is already listed";
   }
   if (!hasProtocol(server.websocketUrl, ["ws:", "wss:"])) {
-    errors.websocketUrl = "Enter a ws:// or wss:// URL";
+    errors.websocketUrl = INVALID_WEBSOCKET_URL_MESSAGE;
   }
   // Relative URLs resolve against the page, e.g. a proxied authn endpoint.
   if (
     !server.restUrl ||
     !hasProtocol(server.restUrl, ["http:", "https:"], document.baseURI)
   ) {
-    errors.restUrl = "Enter an http:// or https:// URL";
+    errors.restUrl = INVALID_AUTH_URL_MESSAGE;
   }
   return errors;
 };
@@ -68,17 +73,21 @@ const FIELDS: { field: Field; label: string; placeholder: string }[] = [
   },
 ];
 
+export interface AddServerFormProps {
+  /** Names already in use. */
+  existingIds: ReadonlySet<string>;
+  onAdd: (server: ManualVuuServer) => void;
+  onCancel: () => void;
+}
+
+/** Name, websocket URL and authentication URL of a Vuu server to add. */
 export const AddServerForm = ({
   existingIds,
   onAdd,
   onCancel,
-}: {
-  existingIds: ReadonlySet<string>;
-  onAdd: (server: ManualServer) => void;
-  onCancel: () => void;
-}) => {
+}: AddServerFormProps) => {
   const [values, setValues] = useState<ManualServer>(EMPTY_SERVER);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<ManualServerErrors>({});
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -103,7 +112,7 @@ export const AddServerForm = ({
   return (
     <form
       aria-label="Add Vuu server"
-      className="vuuTableBrowser-add-server"
+      className="vuuAddServerForm"
       noValidate
       onSubmit={handleSubmit}
     >
@@ -124,7 +133,7 @@ export const AddServerForm = ({
           ) : null}
         </FormField>
       ))}
-      <div className="vuuTableBrowser-add-server-actions">
+      <div className="vuuAddServerForm-actions">
         <Button appearance="transparent" onClick={onCancel} type="button">
           Cancel
         </Button>

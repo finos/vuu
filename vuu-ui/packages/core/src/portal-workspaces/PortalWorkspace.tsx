@@ -15,7 +15,10 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { PanelsPalette } from "../panels-palette/PanelsPalette";
+import {
+  PanelsPalette,
+  type PanelsPaletteProps,
+} from "../panels-palette/PanelsPalette";
 import {
   PanelsPaletteStateProvider,
   usePanelsPaletteState,
@@ -43,6 +46,13 @@ const layoutOptions = { newChildItem: { header: true } };
 
 export interface PortalWorkspaceGridProps {
   controller: WorkspaceController;
+  /**
+   * Placeholder content of an empty workspace when the Panels palette is
+   * available. Defaults to a `WorkspaceDropZone`.
+   */
+  emptyContent?: ReactNode;
+  /** Props of the Panels palette, e.g. its initial tab and server. */
+  paletteProps?: PanelsPaletteProps;
 }
 
 /**
@@ -52,6 +62,8 @@ export interface PortalWorkspaceGridProps {
  */
 export const PortalWorkspaceGrid = ({
   controller,
+  emptyContent = <WorkspaceDropZone />,
+  paletteProps,
 }: PortalWorkspaceGridProps) => {
   const paletteAvailable = usePanelsPaletteState()?.available === true;
   const [isEmpty, setIsEmpty] = useState(
@@ -90,7 +102,7 @@ export const PortalWorkspaceGrid = ({
               placeholderContent={
                 isEmpty ? (
                   paletteAvailable ? (
-                    <WorkspaceDropZone />
+                    emptyContent
                   ) : (
                     <WorkspaceStartPanel />
                   )
@@ -99,7 +111,7 @@ export const PortalWorkspaceGrid = ({
             />
             <TemplateDragHint />
           </div>
-          {paletteAvailable ? <PanelsPalette /> : null}
+          {paletteAvailable ? <PanelsPalette {...paletteProps} /> : null}
         </OpenPanelProvider>
       </GridLayoutProvider>
     </WorkspacePersistentStateProvider>

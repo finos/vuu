@@ -827,6 +827,20 @@ describe("workspace runtime", () => {
       );
     });
 
+    it("creates a named workspace from a snapshot", async () => {
+      const service = new MemoryService("alice");
+      await render(service, systemWorkspaces);
+      const layout = snapshot("browse");
+      let id: string | undefined;
+      await act(async () => {
+        id = await latest?.createWorkspace("SIMUL prices", layout);
+      });
+      const saved = service.definitions.get(id ?? "");
+      expect(saved?.name).toBe("SIMUL prices");
+      expect(saved?.snapshot).toEqual(layout);
+      expect(latest?.activeWorkspaceId).toBe(id);
+    });
+
     it("creates, activates, renames, edits and deletes named workspaces", async () => {
       const service = new MemoryService("alice");
       await render(service, systemWorkspaces);

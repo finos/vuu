@@ -123,8 +123,14 @@ export interface WorkspaceContextValue {
     snapshot: WorkspaceSnapshotV1,
     title?: string,
   ) => Promise<string>;
-  /** Creates, persists, opens and activates a new empty named workspace. Resolves to its id. */
-  readonly createWorkspace: (name?: string) => Promise<string>;
+  /**
+   * Creates, persists, opens and activates a new named workspace, empty
+   * unless a snapshot is given. Resolves to its id.
+   */
+  readonly createWorkspace: (
+    name?: string,
+    snapshot?: WorkspaceSnapshotV1,
+  ) => Promise<string>;
   /** Deletes a named workspace and closes any open instance of it. System workspaces cannot be deleted. */
   readonly deleteNamedWorkspace: (definitionId: string) => Promise<void>;
   readonly error?: Error;
@@ -1154,7 +1160,10 @@ export const WorkspaceProvider = ({
   );
 
   const createWorkspace = useCallback(
-    async (name = "Untitled"): Promise<string> => {
+    async (
+      name = "Untitled",
+      snapshot: WorkspaceSnapshotV1 = emptyWorkspaceSnapshot,
+    ): Promise<string> => {
       const trimmedName = name.trim();
       if (!trimmedName) {
         throw new Error("Workspace name must not be empty");
@@ -1165,7 +1174,7 @@ export const WorkspaceProvider = ({
         createdAt: now,
         id: createInstanceId(),
         name: trimmedName,
-        snapshot: emptyWorkspaceSnapshot,
+        snapshot,
         updatedAt: now,
         version: NAMED_WORKSPACE_DEFINITION_VERSION,
       };

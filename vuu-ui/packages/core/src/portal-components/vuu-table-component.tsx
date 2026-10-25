@@ -38,6 +38,7 @@ import {
   useVuuServers,
 } from "../auth/AuthenticationProvider";
 import { useData } from "../context-definitions/DataProvider";
+import { useManualVuuServers } from "../portal-servers/ManualVuuServers";
 import type { WorkspaceComponentRegistration } from "../workspace/workspace-component-registry";
 import {
   invalidSettings,
@@ -195,6 +196,7 @@ export const useVuuServerConnection = (
   const currentConnectionId = useOptionalVuuConnectionId();
   const identity = useOptionalIdentityContext();
   const servers = useVuuServers();
+  const { servers: manualServers } = useManualVuuServers();
   return useMemo<ServerResolution>(() => {
     // In local mode the current connection id is "local", which a local
     // server may also be called.
@@ -226,10 +228,23 @@ export const useVuuServerConnection = (
       const { moduleTitles: _moduleTitles, ...connection } = server;
       return { connection, status: "connection" };
     }
+    const manualServer = manualServers.find(
+      ({ connectionId }) => connectionId === serverId,
+    );
+    if (manualServer) {
+      return { connection: { ...manualServer }, status: "connection" };
+    }
     return identity.moduleServerMap.settled
       ? { status: "unavailable" }
       : { status: "pending" };
-  }, [currentConnectionId, identity, resolveServer, serverId, servers]);
+  }, [
+    currentConnectionId,
+    identity,
+    manualServers,
+    resolveServer,
+    serverId,
+    servers,
+  ]);
 };
 
 const getErrorMessage = (error: unknown) =>
