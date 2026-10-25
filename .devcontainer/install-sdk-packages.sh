@@ -4,8 +4,8 @@
 source "/usr/local/sdkman/bin/sdkman-init.sh"
 
 # latest stable Maven (also what ./mvnw pins in .mvn/wrapper/maven-wrapper.properties)
-sdk install maven 3.9.16
-sdk default maven 3.9.16
+sdk install maven 3.10.0
+sdk default maven 3.10.0
 
 # matches vuu.scala.version in the root pom.xml
 sdk install scala 3.3.8
