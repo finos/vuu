@@ -55,7 +55,7 @@ import {
   type PortalWorkspacesOptions,
   PortalWorkspacesProvider,
 } from "../portal-workspaces/PortalWorkspacesProvider";
-import { WORKSPACE_ROUTE } from "../portal-workspaces/workspace-routing";
+import { WORKSPACE_ROUTE_PATTERN } from "../portal-workspaces/workspace-routing";
 import { WindowHost } from "../window-host/WindowHost";
 import { WINDOW_HOST_ROUTE } from "../window-host/window-host-routing";
 import {
@@ -297,7 +297,7 @@ const PortalLayout = () => {
                       <Route path="*" element={landingPage} />
                       {workspaces ? (
                         <Route
-                          path={WORKSPACE_ROUTE}
+                          path={WORKSPACE_ROUTE_PATTERN}
                           element={
                             <PortalWorkspace
                               headerActions={workspaces.headerActions}

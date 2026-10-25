@@ -2,12 +2,25 @@ import {
   createPath,
   NavLink,
   parsePath,
+  useHref,
   type NavLinkProps,
   type To,
 } from "react-router-dom";
-import { createContext, useContext, type ReactNode } from "react";
+import {
+  createContext,
+  type MouseEvent,
+  type ReactNode,
+  useCallback,
+  useContext,
+} from "react";
 
 interface PortalLinkContextValue {
+  /**
+   * Navigates the portal host, when the module has its own isolated router,
+   * e.g. a module rendered in a workspace item. `PortalLink`s with
+   * `routeScope="portal"` use it to leave the module.
+   */
+  hostNavigate?: (to: string) => void;
   modulePath: string;
   windowPath?: string;
 }
@@ -22,10 +35,11 @@ interface PortalLinkProviderProps extends PortalLinkContextValue {
 
 export const PortalLinkProvider = ({
   children,
+  hostNavigate,
   modulePath,
   windowPath,
 }: PortalLinkProviderProps) => (
-  <PortalLinkContext.Provider value={{ modulePath, windowPath }}>
+  <PortalLinkContext.Provider value={{ hostNavigate, modulePath, windowPath }}>
     {children}
   </PortalLinkContext.Provider>
 );
@@ -88,8 +102,21 @@ const toWindowDestination = (
   };
 };
 
-/** A NavLink that keeps module navigation inside its standalone window route. */
+const isPlainLeftClick = (event: MouseEvent<HTMLAnchorElement>) =>
+  event.button === 0 &&
+  !event.metaKey &&
+  !event.altKey &&
+  !event.ctrlKey &&
+  !event.shiftKey &&
+  (!event.currentTarget.target || event.currentTarget.target === "_self");
+
+/**
+ * A NavLink that keeps module navigation inside its standalone window route.
+ * With `routeScope="portal"`, in a module with an isolated router, it
+ * navigates the portal host instead of the module's router.
+ */
 export const PortalLink = ({
+  onClick,
   routeScope = "module",
   to,
   ...props
@@ -99,6 +126,20 @@ export const PortalLink = ({
     context?.windowPath && routeScope === "module"
       ? toWindowDestination(to, context.modulePath, context.windowPath)
       : to;
+  const href = useHref(destination);
+  const hostNavigate =
+    routeScope === "portal" ? context?.hostNavigate : undefined;
 
-  return <NavLink {...props} to={destination} />;
+  const handleClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      onClick?.(event);
+      if (hostNavigate && !event.defaultPrevented && isPlainLeftClick(event)) {
+        event.preventDefault();
+        hostNavigate(href);
+      }
+    },
+    [hostNavigate, href, onClick],
+  );
+
+  return <NavLink {...props} onClick={handleClick} to={destination} />;
 };

@@ -3,13 +3,21 @@ import { matchPath } from "react-router-dom";
 /** The portal route of a workspace. */
 export const WORKSPACE_ROUTE = "/workspaces/:workspaceId";
 
+/**
+ * The route pattern the shell mounts a workspace at. It matches paths
+ * beneath the workspace too, so the workspace stays mounted, rather than the
+ * page going blank, if anything navigates to a sub-path.
+ */
+export const WORKSPACE_ROUTE_PATTERN = `${WORKSPACE_ROUTE}/*`;
+
 /** The portal path of the workspace with this id. */
 export const getWorkspacePath = (workspaceId: string) =>
   `/workspaces/${encodeURIComponent(workspaceId)}`;
 
 /** The id of the workspace at this path, if it is a workspace route. */
 export const getWorkspaceIdFromPath = (pathname: string) => {
-  const workspaceId = matchPath(WORKSPACE_ROUTE, pathname)?.params.workspaceId;
+  const workspaceId = matchPath(WORKSPACE_ROUTE_PATTERN, pathname)?.params
+    .workspaceId;
   if (workspaceId === undefined) {
     return undefined;
   }

@@ -1,7 +1,9 @@
 import {
   AuthenticationProvider,
   DataProvider,
+  LocalServerMonitor,
   type LocalVuuServer,
+  ModuleServerMap,
   WorkspaceProvider,
 } from "@vuu-ui/core";
 import {
@@ -13,6 +15,7 @@ import {
   MemoryWorkspacePersistenceService,
   PANELS_PALETTE_PINNED_KEY,
   type PortalPersistenceService,
+  VuuServerMonitorProvider,
 } from "@vuu-ui/core/portal";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { act, type ReactNode } from "react";
@@ -144,13 +147,15 @@ describe("VuuTableBrowser", () => {
   });
 
   const render = async ({
+    monitor,
     path = "/tables/browse/simul",
     workspaces = true,
   }: {
+    monitor?: LocalServerMonitor;
     path?: string;
     workspaces?: boolean;
   } = {}) => {
-    const routes = (
+    const browser = (
       <Routes>
         <Route element={<VuuTableBrowser />} path="/tables/browse/*" />
         <Route
@@ -158,6 +163,13 @@ describe("VuuTableBrowser", () => {
           path="/workspaces/:id"
         />
       </Routes>
+    );
+    const routes = monitor ? (
+      <VuuServerMonitorProvider monitor={monitor}>
+        {browser}
+      </VuuServerMonitorProvider>
+    ) : (
+      browser
     );
     await act(async () =>
       root.render(
@@ -509,6 +521,59 @@ describe("VuuTableBrowser", () => {
       await click(button("Change server", alert as Element));
       expect(location).toBe("/tables/browse");
       expect(queryAll("ul[aria-label='Vuu servers'] a")).toHaveLength(2);
+    });
+
+    const createMonitor = () =>
+      new LocalServerMonitor({
+        localServerIds: localServers.map(({ connectionId }) => connectionId),
+        moduleServerMap: new ModuleServerMap({
+          loadConfig: async () => ({}),
+          modules: [],
+          portalConnectionId: "local",
+        }),
+      });
+
+    it("offers Retry and Change server for a known server that is down", async () => {
+      const monitor = createMonitor();
+      monitor.setPresence("simul", "offline");
+      const retry = vi.spyOn(monitor, "retry");
+      await render({ monitor, path: "/tables/browse/simul" });
+
+      const alert = query("[role='alert']");
+      expect(alert?.textContent).toContain("simul is unreachable");
+      await click(button("Retry", alert as Element));
+      expect(retry).toHaveBeenCalledWith("simul");
+      // The palette does not try to list the tables of a server that is down.
+      expect(getTableList).not.toHaveBeenCalled();
+
+      await click(button("Change server", alert as Element));
+      expect(location).toBe("/tables/browse");
+    });
+
+    it("recovers when the server comes back", async () => {
+      const monitor = createMonitor();
+      monitor.setPresence("simul", "offline");
+      await render({ monitor, path: "/tables/browse/simul" });
+      expect(query("[role='alert']")?.textContent).toContain(
+        "simul is unreachable",
+      );
+
+      await act(async () => monitor.setPresence("simul", undefined));
+
+      await vi.waitFor(() => expect(query("[role='alert']")).toBeNull());
+      expect(query(".vuuWorkspaceDropZone h4")?.textContent).toBe(
+        "Pick a table",
+      );
+      await waitForTables();
+      expect(getTableList).toHaveBeenCalledTimes(1);
+    });
+
+    it("treats a server that is reconnecting as reachable", async () => {
+      const monitor = createMonitor();
+      monitor.setPresence("simul", "degraded");
+      await render({ monitor, path: "/tables/browse/simul" });
+      expect(query("[role='alert']")).toBeNull();
+      await waitForTables();
     });
   });
 });

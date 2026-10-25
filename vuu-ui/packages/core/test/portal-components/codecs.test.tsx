@@ -38,9 +38,23 @@ describe("portalModuleSettingsCodec", () => {
     [{ moduleId: 42 }, "$.moduleId"],
     [{ moduleId: "a", props: "x" }, "$.props"],
     [{ moduleId: "a", props: [1] }, "$.props"],
+    [{ moduleId: "a", location: "" }, "$.location"],
+    [{ moduleId: "a", location: 7 }, "$.location"],
   ])("rejects %j at %s", (value, path) => {
     const result = portalModuleSettingsCodec.decode(value as never);
     expect(result).toMatchObject({ error: { path }, ok: false });
+  });
+
+  it("keeps the module's saved location", () => {
+    expect(
+      portalModuleSettingsCodec.decode({
+        location: "/admin/users",
+        moduleId: "a",
+      }),
+    ).toEqual({
+      ok: true,
+      value: { location: "/admin/users", moduleId: "a" },
+    });
   });
 
   it("drops unknown keys when encoding", () => {

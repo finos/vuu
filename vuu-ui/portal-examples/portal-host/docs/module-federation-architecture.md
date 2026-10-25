@@ -180,7 +180,7 @@ const { renderers, settingsCodecs } = createPortalComponentRegistries();
 >
   <PortalNav
     renderItemChildren={(item) =>
-      item.moduleId === "vuu-table-browser" ? (
+      item.mfScope === "vuuTableBrowser" ? (
         <PortalNavVuuServers basePath={item.href} />
       ) : null
     }
@@ -195,6 +195,9 @@ const { renderers, settingsCodecs } = createPortalComponentRegistries();
   service. The registries render `portal-module` and `vuu-table` items.
 - `contextPanel.placement: "inline"` shows the Panels palette beside the
   content rather than over it.
+- `renderItemChildren` recognises the table browser's nav item by its
+  `mfScope`, which the module's build fixes. Don't match `moduleId`: a
+  server-supplied module registry assigns its own, often numeric, ids.
 - `PortalNavVuuServers` lists, under Tables › Browse, the Vuu servers the
   portal knows (its own, those of registered modules, or the local servers),
   each with its status, and an **Add server** entry. Servers the user adds are

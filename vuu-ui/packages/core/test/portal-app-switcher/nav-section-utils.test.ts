@@ -114,7 +114,9 @@ describe("buildNavSections", () => {
         items: [
           {
             href: "/orders",
+            mfScope: "test",
             moduleId: 7,
+            moduleName: "test",
             navBadge: "workingOrders",
             navIconName: "orders",
             navIconUrl: "data:image/svg+xml,orders",
@@ -125,6 +127,22 @@ describe("buildNavSections", () => {
         ],
       },
     ]);
+  });
+
+  it("identifies a module by its federation scope, whatever its registry id", () => {
+    // A server-supplied registry assigns its own numeric ids.
+    const [{ items }] = buildNavSections([
+      remoteModule("/Tables/Browse", "/tables/browse", {
+        id: 1042,
+        mfScope: "vuuTableBrowser",
+        name: "table-browser",
+      }),
+    ]);
+    expect(items[0]).toMatchObject({
+      mfScope: "vuuTableBrowser",
+      moduleId: 1042,
+      moduleName: "table-browser",
+    });
   });
 
   it("leaves optional metadata undefined when missing", () => {

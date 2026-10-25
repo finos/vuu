@@ -423,7 +423,10 @@ It returns `[]` until configs have loaded and skips modules whose config fails
 to load. The developer modules `vuu-table-browser` and `vuu-table-viewer` use
 it to browse every server's tables. Under Tables › Browse, the nav lists the
 servers (`PortalNavVuuServers`, rendered through `PortalNav
-renderItemChildren`), with their status. Selecting one opens its Browse page,
+renderItemChildren`), with their status. The host recognises the Browse item
+by the module's `mfScope` (`vuuTableBrowser`), not its `moduleId`: a
+server-supplied registry assigns its own, often numeric, ids. Selecting a
+server opens its Browse page,
 `/tables/browse/<server>`: an unsaved workspace with the Panels palette pinned
 on the Tables tab and that server selected. Click, drag or **+** a table to
 open it as a `vuu-table` item, then **Save as workspace** to keep the layout

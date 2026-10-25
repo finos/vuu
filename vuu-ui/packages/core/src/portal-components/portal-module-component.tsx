@@ -1,16 +1,19 @@
-import type {
-  GridComponentSettingsCodec,
-  GridSettingsCodecResult,
-  JsonValue,
-  TypedComponentTemplate,
+import { PortalModuleInstanceContext } from "@vuu-ui/core";
+import {
+  type GridComponentSettingsCodec,
+  type GridSettingsCodecResult,
+  type JsonValue,
+  type TypedComponentTemplate,
+  useGridComponentSettingsUpdater,
 } from "@vuu-ui/grid-layout";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useCallback, useMemo, useRef } from "react";
 import { useOptionalIdentityContext } from "../auth/AuthenticationProvider";
 import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
 import { usePortalModuleRegistry } from "../portal-module-registry/PortalModuleRegistry";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { RemoteModule } from "../remote-module/RemoteModule";
 import type { WorkspaceComponentRegistration } from "../workspace/workspace-component-registry";
+import { IsolatedModuleRouter } from "./IsolatedModuleRouter";
 import {
   invalidSettings,
   isJsonValue,
@@ -30,6 +33,12 @@ export interface PortalModuleComponentSettings {
   readonly moduleId: string;
   /** Extra props passed to the module's component. */
   readonly props?: JsonValue;
+  /**
+   * The module's own location, e.g. `/admin/users/list`. A module in a
+   * workspace item routes in memory, never changing the portal URL, and its
+   * location is saved here so the item reopens where it was left.
+   */
+  readonly location?: string;
 }
 
 export const isPortalModuleComponentSettings = (
@@ -38,7 +47,8 @@ export const isPortalModuleComponentSettings = (
   isRecord(value) &&
   isNonEmptyString(value.moduleId) &&
   (value.props === undefined ||
-    (isRecord(value.props) && isJsonValue(value.props)));
+    (isRecord(value.props) && isJsonValue(value.props))) &&
+  (value.location === undefined || isNonEmptyString(value.location));
 
 const validatePortalModuleSettings = (
   value: unknown,
@@ -58,10 +68,23 @@ const validatePortalModuleSettings = (
   if (value.props !== undefined && !isJsonValue(value.props)) {
     return invalidSettings("$.props", "portal-module props must be JSON");
   }
-  const settings: PortalModuleComponentSettings =
-    value.props === undefined
-      ? { moduleId: value.moduleId }
-      : { moduleId: value.moduleId, props: value.props as JsonValue };
+  if (value.location !== undefined && !isNonEmptyString(value.location)) {
+    return invalidSettings(
+      "$.location",
+      "portal-module location must be a non-empty string",
+    );
+  }
+  const settings: {
+    moduleId: string;
+    props?: JsonValue;
+    location?: string;
+  } = { moduleId: value.moduleId };
+  if (value.props !== undefined) {
+    settings.props = value.props as JsonValue;
+  }
+  if (value.location !== undefined) {
+    settings.location = value.location;
+  }
   return { ok: true, value: settings };
 };
 
@@ -154,9 +177,18 @@ const renderRemoteModule: PortalModuleRenderer = (descriptor, props) => {
 
 export interface PortalModuleComponentProps
   extends PortalModuleComponentSettings,
-    PortalModuleComponentOptions {}
+    PortalModuleComponentOptions {
+  /**
+   * The id of the workspace item rendering the module. It identifies this
+   * module instance (see `usePortalModuleInstanceId`) and is used to save
+   * the module's location with the item.
+   */
+  componentId?: string;
+}
 
 export const PortalModuleComponent = ({
+  componentId,
+  location,
   moduleId,
   props,
   renderModule = renderRemoteModule,
@@ -165,6 +197,24 @@ export const PortalModuleComponent = ({
   const descriptor = useMemo(
     () => findPortalModule(modules, moduleId),
     [moduleId, modules],
+  );
+  const updateSettings = useGridComponentSettingsUpdater();
+  const propsRef = useRef(props);
+  propsRef.current = props;
+
+  const handleLocationChange = useCallback(
+    (nextLocation: string) => {
+      if (componentId !== undefined) {
+        const currentProps = propsRef.current;
+        updateSettings(
+          componentId,
+          currentProps === undefined
+            ? { location: nextLocation, moduleId }
+            : { location: nextLocation, moduleId, props: currentProps },
+        );
+      }
+    },
+    [componentId, moduleId, updateSettings],
   );
 
   if (!descriptor || descriptor.enabled === false) {
@@ -183,7 +233,20 @@ export const PortalModuleComponent = ({
 
   return (
     <PortalModuleIdContext.Provider value={descriptor.id}>
-      {renderModule(descriptor, props as Record<string, unknown> | undefined)}
+      <PortalModuleInstanceContext.Provider value={componentId}>
+        <IsolatedModuleRouter
+          // A different module starts afresh, at its own path.
+          key={descriptor.id}
+          initialLocation={location}
+          modulePath={descriptor.path}
+          onLocationChange={handleLocationChange}
+        >
+          {renderModule(
+            descriptor,
+            props as Record<string, unknown> | undefined,
+          )}
+        </IsolatedModuleRouter>
+      </PortalModuleInstanceContext.Provider>
     </PortalModuleIdContext.Provider>
   );
 };
@@ -192,8 +255,12 @@ export const createPortalModuleComponentRegistration = ({
   renderModule,
 }: PortalModuleComponentOptions = {}): WorkspaceComponentRegistration<PortalModuleComponentSettings> => ({
   codec: portalModuleSettingsCodec,
-  render: (settings) => (
-    <PortalModuleComponent {...settings} renderModule={renderModule} />
+  render: (settings, componentId) => (
+    <PortalModuleComponent
+      {...settings}
+      componentId={componentId}
+      renderModule={renderModule}
+    />
   ),
   type: PORTAL_MODULE_COMPONENT_TYPE,
 });

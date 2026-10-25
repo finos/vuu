@@ -6,7 +6,22 @@ import { toNavigationPath } from "./nav-item-utils";
 
 export interface PortalNavItem {
   href: string;
+  /**
+   * The module's Module Federation scope (`mfScope`), e.g.
+   * `"vuuTableBrowser"`. Use it to recognise a particular module, e.g. in
+   * `renderItemChildren`: it is set by the module's own build and must
+   * match for the module to load, so it is the same whichever registry
+   * supplies the module. The `moduleId` is not: a server-supplied registry
+   * assigns its own, often numeric, ids.
+   */
+  mfScope: string;
+  /**
+   * The module's id in the registry that supplied it. It may be an opaque,
+   * e.g. numeric, id; prefer `mfScope` to recognise a module.
+   */
   moduleId: RemoteModuleDescriptor["id"];
+  /** The module's unique name in its registry. */
+  moduleName: string;
   navBadge?: string;
   navIconName?: string;
   navIconUrl?: string;
@@ -60,6 +75,8 @@ export const buildNavSections = (
     }
     const {
       id,
+      mfScope,
+      name,
       navBadge,
       navIconName,
       navIconUrl,
@@ -83,7 +100,9 @@ export const buildNavSections = (
     }
     section.items.push({
       href,
+      mfScope,
       moduleId: id,
+      moduleName: name,
       navBadge,
       navIconName,
       navIconUrl,
