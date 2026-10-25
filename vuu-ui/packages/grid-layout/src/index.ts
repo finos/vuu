@@ -6,6 +6,10 @@ export {
   DragDropProviderNext,
   useOptionalDragContext,
 } from "./drag-drop-next/DragDropProviderNext";
+export {
+  useTemplateDragState,
+  type TemplateDragState,
+} from "./drag-drop-next/TemplateDragSession";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
   GridDragCoordinator,
