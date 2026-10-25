@@ -1,5 +1,6 @@
 import {
   asReactElements,
+  type GridLayoutDropPosition,
   isGridLayoutSplitDirection,
   isSimpleStateValue,
   uuid,
@@ -34,7 +35,12 @@ import {
   sourceIsTemplate,
   isTypedComponentTemplate,
   type ComponentTemplate,
+  type TemplateSource,
 } from "./GridLayoutContext";
+import type {
+  GridLayoutCommands,
+  GridTemplatePlacement,
+} from "./GridLayoutCommands";
 import {
   GridLayoutItem,
   type GridLayoutItemProps,
@@ -44,6 +50,7 @@ import { GridLayoutModel } from "./GridLayoutModel";
 import {
   type GridLayoutDragEndHandler,
   useGridChangeHandler,
+  useGridLayoutCommandsRegistry,
   useGridLayoutOptions,
   useSavedGrid,
 } from "./GridLayoutProvider";
@@ -89,6 +96,37 @@ type NonContentGridItems = {
   placeholders: Array<{ id: string; snapshotId: string }>;
   splitters: ISplitter[];
   stackIds: string[];
+};
+
+/** True when the drag source is the grid item itemId, e.g. a dragged tab. */
+const isDragOfItem = (
+  dragSource: Parameters<GridLayoutDropHandler>[1],
+  itemId: string,
+) =>
+  sourceIsComponent(dragSource)
+    ? dragSource.id === itemId
+    : sourceIsTabbedComponent(dragSource)
+      ? dragSource.tab.id === itemId
+      : false;
+
+/**
+ * The drop intent of a drop position. An edge splits the target and the
+ * header stacks with it. The centre replaces the target, or, when the target
+ * is a member of a stack, replaces that member's tab.
+ */
+const getDropIntent = (
+  position: GridLayoutDropPosition,
+  targetGridItem?: GridModelChildItem,
+): GridDropIntent | undefined => {
+  if (isGridLayoutSplitDirection(position)) {
+    return { kind: "split", position };
+  } else if (position === "centre") {
+    return targetGridItem && isStackedItem(targetGridItem)
+      ? { kind: "replace-stack-member", stackId: targetGridItem.stackId }
+      : { kind: "replace" };
+  } else if (position === "header") {
+    return { kind: "create-stack" };
+  }
 };
 
 const layoutDescriptorFromChildren = (
@@ -157,6 +195,32 @@ const assertNeverGridLayoutAction = (action: never): never => {
  * Create the list of GridLayoutItem elements to be rendered.
  * The GridLayoutItem elements may be explicitly coded in JSX.
  */
+/**
+ * Keep children that were already rendered in their existing order and append
+ * new ones. Grid placement comes from CSS grid-area, so DOM order carries no
+ * meaning, but if React reorders sibling nodes it re-inserts them, which resets
+ * the scroll position of any scrollable content without a scroll event.
+ */
+export const preserveChildOrder = (
+  previous: GridLayoutItemElements,
+  next: GridLayoutItemElements,
+): GridLayoutItemElements => {
+  const previousIndex = new Map(
+    previous.map((child, index) => [child.props.id, index]),
+  );
+  return next
+    .map((child, index) => ({ child, index }))
+    .sort((a, b) => {
+      const pa = previousIndex.get(a.child.props.id);
+      const pb = previousIndex.get(b.child.props.id);
+      if (pa !== undefined && pb !== undefined) return pa - pb;
+      if (pa !== undefined) return -1;
+      if (pb !== undefined) return 1;
+      return a.index - b.index;
+    })
+    .map(({ child }) => child);
+};
+
 export const useGridLayout = ({
   children: childrenProp,
   id,
@@ -369,10 +433,15 @@ export const useGridLayout = ({
       ),
     [childElements],
   );
-  const renderedChildren = snapshot.items.flatMap(({ id: itemId }) => {
-    const element = contentRegistryRef.current.get(itemId);
-    return element ? [element] : [];
-  });
+  const renderedChildrenRef = useRef<GridLayoutItemElements>([]);
+  const renderedChildren = preserveChildOrder(
+    renderedChildrenRef.current,
+    snapshot.items.flatMap(({ id: itemId }) => {
+      const element = contentRegistryRef.current.get(itemId);
+      return element ? [element] : [];
+    }),
+  );
+  renderedChildrenRef.current = renderedChildren;
   const nonContentGridItems = useMemo<NonContentGridItems>(() => {
     const placeholderPreview =
       dragCoordinator.state.phase === "previewing" &&
@@ -664,7 +733,11 @@ export const useGridLayout = ({
   const handleDragPreview = useCallback<GridLayoutDropHandler>(
     (targetItemId, dragSource, position) => {
       const targetGridItem = gridModel.getChildItem(targetItemId, true);
-      if (position === "centre" && isStackedItem(targetGridItem)) {
+      if (
+        position === "centre" &&
+        isStackedItem(targetGridItem) &&
+        isDragOfItem(dragSource, targetItemId)
+      ) {
         return false;
       }
       prepareDragSource(dragSource);
@@ -672,15 +745,7 @@ export const useGridLayout = ({
         isGridLayoutSplitDirection(position) && isStackedItem(targetGridItem)
           ? targetGridItem.stackId
           : targetItemId;
-      const intent: GridDropIntent | undefined = isGridLayoutSplitDirection(
-        position,
-      )
-        ? { kind: "split", position }
-        : position === "centre"
-          ? { kind: "replace" }
-          : position === "header"
-            ? { kind: "create-stack" }
-            : undefined;
+      const intent = getDropIntent(position, targetGridItem);
       if (!intent) {
         return false;
       }
@@ -719,33 +784,18 @@ export const useGridLayout = ({
         ? undefined
         : gridModel.getChildItem(targetItemId, true);
 
-      if (
-        !isGridLayoutSplitDirection(position) &&
-        position !== "centre" &&
-        position !== "header"
-      ) {
+      const intent = getDropIntent(position, targetGridItem);
+      if (!intent) {
         handleCancelDrag();
         return false;
       }
-      if (
-        position === "centre" &&
-        targetGridItem &&
-        isStackedItem(targetGridItem)
-      ) {
-        handleCancelDrag();
-        return false;
-      }
+      const replacingStackMember = intent.kind === "replace-stack-member";
       const targetId =
         isGridLayoutSplitDirection(position) &&
         targetGridItem &&
         isStackedItem(targetGridItem)
           ? targetGridItem.stackId
           : targetItemId;
-      const intent: GridDropIntent = isGridLayoutSplitDirection(position)
-        ? { kind: "split", position }
-        : position === "centre"
-          ? { kind: "replace" }
-          : { kind: "create-stack" };
       const preview =
         existingPlaceholderPreview ||
         dragCoordinator.preview({
@@ -773,7 +823,12 @@ export const useGridLayout = ({
           throw Error(`[useGridLayout#${id}] template item id not allocated`);
         }
         const newItem = gridModel.getChildItem(provisional.itemId, true);
-        if (position === "centre" && !replacingPlaceholder) {
+        if (replacingStackMember) {
+          addChildComponent(provisional.component, newItem);
+          setChildren((current) =>
+            current.filter((child) => child.props.id !== targetItemId),
+          );
+        } else if (position === "centre" && !replacingPlaceholder) {
           replaceChildComponent(targetItemId, provisional.component, newItem);
         } else {
           addChildComponent(provisional.component, newItem);
@@ -1070,6 +1125,115 @@ export const useGridLayout = ({
       setChildren,
     ],
   );
+
+  const insertTemplate = useCallback(
+    (template: ComponentTemplate, placement: GridTemplatePlacement) => {
+      const element = containerRef.current;
+      if (!element) {
+        throw Error(`[useGridLayout#${id}] insertTemplate, grid not mounted`);
+      }
+      const { phase } = dragCoordinator.state;
+      if (phase === "dragging" || phase === "previewing") {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, a drag is in progress`,
+        );
+      }
+      const before = gridController.getSnapshot();
+      const { targetId } = placement;
+      if (!before.items.some(({ id: itemId }) => itemId === targetId)) {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, target #${targetId} not found`,
+        );
+      }
+      const targetStack = before.stacks.find(({ itemIds }) =>
+        itemIds.includes(targetId),
+      );
+      const source: TemplateSource = {
+        ...template,
+        element,
+        layoutId: id,
+        type: "template",
+      };
+      const stackAfter = (stackId: string) =>
+        handleDropStackedItem({
+          dragSource: source,
+          dropPosition: { position: "after", target: targetId },
+          tabsId: stackId,
+          type: "drop",
+        });
+
+      if (placement.kind === "split") {
+        if (!handleDrop(targetId, source, placement.position)) {
+          throw Error(`[useGridLayout#${id}] insertTemplate, split rejected`);
+        }
+      } else if (targetStack) {
+        stackAfter(targetStack.id);
+        if (placement.kind === "replace") {
+          dispatchGridLayoutAction({ id: targetId, type: "close" });
+        }
+      } else if (
+        !handleDrop(
+          targetId,
+          source,
+          placement.kind === "replace" ? "centre" : "header",
+        )
+      ) {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, ${placement.kind} rejected`,
+        );
+      }
+
+      const previousIds = new Set(before.items.map(({ id: itemId }) => itemId));
+      const inserted = gridController
+        .getSnapshot()
+        .items.find(
+          ({ id: itemId }) =>
+            !previousIds.has(itemId) && contentRegistryRef.current.has(itemId),
+        );
+      if (!inserted) {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, ${placement.kind} rejected`,
+        );
+      }
+      return inserted.id;
+    },
+    [
+      dispatchGridLayoutAction,
+      dragCoordinator,
+      gridController,
+      handleDrop,
+      handleDropStackedItem,
+      id,
+    ],
+  );
+
+  const commandsRegistry = useGridLayoutCommandsRegistry();
+  useEffect(() => {
+    if (!commandsRegistry) {
+      return;
+    }
+    const commands: GridLayoutCommands = {
+      getContentItemIds: () =>
+        gridController
+          .getSnapshot()
+          .items.filter(({ id: itemId }) =>
+            contentRegistryRef.current.has(itemId),
+          )
+          .map(({ id: itemId }) => itemId),
+      getPlaceholderIds: () =>
+        gridController
+          .getSnapshot()
+          .items.filter(
+            ({ id: itemId }) => !contentRegistryRef.current.has(itemId),
+          )
+          .map(({ id: itemId }) => itemId),
+      getSnapshot: gridController.getSnapshot,
+      gridId: id,
+      insertTemplate,
+      subscribe: gridController.subscribe,
+    };
+    return commandsRegistry.register(commands);
+  }, [commandsRegistry, gridController, id, insertTemplate]);
 
   useEffect(() => {
     return gridController.subscribeCommitted((transition) => {

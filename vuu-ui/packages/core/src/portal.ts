@@ -21,6 +21,7 @@ export {
   type PortalNavCollapsedMode,
   type PortalNavDensity,
   type PortalNavDisplayMode,
+  type PortalNavItemChildrenContext,
   type PortalNavProps,
   type PortalNavSectionStyle,
   type PortalNavSlot,
@@ -51,8 +52,42 @@ export {
 } from "./window-host/window-host-routing";
 export {
   PortalShell,
+  type PortalShellContextPanelOptions,
   type PortalShellProps,
 } from "./portal-shell/PortalShell";
+export {
+  PortalWorkspace,
+  PortalWorkspaceGrid,
+  type PortalWorkspaceGridProps,
+  type PortalWorkspaceProps,
+} from "./portal-workspaces/PortalWorkspace";
+export {
+  PortalWorkspaceHeader,
+  ResetToDefault,
+  type PortalWorkspaceHeaderProps,
+} from "./portal-workspaces/PortalWorkspaceHeader";
+export {
+  PORTAL_WORKSPACE_NAMESPACE,
+  PortalWorkspacesProvider,
+  type PortalWorkspacesOptions,
+  type PortalWorkspacesProviderProps,
+} from "./portal-workspaces/PortalWorkspacesProvider";
+export { WORKSPACES_SECTION_ID } from "./portal-workspaces/PortalNavWorkspaces";
+export {
+  MemoryWorkspacePersistenceService,
+  type TransientWorkspace,
+  type TransientWorkspaceOptions,
+  useTransientWorkspace,
+} from "./portal-workspaces/useTransientWorkspace";
+export {
+  DEFAULT_WORKSPACE_NAME,
+  WORKSPACE_ROUTE,
+  WORKSPACE_ROUTE_PATTERN,
+  getWorkspaceIdFromPath,
+  getWorkspacePath,
+  nextWorkspaceName,
+  type WorkspaceRouteState,
+} from "./portal-workspaces/workspace-routing";
 export {
   PortalLandingPage,
   type PortalLandingPageProps,
@@ -70,6 +105,8 @@ export {
 } from "./remote-module/RemoteModule";
 export {
   isNestedModule,
+  isPaletteOnlyModule,
+  isRoutedModule,
   type PortalModuleRegistry,
   type RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
@@ -129,3 +166,7 @@ export type {
   VuuServerStatusDetail,
   VuuServerStatusSource,
 } from "./connection-management/server-status";
+
+export * from "./portal-components";
+export * from "./panels-palette";
+export * from "./portal-servers";

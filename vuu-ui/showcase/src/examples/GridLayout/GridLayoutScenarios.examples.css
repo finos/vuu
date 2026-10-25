@@ -95,3 +95,22 @@
   padding: 10px;
   white-space: pre;
 }
+
+.gridLayoutScenario-dragSignal {
+  display: grid;
+  gap: 8px;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+}
+
+.gridLayoutScenario-dragHint {
+  border: 1px dashed var(--salt-separable-primary-borderColor);
+  color: var(--salt-content-secondary-foreground);
+  padding: 6px 10px;
+}
+
+.gridLayoutScenario-dragHint[data-dragging] {
+  background: var(--salt-accent-background);
+  border-color: var(--salt-accent-borderColor);
+  color: var(--salt-content-primary-foreground);
+}

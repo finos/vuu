@@ -170,8 +170,7 @@ describe("VuuConnectionRegistry", () => {
     expect(connectionClient.destroyCount).toBe(0);
 
     registry.release(target.connectionId);
-    await new Promise((resolve) => setTimeout(resolve, 1));
-    expect(connectionClient.destroyCount).toBe(1);
+    await vi.waitFor(() => expect(connectionClient.destroyCount).toBe(1));
   });
 
   it("forwards the shared portal URL to separate portal and module-admin connections", async () => {
@@ -341,7 +340,7 @@ describe("VuuConnectionRegistry", () => {
     await registry.acquire(reconnectAuthHandler, target);
     connectionClient.connected = false;
     connectionClient.listener?.("disconnected");
-    await new Promise((resolve) => setTimeout(resolve, 1));
+    await vi.waitFor(() => expect(exchangeToken).toHaveBeenCalledTimes(2));
 
     expect(reconnectAuthHandler.getIdentityToken).toHaveBeenCalledTimes(2);
     expect(exchangeToken.mock.calls).toEqual([
@@ -385,10 +384,11 @@ describe("VuuConnectionRegistry", () => {
     registry.subscribe(target.connectionId, vi.fn(), errorListener);
     connectionClient.connected = false;
     connectionClient.listener?.("disconnected");
-    await new Promise((resolve) => setTimeout(resolve, 1));
+    await vi.waitFor(() =>
+      expect(errorListener).toHaveBeenCalledWith(authorizationError),
+    );
 
     expect(exchangeToken).toHaveBeenCalledTimes(2);
-    expect(errorListener).toHaveBeenCalledWith(authorizationError);
 
     registry.release(target.connectionId);
   });
@@ -464,7 +464,7 @@ describe("VuuConnectionRegistry", () => {
     await registry.acquire(authHandler, target);
     connectionClient.connected = false;
     connectionClient.listener?.("disconnected");
-    await new Promise((resolve) => setTimeout(resolve, 1));
+    await vi.waitFor(() => expect(exchangeToken).toHaveBeenCalledTimes(2));
 
     const mountedDuringReconnect = registry.acquire(authHandler, target);
     resolveReconnect?.(session);
@@ -494,7 +494,9 @@ describe("VuuConnectionRegistry", () => {
       expect(registry.connectedIds()).toEqual([target.connectionId]);
 
       registry.release(target.connectionId);
-      await new Promise((resolve) => setTimeout(resolve, 1));
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBeUndefined(),
+      );
 
       expect(listener.mock.calls.map(([id, state]) => [id, state])).toEqual([
         ["orders", "authenticating"],
@@ -557,7 +559,9 @@ describe("VuuConnectionRegistry", () => {
       connectionClient.connected = false;
       connectionClient.listener?.("disconnected");
       expect(registry.getState(target.connectionId)).toBe("reconnecting");
-      await new Promise((resolve) => setTimeout(resolve, 1));
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBe("connected"),
+      );
 
       expect(states).toEqual(["reconnecting", "connected"]);
       registry.release(target.connectionId);
@@ -598,9 +602,9 @@ describe("VuuConnectionRegistry", () => {
 
       connectionClient.connected = false;
       connectionClient.listener?.("disconnected");
-      await new Promise((resolve) => setTimeout(resolve, 1));
-
-      expect(registry.getState(target.connectionId)).toBe("unauthorized");
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBe("unauthorized"),
+      );
       registry.release(target.connectionId);
     });
 
@@ -618,9 +622,9 @@ describe("VuuConnectionRegistry", () => {
 
       connectionClient.connected = false;
       connectionClient.listener?.("disconnected");
-      await new Promise((resolve) => setTimeout(resolve, 5));
-
-      expect(registry.getState(target.connectionId)).toBe("failed");
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBe("failed"),
+      );
       registry.release(target.connectionId);
     });
 

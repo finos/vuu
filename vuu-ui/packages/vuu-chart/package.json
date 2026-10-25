@@ -22,7 +22,7 @@
     "@vuu-ui/vuu-utils": "4.1.0",
     "clsx": "^2.0.0",
     "echarts": "6.1.0",
-    "@vuu-ui/vuu-ui-controls": "4.0.0-alpha.20"
+    "@vuu-ui/vuu-ui-controls": "4.0.0-alpha.31"
   },
   "peerDependencies": {
     "react": "^19.2.3",

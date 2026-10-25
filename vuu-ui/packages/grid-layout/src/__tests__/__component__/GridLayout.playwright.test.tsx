@@ -1137,6 +1137,42 @@ test.describe("GridLayout browser interactions", () => {
     ).toBeVisible();
   });
 
+  test("palette centre drop on a stacked panel replaces its tab", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "palette-target" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-1"),
+      grid.item("palette-target").locator(".vuuGridLayoutItemHeader"),
+      "header",
+    );
+    await expect(
+      component.getByRole("tab", { name: "Template A" }),
+    ).toHaveAttribute("aria-selected", "true");
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-2"),
+      component.locator(".vuuGridLayoutItemContent", {
+        has: page.getByTestId("template-content"),
+      }),
+      "centre",
+    );
+
+    const tabs = component.getByRole("tab");
+    await expect(tabs).toHaveCount(2);
+    await expect(tabs.nth(0)).toHaveText("Drop target");
+    await expect(tabs.nth(1)).toHaveText("Template B");
+    await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+    await expect(
+      component.locator('[data-testid="template-content"]', {
+        hasText: "Template A",
+      }),
+    ).toHaveCount(0);
+  });
+
   test("resizes a south split after a palette header drop creates a stack", async ({
     mount,
     page,

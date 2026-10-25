@@ -1,16 +1,21 @@
 .vuuPortalShell {
-  column-gap: var(--salt-spacing-50);
   display: grid;
-  grid-template-columns: var(--vuuPortalShell-navWidth, 56px) 1fr;
+  /*
+   * The gap after the nav is a track, not a column-gap, so the last column,
+   * which an inline context panel occupies, adds no gap while it is empty.
+   */
+  grid-template-columns:
+    var(--vuuPortalShell-navWidth, 56px)
+    var(--vuuPortalShell-columnGap, var(--salt-spacing-50))
+    minmax(0, 1fr)
+    auto;
   grid-template-rows: 56px auto 1fr;
   grid-template-areas:
-    "nav header"
-    "nav banners"
-    "nav content";
+    "nav . header"
+    "nav . banners"
+    "nav . content";
   /* The track count never changes, so a nav width change can animate. */
-  transition: grid-template-columns
-    var(--vuuPortalShell-navTransitionDuration, 0s)
-    var(--vuuPortalShell-navTransitionTimingFunction, ease);
+  transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 0s) var(--vuuPortalShell-navTransitionTimingFunction, ease);
 
   height: 100vh;
   padding: var(--vuuPortalShell-padding, var(--salt-spacing-50));
@@ -18,16 +23,14 @@
 
   /* The column is sized by a PortalNav, which animates by default. */
   &.vuuPortalShell-managedNav {
-    transition: grid-template-columns
-      var(--vuuPortalShell-navTransitionDuration, 180ms)
-      var(--vuuPortalShell-navTransitionTimingFunction, ease);
+    transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 180ms) var(--vuuPortalShell-navTransitionTimingFunction, ease);
   }
 
   &.vuuPortalShell-noHeader {
     grid-template-rows: auto 1fr;
     grid-template-areas:
-      "nav banners"
-      "nav content";
+      "nav . banners"
+      "nav . content";
   }
 
   .vuuNavContainer {
@@ -56,7 +59,7 @@
 
   /* Zero width host; the panel slides out leftwards over the content. */
   .vuuPortalShell-context {
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 1 / -1;
     justify-self: end;
     position: relative;
@@ -65,6 +68,17 @@
 
     .vuuContextPanel {
       height: 100%;
+    }
+
+    /*
+     * The panel takes the last column, sized by its width as it slides out,
+     * and the content column shrinks to make room.
+     */
+    &[data-placement="inline"] {
+      grid-column: 4;
+      justify-self: stretch;
+      width: auto;
+      z-index: auto;
     }
   }
 }

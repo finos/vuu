@@ -88,6 +88,32 @@ vi.mock("@vuu-ui/vuu-notifications", () => ({
     showNotification: () => undefined,
   }),
 }));
+// The workspace model is not exercised here and pulls in heavy UI controls.
+vi.mock("../../src/workspace", () => ({}));
+vi.mock("../../src/portal-workspaces/PortalWorkspace", () => ({
+  PortalWorkspace: ({
+    emptyContent,
+    paletteProps,
+  }: {
+    emptyContent?: ReactNode;
+    paletteProps?: unknown;
+  }) => (
+    <div
+      data-palette-props={JSON.stringify(paletteProps)}
+      data-testid="portal-workspace"
+    >
+      {emptyContent}
+    </div>
+  ),
+}));
+vi.mock("../../src/portal-workspaces/PortalWorkspacesProvider", () => ({
+  PortalWorkspacesProvider: ({ children }: { children: ReactNode }) => (
+    <div data-provider="workspaces">{children}</div>
+  ),
+}));
+vi.mock("../../src/portal-servers/VuuTableChangeServerDialog", () => ({
+  VuuTableChangeServerDialog: () => null,
+}));
 vi.mock("../../src/notifications/PortalNotificationBanners", () => ({
   PortalNotificationBanners: () => null,
 }));
@@ -125,7 +151,7 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
       const modulePath =
         remoteModules
           .find((module) => module.mfComponent === mfComponent)
-          ?.path.replace(/\/\*$/, "") ?? "/";
+          ?.path?.replace(/\/\*$/, "") ?? "/";
       return (
         <>
           <output data-module={mfComponent} data-url={mfUrl}>
@@ -259,6 +285,95 @@ describe("Portal and window shells", () => {
         theme: "vuu-theme",
       },
     });
+  });
+
+  it.each([
+    [true, 1],
+    [false, 0],
+  ])("routes /workspaces/:id to the workspace when workspaces is set (%s)", async (enabled, count) => {
+    window.history.replaceState(null, "", "/workspaces/trader");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={modules}
+          title="Portal"
+          workspaces={enabled ? {} : undefined}
+        />,
+      );
+    });
+    expect(
+      container.querySelectorAll('[data-testid="portal-workspace"]'),
+    ).toHaveLength(count);
+    expect(
+      container.querySelectorAll('[data-provider="workspaces"]'),
+    ).toHaveLength(count);
+  });
+
+  it("passes workspaces.palette to the workspace's Panels palette", async () => {
+    window.history.replaceState(null, "", "/workspaces/markets");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={modules}
+          title="Portal"
+          workspaces={{ palette: { tabs: ["tables"] } }}
+        />,
+      );
+    });
+    expect(
+      container.querySelector<HTMLElement>('[data-testid="portal-workspace"]')
+        ?.dataset.paletteProps,
+    ).toBe(JSON.stringify({ tabs: ["tables"] }));
+  });
+
+  it("passes workspaces.emptyContent to the workspace", async () => {
+    window.history.replaceState(null, "", "/workspaces/markets");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={modules}
+          title="Portal"
+          workspaces={{
+            emptyContent: <p data-testid="custom-empty">Start here</p>,
+          }}
+        />,
+      );
+    });
+    expect(
+      container.querySelector(
+        '[data-testid="portal-workspace"] [data-testid="custom-empty"]',
+      )?.textContent,
+    ).toBe("Start here");
+  });
+
+  it("does not route palette-only modules, which have no location or route", async () => {
+    const paletteOnly = {
+      clientIdentifier: "vuu-panel",
+      description: "A panel",
+      id: 3,
+      accessRole: "panel-access",
+      mfComponent: "Panel",
+      mfScope: "panel",
+      mfUrl: "http://localhost:5009",
+      name: "panel",
+      title: "Panel",
+      version: 1,
+      workspace: { paletteGroup: "Panels" },
+    } satisfies RemoteModuleDescriptor;
+    window.history.replaceState(null, "", "/orders");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={[...modules, paletteOnly]}
+          title="Portal"
+        />,
+      );
+    });
+    expect(
+      [...container.querySelectorAll("output")].map(
+        (element) => element.dataset.module,
+      ),
+    ).toEqual(["Orders"]);
   });
 
   it("renders PortalLandingPage at the root path and navigates to a module", async () => {
@@ -830,18 +945,22 @@ describe("Portal and window shells", () => {
         join(import.meta.dirname, "../../src/portal-shell/PortalShell.css"),
         "utf8",
       ).replace(/\s+/g, " ");
+      // The last column is empty unless the context panel is inline.
       expect(css).toContain(
-        "grid-template-columns: var(--vuuPortalShell-navWidth, 56px) 1fr;",
+        "grid-template-columns: var(--vuuPortalShell-navWidth, 56px) var(--vuuPortalShell-columnGap, var(--salt-spacing-50)) minmax(0, 1fr) auto;",
       );
       expect(css).toContain("grid-template-rows: 56px auto 1fr;");
       expect(css).toContain(
-        'grid-template-areas: "nav header" "nav banners" "nav content";',
+        'grid-template-areas: "nav . header" "nav . banners" "nav . content";',
+      );
+      expect(css).toMatch(
+        /&\[data-placement="inline"\] \{ grid-column: 4; justify-self: stretch; width: auto;/,
       );
       expect(css).toContain(
         "transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 0s)",
       );
       expect(css).toMatch(
-        /&\.vuuPortalShell-noHeader \{ grid-template-rows: auto 1fr; grid-template-areas: "nav banners" "nav content"; \}/,
+        /&\.vuuPortalShell-noHeader \{ grid-template-rows: auto 1fr; grid-template-areas: "nav \. banners" "nav \. content"; \}/,
       );
     });
   });

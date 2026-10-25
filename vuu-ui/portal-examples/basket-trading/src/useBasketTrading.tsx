@@ -27,8 +27,11 @@ import type { BasketChangeHandler } from "./basket-toolbar";
 import { NewBasketDialog } from "./new-basket-dialog/NewBasketDialog";
 import type { BasketCreatedHandler } from "./new-basket-dialog/useNewBasketDialog";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
+import { useDataSourceSubscription } from "./useDataSourceSubscription";
 
 const { KEY } = metadataKeys;
+
+const BASKET_TRADING_CONTROL_SUBSCRIPTION = { range: Range(0, 1) };
 
 export class Basket {
   basketId: string;
@@ -100,6 +103,7 @@ export const useBasketTrading = () => {
   const {
     basketSchema,
     basketTradingMap,
+    dataSourceBasketConstituents,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
@@ -131,19 +135,22 @@ export const useBasketTrading = () => {
       [basketTradingMap],
     );
 
-  useMemo(() => {
-    dataSourceBasketTradingControl?.subscribe(
-      {
-        range: Range(0, 1),
-      },
-      handleMessageFromBasketTradingControl,
-    );
+  useDataSourceSubscription(
+    dataSourceBasketTradingControl,
+    BASKET_TRADING_CONTROL_SUBSCRIPTION,
+    handleMessageFromBasketTradingControl,
+  );
 
-    // TEMP server is notsending TABLE_ROWS if size is zero
-    setTimeout(() => {
+  useEffect(() => {
+    if (dataSourceBasketTradingControl === undefined) {
+      return;
+    }
+    // TEMP server is not sending TABLE_ROWS if size is zero
+    const timer = setTimeout(() => {
       setBasketCount((count) => (count === -1 ? 0 : count));
     }, 800);
-  }, [dataSourceBasketTradingControl, handleMessageFromBasketTradingControl]);
+    return () => clearTimeout(timer);
+  }, [dataSourceBasketTradingControl]);
 
   const handleCloseNewBasketPanel = useCallback(() => {
     setBasketState((state) => ({
@@ -319,19 +326,13 @@ export const useBasketTrading = () => {
     [save],
   );
 
-  useEffect(() => {
-    dataSourceBasketTradingControl?.resume?.();
-    return () => {
-      dataSourceBasketTradingControl?.suspend?.();
-    };
-  }, [dataSourceBasketTradingControl]);
-
   return {
     ...basketState,
     basket,
     basketCount,
     basketDesignContextMenuConfig,
     basketSelectorProps,
+    dataSourceBasketConstituents,
     dataSourceBasketTradingConstituentJoin,
     editConfig,
     liveConfig,

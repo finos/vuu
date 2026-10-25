@@ -30,7 +30,7 @@
 
 .vuuPortalConnectionStatus-trigger:hover,
 .vuuPortalConnectionStatus-trigger[aria-expanded="true"] {
-  background: var(--salt-actionable-subtle-background-hover);
+  background: var(--salt-navigable-background-hover, var(--salt-selectable-background-hover));
 }
 
 .vuuPortalConnectionStatus-trigger:focus-visible {

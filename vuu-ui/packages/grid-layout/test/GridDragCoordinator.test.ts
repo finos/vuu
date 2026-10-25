@@ -535,6 +535,106 @@ describe("GridDragCoordinator", () => {
     ).toHaveLength(2);
   });
 
+  describe("replace-stack-member", () => {
+    const createStackedController = () => {
+      const controller = createThreeItemController();
+      const create = new GridDragCoordinator("grid", controller);
+      create.begin(existing("beta"));
+      create.preview({
+        gridId: "grid",
+        intent: { kind: "create-stack" },
+        targetId: "alpha",
+      });
+      create.commit();
+      const stackId = controller.getSnapshot().stacks[0]?.id;
+      if (!stackId) {
+        throw Error("stack was not created");
+      }
+      return { controller, stackId };
+    };
+
+    it("replaces a member with a template, in the member's tab position", () => {
+      const { controller, stackId } = createStackedController();
+      const coordinator = new GridDragCoordinator("grid", controller);
+      coordinator.begin(template);
+      expect(
+        coordinator.preview({
+          gridId: "grid",
+          intent: { kind: "replace-stack-member", stackId },
+          targetId: "alpha",
+        }),
+      ).toMatchObject({ ok: true });
+      expect(coordinator.commit()).toMatchObject({ ok: true });
+
+      const [stack] = controller.getSnapshot().stacks;
+      expect(stack.itemIds).toEqual(["template-instance", "beta"]);
+      expect(stack.selectedItemId).toBe("template-instance");
+      expect(
+        controller.getSnapshot().items.find(({ id }) => id === "alpha"),
+      ).toBeUndefined();
+    });
+
+    it("replaces a member with an existing grid item", () => {
+      const { controller, stackId } = createStackedController();
+      const coordinator = new GridDragCoordinator("grid", controller);
+      coordinator.begin(existing("gamma"));
+      coordinator.preview({
+        gridId: "grid",
+        intent: { kind: "replace-stack-member", stackId },
+        targetId: "beta",
+      });
+      expect(coordinator.commit()).toMatchObject({ ok: true });
+
+      const [stack] = controller.getSnapshot().stacks;
+      expect(stack.itemIds).toEqual(["alpha", "gamma"]);
+      expect(stack.selectedItemId).toBe("gamma");
+      expect(
+        controller.getSnapshot().items.find(({ id }) => id === "beta"),
+      ).toBeUndefined();
+    });
+
+    it("replaces a member with another member of the same stack, dissolving a two-item stack", () => {
+      const { controller, stackId } = createStackedController();
+      const coordinator = new GridDragCoordinator("grid", controller);
+      coordinator.begin({
+        itemId: "beta",
+        kind: "stack-member",
+        selected: true,
+        sourceGridId: "grid",
+        stackId,
+      });
+      coordinator.preview({
+        gridId: "grid",
+        intent: { kind: "replace-stack-member", stackId },
+        targetId: "alpha",
+      });
+      expect(coordinator.commit()).toMatchObject({ ok: true });
+
+      const { items, stacks } = controller.getSnapshot();
+      expect(stacks).toEqual([]);
+      expect(items.map(({ id }) => id).sort()).toEqual(["beta", "gamma"]);
+    });
+
+    it("rejects a member replacing itself", () => {
+      expect(
+        createGridDropPlan(
+          {
+            itemId: "alpha",
+            kind: "stack-member",
+            selected: true,
+            sourceGridId: "grid",
+            stackId: "stack",
+          },
+          {
+            gridId: "grid",
+            intent: { kind: "replace-stack-member", stackId: "stack" },
+            targetId: "alpha",
+          },
+        ),
+      ).toMatchObject({ code: "UNSUPPORTED_DROP" });
+    });
+  });
+
   it("previews placeholder replacement and retains the template id only on commit", () => {
     const controller = new GridController(
       new GridModel(
