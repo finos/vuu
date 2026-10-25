@@ -54,6 +54,31 @@ export {
   type PortalShellProps,
 } from "./portal-shell/PortalShell";
 export {
+  PortalWorkspace,
+  PortalWorkspaceGrid,
+  type PortalWorkspaceProps,
+} from "./portal-workspaces/PortalWorkspace";
+export {
+  PortalWorkspaceHeader,
+  ResetToDefault,
+  type PortalWorkspaceHeaderProps,
+} from "./portal-workspaces/PortalWorkspaceHeader";
+export {
+  PORTAL_WORKSPACE_NAMESPACE,
+  PortalWorkspacesProvider,
+  type PortalWorkspacesOptions,
+  type PortalWorkspacesProviderProps,
+} from "./portal-workspaces/PortalWorkspacesProvider";
+export { WORKSPACES_SECTION_ID } from "./portal-workspaces/PortalNavWorkspaces";
+export {
+  DEFAULT_WORKSPACE_NAME,
+  WORKSPACE_ROUTE,
+  getWorkspaceIdFromPath,
+  getWorkspacePath,
+  nextWorkspaceName,
+  type WorkspaceRouteState,
+} from "./portal-workspaces/workspace-routing";
+export {
   PortalLandingPage,
   type PortalLandingPageProps,
 } from "./portal-shell/PortalLandingPage";

@@ -16,12 +16,14 @@ import {
   PortalLandingPage,
   PortalNav,
   PortalShell,
+  type PortalWorkspacesOptions,
   type RemoteModuleDescriptor,
   usePortalNotifications,
   VuuServerMonitorProvider,
   type VuuServerMonitorProviderProps,
   type VuuServerStatus,
 } from "@vuu-ui/core/portal";
+import type { NamedWorkspaceDefinitionV1 } from "@vuu-ui/core";
 import { VuuLogo } from "@vuu-ui/vuu-icons";
 import {
   type ReactNode,
@@ -46,6 +48,11 @@ import {
   watchlistIcon,
   workspaceIcon,
 } from "./portal-nav-icons";
+import {
+  panelComponent,
+  showcaseGridComponentRenderers,
+  showcaseGridSettingsCodecs,
+} from "../GridLayout/GridLayoutPersistenceFixtures";
 
 let navOrder = 0;
 const navModule = (
@@ -405,12 +412,16 @@ const createShowcaseMonitor = (unavailable: ModuleId[] = []): ServerMonitor => {
 
 const NavShell = ({
   children,
+  modules = remoteModules,
   renderBadge: renderBadgeProp,
   unavailableModules,
+  workspaceOptions: workspacesProp,
   ...navProps
 }: Partial<PortalNavProps> & {
   children?: ReactNode;
+  modules?: RemoteModuleDescriptor[];
   unavailableModules?: ModuleId[];
+  workspaceOptions?: PortalWorkspacesOptions;
 }) => {
   const badges = useLiveBadges();
   const unavailableKey = unavailableModules?.join();
@@ -428,15 +439,16 @@ const NavShell = ({
       <PortalShell
         header={false}
         id="portal-nav-demo"
-        remoteModules={remoteModules}
+        remoteModules={modules}
         serverMonitor={false}
         title="PortalNav Demo"
+        workspaces={workspacesProp}
       >
         <VuuServerMonitorProvider monitor={monitor}>
           <PortalNav
             brand={Brand}
             footer={PlaceholderFooter}
-            remoteModules={remoteModules}
+            remoteModules={modules}
             renderBadge={renderBadge}
             {...navProps}
           />
@@ -588,6 +600,107 @@ export const Playground = () => {
           Live badges
         </ToggleButton>
       </div>
+    </NavShell>
+  );
+};
+
+const traderPanel = (
+  id: string,
+  title: string,
+  background: string,
+  column: number,
+  row: number,
+) => ({
+  component: panelComponent(`${id}-content`, title, background),
+  item: {
+    column: { span: 1, start: column },
+    componentInstanceId: `${id}-content`,
+    header: true,
+    id,
+    resizeable: "hv" as const,
+    row: { span: 1, start: row },
+    title,
+  },
+});
+
+const traderPanels = [
+  traderPanel("trader-watchlist", "Watchlist", "#1565c0", 1, 1),
+  traderPanel("trader-orders", "Orders", "#2e7d32", 2, 1),
+  traderPanel("trader-positions", "Positions", "#6a1b9a", 1, 2),
+  traderPanel("trader-executions", "Executions", "#ef6c00", 2, 2),
+];
+
+/** The system workspace shipped with the demo portal. */
+const traderWorkspace: NamedWorkspaceDefinitionV1 = {
+  createdAt: "2026-01-01T00:00:00.000Z",
+  id: "trader",
+  name: "Trader",
+  snapshot: {
+    componentState: {},
+    layout: {
+      components: traderPanels.map(({ component }) => component),
+      kind: "grid-layout",
+      layout: {
+        columns: ["1fr", "1fr"],
+        id: "trader-layout",
+        items: traderPanels.map(({ item }) => item),
+        placeholderIds: [],
+        rows: ["1fr", "1fr"],
+        stacks: [],
+      },
+      version: 2,
+    },
+    version: 1,
+  },
+  updatedAt: "2026-01-01T00:00:00.000Z",
+  version: 1,
+};
+
+const workspaceOptions: PortalWorkspacesOptions = {
+  componentRenderers: showcaseGridComponentRenderers,
+  // W5 adds the panel palette; this placeholder shows the header slot.
+  headerActions: (
+    <Button disabled sentiment="accented">
+      Add panel
+    </Button>
+  ),
+  settingsCodecs: showcaseGridSettingsCodecs,
+  systemWorkspaces: [traderWorkspace],
+};
+
+/** Workspaces are listed by the Workspaces section, not as modules. */
+const nonWorkspaceModules = remoteModules.filter(
+  ({ navLocation }) => !navLocation?.startsWith("/Workspaces/"),
+);
+
+/**
+ * The Workspaces section: the Trader system workspace and the user's named
+ * workspaces, saved in local storage. Edit Trader to create your personal
+ * copy, then use Reset to default in its header. "+ New workspace" creates
+ * and opens an empty named workspace.
+ */
+export const Workspaces = () => {
+  const [displayMode, setDisplayMode] =
+    useState<PortalNavDisplayMode>("icons-and-text");
+  return (
+    <NavShell
+      displayMode={displayMode}
+      modules={nonWorkspaceModules}
+      onDisplayModeChange={setDisplayMode}
+      sections="collapsible"
+      workspaceOptions={workspaceOptions}
+    >
+      <ToggleButtonGroup
+        onChange={(e: SyntheticEvent<HTMLButtonElement>) =>
+          setDisplayMode(e.currentTarget.value as PortalNavDisplayMode)
+        }
+        value={displayMode}
+      >
+        <ToggleButton value="icons-and-text">Icons and text</ToggleButton>
+        <ToggleButton value="text">Text</ToggleButton>
+        <ToggleButton value="icons">Icons</ToggleButton>
+        <ToggleButton value="minimized">Minimized</ToggleButton>
+      </ToggleButtonGroup>
     </NavShell>
   );
 };

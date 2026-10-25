@@ -45,6 +45,12 @@ import { NotificationsPanel } from "../notifications/NotificationsPanel";
 import { PortalNotificationBanners } from "../notifications/PortalNotificationBanners";
 import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
 import { PortalNotificationsProvider } from "../notifications/PortalNotificationsProvider";
+import { PortalWorkspace } from "../portal-workspaces/PortalWorkspace";
+import {
+  type PortalWorkspacesOptions,
+  PortalWorkspacesProvider,
+} from "../portal-workspaces/PortalWorkspacesProvider";
+import { WORKSPACE_ROUTE } from "../portal-workspaces/workspace-routing";
 import { WindowHost } from "../window-host/WindowHost";
 import { WINDOW_HOST_ROUTE } from "../window-host/window-host-routing";
 import {
@@ -98,6 +104,11 @@ export interface PortalShellProps extends CommonShellProps {
    */
   serverMonitor?: ServerMonitorOptions | false;
   title: string;
+  /**
+   * Named workspaces: a `PortalNav` child lists them, and the
+   * `/workspaces/:workspaceId` route renders them. Off when not set.
+   */
+  workspaces?: PortalWorkspacesOptions;
 }
 
 const PortalShellContext = createContext<PortalShellProps | undefined>(
@@ -157,6 +168,23 @@ const CloseContextPanelOnNavigation = () => {
   return null;
 };
 
+const OptionalWorkspaces = ({
+  children,
+  options,
+  portalId,
+}: {
+  children: ReactNode;
+  options?: PortalWorkspacesOptions;
+  portalId?: string;
+}) =>
+  options ? (
+    <PortalWorkspacesProvider options={options} portalId={portalId}>
+      {children}
+    </PortalWorkspacesProvider>
+  ) : (
+    children
+  );
+
 const PortalLayout = () => {
   const {
     children,
@@ -168,6 +196,7 @@ const PortalLayout = () => {
     remoteModules,
     serverMonitor,
     title: _title,
+    workspaces,
     ...providerProps
   } = usePortalShellProps();
   const targetWindow = useWindow();
@@ -212,58 +241,70 @@ const PortalLayout = () => {
           options={notifications}
           portalId={portalId}
         >
-          <ShellContextPanelProvider>
-            <CloseContextPanelOnNavigation />
-            <div
-              className={clsx(classBase, {
-                [`${classBase}-noHeader`]: !header,
-                [`${classBase}-managedNav`]:
-                  navWidth === undefined && managedNavWidth !== undefined,
-              })}
-              id={id}
-              style={
-                columnWidth === undefined
-                  ? undefined
-                  : ({
-                      "--vuuPortalShell-navWidth": columnWidth,
-                    } as CSSProperties)
-              }
-            >
-              <PortalShellNavContext.Provider value={navContext}>
-                {portalChromeElements}
-              </PortalShellNavContext.Provider>
-              <div className={`${classBase}-banners`}>
-                <PortalNotificationBanners />
-              </div>
-              <div className={`${classBase}-content`}>
-                <Routes>
-                  <Route path="/" element={landingPage} />
-                  <Route path="*" element={landingPage} />
-                  {remoteModules.map(({ id, path, ...feature }) => {
-                    return (
+          <OptionalWorkspaces options={workspaces} portalId={portalId}>
+            <ShellContextPanelProvider>
+              <CloseContextPanelOnNavigation />
+              <div
+                className={clsx(classBase, {
+                  [`${classBase}-noHeader`]: !header,
+                  [`${classBase}-managedNav`]:
+                    navWidth === undefined && managedNavWidth !== undefined,
+                })}
+                id={id}
+                style={
+                  columnWidth === undefined
+                    ? undefined
+                    : ({
+                        "--vuuPortalShell-navWidth": columnWidth,
+                      } as CSSProperties)
+                }
+              >
+                <PortalShellNavContext.Provider value={navContext}>
+                  {portalChromeElements}
+                </PortalShellNavContext.Provider>
+                <div className={`${classBase}-banners`}>
+                  <PortalNotificationBanners />
+                </div>
+                <div className={`${classBase}-content`}>
+                  <Routes>
+                    <Route path="/" element={landingPage} />
+                    <Route path="*" element={landingPage} />
+                    {workspaces ? (
                       <Route
-                        key={id}
-                        path={getRemoteRoutePath(path)}
+                        path={WORKSPACE_ROUTE}
                         element={
-                          <PortalModuleIdContext.Provider value={id}>
-                            <PortalLinkProvider modulePath={path}>
-                              <PortalModuleRegistryProvider
-                                remoteModules={remoteModules}
-                              >
-                                <RemoteModule {...feature} />
-                              </PortalModuleRegistryProvider>
-                            </PortalLinkProvider>
-                          </PortalModuleIdContext.Provider>
+                          <PortalWorkspace
+                            headerActions={workspaces.headerActions}
+                          />
                         }
                       />
-                    );
-                  })}
-                </Routes>
+                    ) : null}
+                    {remoteModules.map(({ id, path, ...feature }) => {
+                      return (
+                        <Route
+                          key={id}
+                          path={getRemoteRoutePath(path)}
+                          element={
+                            <PortalModuleIdContext.Provider value={id}>
+                              <PortalLinkProvider modulePath={path}>
+                                <PortalModuleRegistryProvider
+                                  remoteModules={remoteModules}
+                                >
+                                  <RemoteModule {...feature} />
+                                </PortalModuleRegistryProvider>
+                              </PortalLinkProvider>
+                            </PortalModuleIdContext.Provider>
+                          }
+                        />
+                      );
+                    })}
+                  </Routes>
+                </div>
+                <ShellContextPanel className={`${classBase}-context`} />
+                <NotificationsPanel />
               </div>
-              <ShellContextPanel className={`${classBase}-context`} />
-              <NotificationsPanel />
-            </div>
-          </ShellContextPanelProvider>
+            </ShellContextPanelProvider>
+          </OptionalWorkspaces>
         </PortalNotificationsProvider>
       </CommonShell>
     </VuuServerMonitorProvider>
