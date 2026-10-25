@@ -115,6 +115,42 @@ describe("formatting-utils", () => {
     expect(() => format(123)).toThrow();
   });
 
+  it("preserves precision for large long values exceeding MAX_SAFE_INTEGER", () => {
+    const formatWithLocale = numericFormatter({
+      serverDataType: "long",
+      type: {
+        name: "number",
+      },
+    });
+    expect(formatWithLocale("1000000000000000001")).toEqual(
+      "1,000,000,000,000,000,001",
+    );
+    expect(formatWithLocale("-1000000000000000001")).toEqual(
+      "-1,000,000,000,000,000,001",
+    );
+    expect(formatWithLocale("9223372036854775807")).toEqual(
+      "9,223,372,036,854,775,807",
+    );
+
+    const formatWithoutLocale = numericFormatter({
+      serverDataType: "long",
+      type: {
+        name: "number",
+        formatting: {
+          useLocaleString: false,
+        },
+      },
+    });
+    expect(formatWithoutLocale("1000000000000000001")).toEqual(
+      "1000000000000000001",
+    );
+    expect(formatWithoutLocale("-1000000000000000001")).toEqual(
+      "-1000000000000000001",
+    );
+    expect(formatWithoutLocale(undefined)).toEqual("");
+    expect(formatWithoutLocale(null)).toEqual("");
+  });
+
   it("supports truncation rather than rounding of decimals", () => {
     const format = numericFormatter({
       type: {

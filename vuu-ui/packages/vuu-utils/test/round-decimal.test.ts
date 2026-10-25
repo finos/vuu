@@ -14,7 +14,9 @@ describe("round-decimal", () => {
       expect(exceedsMaxSafeInteger("100")).toEqual(false);
       expect(exceedsMaxSafeInteger("99999999")).toEqual(false);
       expect(exceedsMaxSafeInteger("9007199254740991")).toEqual(false);
+      expect(exceedsMaxSafeInteger("-9007199254740991")).toEqual(false);
       expect(exceedsMaxSafeInteger("9007199254740992")).toEqual(true);
+      expect(exceedsMaxSafeInteger("-9007199254740992")).toEqual(true);
       expect(exceedsMaxSafeInteger("10000000000000000")).toEqual(true);
     });
   });

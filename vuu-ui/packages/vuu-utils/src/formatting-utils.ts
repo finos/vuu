@@ -141,14 +141,20 @@ export const numericFormatter = ({
       zeroPad = false,
     } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
     return (value: unknown) => {
-      if (serverDataType?.startsWith("scaleddecimal")) {
+      if (
+        serverDataType === "long" ||
+        serverDataType?.startsWith("scaleddecimal")
+      ) {
         if (value === undefined || value === null) {
           // Value not yet available, e.g. a column has just been added and
           // we render before data for that column has been received.
           return "";
-        } else if (typeof value === "string") {
+        } else if (
+          typeof value === "string" ||
+          (serverDataType === "long" && typeof value === "number")
+        ) {
           return roundScaledDecimal(
-            value,
+            typeof value === "number" ? value.toString() : value,
             align,
             decimals,
             zeroPad,
