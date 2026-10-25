@@ -1,6 +1,6 @@
 import {
-  GRID_LAYOUT_DOCUMENT_KIND,
-  GRID_LAYOUT_DOCUMENT_VERSION,
+  type GRID_LAYOUT_DOCUMENT_KIND,
+  type GRID_LAYOUT_DOCUMENT_VERSION,
   createSequentialGridLayoutIdAllocator,
   remapGridLayoutDocumentIds,
   type GridComponentRendererRegistry,
@@ -36,9 +36,12 @@ import {
   type WorkspaceSnapshotV1,
 } from "./workspace-schemas";
 
+// Literals, not the grid-layout constants: @vuu-ui/grid-layout imports
+// @vuu-ui/core indirectly, so its bindings may not be initialised when this
+// module is evaluated.
 const emptyLayout: GridLayoutDocument = {
   components: [],
-  kind: GRID_LAYOUT_DOCUMENT_KIND,
+  kind: "grid-layout" satisfies typeof GRID_LAYOUT_DOCUMENT_KIND,
   layout: {
     columns: ["1fr"],
     id: "empty-workspace",
@@ -53,7 +56,7 @@ const emptyLayout: GridLayoutDocument = {
     rows: ["1fr"],
     stacks: [],
   },
-  version: GRID_LAYOUT_DOCUMENT_VERSION,
+  version: 2 satisfies typeof GRID_LAYOUT_DOCUMENT_VERSION,
 };
 
 export const emptyWorkspaceSnapshot: WorkspaceSnapshotV1 = {
@@ -176,7 +179,7 @@ const missing = async () => {
   throw new Error("WorkspaceProvider is not mounted");
 };
 
-const WorkspaceContext = createContext<WorkspaceContextValue>({
+const NO_WORKSPACE_PROVIDER: WorkspaceContextValue = {
   activeWorkspaceId: null,
   activeWorkspaceInstanceId: null,
   closeWorkspace: missing,
@@ -205,7 +208,11 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
   systemWorkspaces: [],
   resetApplication: missing,
   workspaces: [],
-});
+};
+
+const WorkspaceContext = createContext<WorkspaceContextValue>(
+  NO_WORKSPACE_PROVIDER,
+);
 
 const NO_SYSTEM_WORKSPACES: readonly NamedWorkspaceDefinitionV1[] = [];
 
@@ -1593,3 +1600,9 @@ export const WorkspaceProvider = ({
 
 export const useWorkspace = (): WorkspaceContextValue =>
   useContext(WorkspaceContext);
+
+/** The workspace context, or `undefined` when no WorkspaceProvider is mounted. */
+export const useOptionalWorkspace = (): WorkspaceContextValue | undefined => {
+  const context = useContext(WorkspaceContext);
+  return context === NO_WORKSPACE_PROVIDER ? undefined : context;
+};

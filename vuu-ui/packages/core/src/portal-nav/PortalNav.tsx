@@ -19,7 +19,13 @@ import {
 import { useLocation } from "react-router-dom";
 import { buildNavSections } from "../portal-app-switcher/nav-section-utils";
 import { usePortalShellNav } from "../portal-shell/PortalShellNavContext";
+import {
+  PORTAL_NAV_POPUP,
+  PortalNavWorkspaces,
+  WORKSPACES_SECTION_ID,
+} from "../portal-workspaces/PortalNavWorkspaces";
 import { useServerMonitor } from "../server-monitor/VuuServerMonitorProvider";
+import { useOptionalWorkspace } from "../workspace/WorkspaceProvider";
 import { describedBy, IndicatorDot } from "./PortalNavEntry";
 import { PortalNavSection } from "./PortalNavSection";
 import {
@@ -91,6 +97,7 @@ export const PortalNav = ({
   renderBadge,
   sections: sectionStyle = "headings",
   width,
+  workspaces: showWorkspaces = true,
 }: PortalNavProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -117,6 +124,8 @@ export const PortalNav = ({
     });
   const [collapsedSections, setSectionCollapsed] =
     usePortalNavSectionCollapse();
+
+  const workspace = useOptionalWorkspace();
 
   const sections = useMemo(
     () => buildNavSections(remoteModules),
@@ -174,7 +183,12 @@ export const PortalNav = ({
   useEffect(() => {
     if (!overlayOpen || !targetWindow) return;
     const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Element;
+      // Menus and dialogs opened from the nav render outside it.
+      const inNavPopup =
+        typeof target.closest === "function" &&
+        target.closest(`.vuuContextMenuPanel, [${PORTAL_NAV_POPUP}]`) !== null;
+      if (!inNavPopup && !rootRef.current?.contains(target)) {
         setOverlayOpen(false);
       }
     };
@@ -206,6 +220,10 @@ export const PortalNav = ({
   };
 
   const onPanelKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    // Ignore keys from popups portalled out of the nav, e.g. a dialog.
+    if (!event.currentTarget.contains(event.target as Node)) {
+      return;
+    }
     if (event.key === "Escape" && overlayOpen) {
       setOverlayOpen(false);
       handleRef.current?.focus();
@@ -264,6 +282,15 @@ export const PortalNav = ({
         )}
       </div>
       <div className={`${classBase}-content`}>
+        {showWorkspaces && workspace ? (
+          <PortalNavWorkspaces
+            collapsed={collapsedSections.includes(WORKSPACES_SECTION_ID)}
+            displayMode={panelMode}
+            onCollapsedChange={setSectionCollapsed}
+            sectionStyle={sectionStyle}
+            workspace={workspace}
+          />
+        ) : null}
         {sections.map((section) => (
           <PortalNavSection
             activeHref={activeHref}

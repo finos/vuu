@@ -126,6 +126,7 @@ unchanged. Render it as a child of `PortalShell`, typically with
 | `brand`, `footer` | | Nodes, or functions of `{ displayMode, allowedDisplayModes, setDisplayMode }`. The footer is pinned at the bottom. |
 | `renderBadge` | | A live value for an item, usually chosen by `item.navBadge`. |
 | `width` | `248` | Width (px) of `icons-and-text`. |
+| `workspaces` | `true` | Show the [Workspaces](#workspaces) section when a workspace model is provided. |
 
 **Display modes.** `icons-and-text` (248px), `text` (208px), `icons` (a 60px
 rail) and `minimized` (0px). The widths are exported as `PORTAL_NAV_WIDTHS`.
@@ -227,6 +228,101 @@ For a left-nav footer, `@vuu-ui/core/portal` provides two components that take
   identity and roles, **Saved state…** with the time state was last saved,
   any `PortalNavUserMenuItem` children, and **Log out**. Pass `account` for
   app-supplied text such as the trading account.
+
+## Workspaces
+
+A workspace is a named grid layout of panels, managed by the workspace model
+in `src/workspace` (`WorkspaceProvider`, `useWorkspace`). The portal shows
+them in a Workspaces section of `PortalNav` and renders the open one at
+`/workspaces/:workspaceId`. The code is in `src/portal-workspaces`.
+
+Turn workspaces on with the `workspaces` option of `PortalShell`:
+
+```tsx
+<PortalShell
+  header={false}
+  remoteModules={remoteModules}
+  title="Portal"
+  workspaces={{
+    componentRenderers,
+    headerActions: <AddPanelButton />,
+    settingsCodecs,
+    systemWorkspaces: [traderWorkspace],
+  }}
+>
+  <PortalNav remoteModules={remoteModules} />
+</PortalShell>
+```
+
+| Option | | |
+| --- | --- | --- |
+| `systemWorkspaces` | | Workspaces shipped with the portal (`NamedWorkspaceDefinitionV1`). |
+| `componentRenderers`, `settingsCodecs` | | The panels a workspace can contain, as for `GridLayout`. |
+| `headerActions` | | Content for the actions slot of the workspace header, e.g. **Add panel**. |
+| `persistenceService` | local storage | Where workspaces are saved. The default `LocalWorkspacePersistenceService` is scoped to the portal id and the signed-in user (namespace `PORTAL_WORKSPACE_NAMESPACE`). Pass a stable instance. |
+
+Without the option the shell renders no `WorkspaceProvider` and no
+workspace route, and `PortalNav` has no Workspaces section. A
+`WorkspaceProvider` rendered by the app works too. `PortalNav` and
+`PortalWorkspace` use `useOptionalWorkspace()`, which is `undefined` when no
+provider is mounted.
+
+**Kinds.** A *system* workspace ships with the portal. The first edit saves a
+personal copy with the same id, and the shipped definition is never changed.
+A *named* workspace belongs to the user. `WorkspaceSummary` has `kind`,
+`isPersonalCopy` and `isModified` for each.
+
+### Nav section
+
+The Workspaces section comes first in `PortalNav` (`WORKSPACES_SECTION_ID`,
+`"workspaces"`). It lists system workspaces, then named ones. The heading has
+a count and a **+** button. It follows the `sections` style, so it can
+collapse.
+
+- Each row is a link to `/workspaces/:id`. The open workspace is highlighted
+  (`aria-current="page"`).
+- A system row shows a **default** chip, or a **Your copy** tag (title
+  "Your copy · edited") when the user has a personal copy.
+- A named row has a ⋯ menu (also on right-click and Shift+F10) with
+  **Rename** and **Delete…**. Rename edits the name in place: Enter or blur
+  saves, Escape cancels. Delete asks for confirmation in a dialog. Deleting
+  the open workspace navigates to another workspace, or to `/`.
+- **+ New workspace**, the last row, creates an empty named workspace called
+  "Untitled workspace" ("Untitled workspace 2"… when taken), opens it and
+  puts its name in edit mode in the header.
+- Rows are not drop targets. Panels are dropped on the workspace itself.
+- In the `icons` rail, rows show an icon with a tooltip, the section has no
+  heading, and named rows have no menu: rename in the header. The section
+  works the same in the `minimized` overlay.
+
+### Workspace route
+
+`PortalWorkspace` renders at `WORKSPACE_ROUTE` (`/workspaces/:workspaceId`;
+build paths with `getWorkspacePath(id)`). The URL is the source of truth:
+opening the route calls `setActiveWorkspace(id)`, so a deep link, the nav,
+and back and forward all select the workspace. An id that isn't a known
+workspace shows **Workspace not found**, with a button to open the first
+workspace. The grid is `PortalWorkspaceGrid`, a `GridLayout` with the
+workspace's saved component state; an empty workspace shows
+`WorkspaceStartPanel`.
+
+`PortalWorkspaceHeader` shows a **Workspaces /** crumb and the name. A named
+workspace's name is a button that edits it in place, and its status is
+**Saved**. A system workspace shows **Default**, or **Your copy** with the
+time of the last edit. `headerActions` are rendered before **Reset to
+default**.
+
+### Reset to default
+
+When the open workspace is a system workspace with a personal copy, the
+header shows **Reset to default**. It opens a popover:
+
+- **Reset** deletes the personal copy (`resetToDefault(id)`), restoring the
+  shipped layout.
+- **Cancel** closes the popover.
+- **Save as new…** asks for a name (default "{name} copy"), saves the current
+  layout as a named workspace (`saveActiveWorkspaceAs`), resets the system
+  workspace, then opens the new workspace.
 
 ## WindowHost and module launch menus
 
@@ -523,11 +619,13 @@ core/
 |   |-- portal-module-registry/
 |   |-- portal-nav/
 |   |-- portal-shell/
+|   |-- portal-workspaces/
 |   |-- remote-module/
 |   |-- saved-state/
 |   |-- server-monitor/
 |   |-- window-host/
 |   |-- window-shell/
+|   |-- workspace/
 |   |-- index.ts
 |   |-- portal.ts
 |   `-- RemoteModuleDescriptor.ts

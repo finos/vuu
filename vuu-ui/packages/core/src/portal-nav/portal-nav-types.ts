@@ -61,6 +61,11 @@ export interface PortalNavProps {
   sections?: PortalNavSectionStyle;
   /** Width (px) of the `icons-and-text` mode. Default 248. */
   width?: number;
+  /**
+   * Show the Workspaces section (default `true`) when a `WorkspaceProvider`
+   * is mounted, e.g. by `PortalShell` with its `workspaces` option.
+   */
+  workspaces?: boolean;
 }
 
 export const DISPLAY_MODE_WIDTHS: Record<PortalNavDisplayMode, number> = {

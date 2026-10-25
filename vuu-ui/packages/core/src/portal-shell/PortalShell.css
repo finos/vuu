@@ -8,9 +8,7 @@
     "nav banners"
     "nav content";
   /* The track count never changes, so a nav width change can animate. */
-  transition: grid-template-columns
-    var(--vuuPortalShell-navTransitionDuration, 0s)
-    var(--vuuPortalShell-navTransitionTimingFunction, ease);
+  transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 0s) var(--vuuPortalShell-navTransitionTimingFunction, ease);
 
   height: 100vh;
   padding: var(--vuuPortalShell-padding, var(--salt-spacing-50));
@@ -18,9 +16,7 @@
 
   /* The column is sized by a PortalNav, which animates by default. */
   &.vuuPortalShell-managedNav {
-    transition: grid-template-columns
-      var(--vuuPortalShell-navTransitionDuration, 180ms)
-      var(--vuuPortalShell-navTransitionTimingFunction, ease);
+    transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 180ms) var(--vuuPortalShell-navTransitionTimingFunction, ease);
   }
 
   &.vuuPortalShell-noHeader {

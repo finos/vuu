@@ -90,6 +90,14 @@ vi.mock("@vuu-ui/vuu-notifications", () => ({
 }));
 // The workspace model is not exercised here and pulls in heavy UI controls.
 vi.mock("../../src/workspace", () => ({}));
+vi.mock("../../src/portal-workspaces/PortalWorkspace", () => ({
+  PortalWorkspace: () => <div data-testid="portal-workspace" />,
+}));
+vi.mock("../../src/portal-workspaces/PortalWorkspacesProvider", () => ({
+  PortalWorkspacesProvider: ({ children }: { children: ReactNode }) => (
+    <div data-provider="workspaces">{children}</div>
+  ),
+}));
 vi.mock("../../src/notifications/PortalNotificationBanners", () => ({
   PortalNotificationBanners: () => null,
 }));
@@ -261,6 +269,28 @@ describe("Portal and window shells", () => {
         theme: "vuu-theme",
       },
     });
+  });
+
+  it.each([
+    [true, 1],
+    [false, 0],
+  ])("routes /workspaces/:id to the workspace when workspaces is set (%s)", async (enabled, count) => {
+    window.history.replaceState(null, "", "/workspaces/trader");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={modules}
+          title="Portal"
+          workspaces={enabled ? {} : undefined}
+        />,
+      );
+    });
+    expect(
+      container.querySelectorAll('[data-testid="portal-workspace"]'),
+    ).toHaveLength(count);
+    expect(
+      container.querySelectorAll('[data-provider="workspaces"]'),
+    ).toHaveLength(count);
   });
 
   it("renders PortalLandingPage at the root path and navigates to a module", async () => {
