@@ -455,18 +455,120 @@ export const parsePortalBuildConfig = (
   return config;
 };
 
-export const loadPortalBuildConfig = (
-  configPath = "portal-build.json",
-): LoadedPortalBuildConfig => {
-  const absoluteConfigPath = path.resolve(configPath);
-  let value: unknown;
+/**
+ * Merges `override` onto `base`. Plain objects merge key by key; arrays and
+ * other values in `override` replace those in `base`.
+ */
+export const mergeConfigValues = (base: unknown, override: unknown): unknown => {
+  if (!isObject(base) || !isObject(override)) {
+    return override === undefined ? base : override;
+  }
+  const merged: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    merged[key] = mergeConfigValues(base[key], value);
+  }
+  return merged;
+};
+
+const readConfigJson = (absoluteConfigPath: string): unknown => {
   try {
-    value = JSON.parse(readFileSync(absoluteConfigPath, "utf8")) as unknown;
+    return JSON.parse(readFileSync(absoluteConfigPath, "utf8")) as unknown;
   } catch (error) {
     throw new Error(`Unable to read portal build config ${absoluteConfigPath}`, {
       cause: error,
     });
   }
+};
+
+const FILE_PATH_KEYS = ["entry", "htmlTemplate", "output", "preEntry"];
+
+/**
+ * Makes the file paths in a base config absolute, so they stay relative to
+ * the base file rather than to whichever config extends it. URL-like values
+ * (`publicPath`, `assetPrefix`) are left as they are.
+ */
+const absolutizeBasePaths = (value: unknown, baseDir: string): unknown => {
+  if (!isObject(value)) {
+    return value;
+  }
+  const absolutize = (section: unknown) => {
+    if (!isObject(section)) {
+      return section;
+    }
+    const result: Record<string, unknown> = { ...section };
+    for (const key of FILE_PATH_KEYS) {
+      if (typeof result[key] === "string") {
+        result[key] = path.resolve(baseDir, result[key] as string);
+      }
+    }
+    if (isObject(result.entries)) {
+      result.entries = Object.fromEntries(
+        Object.entries(result.entries).map(([mode, entry]) => [
+          mode,
+          typeof entry === "string" ? path.resolve(baseDir, entry) : entry,
+        ]),
+      );
+    }
+    return result;
+  };
+  return {
+    ...value,
+    ...(value.paths === undefined ? {} : { paths: absolutize(value.paths) }),
+    ...(isObject(value.builds)
+      ? {
+          builds: Object.fromEntries(
+            Object.entries(value.builds).map(([mode, variant]) => [
+              mode,
+              absolutize(variant),
+            ]),
+          ),
+        }
+      : {}),
+  };
+};
+
+/**
+ * Reads a config file and applies its `extends` chain (a path, or an array
+ * of paths merged in order). Each `extends` path, and each file path inside
+ * a base config, is resolved relative to the file that declares it.
+ */
+const readConfigWithExtends = (
+  absoluteConfigPath: string,
+  seen: string[] = [],
+): unknown => {
+  if (seen.includes(absoluteConfigPath)) {
+    throw new Error(
+      `Invalid portal build config: circular extends ${[...seen, absoluteConfigPath].join(" -> ")}`,
+    );
+  }
+  const value = readConfigJson(absoluteConfigPath);
+  if (!isObject(value) || value.extends === undefined) {
+    return value;
+  }
+  const { extends: basePath, ...rest } = value;
+  const basePaths = Array.isArray(basePath) ? basePath : [basePath];
+  const base = basePaths.reduce<unknown>((merged, entry, index) => {
+    const property = Array.isArray(basePath) ? `extends[${index}]` : "extends";
+    const resolved = path.resolve(
+      path.dirname(absoluteConfigPath),
+      requireString(entry, property),
+    );
+    return mergeConfigValues(
+      merged,
+      absolutizeBasePaths(
+        readConfigWithExtends(resolved, [...seen, absoluteConfigPath]),
+        path.dirname(resolved),
+      ),
+    );
+  }, {});
+  return mergeConfigValues(base, rest);
+};
+
+export const loadPortalBuildConfig = (
+  configPath = "portal-build.json",
+): LoadedPortalBuildConfig => {
+  const absoluteConfigPath = path.resolve(configPath);
+  const value = readConfigWithExtends(absoluteConfigPath);
 
   return {
     config: parsePortalBuildConfig(value),

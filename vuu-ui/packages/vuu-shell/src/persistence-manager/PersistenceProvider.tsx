@@ -1,11 +1,19 @@
 import {
+  WorkspacePersistenceProvider,
+  type WorkspacePersistenceService,
+} from "@vuu-ui/core";
+import {
   type ReactElement,
   type ReactNode,
   createContext,
   useContext,
 } from "react";
 import type { IPersistenceManager } from "./PersistenceManager";
-import type { WorkspacePersistenceService } from "./WorkspacePersistenceService";
+
+export {
+  useOptionalWorkspacePersistenceService,
+  useWorkspacePersistenceService,
+} from "@vuu-ui/core";
 
 export interface PersistenceContextProps {
   persistenceManager?: IPersistenceManager;
@@ -27,7 +35,9 @@ export const PersistenceProvider = ({
     <PersistenceContext.Provider
       value={{ persistenceManager, workspacePersistenceService }}
     >
-      {children}
+      <WorkspacePersistenceProvider service={workspacePersistenceService}>
+        {children}
+      </WorkspacePersistenceProvider>
     </PersistenceContext.Provider>
   );
 };
@@ -36,16 +46,3 @@ export const usePersistenceManager = () => {
   const { persistenceManager } = useContext(PersistenceContext);
   return persistenceManager;
 };
-
-export const useWorkspacePersistenceService = () => {
-  const { workspacePersistenceService } = useContext(PersistenceContext);
-  if (!workspacePersistenceService) {
-    throw new Error(
-      "useWorkspacePersistenceService requires a configured PersistenceProvider",
-    );
-  }
-  return workspacePersistenceService;
-};
-
-export const useOptionalWorkspacePersistenceService = () =>
-  useContext(PersistenceContext).workspacePersistenceService;

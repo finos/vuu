@@ -1,39 +1,29 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { loadPortalBuildConfig } from "../../../tools/portal-build-tool/src/config";
 import { localPortalModuleRegistry } from "../src/local-module-registry";
 import { localVuuServers } from "../src/local-vuu-servers";
-
-interface RemoteBuildConfig {
-  manifest?: { remote?: { connectionId?: string } };
-  paths?: { publicPath?: string };
-  target?: string;
-}
 
 const portalExamplesDir = path.resolve(__dirname, "../..");
 
 /** The config.json each remote publishes, keyed by the URL it is served from. */
 const remoteConfigsByUrl = new Map(
   readdirSync(portalExamplesDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .flatMap(({ name }) => {
-      try {
-        return [
-          JSON.parse(
-            readFileSync(
-              path.join(portalExamplesDir, name, "portal-build.json"),
-              "utf8",
-            ),
-          ) as RemoteBuildConfig,
-        ];
-      } catch {
-        return [];
-      }
-    })
+    .filter(
+      ({ name }) =>
+        existsSync(path.join(portalExamplesDir, name, "portal-build.json")),
+    )
+    .map(
+      ({ name }) =>
+        loadPortalBuildConfig(
+          path.join(portalExamplesDir, name, "portal-build.json"),
+        ).config,
+    )
     .filter(({ target }) => target === "remote-module")
     .map(({ manifest, paths }) => [
-      paths?.publicPath?.replace(/\/+$/, ""),
-      manifest?.remote,
+      paths.publicPath?.replace(/\/+$/, ""),
+      manifest?.remote as { connectionId?: string } | undefined,
     ]),
 );
 

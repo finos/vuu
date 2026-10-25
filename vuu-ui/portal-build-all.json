@@ -26,6 +26,11 @@
       "singleton": true,
       "strictVersion": true
     },
+    "@vuu-ui/grid-layout": {
+      "requiredVersion": "package:@vuu-ui/core",
+      "singleton": true,
+      "strictVersion": true
+    },
     "@vuu-ui/vuu-data-editing": {
       "requiredVersion": "package:@vuu-ui/core",
       "singleton": true,

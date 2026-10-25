@@ -16,14 +16,13 @@
   ],
   "main": "index.ts",
   "devDependencies": {
-    "@vuu-ui/portal-build": "0.1.0"
+    "@vuu-ui/portal-build": "^0.3.0"
   },
   "dependencies": {
     "@salt-ds/core": "1.72.0",
-    "@vuu-ui/core": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-data-types": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-protocol-types": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-shell": "4.0.0-alpha.20",
+    "@salt-ds/icons": "1.18.3",
+    "@vuu-ui/core": "4.0.0-alpha.31",
+    "@vuu-ui/vuu-notifications": "4.0.0-alpha.31",
     "react-router-dom": "7.18.3"
   },
   "peerDependencies": {

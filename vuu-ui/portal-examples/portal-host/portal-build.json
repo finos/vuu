@@ -53,6 +53,11 @@
         "singleton": true,
         "strictVersion": true
       },
+      "@vuu-ui/grid-layout": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
+      },
       "@vuu-ui/vuu-data-editing": {
         "requiredVersion": "package:@vuu-ui/core",
         "singleton": true,
@@ -79,24 +84,5 @@
         "strictVersion": true
       }
     }
-  },
-  "cssInline": {
-    "include": [
-      "/packages/core/",
-      "/packages/grid-layout/",
-      "/packages/vuu-datatable/",
-      "/packages/vuu-context-menu/",
-      "/packages/vuu-data-react/",
-      "/packages/vuu-filters/",
-      "/packages/vuu-layout/",
-      "/packages/vuu-notifications/",
-      "/packages/vuu-popups/",
-      "/packages/vuu-shell/",
-      "/packages/vuu-chart/",
-      "/packages/vuu-table/",
-      "/packages/vuu-table-extras/",
-      "/packages/vuu-ui-controls/"
-    ],
-    "exclude": [".stories.tsx"]
   }
 }

@@ -1,5 +1,6 @@
 import {
   isNestedModule,
+  isRoutedModule,
   type RemoteModuleDescriptor,
 } from "../RemoteModuleDescriptor";
 import type { AppSwitcherMenuStyle, NavItem } from "./PortalAppSwitcher";
@@ -9,13 +10,25 @@ export const circleQuestionMarkIcon =
 
 export const toNavigationPath = (path: string) => path.replace(/\/\*$/, "");
 
+type NavigableModule = RemoteModuleDescriptor & {
+  navLocation: string;
+  path: string;
+};
+
+/**
+ * True for a module with a navigation entry: it has a location and a route.
+ * Nested and palette-only modules have none.
+ */
+export const isNavigableModule = (
+  module: RemoteModuleDescriptor,
+): module is NavigableModule =>
+  !isNestedModule(module) && isRoutedModule(module);
+
 export const buildNavItems = (
   registeredModules: RemoteModuleDescriptor[],
   menuStyle: AppSwitcherMenuStyle = "two-level",
 ): NavItem[] => {
-  const remoteModules = registeredModules.filter(
-    (remoteModule) => !isNestedModule(remoteModule),
-  );
+  const remoteModules = registeredModules.filter(isNavigableModule);
   if (menuStyle === "single-level") {
     return remoteModules.flatMap(
       ({ id, navLocation, navIconName, navIconUrl, path }) => {

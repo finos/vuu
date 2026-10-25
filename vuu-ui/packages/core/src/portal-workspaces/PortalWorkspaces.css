@@ -1,0 +1,326 @@
+/* Workspaces section of PortalNav. */
+.vuuPortalNav-workspaces {
+  .vuuPortalNav-sectionHeading {
+    gap: 4px;
+  }
+
+  .vuuPortalNav-sectionToggle {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+  }
+
+  .vuuPortalNav-sectionTitle {
+    flex: 0 1 auto;
+  }
+
+  .vuuPortalNav-sectionChevron {
+    margin-left: 0;
+  }
+
+  .saltIcon {
+    --saltIcon-color: var(--portalNav-foreground-dim);
+    --saltIcon-size: var(--portalNav-iconSize, 16px);
+  }
+
+  .vuuPortalNav-link-active .saltIcon {
+    --saltIcon-color: var(--portalNav-accent);
+  }
+}
+
+.vuuPortalNav-sectionCount {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--portalNav-borderColor);
+  border-radius: 9px;
+  color: var(--portalNav-foreground-dim);
+  display: inline-grid;
+  font-size: 10.5px;
+  font-weight: 600;
+  height: 16px;
+  letter-spacing: 0;
+  margin-left: auto;
+  min-width: 18px;
+  padding: 0 5px;
+  place-items: center;
+}
+
+.vuuPortalNav-sectionAction,
+.vuuPortalNav-rowMenu {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--portalNav-foreground-dim);
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  height: 20px;
+  justify-content: center;
+  padding: 0;
+  width: 20px;
+
+  &:hover {
+    background: var(--portalNav-hover);
+    color: var(--portalNav-foreground);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+.vuuPortalNav-workspace {
+  position: relative;
+
+  /* Room for the row menu button. */
+  &.vuuPortalNav-workspace-named .vuuPortalNav-link {
+    padding-right: 30px;
+  }
+}
+
+.vuuPortalNav-rowMenu {
+  opacity: 0;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  .vuuPortalNav-workspace:hover > &,
+  .vuuPortalNav-workspace:focus-within > &,
+  &[aria-expanded="true"] {
+    opacity: 1;
+  }
+}
+
+.vuuPortalNav-chip {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--portalNav-borderColor);
+  border-radius: 9px;
+  font-size: 10.5px;
+  padding: 0 6px;
+}
+
+.vuuPortalNav-tag {
+  background: color-mix(in srgb, var(--salt-status-warning-foreground-decorative, #f5a524) 16%, transparent);
+  border-radius: 4px;
+  color: var(--salt-status-warning-foreground-decorative, #f5b84a);
+  font-size: 10.5px;
+  padding: 1px 6px;
+}
+
+button.vuuPortalNav-link {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.vuuPortalNav-newWorkspace .vuuPortalNav-link {
+  color: var(--portalNav-accent);
+
+  .saltIcon {
+    --saltIcon-color: var(--portalNav-accent);
+  }
+}
+
+.vuuPortalNav-link-editing {
+  background: var(--portalNav-hover);
+}
+
+.vuuPortalNav-nameInput {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--portalNav-accent);
+  border-radius: 4px;
+  color: var(--portalNav-foreground);
+  flex: 1 1 auto;
+  font: inherit;
+  height: 22px;
+  min-width: 0;
+  outline: none;
+  padding: 0 4px;
+}
+
+/* The workspace route. */
+.vuuPortalWorkspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.vuuPortalWorkspace-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+
+/* The GridLayout, and the drag hint over it. */
+.vuuPortalWorkspace-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  background: var(--salt-container-secondary-background);
+
+  > .vuuGridLayout {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .vuuGridPlaceholder:has(.vuuWorkspaceDropZone) {
+    background: transparent;
+  }
+}
+
+.vuuPortalWorkspace-state {
+  align-items: center;
+  color: var(--salt-content-secondary-foreground);
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+
+  h2 {
+    color: var(--salt-content-primary-foreground);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  p {
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 420px;
+  }
+}
+
+.vuuPortalWorkspaceHeader {
+  align-items: center;
+  background: var(--salt-container-primary-background);
+  border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
+  flex: none;
+  gap: 10px;
+  height: 52px;
+  padding: 0 16px;
+}
+
+.vuuPortalWorkspaceHeader-crumb {
+  color: var(--salt-content-secondary-foreground);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.vuuPortalWorkspaceHeader-title {
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--salt-content-primary-foreground);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 3px 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vuuPortalWorkspaceHeader-heading {
+  display: flex;
+  margin: 0;
+  min-width: 0;
+}
+
+button.vuuPortalWorkspaceHeader-title {
+  background: transparent;
+  cursor: text;
+  font-family: inherit;
+
+  &:hover {
+    border-color: var(--salt-separable-secondary-borderColor);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+.vuuPortalWorkspaceHeader-nameInput {
+  background: var(--salt-container-secondary-background);
+  border: 1px solid var(--salt-focused-outlineColor, #2f80ed);
+  border-radius: 5px;
+  color: var(--salt-content-primary-foreground);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 200px;
+  outline: none;
+  padding: 3px 6px;
+}
+
+.vuuPortalWorkspaceHeader-status {
+  align-items: center;
+  color: var(--salt-content-secondary-foreground);
+  display: inline-flex;
+  font-size: 11px;
+  gap: 6px;
+  white-space: nowrap;
+
+  .vuuPortalNav-tag {
+    font-size: 10.5px;
+  }
+}
+
+.vuuPortalWorkspaceHeader-spacer {
+  flex: 1 1 auto;
+}
+
+.vuuPortalWorkspaceHeader-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.vuuPortalWorkspaceReset {
+  display: grid;
+  gap: 10px;
+  width: min(420px, 90vw);
+
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  p {
+    color: var(--salt-content-secondary-foreground);
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  label {
+    color: var(--salt-content-secondary-foreground);
+    display: grid;
+    font-size: 11px;
+    gap: 4px;
+  }
+}
+
+.vuuPortalWorkspaceReset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}

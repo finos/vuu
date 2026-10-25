@@ -20,9 +20,14 @@ export interface TableRegistrationContextValue {
   unregisterTables: (sourceId: string) => void;
 }
 
+/**
+ * @deprecated No longer used by the table browser and viewer: open tables as
+ * `vuu-table` items, or pass the table to the viewer as props.
+ */
 export const TableRegistrationContext =
   createContext<TableRegistrationContextValue | null>(null);
 
+/** @deprecated See `TableRegistrationContext`. */
 export const useTableRegistration = () => {
   const context = useContext(TableRegistrationContext);
 

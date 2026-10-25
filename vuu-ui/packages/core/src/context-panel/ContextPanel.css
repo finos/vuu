@@ -21,6 +21,7 @@
 }
 
 .vuuContextPanel-overlay {
+  transition: none;
   width: 0px;
 }
 
@@ -61,4 +62,11 @@
   padding-right: 16px;
   position: relative;
   width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vuuContextPanel,
+  .vuuContextPanel-inner {
+    transition: none;
+  }
 }

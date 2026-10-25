@@ -114,7 +114,9 @@ describe("buildNavSections", () => {
         items: [
           {
             href: "/orders",
+            mfScope: "test",
             moduleId: 7,
+            moduleName: "test",
             navBadge: "workingOrders",
             navIconName: "orders",
             navIconUrl: "data:image/svg+xml,orders",
@@ -125,6 +127,22 @@ describe("buildNavSections", () => {
         ],
       },
     ]);
+  });
+
+  it("identifies a module by its federation scope, whatever its registry id", () => {
+    // A server-supplied registry assigns its own numeric ids.
+    const [{ items }] = buildNavSections([
+      remoteModule("/Tables/Browse", "/tables/browse", {
+        id: 1042,
+        mfScope: "vuuTableBrowser",
+        name: "table-browser",
+      }),
+    ]);
+    expect(items[0]).toMatchObject({
+      mfScope: "vuuTableBrowser",
+      moduleId: 1042,
+      moduleName: "table-browser",
+    });
   });
 
   it("leaves optional metadata undefined when missing", () => {
@@ -148,6 +166,24 @@ describe("buildNavSections", () => {
       outline([
         remoteModule("/Trading/Orders", "/orders", { id: 1 }),
         remoteModule("/Trading/Orders again", "/orders/*", { id: 2 }),
+      ]),
+    ).toEqual([["Trading", ["Orders"]]]);
+  });
+
+  it("skips palette-only modules, which have no location or route", () => {
+    const {
+      navLocation: _navLocation,
+      path: _path,
+      ...paletteOnly
+    } = remoteModule("", "", {
+      id: "palette-only",
+      workspace: { paletteGroup: "Trading" },
+    });
+    expect(
+      outline([
+        remoteModule("/Trading/Orders", "/orders"),
+        paletteOnly,
+        remoteModule("/Trading/Fills", "", { id: "no-route" }),
       ]),
     ).toEqual([["Trading", ["Orders"]]]);
   });

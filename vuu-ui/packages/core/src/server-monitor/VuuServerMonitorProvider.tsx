@@ -242,8 +242,11 @@ export const useOpenModuleId = (
   const { pathname } = useLocation();
   return useMemo(
     () =>
-      remoteModules.find(({ path }) =>
-        matchPath({ end: false, path: path.replace(/\/?\*$/, "") }, pathname),
+      remoteModules.find(
+        ({ path }) =>
+          path !== undefined &&
+          path !== "" &&
+          matchPath({ end: false, path: path.replace(/\/?\*$/, "") }, pathname),
       )?.id,
     [pathname, remoteModules],
   );

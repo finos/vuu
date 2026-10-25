@@ -3,7 +3,13 @@ export * from "./connection-management";
 export * from "./context-panel";
 export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
 export {
+  PortalModuleInstanceContext,
+  usePortalModuleInstanceId,
+} from "./module-instance/PortalModuleInstanceContext";
+export {
   isNestedModule,
+  isPaletteOnlyModule,
+  isRoutedModule,
   type PortalModuleRegistry,
   type RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
@@ -28,3 +34,4 @@ export {
   type TableSourceStatus,
   useTableRegistration,
 } from "./context-definitions/TableRegistrationContext";
+export * from "./workspace";

@@ -8,6 +8,7 @@ import type {
 import { describedBy, IndicatorDot, PortalNavEntry } from "./PortalNavEntry";
 import type {
   PortalNavDisplayMode,
+  PortalNavProps,
   PortalNavSectionStyle,
 } from "./portal-nav-types";
 import { usePortalNavIndicator } from "./usePortalNavIndicator";
@@ -21,6 +22,7 @@ export interface PortalNavSectionProps {
   displayMode: Exclude<PortalNavDisplayMode, "minimized">;
   onCollapsedChange: (sectionId: string, collapsed: boolean) => void;
   renderBadge?: (item: PortalNavItem) => ReactNode;
+  renderItemChildren?: PortalNavProps["renderItemChildren"];
   section: PortalNavSectionModel;
   sectionStyle: PortalNavSectionStyle;
 }
@@ -32,6 +34,7 @@ export const PortalNavSection = ({
   displayMode,
   onCollapsedChange,
   renderBadge,
+  renderItemChildren,
   section,
   sectionStyle,
 }: PortalNavSectionProps) => {
@@ -105,6 +108,7 @@ export const PortalNavSection = ({
             item={item}
             key={item.href}
             renderBadge={renderBadge}
+            renderChildren={renderItemChildren}
           />
         ))}
       </ul>

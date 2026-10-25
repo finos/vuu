@@ -16,7 +16,7 @@ import {
   describeUnread,
   useNavItemPresence,
 } from "../portal-app-switcher/useNavItemPresence";
-import type { PortalNavDisplayMode } from "./portal-nav-types";
+import type { PortalNavDisplayMode, PortalNavProps } from "./portal-nav-types";
 import {
   type PortalNavIndicator,
   usePortalNavIndicator,
@@ -102,6 +102,8 @@ export interface PortalNavEntryProps {
   displayMode: Exclude<PortalNavDisplayMode, "minimized">;
   item: PortalNavItem;
   renderBadge?: (item: PortalNavItem) => ReactNode;
+  /** Content nested under the item, in the expanded display modes. */
+  renderChildren?: PortalNavProps["renderItemChildren"];
 }
 
 /** A module in the nav: a link with its icon, badge and notification dot. */
@@ -110,6 +112,7 @@ export const PortalNavEntry = ({
   displayMode,
   item,
   renderBadge,
+  renderChildren,
 }: PortalNavEntryProps) => {
   const targetWindow = useWindow();
   const rail = displayMode === "icons";
@@ -201,6 +204,9 @@ export const PortalNavEntry = ({
         </span>
       ) : null}
       {elements}
+      {displayMode === "icons"
+        ? null
+        : renderChildren?.(item, { active, displayMode })}
     </li>
   );
 };

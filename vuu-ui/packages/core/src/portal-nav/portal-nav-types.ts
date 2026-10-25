@@ -24,6 +24,13 @@ export interface PortalNavSlotContext {
   setDisplayMode: (displayMode: PortalNavDisplayMode) => void;
 }
 
+/** Passed to `renderItemChildren`. */
+export interface PortalNavItemChildrenContext {
+  /** True when the item is the active (current page) item. */
+  active: boolean;
+  displayMode: Exclude<PortalNavDisplayMode, "minimized" | "icons">;
+}
+
 export type PortalNavSlot =
   | ReactNode
   | ((context: PortalNavSlotContext) => ReactNode);
@@ -36,8 +43,19 @@ export interface PortalNavProps {
    * rail. Transient: the user's chosen mode is kept.
    */
   autoCollapseBelow?: number;
-  /** Logo, product name, environment chip etc. at the top of the nav. */
+  /**
+   * Logo, product name, environment chip etc. at the top of the nav. Clicking
+   * it goes to `brandHref`; controls in it, e.g. a bell, keep their own
+   * behaviour.
+   */
   brand?: PortalNavSlot;
+  /**
+   * Where the brand links to, on the portal (host) router. Defaults to the
+   * portal root, `/`. Pass `false` for a brand that is not a link.
+   */
+  brandHref?: string | false;
+  /** Accessible name of the brand link. Default "Home". */
+  brandLabel?: string;
   className?: string;
   /** Target of the collapse button and ⌘B / Ctrl+B. Default `icons`. */
   collapseTo?: PortalNavCollapsedMode;
@@ -57,10 +75,24 @@ export interface PortalNavProps {
    * `icons` rail a count above zero shows as a pip, other content is hidden.
    */
   renderBadge?: (item: PortalNavItem) => ReactNode;
+  /**
+   * Content nested under an item, e.g. the servers of a table browser,
+   * shown in the expanded display modes (not the `icons` rail). Return
+   * nothing for an item without children.
+   */
+  renderItemChildren?: (
+    item: PortalNavItem,
+    context: PortalNavItemChildrenContext,
+  ) => ReactNode;
   /** Section headings (default), collapsible headings, or none. */
   sections?: PortalNavSectionStyle;
   /** Width (px) of the `icons-and-text` mode. Default 248. */
   width?: number;
+  /**
+   * Show the Workspaces section (default `true`) when a `WorkspaceProvider`
+   * is mounted, e.g. by `PortalShell` with its `workspaces` option.
+   */
+  workspaces?: boolean;
 }
 
 export const DISPLAY_MODE_WIDTHS: Record<PortalNavDisplayMode, number> = {

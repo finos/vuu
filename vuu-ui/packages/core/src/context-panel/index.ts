@@ -12,7 +12,10 @@ export {
 } from "./ContextPanelProvider";
 export {
   SlotContextPanelProvider,
+  type ContextPanelClaimOptions,
   type ContextPanelPlacement,
+  type ContextPanelReleaseReason,
+  type ContextPanelSlotPlacement,
 } from "./ContextPanelSlot";
 export {
   SHELL_CONTEXT_PANEL_HOST_ID,

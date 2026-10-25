@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   ContextPanelSlotContext,
   ContextPanelSlotHost,
+  type ContextPanelSlotPlacement,
   SlotContextPanelProvider,
   useContextPanelSlot,
   useCreateContextPanelSlot,
@@ -18,10 +19,13 @@ export const SHELL_CONTEXT_PANEL_HOST_ID = "vuu-shell-context";
  */
 export const ShellContextPanelProvider = ({
   children,
+  defaultPlacement,
 }: {
   children: ReactNode;
+  /** Placement for claims that don't specify one. Default `"overlay"`. */
+  defaultPlacement?: ContextPanelSlotPlacement;
 }) => {
-  const slot = useCreateContextPanelSlot();
+  const slot = useCreateContextPanelSlot({ defaultPlacement });
   return (
     <ContextPanelSlotContext.Provider value={slot}>
       <SlotContextPanelProvider>{children}</SlotContextPanelProvider>
@@ -30,8 +34,9 @@ export const ShellContextPanelProvider = ({
 };
 
 /**
- * The shell's context panel, a slide-out drawer overlaying the right edge of
- * the shell. Must be rendered within a `ShellContextPanelProvider`.
+ * The shell's context panel, a slide-out drawer at the right edge of the
+ * shell. It overlays the content, or with an inline placement takes its own
+ * column. Must be rendered within a `ShellContextPanelProvider`.
  */
 export const ShellContextPanel = ({ className }: { className?: string }) => {
   const slot = useContextPanelSlot();

@@ -1,3 +1,4 @@
+import { existsSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createRsbuild } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
@@ -17,6 +18,34 @@ export interface BuildPortalOptions {
   mode?: PortalBuildMode;
   rsdoctor?: boolean;
 }
+
+/**
+ * `serve` config for a remote module's output folder: allow cross-origin
+ * loads from the host and fall back to index.html for standalone routes.
+ */
+export const defaultRemoteServeConfig = {
+  headers: [
+    {
+      source: "**",
+      headers: [{ key: "Access-Control-Allow-Origin", value: "*" }],
+    },
+  ],
+  rewrites: [
+    { source: "/", destination: "/index.html" },
+    { source: "**", destination: "/index.html" },
+  ],
+};
+
+/** Writes the default serve.json unless the app supplied one in public/. */
+const writeDefaultServeConfig = (outputRoot: string) => {
+  const serveConfigPath = path.join(outputRoot, "serve.json");
+  if (!existsSync(serveConfigPath)) {
+    writeFileSync(
+      serveConfigPath,
+      `${JSON.stringify(defaultRemoteServeConfig, null, 2)}\n`,
+    );
+  }
+};
 
 const resolveExposeRequest = (request: string, root: string): string => {
   if (
@@ -260,4 +289,8 @@ export const buildPortal = async ({
   });
 
   await rsbuild.build();
+
+  if (plan.target === "remote-module") {
+    writeDefaultServeConfig(plan.outputRoot);
+  }
 };

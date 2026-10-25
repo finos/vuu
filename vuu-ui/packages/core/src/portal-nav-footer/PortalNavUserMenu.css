@@ -27,7 +27,7 @@
 
 .vuuPortalNavUserMenu-expanded .vuuPortalNavUserMenu-trigger:hover,
 .vuuPortalNavUserMenu-expanded .vuuPortalNavUserMenu-trigger[aria-expanded="true"] {
-  background: var(--salt-actionable-subtle-background-hover);
+  background: var(--salt-navigable-background-hover, var(--salt-selectable-background-hover));
 }
 
 .vuuPortalNavUserMenu-rail .vuuPortalNavUserMenu-trigger[aria-expanded="true"] {
@@ -148,7 +148,7 @@
 
 .vuuPortalNavUserMenu-item:hover,
 .vuuPortalNavUserMenu-item:focus-visible {
-  background: var(--salt-actionable-subtle-background-hover);
+  background: var(--salt-navigable-background-hover, var(--salt-selectable-background-hover));
   outline: none;
 }
 
