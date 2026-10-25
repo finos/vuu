@@ -42,6 +42,19 @@ export interface VuuLoginRequest {
   type: "LOGIN";
 }
 
+/**
+ * How a module can be added to a workspace. A module is listed in the
+ * workspace palette only if its descriptor includes this.
+ */
+export interface VuuModuleWorkspaceDescriptor {
+  /** Heading of the palette group the module is listed under. */
+  paletteGroup: string;
+  /** Palette icon as a data URL. Defaults to `navIconUrl`. */
+  iconUrl?: string;
+  /** Initial size, in grid tracks, of an item added to a workspace. */
+  defaultSize?: { cols?: number; rows?: number };
+}
+
 export interface VuuModuleDescriptor {
   clientIdentifier: string;
   description: string;
@@ -78,6 +91,8 @@ export interface VuuModuleDescriptor {
   path: string;
   title: string;
   version: number;
+  /** Set to make the module available in the workspace palette. */
+  workspace?: VuuModuleWorkspaceDescriptor;
 }
 
 export interface VuuModuleRecord extends VuuModuleDescriptor {

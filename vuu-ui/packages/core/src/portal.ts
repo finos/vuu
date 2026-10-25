@@ -154,3 +154,5 @@ export type {
   VuuServerStatusDetail,
   VuuServerStatusSource,
 } from "./connection-management/server-status";
+
+export * from "./portal-components";
