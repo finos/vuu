@@ -1,0 +1,144 @@
+.vuuPortalNavServers {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 2px 0 4px;
+  padding-left: 26px;
+}
+
+.vuuPortalNavServers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuPortalNavServers-server {
+  position: relative;
+
+  &.vuuPortalNavServers-server-manual .vuuPortalNavServers-link {
+    padding-right: 28px;
+  }
+}
+
+.vuuPortalNavServers-link,
+.vuuPortalNavServers-add {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--portalNav-radius, 6px);
+  color: var(--portalNav-foreground, var(--salt-content-primary-foreground));
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 12.5px;
+  gap: 8px;
+  height: 26px;
+  padding: 0 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  width: 100%;
+
+  &:hover {
+    background: var(--portalNav-hover, var(--salt-selectable-background-hover));
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+    outline-offset: -2px;
+  }
+
+  svg {
+    color: var(--portalNav-foreground-dim, var(--salt-content-secondary-foreground));
+    flex: none;
+  }
+}
+
+.vuuPortalNavServers-link-active {
+  background: var(--portalNav-active, var(--salt-selectable-background-selected));
+  font-weight: 550;
+
+  svg {
+    color: var(--portalNav-accent, var(--salt-accent-background));
+  }
+}
+
+.vuuPortalNavServers-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vuuPortalNavServers-status {
+  background: var(--salt-content-secondary-foreground);
+  border-radius: 50%;
+  flex: none;
+  height: 7px;
+  opacity: 0.5;
+  width: 7px;
+
+  &[data-presence="online"] {
+    background: var(--salt-status-success-foreground-decorative, #2e7d32);
+    opacity: 1;
+  }
+
+  &[data-presence="connecting"],
+  &[data-presence="degraded"] {
+    background: var(--salt-status-warning-foreground-decorative, #ed6c02);
+    opacity: 1;
+  }
+
+  &[data-presence="offline"],
+  &[data-presence="unauthorized"],
+  &[data-presence="unavailable"] {
+    background: var(--salt-status-error-foreground-decorative, #d32f2f);
+    opacity: 1;
+  }
+}
+
+.vuuPortalNavServers-add {
+  color: var(--portalNav-foreground-dim, var(--salt-content-secondary-foreground));
+}
+
+.vuuPortalNavServers-remove {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--portalNav-foreground-dim, var(--salt-content-secondary-foreground));
+  cursor: pointer;
+  display: inline-flex;
+  height: 20px;
+  justify-content: center;
+  opacity: 0;
+  padding: 0;
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  width: 20px;
+
+  .vuuPortalNavServers-server:hover > &,
+  .vuuPortalNavServers-server:focus-within > & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--portalNav-hover, var(--salt-selectable-background-hover));
+    color: var(--portalNav-foreground, var(--salt-content-primary-foreground));
+  }
+}
+
+.vuuAddServerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.vuuAddServerForm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

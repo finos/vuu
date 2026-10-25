@@ -66,7 +66,33 @@
   gap: 10px;
   min-width: 0;
   overflow: hidden;
+  position: relative;
   white-space: nowrap;
+
+  /* Clicks on brand content, other than its controls, reach the link. */
+  > :not(.vuuPortalNav-brandLink) {
+    pointer-events: none;
+  }
+
+  :is(a, button, input, select, textarea, [tabindex], [role="button"]) {
+    pointer-events: auto;
+  }
+}
+
+.vuuPortalNav-brandLink {
+  border-radius: 6px;
+  inset: 0;
+  position: absolute;
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+    outline-offset: -2px;
+  }
+}
+
+/* Nothing to show when the brand renders no content. */
+.vuuPortalNav-brand:has(> .vuuPortalNav-brandLink:only-child) {
+  display: none;
 }
 
 .vuuPortalNav-headerButton {

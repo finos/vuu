@@ -1,9 +1,7 @@
 {
-  "version": 1,
-  "target": "remote-module",
+  "extends": "../portal-build.remote.json",
   "paths": {
     "entry": "./src/index.tsx",
-    "htmlTemplate": "../remote-module-template/index.html",
     "output": "../../dist_portal/vuu-table-viewer",
     "publicPath": "http://localhost:5005/"
   },
@@ -11,7 +9,9 @@
     "title": "vuuTableViewer (standalone)"
   },
   "server": {
-    "corsOrigins": ["http://localhost:5001"]
+    "corsOrigins": [
+      "http://localhost:5001"
+    ]
   },
   "manifest": {
     "filename": "./config.json",
@@ -19,58 +19,8 @@
   },
   "moduleFederation": {
     "name": "vuuTableViewer",
-    "dts": false,
     "exposes": {
       "./VuuTableViewer": "./src/VuuTableViewer"
-    },
-    "shared": {
-      "react": {
-        "requiredVersion": "^19.2.3",
-        "strictVersion": true
-      },
-      "react-dom": {
-        "requiredVersion": "^19.2.3",
-        "strictVersion": true
-      },
-      "react-router-dom": {
-        "singleton": true,
-        "requiredVersion": "^7.18.3",
-        "strictVersion": true
-      },
-      "@vuu-ui/core": {
-        "singleton": true,
-        "requiredVersion": "package",
-        "strictVersion": true
-      },
-      "@vuu-ui/core/portal": {
-        "singleton": true,
-        "requiredVersion": "package:@vuu-ui/core",
-        "strictVersion": true
-      },
-      "@vuu-ui/vuu-data-editing": {
-        "singleton": true,
-        "requiredVersion": "package:@vuu-ui/core",
-        "strictVersion": true
-      },
-      "@vuu-ui/vuu-data-test": {
-        "singleton": true,
-        "requiredVersion": "package:@vuu-ui/core",
-        "strictVersion": true
-      },
-      "@vuu-ui/vuu-shell": {
-        "requiredVersion": "package:@vuu-ui/core",
-        "strictVersion": true
-      },
-      "@vuu-ui/vuu-data-remote": {
-        "requiredVersion": "package:@vuu-ui/core",
-        "singleton": true,
-        "strictVersion": true
-      },
-      "@vuu-ui/vuu-notifications": {
-        "requiredVersion": "package:@vuu-ui/core",
-        "singleton": true,
-        "strictVersion": true
-      }
     }
   }
 }

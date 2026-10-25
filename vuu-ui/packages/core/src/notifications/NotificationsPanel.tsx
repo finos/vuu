@@ -36,7 +36,10 @@ import type {
 } from "../connection-management/ModuleServerMap";
 import { isUnavailablePresence } from "../connection-management/server-status";
 import { useOptionalApplicationState } from "../persistence/PersistenceContext";
-import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import {
+  isRoutedModule,
+  type RemoteModuleDescriptor,
+} from "../RemoteModuleDescriptor";
 import {
   useModuleServerStatus,
   useVuuServerStatuses,
@@ -196,7 +199,7 @@ const OpenModuleButton = ({
   module: { id, path, title },
   onOpen,
 }: {
-  module: RemoteModuleDescriptor;
+  module: RemoteModuleDescriptor & { path: string };
   onOpen: () => void;
 }) => {
   const navigate = useNavigate();
@@ -291,7 +294,7 @@ const NotificationItem = ({
           <Text className={`${classBase}-itemMessage`}>{message}</Text>
         ) : null}
         <div className={`${classBase}-itemActions`}>
-          {canNavigate && module ? (
+          {canNavigate && module && isRoutedModule(module) ? (
             <OpenModuleButton module={module} onOpen={onOpenModule} />
           ) : null}
           <span className={`${classBase}-itemActionsEnd`}>

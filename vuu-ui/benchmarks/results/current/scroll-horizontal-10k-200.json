@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "scenario": {
+    "id": "scroll-horizontal-10k-200",
+    "description": "Scroll 100px per frame across 200 columns",
+    "dataset": {
+      "rows": 10000,
+      "cols": 200,
+      "cellType": "formatted",
+      "seed": 20261020
+    },
+    "run": {
+      "kind": "scroll-smooth",
+      "axis": "horizontal",
+      "step": 1,
+      "frames": 150
+    }
+  },
+  "env": {
+    "gitSha": "49f6f39f2b6490f4e42bedbba46b2a6c0ee73786-dirty",
+    "target": "current",
+    "buildMode": "production",
+    "browser": "chromium",
+    "browserVersion": "151.0.7922.34",
+    "headless": true,
+    "gpu": "on",
+    "cpuThrottle": 4,
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 8,
+    "platform": "darwin arm64"
+  },
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-horizontal-10k-200",
+      "pass": "timing",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:38:10.236Z",
+      "mount": {
+        "dataGenMs": 110,
+        "dataSourceMs": 46,
+        "firstRowsMs": 488,
+        "firstPaintMs": 531
+      },
+      "result": {
+        "durationMs": 7591,
+        "frames": {
+          "count": 151,
+          "mean": 50.11,
+          "p50": 50.2,
+          "p95": 99,
+          "p99": 100.8,
+          "max": 100.8,
+          "jankyFrames": 83,
+          "jankyPct": 54.97
+        },
+        "longFrames": {
+          "count": 78,
+          "blockingMs": 2585
+        }
+      },
+      "cdp": {
+        "layoutCount": 79,
+        "layoutMs": 225,
+        "recalcStyleCount": 79,
+        "recalcStyleMs": 408,
+        "scriptMs": 5895,
+        "taskMs": 7662,
+        "jsHeapUsedMB": 66.6,
+        "domNodes": 3229,
+        "jsEventListeners": 1199
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-horizontal-10k-200",
+      "pass": "instrumented",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:38:27.039Z",
+      "mount": {
+        "dataGenMs": 107,
+        "dataSourceMs": 50,
+        "firstRowsMs": 484,
+        "firstPaintMs": 526
+      },
+      "result": {
+        "durationMs": 7862,
+        "frames": {
+          "count": 151,
+          "mean": 51.99,
+          "p50": 65.9,
+          "p95": 100.1,
+          "p99": 117.4,
+          "max": 117.5,
+          "jankyFrames": 85,
+          "jankyPct": 56.29
+        },
+        "longFrames": {
+          "count": 78,
+          "blockingMs": 2826
+        },
+        "dom": {
+          "rowMounts": 0,
+          "rowMoves": 0,
+          "elementsInserted": 6435,
+          "elementsRemoved": 6435,
+          "textChanges": 0,
+          "attributeChanges": 3042,
+          "rowUnmounts": 0,
+          "tableNodes": 1911
+        }
+      },
+      "cdp": {
+        "layoutCount": 79,
+        "layoutMs": 225,
+        "recalcStyleCount": 79,
+        "recalcStyleMs": 421,
+        "scriptMs": 6135,
+        "taskMs": 7927,
+        "jsHeapUsedMB": 66.6,
+        "domNodes": 3229,
+        "jsEventListeners": 1199
+      }
+    }
+  ],
+  "summary": {
+    "mount.dataGenMs": 110,
+    "mount.dataSourceMs": 46,
+    "mount.firstRowsMs": 488,
+    "mount.firstPaintMs": 531,
+    "cdp.layoutCount": 79,
+    "cdp.layoutMs": 225,
+    "cdp.recalcStyleCount": 79,
+    "cdp.recalcStyleMs": 408,
+    "cdp.scriptMs": 5895,
+    "cdp.taskMs": 7662,
+    "cdp.jsHeapUsedMB": 66.6,
+    "cdp.domNodes": 3229,
+    "cdp.jsEventListeners": 1199,
+    "frames.count": 151,
+    "frames.mean": 50.11,
+    "frames.p50": 50.2,
+    "frames.p95": 99,
+    "frames.p99": 100.8,
+    "frames.max": 100.8,
+    "frames.jankyFrames": 83,
+    "frames.jankyPct": 54.97,
+    "longFrames.count": 78,
+    "longFrames.blockingMs": 2585,
+    "durationMs": 7591,
+    "dom.rowMounts": 0,
+    "dom.rowMoves": 0,
+    "dom.elementsInserted": 6435,
+    "dom.elementsRemoved": 6435,
+    "dom.textChanges": 0,
+    "dom.attributeChanges": 3042,
+    "dom.rowUnmounts": 0,
+    "dom.tableNodes": 1911,
+    "perUnit.layoutsPerFrame": 0.523
+  }
+}

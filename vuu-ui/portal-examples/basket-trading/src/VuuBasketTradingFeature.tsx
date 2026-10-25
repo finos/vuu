@@ -5,6 +5,7 @@ import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
 import { EmptyBasketsPanel } from "./empty-baskets-panel";
+import { BasketConstituentsContext } from "./basket-session";
 import { useBasketTrading } from "./useBasketTrading";
 import { ActiveBasketContext } from "./cell-renderers/col-header-add-symbol/ConstituentSearch";
 
@@ -28,6 +29,7 @@ const VuuBasketTradingFeature = () => {
     basketCount,
     basketDesignContextMenuConfig,
     basketSelectorProps,
+    dataSourceBasketConstituents,
     dataSourceBasketTradingConstituentJoin,
     dialog,
     editConfig,
@@ -44,6 +46,7 @@ const VuuBasketTradingFeature = () => {
   if (
     basketCount === -1 ||
     dataSourceBasketTradingConstituentJoin === undefined ||
+    dataSourceBasketConstituents === undefined ||
     basketSelectorProps === undefined
   ) {
     // TODO loading
@@ -61,43 +64,45 @@ const VuuBasketTradingFeature = () => {
 
   return (
     <ActiveBasketContext.Provider value={basket?.instanceId}>
-      <SlotContextPanelProvider>
-        <FlexboxLayout
-          className={classBase}
-          style={{ flexDirection: "column", height: "100%" }}
-        >
-          <BasketToolbar
-            basket={basket}
-            BasketSelectorProps={basketSelectorProps}
-            basketStatus={basketStatus[activeTabIndex]}
-            onCommit={onCommitBasketChange}
-            onSendToMarket={onSendToMarket}
-            onTakeOffMarket={onTakeOffMarket}
-          />
-          <Stack
-            active={activeTabIndex}
-            className={`${classBase}-stack`}
-            showTabs={false}
-            style={{ flex: 1 }}
+      <BasketConstituentsContext.Provider value={dataSourceBasketConstituents}>
+        <SlotContextPanelProvider>
+          <FlexboxLayout
+            className={classBase}
+            style={{ flexDirection: "column", height: "100%" }}
           >
-            <BasketTableEdit
-              config={editConfig}
-              data-tab-title="Design"
-              contextMenuConfig={basketDesignContextMenuConfig}
-              dataSource={dataSourceBasketTradingConstituentJoin}
-              onConfigChange={onConfigChangeEdit}
-              onDrop={onDropInstrument}
+            <BasketToolbar
+              basket={basket}
+              BasketSelectorProps={basketSelectorProps}
+              basketStatus={basketStatus[activeTabIndex]}
+              onCommit={onCommitBasketChange}
+              onSendToMarket={onSendToMarket}
+              onTakeOffMarket={onTakeOffMarket}
             />
-            <BasketTableLive
-              config={liveConfig}
-              data-tab-title="On Market"
-              dataSource={dataSourceBasketTradingConstituentJoin}
-              onConfigChange={onConfigChangeLive}
-            />
-          </Stack>
-        </FlexboxLayout>
-        {dialog}
-      </SlotContextPanelProvider>
+            <Stack
+              active={activeTabIndex}
+              className={`${classBase}-stack`}
+              showTabs={false}
+              style={{ flex: 1 }}
+            >
+              <BasketTableEdit
+                config={editConfig}
+                data-tab-title="Design"
+                contextMenuConfig={basketDesignContextMenuConfig}
+                dataSource={dataSourceBasketTradingConstituentJoin}
+                onConfigChange={onConfigChangeEdit}
+                onDrop={onDropInstrument}
+              />
+              <BasketTableLive
+                config={liveConfig}
+                data-tab-title="On Market"
+                dataSource={dataSourceBasketTradingConstituentJoin}
+                onConfigChange={onConfigChangeLive}
+              />
+            </Stack>
+          </FlexboxLayout>
+          {dialog}
+        </SlotContextPanelProvider>
+      </BasketConstituentsContext.Provider>
     </ActiveBasketContext.Provider>
   );
 };

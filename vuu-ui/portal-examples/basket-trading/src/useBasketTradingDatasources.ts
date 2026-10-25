@@ -1,4 +1,5 @@
 import { useViewContext } from "@vuu-ui/vuu-layout";
+import { basketSessionKey, useBasketSessionScope } from "./basket-session";
 import type {
   DataSource,
   DataSourceConfig,
@@ -40,9 +41,10 @@ export const useBasketTradingDataSources = ({
 }) => {
   const [basketState, setBasketState] = useState<BasketTableState>();
   const { showNotification } = useNotifications();
-  const { id, title } = useViewContext();
+  const { title } = useViewContext();
   const { getServerAPI } = useData();
   const { getDataSource } = useSessionDataSource();
+  const scope = useBasketSessionScope();
 
   useMemo(async () => {
     const serverAPI = await getServerAPI();
@@ -67,38 +69,47 @@ export const useBasketTradingDataSources = ({
         }
       : undefined;
 
-    const basketTradingControlKey = `data-source-basket-trading-control`;
+    const basketTradingControlKey = basketSessionKey(
+      scope,
+      "data-source-basket-trading-control",
+    );
     const dataSourceBasketTradingControl = getDataSource(
       basketTradingControlKey,
       {
         bufferSize: 0,
         filterSpec,
-        viewport: `${id}-${basketTradingControlKey}`,
+        viewport: basketTradingControlKey,
         table: basketTradingSchema.table,
         columns: basketTradingSchema.columns.map((col) => col.name),
         title,
       },
     );
 
-    const basketTradingSearchKey = `data-source-basket-trading-search`;
+    const basketTradingSearchKey = basketSessionKey(
+      scope,
+      "data-source-basket-trading-search",
+    );
     const dataSourceBasketTradingSearch = getDataSource(
       basketTradingSearchKey,
       {
         bufferSize: 100,
-        viewport: `${id}-${basketTradingSearchKey}`,
+        viewport: basketTradingSearchKey,
         table: basketTradingSchema.table,
         columns: basketTradingSchema.columns.map((col) => col.name),
         title,
       },
     );
 
-    const basketTradingConstituentJoinKey = `data-source-basket-trading-constituent-join`;
+    const basketTradingConstituentJoinKey = basketSessionKey(
+      scope,
+      "data-source-basket-trading-constituent-join",
+    );
     const dataSourceBasketTradingConstituentJoin = getDataSource(
       basketTradingConstituentJoinKey,
       {
         bufferSize: 100,
         filterSpec,
-        viewport: `${id}-${basketTradingConstituentJoinKey}`,
+        viewport: basketTradingConstituentJoinKey,
         table: basketTradingConstituentJoinSchema.table,
         columns: basketTradingConstituentJoinSchema.columns.map(
           (col) => col.name,
@@ -107,11 +118,14 @@ export const useBasketTradingDataSources = ({
       },
     );
 
-    const basketConstituentsKey = `data-source-basket-constituent`;
+    const basketConstituentsKey = basketSessionKey(
+      scope,
+      "data-source-basket-constituent",
+    );
     const dataSourceBasketConstituents = getDataSource(basketConstituentsKey, {
       bufferSize: 100,
       sort: { sortDefs: [{ column: "description", sortType: "A" }] },
-      viewport: `${id}-${basketConstituentsKey}`,
+      viewport: basketConstituentsKey,
       table: basketConstituentSchema.table,
       columns: basketConstituentSchema.columns.map((col) => col.name),
       title,
@@ -129,7 +143,7 @@ export const useBasketTradingDataSources = ({
       dataSourceBasketTradingSearch,
       dataSourceBasketTradingConstituentJoin,
     });
-  }, [basketInstanceId, getDataSource, getServerAPI, id, title]);
+  }, [basketInstanceId, getDataSource, getServerAPI, scope, title]);
 
   const handleSendToMarket = useCallback(
     (basketInstanceId: string) => {
@@ -177,9 +191,6 @@ export const useBasketTradingDataSources = ({
     [basketState, showNotification],
   );
 
-  // Note: we do not need to return the BasketConstituent dataSource, we just stash it
-  // in session state from where it will be used by the AddInstrument button in Col
-  // Header
   return {
     ...basketState,
     onSendToMarket: handleSendToMarket,

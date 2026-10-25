@@ -22,6 +22,7 @@ export {
   sameRef,
 } from "./PersistenceBackend";
 export * from "./PersistenceContext";
+export { PortalStateScope } from "./PortalStateScope";
 export * from "./PortalPersistenceService";
 export {
   type EntryMetadata,

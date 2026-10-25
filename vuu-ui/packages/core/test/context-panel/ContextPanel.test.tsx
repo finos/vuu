@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ContextPanelProvider,
+  SHELL_CONTEXT_PANEL_HOST_ID,
   ShellContextPanel,
   ShellContextPanelProvider,
   useContextPanel,
@@ -11,7 +12,11 @@ import {
   type ShowContextPanel,
 } from "../../src/context-panel";
 import { ModuleContextPanel } from "../../src/context-panel/ModuleContextPanel";
-import { SlotContextPanelProvider } from "../../src/context-panel/ContextPanelSlot";
+import {
+  type ContextPanelSlot,
+  SlotContextPanelProvider,
+  useContextPanelSlot,
+} from "../../src/context-panel/ContextPanelSlot";
 
 let show: ShowContextPanel | undefined;
 let hide: (() => void) | undefined;
@@ -175,6 +180,152 @@ describe("ShellContextPanelProvider", () => {
     expect(() => show?.("ColumnPicker", "Columns")).toThrow(
       "must be provided as a React element",
     );
+  });
+
+  describe("navigation", () => {
+    let slot: ContextPanelSlot | undefined;
+    const SlotProbe = () => {
+      slot = useContextPanelSlot();
+      return null;
+    };
+    const renderSlot = () =>
+      act(() =>
+        root.render(
+          <ShellContextPanelProvider>
+            <Button data-trigger>Open</Button>
+            <Consumer />
+            <SlotProbe />
+            <ShellContextPanel />
+          </ShellContextPanelProvider>,
+        ),
+      );
+    const expanded = () =>
+      panel()?.classList.contains("vuuContextPanel-expanded");
+
+    it("closes content on navigation, unless its owner keeps it", () => {
+      renderSlot();
+      act(() => show?.(<p />, "Module"));
+      act(() => slot?.closeOnNavigation());
+      expect(expanded()).toBe(false);
+
+      const owner = {};
+      const onRelease = vi.fn();
+      act(() =>
+        slot?.claim(owner, "Kept", onRelease, { keepOnNavigation: true }),
+      );
+      act(() => slot?.closeOnNavigation());
+      expect(expanded()).toBe(true);
+      expect(onRelease).not.toHaveBeenCalled();
+      act(() => slot?.release(owner));
+      expect(expanded()).toBe(false);
+    });
+
+    it("leaves focus in place for an owner that asks", () => {
+      renderSlot();
+      const trigger = container.querySelector<HTMLElement>("[data-trigger]");
+      act(() => trigger?.focus());
+      act(() =>
+        slot?.claim({}, "Quiet", () => undefined, { autoFocus: false }),
+      );
+      expect(expanded()).toBe(true);
+      expect(document.activeElement).toBe(trigger);
+    });
+
+    it("tells an owner why it lost the panel", () => {
+      renderSlot();
+      const owner = {};
+      const onRelease = vi.fn();
+      act(() => slot?.claim(owner, "Owner", onRelease));
+      act(() => show?.(<p />, "Module"));
+      expect(onRelease).toHaveBeenCalledWith("replaced");
+
+      act(() => slot?.claim(owner, "Owner", onRelease));
+      act(() => slot?.close());
+      expect(onRelease).toHaveBeenLastCalledWith("close");
+    });
+  });
+
+  describe("placement", () => {
+    let slot: ContextPanelSlot | undefined;
+    const SlotProbe = () => {
+      slot = useContextPanelSlot();
+      return null;
+    };
+    const renderSlot = (defaultPlacement?: "overlay" | "inline") =>
+      act(() =>
+        root.render(
+          <ShellContextPanelProvider defaultPlacement={defaultPlacement}>
+            <Consumer />
+            <SlotProbe />
+            <ShellContextPanel />
+          </ShellContextPanelProvider>,
+        ),
+      );
+    const host = () =>
+      container.querySelector<HTMLElement>(`#${SHELL_CONTEXT_PANEL_HOST_ID}`);
+    const placement = () => ({
+      host: host()?.dataset.placement,
+      inline: panel()?.classList.contains("vuuContextPanel-inline"),
+      overlay: panel()?.classList.contains("vuuContextPanel-overlay"),
+    });
+    const OVERLAY = { host: "overlay", inline: false, overlay: true };
+    const INLINE = { host: "inline", inline: true, overlay: false };
+
+    it("overlays the content by default", () => {
+      renderSlot();
+      expect(placement()).toEqual(OVERLAY);
+      act(() => show?.(<p />, "Module"));
+      expect(placement()).toEqual(OVERLAY);
+      act(() => slot?.claim({}, "Owner", () => undefined));
+      expect(placement()).toEqual(OVERLAY);
+    });
+
+    it("displays the panel inline for an owner that asks", () => {
+      renderSlot();
+      const owner = {};
+      act(() =>
+        slot?.claim(owner, "Inline", () => undefined, { placement: "inline" }),
+      );
+      expect(placement()).toEqual(INLINE);
+      expect(slot?.placement).toBe("inline");
+    });
+
+    it("follows the owner when the panel changes hands", () => {
+      renderSlot();
+      act(() =>
+        slot?.claim({}, "Inline", () => undefined, { placement: "inline" }),
+      );
+      act(() => show?.(<p />, "Module"));
+      expect(placement()).toEqual(OVERLAY);
+      act(() =>
+        slot?.claim({}, "Inline", () => undefined, { placement: "inline" }),
+      );
+      expect(placement()).toEqual(INLINE);
+    });
+
+    it("keeps the placement while closing, so the panel closes as it opened", () => {
+      renderSlot();
+      const owner = {};
+      act(() =>
+        slot?.claim(owner, "Inline", () => undefined, { placement: "inline" }),
+      );
+      act(() => slot?.release(owner));
+      expect(panel()?.classList.contains("vuuContextPanel-expanded")).toBe(
+        false,
+      );
+      expect(placement()).toEqual(INLINE);
+    });
+
+    it("uses the shell's default placement for claims without one", () => {
+      renderSlot("inline");
+      expect(placement()).toEqual(INLINE);
+      act(() => show?.(<p />, "Module"));
+      expect(placement()).toEqual(INLINE);
+      act(() =>
+        slot?.claim({}, "Overlay", () => undefined, { placement: "overlay" }),
+      );
+      expect(placement()).toEqual(OVERLAY);
+    });
   });
 
   describe("content owners", () => {
