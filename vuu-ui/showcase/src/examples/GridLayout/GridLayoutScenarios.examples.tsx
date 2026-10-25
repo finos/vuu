@@ -6,6 +6,7 @@ import {
   GridLayoutItem,
   GridLayoutProvider,
   GridLayoutStackedItem,
+  useTemplateDragState,
 } from "@vuu-ui/grid-layout";
 import { useCallback, useState } from "react";
 import { GridPalette } from "../html/components/GridPalette";
@@ -197,6 +198,52 @@ export const PaletteSplitAndReplace = () => (
         }),
       ]}
     </ScenarioGrid>
+  </ScenarioFrame>
+);
+
+const TemplateDragHint = () => {
+  const { dragging, template } = useTemplateDragState();
+  return (
+    <div
+      className="gridLayoutScenario-dragHint"
+      data-dragging={dragging || undefined}
+    >
+      {dragging
+        ? `Dragging ${template?.label ?? "template"}: drop on a panel edge to split, centre to replace`
+        : "Drag a swatch from the palette"}
+    </div>
+  );
+};
+
+export const PaletteDragSignal = () => (
+  <ScenarioFrame
+    instructions="The hint bar sits outside the GridLayout and uses useTemplateDragState to react to palette drags."
+    title="Palette drag signal"
+  >
+    <GridLayoutProvider options={{ newChildItem: { header: true } }}>
+      <div className="gridLayoutScenario-dragSignal">
+        <TemplateDragHint />
+        <GridLayout
+          colsAndRows={{ cols: ["140px", "1fr"], rows: ["1fr"] }}
+          id="palette-drag-signal"
+          style={{ height: "100%", minHeight: 0, width: "100%" }}
+        >
+          <GridLayoutItem
+            id="drag-signal-palette"
+            resizeable={false}
+            style={{ gridArea: "1/1/2/2" }}
+          >
+            <GridPalette paletteItems={[...paletteItems]} />
+          </GridLayoutItem>
+          {createScenarioItem({
+            area: "1/2/2/3",
+            color: "#3949ab",
+            id: "drag-signal-target",
+            title: "Drop target",
+          })}
+        </GridLayout>
+      </div>
+    </GridLayoutProvider>
   </ScenarioFrame>
 );
 
