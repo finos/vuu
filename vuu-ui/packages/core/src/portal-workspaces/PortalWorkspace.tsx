@@ -15,6 +15,7 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { PanelsPalette } from "../panels-palette/PanelsPalette";
 import {
   PanelsPaletteStateProvider,
   usePanelsPaletteState,
@@ -42,19 +43,17 @@ const layoutOptions = { newChildItem: { header: true } };
 
 export interface PortalWorkspaceGridProps {
   controller: WorkspaceController;
-  /**
-   * Rendered beside the GridLayout, within its GridLayoutProvider and
-   * OpenPanelProvider, e.g. `PanelsPalette`. An empty workspace shows a
-   * drop zone when there is a side panel.
-   */
-  sidePanel?: ReactNode;
 }
 
-/** The GridLayout of an open workspace. */
+/**
+ * The GridLayout of an open workspace. With an `AddPanelButton`, it renders
+ * the Panels palette, within its GridLayoutProvider and OpenPanelProvider,
+ * and an empty workspace shows a drop zone.
+ */
 export const PortalWorkspaceGrid = ({
   controller,
-  sidePanel,
 }: PortalWorkspaceGridProps) => {
+  const paletteAvailable = usePanelsPaletteState()?.available === true;
   const [isEmpty, setIsEmpty] = useState(
     controller.snapshot.layout.components.length === 0,
   );
@@ -90,7 +89,7 @@ export const PortalWorkspaceGrid = ({
               id={controller.snapshot.layout.layout.id}
               placeholderContent={
                 isEmpty ? (
-                  sidePanel ? (
+                  paletteAvailable ? (
                     <WorkspaceDropZone />
                   ) : (
                     <WorkspaceStartPanel />
@@ -100,7 +99,7 @@ export const PortalWorkspaceGrid = ({
             />
             <TemplateDragHint />
           </div>
-          {sidePanel}
+          {paletteAvailable ? <PanelsPalette /> : null}
         </OpenPanelProvider>
       </GridLayoutProvider>
     </WorkspacePersistentStateProvider>
@@ -132,21 +131,18 @@ export interface PortalWorkspaceProps {
    * e.g. "Add panel".
    */
   headerActions?: ReactNode;
-  /**
-   * Rendered beside the workspace GridLayout, e.g. `PanelsPalette`. See
-   * `PortalWorkspaceGrid`.
-   */
-  sidePanel?: ReactNode;
 }
 
-/** Opens the Panels palette when a new workspace arrives. */
+/** Opens the Panels palette, if available, when a new workspace arrives. */
 const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
-  const setOpen = usePanelsPaletteState()?.setOpen;
+  const paletteState = usePanelsPaletteState();
+  const available = paletteState?.available === true;
+  const setOpen = paletteState?.setOpen;
   useEffect(() => {
-    if (open) {
+    if (open && available) {
       setOpen?.(true);
     }
-  }, [open, setOpen]);
+  }, [available, open, setOpen]);
   return null;
 };
 
@@ -155,10 +151,7 @@ const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
  * URL the active workspace and renders it, with a header. An unknown id
  * shows a not-found state.
  */
-export const PortalWorkspace = ({
-  headerActions,
-  sidePanel,
-}: PortalWorkspaceProps) => {
+export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
   useComponentCssInjection({
     testId: "vuu-portal-workspaces",
     css: portalWorkspacesCss,
@@ -263,9 +256,7 @@ export const PortalWorkspace = ({
   } else {
     content = (
       <PanelsPaletteStateProvider>
-        {sidePanel ? (
-          <OpenPaletteForNewWorkspace open={editNameId === summary.id} />
-        ) : null}
+        <OpenPaletteForNewWorkspace open={editNameId === summary.id} />
         <PortalWorkspaceHeader
           actions={headerActions}
           editName={editNameId === summary.id}
@@ -278,7 +269,6 @@ export const PortalWorkspace = ({
             <PortalWorkspaceGrid
               controller={controller}
               key={controller.instanceId}
-              sidePanel={sidePanel}
             />
           ) : (
             <WorkspaceState state="opening" title="Opening workspace…" />

@@ -11,7 +11,11 @@ import {
   type ShowContextPanel,
 } from "../../src/context-panel";
 import { ModuleContextPanel } from "../../src/context-panel/ModuleContextPanel";
-import { SlotContextPanelProvider } from "../../src/context-panel/ContextPanelSlot";
+import {
+  type ContextPanelSlot,
+  SlotContextPanelProvider,
+  useContextPanelSlot,
+} from "../../src/context-panel/ContextPanelSlot";
 
 let show: ShowContextPanel | undefined;
 let hide: (() => void) | undefined;
@@ -175,6 +179,69 @@ describe("ShellContextPanelProvider", () => {
     expect(() => show?.("ColumnPicker", "Columns")).toThrow(
       "must be provided as a React element",
     );
+  });
+
+  describe("navigation", () => {
+    let slot: ContextPanelSlot | undefined;
+    const SlotProbe = () => {
+      slot = useContextPanelSlot();
+      return null;
+    };
+    const renderSlot = () =>
+      act(() =>
+        root.render(
+          <ShellContextPanelProvider>
+            <Button data-trigger>Open</Button>
+            <Consumer />
+            <SlotProbe />
+            <ShellContextPanel />
+          </ShellContextPanelProvider>,
+        ),
+      );
+    const expanded = () =>
+      panel()?.classList.contains("vuuContextPanel-expanded");
+
+    it("closes content on navigation, unless its owner keeps it", () => {
+      renderSlot();
+      act(() => show?.(<p />, "Module"));
+      act(() => slot?.closeOnNavigation());
+      expect(expanded()).toBe(false);
+
+      const owner = {};
+      const onRelease = vi.fn();
+      act(() =>
+        slot?.claim(owner, "Kept", onRelease, { keepOnNavigation: true }),
+      );
+      act(() => slot?.closeOnNavigation());
+      expect(expanded()).toBe(true);
+      expect(onRelease).not.toHaveBeenCalled();
+      act(() => slot?.release(owner));
+      expect(expanded()).toBe(false);
+    });
+
+    it("leaves focus in place for an owner that asks", () => {
+      renderSlot();
+      const trigger = container.querySelector<HTMLElement>("[data-trigger]");
+      act(() => trigger?.focus());
+      act(() =>
+        slot?.claim({}, "Quiet", () => undefined, { autoFocus: false }),
+      );
+      expect(expanded()).toBe(true);
+      expect(document.activeElement).toBe(trigger);
+    });
+
+    it("tells an owner why it lost the panel", () => {
+      renderSlot();
+      const owner = {};
+      const onRelease = vi.fn();
+      act(() => slot?.claim(owner, "Owner", onRelease));
+      act(() => show?.(<p />, "Module"));
+      expect(onRelease).toHaveBeenCalledWith("replaced");
+
+      act(() => slot?.claim(owner, "Owner", onRelease));
+      act(() => slot?.close());
+      expect(onRelease).toHaveBeenLastCalledWith("close");
+    });
   });
 
   describe("content owners", () => {

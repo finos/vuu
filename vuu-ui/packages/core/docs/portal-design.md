@@ -247,7 +247,6 @@ Turn workspaces on with the `workspaces` option of `PortalShell`:
     componentRenderers,
     headerActions: <AddPanelButton />,
     settingsCodecs,
-    sidePanel: <PanelsPalette />,
     systemWorkspaces: [defaultWorkspace],
   }}
 >
@@ -259,8 +258,7 @@ Turn workspaces on with the `workspaces` option of `PortalShell`:
 | --- | --- | --- |
 | `systemWorkspaces` | | Workspaces shipped with the portal (`NamedWorkspaceDefinitionV1`). |
 | `componentRenderers`, `settingsCodecs` | | The panels a workspace can contain, as for `GridLayout`. |
-| `headerActions` | | Content for the actions slot of the workspace header, e.g. **Add panel**. |
-| `sidePanel` | | Rendered to the right of the workspace grid, e.g. `<PanelsPalette />`. See [Panels palette](#panels-palette). |
+| `headerActions` | | Content for the actions slot of the workspace header, e.g. `<AddPanelButton />`, which opens the [Panels palette](#panels-palette). |
 | `persistenceService` | local storage | Where workspaces are saved. The default `LocalWorkspacePersistenceService` is scoped to the portal id and the signed-in user (namespace `PORTAL_WORKSPACE_NAMESPACE`). Pass a stable instance. |
 
 Without the option the shell renders no `WorkspaceProvider` and no
@@ -306,7 +304,8 @@ and back and forward all select the workspace. An id that isn't a known
 workspace shows **Workspace not found**, with a button to open the first
 workspace. The grid is `PortalWorkspaceGrid`, a `GridLayout` with the
 workspace's saved component state; an empty workspace shows
-`WorkspaceStartPanel`, or `WorkspaceDropZone` when there is a `sidePanel`.
+`WorkspaceStartPanel`, or `WorkspaceDropZone` when there is an
+`AddPanelButton`.
 
 `PortalWorkspaceHeader` shows a **Workspaces /** crumb and the name. A named
 workspace's name is a button that edits it in place, and its status is
@@ -330,15 +329,41 @@ header shows **Reset to default**. It opens a popover:
 
 The Panels palette adds panels to the open workspace. It is in
 `src/panels-palette`, exported from `@vuu-ui/core/portal`. Put
-`<AddPanelButton />` in `headerActions` and `<PanelsPalette />` in
-`sidePanel`. `PortalWorkspace` provides the palette's open state
-(`PanelsPaletteStateProvider`, `usePanelsPaletteState`) and the click rule
-(`OpenPanelProvider`) for the open workspace. **+ New workspace** opens the
-palette.
+`<AddPanelButton />` in `headerActions`; its presence makes the palette
+available, and `PortalWorkspace` renders `PanelsPalette` within the
+workspace grid's providers. `PortalWorkspace` provides the palette's open
+state (`PanelsPaletteStateProvider`, `usePanelsPaletteState`) and the click
+rule (`OpenPanelProvider`) for the open workspace. **+ New workspace** opens
+the palette.
 
-The palette, titled **Panels**, is docked to the right of the grid. **Add
-panel** toggles it. It has a search box ("Search panels & tables"), three
-tabs and a footer hint.
+**Add panel** toggles the palette, which is displayed in the shell's
+[context panel](#context-panel), titled **Panels**, with the panel's close
+button. The palette claims the panel (`useContextPanelSlot().claim`) and
+renders into it with a React portal, so it stays in the workspace's React
+tree, under its GridLayoutProvider, and dragging rows onto the grid works.
+Opening the palette doesn't move focus, so a new workspace's name stays in
+edit mode.
+It has a search box ("Search panels & tables") with the pin button, three
+tabs and a footer hint. Outside a shell context panel (e.g. in tests) the
+palette renders in place, with its own header.
+
+The context panel has one owner at a time:
+
+- A module showing its context panel replaces the palette. **Add panel** is
+  no longer pressed, and the palette stays pinned if it was.
+- Opening the palette replaces a module's content.
+- The panel's close button, or Escape, closes and unpins the palette.
+
+Navigation:
+
+- Switching between workspaces (`/workspaces/:id` routes) keeps the palette
+  open. The palette claims the panel with `keepOnNavigation`, so the shell's
+  close-on-navigation (`closeOnNavigation()`) leaves it open.
+  `PortalWorkspace` stays mounted between workspaces.
+- Any other route unmounts `PortalWorkspace`, which releases the panel.
+  Returning to a workspace reopens the palette only if it is pinned.
+- Module content still closes on every navigation, including between
+  workspaces.
 
 - **Modules** lists `usePaletteModules()`: modules whose descriptor has
   `workspace.paletteGroup`, grouped by it, with `workspace.iconUrl` or the
@@ -354,9 +379,10 @@ tabs and a footer hint.
 The search filters the current tab; every word must match a row's name,
 description or group. Groups collapse. The list is a listbox: ↑ ↓ Home End
 move, Enter opens the active row, Shift+Enter or **+** adds it, and Escape
-closes the palette. The search box passes ↑ ↓ Enter and Escape to the list.
-The pin button keeps the palette open; otherwise it closes after a panel is
-added.
+closes the palette (in place, unless pinned; the context panel always closes
+on Escape). The search box passes ↑ ↓ Enter and Escape to the list.
+The pin button keeps the palette open after a panel is added, and reopens it
+on returning to a workspace; otherwise it closes after a panel is added.
 
 Every row can be:
 
@@ -510,6 +536,16 @@ the previous owner's content is removed, and that owner can no longer close the
 panel. The panel also closes when its owner unmounts, on **Escape**, from its
 close button, or when the portal navigates to another route. Focus returns to
 the element that was focused when it opened.
+
+Owners within the shell can claim the panel directly, with
+`useContextPanelSlot()` from `src/context-panel/ContextPanelSlot`:
+`claim(owner, title, onRelease, { autoFocus, keepOnNavigation })` and
+`release(owner)`. With `autoFocus: false` the panel leaves focus where it
+is when it opens, rather than moving it to the close button.
+`onRelease` receives `"close"` (close button, Escape or navigation) or
+`"replaced"` (another owner claimed the panel). An owner claiming with
+`keepOnNavigation` keeps the panel when the portal navigates, and must
+release it when it unmounts. The Panels palette does this.
 
 ### Placement
 

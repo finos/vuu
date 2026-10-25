@@ -18,7 +18,10 @@ export const PORTAL_WORKSPACE_NAMESPACE = "vuu-portal";
 export interface PortalWorkspacesOptions {
   /** Components that can be placed in a workspace. */
   componentRenderers?: GridComponentRendererRegistry;
-  /** Actions in the workspace header, e.g. "Add panel". */
+  /**
+   * Actions in the workspace header, e.g. `<AddPanelButton />`, which opens
+   * the Panels palette in the shell's context panel.
+   */
   headerActions?: ReactNode;
   /**
    * Where workspaces are saved. Pass a stable instance. Default: browser
@@ -26,11 +29,6 @@ export interface PortalWorkspacesOptions {
    */
   persistenceService?: WorkspacePersistenceService;
   settingsCodecs?: GridComponentSettingsRegistry;
-  /**
-   * Rendered beside the workspace GridLayout, e.g. `<PanelsPalette />`, with
-   * `<AddPanelButton />` in `headerActions` to open it.
-   */
-  sidePanel?: ReactNode;
   /**
    * Workspaces shipped with the portal. Users edit a personal copy and can
    * reset it to the default.

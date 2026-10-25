@@ -6,7 +6,6 @@ import {
 import {
   AddPanelButton,
   createPortalComponentRegistries,
-  PanelsPalette,
   type PortalModuleRenderer,
   PortalLandingPage,
   PortalNav,
@@ -154,13 +153,13 @@ const workspaces: PortalWorkspacesOptions = {
   componentRenderers: renderers,
   headerActions: <AddPanelButton />,
   settingsCodecs,
-  sidePanel: <PanelsPalette />,
   systemWorkspaces: [marketsWorkspace],
 };
 
 /**
  * Workspaces with the Panels palette. Open Markets, or "+ New workspace",
- * then use Add panel. Drag a module or table onto the workspace, press + to
+ * then use Add panel, which opens the palette in the shell's context panel.
+ * It stays open as you switch workspaces. Drag a module or table onto the workspace, press + to
  * add it, or click it: with one panel a click replaces it, with several you
  * choose to replace the focused panel (R) or open a new tab (T).
  */

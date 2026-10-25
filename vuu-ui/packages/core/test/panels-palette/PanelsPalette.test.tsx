@@ -326,7 +326,8 @@ describe("PanelsPalette", () => {
 
   const lastDocument = () => documents[documents.length - 1];
 
-  const prompt = () => query("[role='menu']");
+  const prompt = () =>
+    document.body.querySelector<HTMLElement>(".vuuOpenPanelPrompt");
 
   const focusPanel = (id: string) =>
     pointerDown(query(`#${id} .vuuGridLayoutItemContent`) as Element);
@@ -648,7 +649,9 @@ describe("PanelsPalette", () => {
 
       await click(button("Add panel"));
       await click(row("Chart"));
-      await click(queryAll("[role='menuitem']")[0]);
+      await click(
+        prompt()?.querySelectorAll("[role='menuitem']")[0] as Element,
+      );
       expect(prompt()).toBeNull();
       expect(lastDocument().components).toContainEqual(
         expect.objectContaining({ settings: { moduleId: "chart" } }),

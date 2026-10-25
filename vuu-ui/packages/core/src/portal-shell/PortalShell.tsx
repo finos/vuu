@@ -158,10 +158,14 @@ const OpenModuleTracker = ({
   return null;
 };
 
-/** Content in the context panel belongs to the module that opened it. */
-const CloseContextPanelOnNavigation = () => {
+/**
+ * Content in the context panel belongs to the route that opened it, unless
+ * its owner keeps it open across navigation (e.g. the Panels palette, which
+ * stays open between workspaces).
+ */
+export const CloseContextPanelOnNavigation = () => {
   const { pathname } = useLocation();
-  const closeContextPanel = useContextPanelSlot()?.close;
+  const closeContextPanel = useContextPanelSlot()?.closeOnNavigation;
   useEffect(() => {
     closeContextPanel?.();
   }, [closeContextPanel, pathname]);
@@ -275,7 +279,6 @@ const PortalLayout = () => {
                         element={
                           <PortalWorkspace
                             headerActions={workspaces.headerActions}
-                            sidePanel={workspaces.sidePanel}
                           />
                         }
                       />

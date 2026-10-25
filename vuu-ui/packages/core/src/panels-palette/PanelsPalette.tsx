@@ -13,6 +13,7 @@ import {
   SearchIcon,
 } from "@salt-ds/icons";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
   type ChangeEvent,
   type DragEvent,
@@ -24,6 +25,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
+import { useContextPanelSlot } from "../context-panel/ContextPanelSlot";
 import { usePersistedState } from "../persistence/PersistenceContext";
 import { usePaletteModules } from "../portal-components/palette-modules";
 import {
@@ -37,7 +40,10 @@ import {
   type PanelItemGroup,
   tablePanelItem,
 } from "./panel-items";
-import { usePanelsPaletteState } from "./PanelsPaletteState";
+import {
+  PANELS_PALETTE_TITLE,
+  usePanelsPaletteState,
+} from "./PanelsPaletteState";
 import {
   ServerTablesLoader,
   type ServerTablesState,
@@ -192,9 +198,11 @@ const LOADING: ServerTablesState = { status: "loading" };
  * can be opened in the workspace. Drag a row onto the workspace to place it,
  * press its + to add it, or click it to open it (see `useOpenPanel`).
  *
- * Rendered by `PortalWorkspace` beside the workspace GridLayout, when the
- * palette is open (see `AddPanelButton`). Must be rendered within an
- * `OpenPanelProvider` and the workspace's GridLayoutProvider.
+ * Rendered by `PortalWorkspace`, within the workspace's GridLayoutProvider
+ * and `OpenPanelProvider`, when there is an `AddPanelButton`. Within the
+ * shell's context panel, it is displayed there (with a React portal, so it
+ * stays in the workspace's React tree) while its `PanelsPaletteState` owns
+ * the panel. Otherwise it is displayed in place, with its own header.
  */
 export const PanelsPalette = ({
   className,
@@ -206,6 +214,9 @@ export const PanelsPalette = ({
     window: useWindow(),
   });
   const paletteState = usePanelsPaletteState();
+  const contextPanelSlot = useContextPanelSlot();
+  const inContextPanel =
+    paletteState !== undefined && contextPanelSlot !== undefined;
   const { addPanel, openPanel } = useOpenPanel();
   const { load, save } = usePersistedState();
   const paletteModules = usePaletteModules();
@@ -406,17 +417,33 @@ export const PanelsPalette = ({
           }
           return;
         case "Escape":
-          if (paletteState && !paletteState.pinned) {
+          // The context panel closes itself on Escape.
+          if (paletteState && !paletteState.pinned && !inContextPanel) {
             event.preventDefault();
             paletteState.setOpen(false);
           }
           return;
       }
     },
-    [activeItem, handleAdd, handleOpen, moveActive, paletteState],
+    [
+      activeItem,
+      handleAdd,
+      handleOpen,
+      moveActive,
+      paletteState,
+      inContextPanel,
+    ],
   );
 
   if (paletteState && !paletteState.open) {
+    return null;
+  }
+  const contextPanelTarget = inContextPanel
+    ? contextPanelSlot.owner === paletteState.contextPanelOwner
+      ? contextPanelSlot.target
+      : null
+    : undefined;
+  if (contextPanelTarget === null) {
     return null;
   }
 
@@ -435,44 +462,47 @@ export const PanelsPalette = ({
 
   const listId = `${idBase}-list`;
   const pinned = paletteState?.pinned ?? false;
+  const pinButton = paletteState ? (
+    <button
+      aria-label={pinned ? "Unpin panels" : "Pin panels open"}
+      aria-pressed={pinned}
+      className={`${classBase}-iconButton`}
+      onClick={() => paletteState.setPinned(!pinned)}
+      title={pinned ? "Unpin" : "Pin open"}
+      type="button"
+    >
+      {pinned ? <PinSolidIcon aria-hidden /> : <PinIcon aria-hidden />}
+    </button>
+  ) : null;
 
-  return (
+  const palette = (
     <PortalDragSourceScope>
       <aside
-        aria-label="Panels"
-        className={className ? `${classBase} ${className}` : classBase}
+        aria-label={PANELS_PALETTE_TITLE}
+        className={cx(classBase, className, {
+          [`${classBase}-inContextPanel`]: inContextPanel,
+        })}
       >
-        <div className={`${classBase}-title`}>
-          <AddIcon aria-hidden />
-          <h2>Panels</h2>
-          {paletteState ? (
-            <>
-              <button
-                aria-label={pinned ? "Unpin panels" : "Pin panels open"}
-                aria-pressed={pinned}
-                className={`${classBase}-iconButton`}
-                onClick={() => paletteState.setPinned(!pinned)}
-                title={pinned ? "Unpin" : "Pin open"}
-                type="button"
-              >
-                {pinned ? (
-                  <PinSolidIcon aria-hidden />
-                ) : (
-                  <PinIcon aria-hidden />
-                )}
-              </button>
-              <button
-                aria-label="Close panels"
-                className={`${classBase}-iconButton`}
-                onClick={() => paletteState.setOpen(false)}
-                title="Close"
-                type="button"
-              >
-                <CloseIcon aria-hidden />
-              </button>
-            </>
-          ) : null}
-        </div>
+        {inContextPanel ? null : (
+          <div className={`${classBase}-title`}>
+            <AddIcon aria-hidden />
+            <h2>{PANELS_PALETTE_TITLE}</h2>
+            {paletteState ? (
+              <>
+                {pinButton}
+                <button
+                  aria-label="Close panels"
+                  className={`${classBase}-iconButton`}
+                  onClick={() => paletteState.setOpen(false)}
+                  title="Close"
+                  type="button"
+                >
+                  <CloseIcon aria-hidden />
+                </button>
+              </>
+            ) : null}
+          </div>
+        )}
         <div className={`${classBase}-search`}>
           <SearchIcon aria-hidden />
           <input
@@ -485,6 +515,7 @@ export const PanelsPalette = ({
             type="search"
             value={filter}
           />
+          {inContextPanel ? pinButton : null}
         </div>
         <div
           aria-label="Panel sources"
@@ -596,4 +627,8 @@ export const PanelsPalette = ({
       </aside>
     </PortalDragSourceScope>
   );
+
+  return contextPanelTarget
+    ? createPortal(palette, contextPanelTarget)
+    : palette;
 };

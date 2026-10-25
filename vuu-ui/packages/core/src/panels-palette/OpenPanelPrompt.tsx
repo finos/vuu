@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 
 export type OpenPanelChoice = "replace" | "stack" | "cancel";
 
@@ -96,7 +97,9 @@ export const OpenPanelPrompt = ({
     [activeIndex, onChoice],
   );
 
-  return (
+  // In the document body, above the shell's context panel, which can overlay
+  // the focused panel.
+  return createPortal(
     <div
       aria-label={`Open ${templateLabel}`}
       className="vuuOpenPanelPrompt"
@@ -138,6 +141,7 @@ export const OpenPanelPrompt = ({
       <div className="vuuOpenPanelPrompt-footer">
         Esc to cancel · drag to place exactly
       </div>
-    </div>
+    </div>,
+    (target?.ownerDocument ?? document).body,
   );
 };

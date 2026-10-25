@@ -158,7 +158,7 @@ button.vuuPortalNav-link {
   position: relative;
 }
 
-/* The GridLayout, and the drag hint over it. Beside it, the side panel. */
+/* The GridLayout, and the drag hint over it. */
 .vuuPortalWorkspace-grid {
   display: flex;
   flex: 1 1 auto;

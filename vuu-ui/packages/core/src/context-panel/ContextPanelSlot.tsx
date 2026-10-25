@@ -26,19 +26,48 @@ export type ContextPanelPlacement = "shell" | "module";
 type ContextPanelOwner = object;
 
 /**
+ * Why an owner lost the panel: it was closed (close button, Escape or
+ * navigation) or another owner claimed it.
+ */
+export type ContextPanelReleaseReason = "close" | "replaced";
+
+export interface ContextPanelClaimOptions {
+  /**
+   * Move focus to the panel's close button when it opens. Default `true`.
+   * Content that is opened without the user asking, or that manages focus
+   * itself, can leave focus where it is.
+   */
+  readonly autoFocus?: boolean;
+  /**
+   * Keep the panel open when the portal navigates. By default, content
+   * belongs to the route that opened it and is closed on navigation. An
+   * owner that keeps the panel releases it when it unmounts.
+   */
+  readonly keepOnNavigation?: boolean;
+}
+
+/**
  * A context panel that displays content owned by others. Owners keep their
  * content in their own React tree and portal it into `target`, so it sees
  * their context rather than that of the panel's host.
  */
 export interface ContextPanelSlot {
+  /** Whether the panel takes focus when it opens, see `claim`. */
+  readonly autoFocus: boolean;
   /** Opens the panel for `owner`. A different current owner is released. */
   readonly claim: (
     owner: ContextPanelOwner,
     title: string,
-    onRelease: () => void,
+    onRelease: (reason: ContextPanelReleaseReason) => void,
+    options?: ContextPanelClaimOptions,
   ) => void;
   /** Closes the panel, whoever owns it. */
   readonly close: () => void;
+  /**
+   * Called when the portal navigates. Closes the panel, unless its owner
+   * claimed it with `keepOnNavigation`.
+   */
+  readonly closeOnNavigation: () => void;
   readonly owner?: ContextPanelOwner;
   /** Closes the panel, if `owner` owns it. */
   readonly release: (owner: ContextPanelOwner) => void;
@@ -54,6 +83,7 @@ export const ContextPanelSlotContext = createContext<
 export const useContextPanelSlot = () => useContext(ContextPanelSlotContext);
 
 type SlotState = {
+  readonly autoFocus: boolean;
   readonly owner: ContextPanelOwner;
   readonly title: string;
 };
@@ -63,25 +93,30 @@ export const useCreateContextPanelSlot = (): ContextPanelSlot => {
   const [state, setState] = useState<SlotState>();
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const currentOwner = useRef<{
+    keepOnNavigation: boolean;
     owner: ContextPanelOwner;
-    onRelease: () => void;
+    onRelease: (reason: ContextPanelReleaseReason) => void;
   }>(undefined);
   const trigger = useRef<HTMLElement | null>(null);
   const targetRef = useRef(target);
   targetRef.current = target;
 
   const claim = useCallback<ContextPanelSlot["claim"]>(
-    (owner, title, onRelease) => {
+    (owner, title, onRelease, options) => {
       const current = currentOwner.current;
       if (current === undefined) {
         const { activeElement } = targetRef.current?.ownerDocument ?? document;
         trigger.current =
           activeElement instanceof HTMLElement ? activeElement : null;
       } else if (current.owner !== owner) {
-        current.onRelease();
+        current.onRelease("replaced");
       }
-      currentOwner.current = { owner, onRelease };
-      setState({ owner, title });
+      currentOwner.current = {
+        keepOnNavigation: options?.keepOnNavigation === true,
+        owner,
+        onRelease,
+      };
+      setState({ autoFocus: options?.autoFocus !== false, owner, title });
     },
     [],
   );
@@ -106,22 +141,30 @@ export const useCreateContextPanelSlot = (): ContextPanelSlot => {
   const close = useCallback(() => {
     const current = currentOwner.current;
     if (current) {
-      current.onRelease();
+      current.onRelease("close");
       release(current.owner);
     }
   }, [release]);
 
+  const closeOnNavigation = useCallback(() => {
+    if (currentOwner.current?.keepOnNavigation !== true) {
+      close();
+    }
+  }, [close]);
+
   return useMemo(
     () => ({
+      autoFocus: state?.autoFocus ?? true,
       claim,
       close,
+      closeOnNavigation,
       owner: state?.owner,
       release,
       setTarget,
       target,
       title: state?.title,
     }),
-    [claim, close, release, state, target],
+    [claim, close, closeOnNavigation, release, state, target],
   );
 };
 
@@ -141,6 +184,7 @@ export const ContextPanelSlotHost = ({
 }: ContextPanelSlotHostProps) => (
   <div className={className} id={id}>
     <ContextPanel
+      autoFocus={slot.autoFocus}
       contentRef={slot.setTarget}
       expanded={slot.owner !== undefined}
       id={panelId}

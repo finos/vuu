@@ -25,6 +25,41 @@
   }
 }
 
+/* In the shell's context panel, which provides the title, close button,
+ * background and padding. The list scrolls, not the panel. */
+.vuuContextPanel:has(.vuuPanelsPalette-inContextPanel) {
+  --vuuContextPanel-width: 320px;
+
+  .vuuContextPanel-content {
+    overflow: hidden;
+    padding-right: 0;
+  }
+}
+
+.vuuPanelsPalette-inContextPanel {
+  background: transparent;
+  border-left: none;
+  height: 100%;
+  width: auto;
+
+  .vuuPanelsPalette-search,
+  .vuuPanelsPalette-tabs,
+  .vuuPanelsPalette-server {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .vuuPanelsPalette-search {
+    margin-top: 0;
+    padding-right: 3px;
+  }
+
+  .vuuPanelsPalette-group {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .vuuPanelsPalette-title {
   align-items: center;
   border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
