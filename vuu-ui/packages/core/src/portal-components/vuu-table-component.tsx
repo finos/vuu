@@ -275,7 +275,7 @@ class VuuTableErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.warn(`[VuuTableComponent] ${error.message}`, info.componentStack);
+    console.warn("[VuuTableComponent] %s", error.message, info.componentStack);
   }
 
   render() {
