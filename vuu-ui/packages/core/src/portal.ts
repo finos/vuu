@@ -51,11 +51,13 @@ export {
 } from "./window-host/window-host-routing";
 export {
   PortalShell,
+  type PortalShellContextPanelOptions,
   type PortalShellProps,
 } from "./portal-shell/PortalShell";
 export {
   PortalWorkspace,
   PortalWorkspaceGrid,
+  type PortalWorkspaceGridProps,
   type PortalWorkspaceProps,
 } from "./portal-workspaces/PortalWorkspace";
 export {
@@ -156,3 +158,4 @@ export type {
 } from "./connection-management/server-status";
 
 export * from "./portal-components";
+export * from "./panels-palette";

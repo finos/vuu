@@ -1,8 +1,4 @@
-import {
-  GridComponentRendererRegistry,
-  GridComponentSettingsRegistry,
-  type GridLayoutDocument,
-} from "@vuu-ui/grid-layout";
+import type { GridLayoutDocument } from "@vuu-ui/grid-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -24,6 +20,16 @@ import {
   InMemoryPersistenceBackend,
   type PortalPersistenceService,
 } from "../../src/persistence";
+import { useContextPanel } from "../../src/context-panel/ContextPanelProvider";
+import {
+  ShellContextPanel,
+  ShellContextPanelProvider,
+} from "../../src/context-panel/ShellContextPanel";
+import { AddPanelButton } from "../../src/panels-palette";
+import { CloseContextPanelOnNavigation } from "../../src/portal-shell/PortalShell";
+import { createPortalComponentRegistries } from "../../src/portal-components";
+import { PortalModuleRegistryProvider } from "../../src/portal-module-registry/PortalModuleRegistry";
+import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 import { PortalNav } from "../../src/portal-nav/PortalNav";
 import type { PortalNavProps } from "../../src/portal-nav/portal-nav-types";
 import { PortalWorkspace } from "../../src/portal-workspaces/PortalWorkspace";
@@ -127,8 +133,25 @@ class MemoryService implements WorkspacePersistenceService {
 
 const TRADER = definition("trader", "Trader");
 const ASIA = definition("asia-open", "Asia open");
-const renderers = new GridComponentRendererRegistry();
-const codecs = new GridComponentSettingsRegistry();
+const EUROPE = definition("europe-close", "Europe close");
+const { renderers, settingsCodecs: codecs } = createPortalComponentRegistries({
+  renderModule: (module) => <div>{module.title}</div>,
+});
+const BLOTTER: RemoteModuleDescriptor = {
+  accessRole: "",
+  clientIdentifier: "blotter",
+  id: "blotter",
+  mfComponent: "./Module",
+  mfScope: "blotter",
+  mfUrl: "http://localhost/blotter",
+  name: "blotter",
+  navLocation: "/Apps",
+  path: "/blotter",
+  title: "Blotter",
+  version: 1,
+  workspace: { paletteGroup: "Trading" },
+};
+const paletteModules = [BLOTTER];
 
 let pathname = "";
 let navigate: NavigateFunction;
@@ -138,6 +161,21 @@ const Probe = () => {
   navigate = useNavigate();
   latest = useWorkspace();
   return null;
+};
+
+/** A module, outside the workspace, that shows its own context panel. */
+const ModuleContextPanelButton = () => {
+  const showContextPanel = useContextPanel();
+  return (
+    <button
+      onClick={() =>
+        showContextPanel(<div data-testid="module-panel" />, "Order details")
+      }
+      type="button"
+    >
+      Show module panel
+    </button>
+  );
 };
 
 const setInputValue = (input: HTMLInputElement, value: string) => {
@@ -172,6 +210,14 @@ const buttonByText = (text: string, scope: ParentNode = document) =>
   );
 const menuItem = (label: string) =>
   qa('[role="menuitem"]').find((el) => el.textContent?.includes(label));
+const contextPanelTitle = () =>
+  q(".vuuContextPanel-title")?.textContent ?? undefined;
+const contextPanelExpanded = () =>
+  q(".vuuContextPanel")?.classList.contains("vuuContextPanel-expanded");
+const contextPanelPlacement = () => ({
+  host: q("#vuu-shell-context")?.getAttribute("data-placement"),
+  inline: q(".vuuContextPanel")?.classList.contains("vuuContextPanel-inline"),
+});
 const click = async (element: Element | null | undefined) => {
   expect(element).toBeTruthy();
   await act(async () => {
@@ -213,10 +259,12 @@ describe("Portal workspaces", () => {
 
   const render = async ({
     nav = {},
+    palette = false,
     path = "/",
     service = new MemoryService([ASIA]),
   }: {
     nav?: Partial<PortalNavProps>;
+    palette?: boolean;
     path?: string;
     service?: MemoryService;
   } = {}) => {
@@ -235,21 +283,32 @@ describe("Portal workspaces", () => {
                   systemWorkspaces={[TRADER]}
                   userId="alice"
                 >
-                  <PortalNav remoteModules={[]} {...nav} />
-                  <Routes>
-                    <Route
-                      element={
-                        <PortalWorkspace
-                          headerActions={
-                            <button type="button">Add panel</button>
+                  <PortalModuleRegistryProvider remoteModules={paletteModules}>
+                    <ShellContextPanelProvider>
+                      <CloseContextPanelOnNavigation />
+                      <PortalNav remoteModules={[]} {...nav} />
+                      <Routes>
+                        <Route
+                          element={
+                            <PortalWorkspace
+                              headerActions={
+                                palette ? (
+                                  <AddPanelButton />
+                                ) : (
+                                  <button type="button">Add panel</button>
+                                )
+                              }
+                            />
                           }
+                          path={WORKSPACE_ROUTE}
                         />
-                      }
-                      path={WORKSPACE_ROUTE}
-                    />
-                    <Route element={<div data-testid="home" />} path="*" />
-                  </Routes>
-                  <Probe />
+                        <Route element={<div data-testid="home" />} path="*" />
+                      </Routes>
+                      <ModuleContextPanelButton />
+                      <ShellContextPanel />
+                      <Probe />
+                    </ShellContextPanelProvider>
+                  </PortalModuleRegistryProvider>
                 </WorkspaceProvider>
               </NotificationsProvider>
             </ApplicationStateProvider>
@@ -433,6 +492,277 @@ describe("Portal workspaces", () => {
       expect(latest.activeWorkspaceId).toBeNull();
       await click(buttonByText("Open Trader", state ?? document));
       expect(pathname).toBe("/workspaces/trader");
+    });
+  });
+
+  describe("panels palette", () => {
+    it("a new workspace shows a drop zone and opens the palette", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "false",
+      );
+
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() =>
+        expect(pathname).not.toBe("/workspaces/asia-open"),
+      );
+      await vi.waitFor(() => expect(q(".vuuPanelsPalette")).not.toBeNull());
+      expect(
+        q(".vuuPortalWorkspace-body .vuuWorkspaceDropZone")?.textContent,
+      ).toContain("This workspace is empty");
+      expect(q(".vuuPortalWorkspace-body .vuuWorkspaceStartPanel")).toBeNull();
+      // The palette doesn't take focus from the new workspace's name.
+      await settle();
+      expect(document.activeElement).toBe(
+        q(".vuuPortalWorkspaceHeader-nameInput"),
+      );
+    });
+
+    it("Add panel toggles the palette", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      expect(contextPanelTitle()).toBe("Panels");
+      expect(
+        q(".vuuContextPanel-content aside[aria-label='Panels']"),
+      ).not.toBeNull();
+      // The context panel's chrome replaces the palette's own header.
+      expect(q(".vuuPanelsPalette-title")).toBeNull();
+      expect(
+        q(".vuuPanelsPalette-search button[aria-label='Pin panels open']"),
+      ).not.toBeNull();
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "true",
+      );
+      await click(buttonByText("Add panel"));
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      expect(contextPanelExpanded()).toBe(false);
+    });
+
+    it("the context panel's close button and Escape close the palette", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      await click(q("button[aria-label='Close context panel']"));
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "false",
+      );
+
+      await click(buttonByText("Add panel"));
+      await act(async () =>
+        keyDown(
+          q("input[aria-label='Search panels and tables']") as HTMLElement,
+          "Escape",
+        ),
+      );
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      expect(contextPanelExpanded()).toBe(false);
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "false",
+      );
+    });
+
+    it("shares the context panel with modules", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      await click(q(".vuuPanelsPalette-search button[aria-pressed]"));
+      expect(appState.get("workspace/palettePinned")).toBe(true);
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
+
+      // A module's panel replaces the palette, which stays pinned. The
+      // module's panel overlays the content, the default.
+      await click(buttonByText("Show module panel"));
+      expect(contextPanelTitle()).toBe("Order details");
+      expect(contextPanelPlacement()).toEqual({
+        host: "overlay",
+        inline: false,
+      });
+      expect(q("[data-testid='module-panel']")).not.toBeNull();
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "false",
+      );
+      expect(appState.get("workspace/palettePinned")).toBe(true);
+
+      // And the palette replaces the module's panel.
+      await click(buttonByText("Add panel"));
+      expect(contextPanelTitle()).toBe("Panels");
+      expect(q("[data-testid='module-panel']")).toBeNull();
+      expect(q(".vuuContextPanel-content .vuuPanelsPalette")).not.toBeNull();
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
+    });
+
+    it("displays the palette inline, beside the workspace", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      expect(contextPanelPlacement()).toEqual({
+        host: "overlay",
+        inline: false,
+      });
+      await click(buttonByText("Add panel"));
+      expect(contextPanelExpanded()).toBe(true);
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
+      // The workspace is not within the panel's column.
+      const workspace = q(".vuuPortalWorkspace");
+      expect(workspace).not.toBeNull();
+      expect(q("#vuu-shell-context")?.contains(workspace)).toBe(false);
+
+      // No scrim: clicking the workspace leaves the palette open.
+      await act(async () => {
+        workspace?.dispatchEvent(
+          new PointerEvent("pointerdown", { bubbles: true }),
+        );
+      });
+      await click(workspace);
+      expect(contextPanelExpanded()).toBe(true);
+      expect(q(".vuuContextPanel-scrim, .saltScrim")).toBeNull();
+
+      // Closing keeps the inline placement, so it slides closed in place.
+      await click(buttonByText("Add panel"));
+      expect(contextPanelExpanded()).toBe(false);
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
+    });
+
+    it("stays open between workspaces and closes on other routes", async () => {
+      await render({
+        palette: true,
+        path: "/workspaces/asia-open",
+        service: new MemoryService([ASIA, EUROPE]),
+      });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      await act(async () => navigate("/workspaces/europe-close"));
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("europe-close"),
+      );
+      await settle();
+      expect(contextPanelTitle()).toBe("Panels");
+      expect(q(".vuuContextPanel-content .vuuPanelsPalette")).not.toBeNull();
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "true",
+      );
+
+      await act(async () => navigate("/Apps/blotter"));
+      await settle();
+      expect(q("[data-testid='home']")).not.toBeNull();
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      expect(contextPanelExpanded()).toBe(false);
+
+      // Unpinned, it stays closed on returning to a workspace.
+      await act(async () => navigate("/workspaces/asia-open"));
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await settle();
+      expect(q(".vuuPanelsPalette")).toBeNull();
+    });
+
+    it("a pinned palette reopens on returning to a workspace", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      await click(q(".vuuPanelsPalette-search button[aria-pressed]"));
+      await act(async () => navigate("/Apps/blotter"));
+      await settle();
+      expect(contextPanelExpanded()).toBe(false);
+      await act(async () => navigate("/workspaces/asia-open"));
+      await vi.waitFor(() =>
+        expect(q(".vuuContextPanel-content .vuuPanelsPalette")).not.toBeNull(),
+      );
+      expect(contextPanelTitle()).toBe("Panels");
+    });
+
+    it("drags rows from the context panel into the workspace", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() =>
+        expect(q(".vuuContextPanel-content .vuuPanelsPalette")).not.toBeNull(),
+      );
+      const source = qa(".vuuPanelsPalette-row").find((row) =>
+        row.textContent?.includes("Blotter"),
+      ) as HTMLElement;
+      const dataTransfer = {
+        effectAllowed: "uninitialized",
+        setData: () => undefined,
+      };
+      const drag = (type: string) => {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        Object.defineProperties(event, {
+          clientX: { value: 50 },
+          clientY: { value: 50 },
+          dataTransfer: { value: dataTransfer },
+        });
+        act(() => source.dispatchEvent(event));
+      };
+      drag("dragstart");
+      expect(q(".vuuTemplateDragHint")?.textContent).toContain(
+        "Drop on a panel edge to split, centre to tab",
+      );
+      expect(q(".vuuWorkspaceDropZone")?.dataset.dragActive).toBe("true");
+      drag("dragend");
+      expect(q(".vuuTemplateDragHint")).toBeNull();
+    });
+
+    it("a module's panel still closes on navigation between workspaces", async () => {
+      await render({
+        palette: true,
+        path: "/workspaces/asia-open",
+        service: new MemoryService([ASIA, EUROPE]),
+      });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Show module panel"));
+      expect(contextPanelTitle()).toBe("Order details");
+      await act(async () => navigate("/workspaces/europe-close"));
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("europe-close"),
+      );
+      await settle();
+      expect(q("[data-testid='module-panel']")).toBeNull();
+      expect(contextPanelExpanded()).toBe(false);
+    });
+
+    it("adds panels with a header", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() => expect(q(".vuuPanelsPalette")).not.toBeNull());
+      await click(
+        qa(".vuuPanelsPalette-row").find((row) =>
+          row.textContent?.includes("Blotter"),
+        ),
+      );
+      await vi.waitFor(() =>
+        expect(q(".vuuPortalWorkspace-body .vuuGridLayoutItem")).not.toBeNull(),
+      );
+      expect(
+        q(".vuuPortalWorkspace-body .vuuGridLayoutItemHeader-title")
+          ?.textContent,
+      ).toContain("Blotter");
     });
   });
 

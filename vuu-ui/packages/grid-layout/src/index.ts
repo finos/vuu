@@ -62,9 +62,15 @@ export {
 export { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 export { GridLayoutItem } from "./GridLayoutItem";
 export {
+  GridLayoutCommandsRegistry,
+  type GridLayoutCommands,
+  type GridTemplatePlacement,
+} from "./GridLayoutCommands";
+export {
   GridLayoutProvider,
   GridLayoutDocumentController,
   useGridComponentSettingsUpdater,
+  useGridLayoutCommands,
   type GridComponentSettingsUpdater,
   type GridLayoutDocumentChange,
   type GridLayoutDocumentChangeHandler,

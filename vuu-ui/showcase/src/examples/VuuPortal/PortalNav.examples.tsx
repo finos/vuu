@@ -658,7 +658,8 @@ const traderWorkspace: NamedWorkspaceDefinitionV1 = {
 
 const workspaceOptions: PortalWorkspacesOptions = {
   componentRenderers: showcaseGridComponentRenderers,
-  // W5 adds the panel palette; this placeholder shows the header slot.
+  // A placeholder for the header slot. See the PanelsPalette examples for
+  // AddPanelButton and the Panels palette.
   headerActions: (
     <Button disabled sentiment="accented">
       Add panel

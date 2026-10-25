@@ -196,7 +196,12 @@ export const useVuuServerConnection = (
   const identity = useOptionalIdentityContext();
   const servers = useVuuServers();
   return useMemo<ServerResolution>(() => {
-    if (serverId === currentConnectionId) {
+    // In local mode the current connection id is "local", which a local
+    // server may also be called.
+    if (
+      serverId === currentConnectionId &&
+      !identity?.localServers?.has(serverId)
+    ) {
       return { status: "current" };
     }
     const resolved = resolveServer?.(serverId);

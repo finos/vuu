@@ -34,7 +34,12 @@ import {
   sourceIsTemplate,
   isTypedComponentTemplate,
   type ComponentTemplate,
+  type TemplateSource,
 } from "./GridLayoutContext";
+import type {
+  GridLayoutCommands,
+  GridTemplatePlacement,
+} from "./GridLayoutCommands";
 import {
   GridLayoutItem,
   type GridLayoutItemProps,
@@ -44,6 +49,7 @@ import { GridLayoutModel } from "./GridLayoutModel";
 import {
   type GridLayoutDragEndHandler,
   useGridChangeHandler,
+  useGridLayoutCommandsRegistry,
   useGridLayoutOptions,
   useSavedGrid,
 } from "./GridLayoutProvider";
@@ -1070,6 +1076,115 @@ export const useGridLayout = ({
       setChildren,
     ],
   );
+
+  const insertTemplate = useCallback(
+    (template: ComponentTemplate, placement: GridTemplatePlacement) => {
+      const element = containerRef.current;
+      if (!element) {
+        throw Error(`[useGridLayout#${id}] insertTemplate, grid not mounted`);
+      }
+      const { phase } = dragCoordinator.state;
+      if (phase === "dragging" || phase === "previewing") {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, a drag is in progress`,
+        );
+      }
+      const before = gridController.getSnapshot();
+      const { targetId } = placement;
+      if (!before.items.some(({ id: itemId }) => itemId === targetId)) {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, target #${targetId} not found`,
+        );
+      }
+      const targetStack = before.stacks.find(({ itemIds }) =>
+        itemIds.includes(targetId),
+      );
+      const source: TemplateSource = {
+        ...template,
+        element,
+        layoutId: id,
+        type: "template",
+      };
+      const stackAfter = (stackId: string) =>
+        handleDropStackedItem({
+          dragSource: source,
+          dropPosition: { position: "after", target: targetId },
+          tabsId: stackId,
+          type: "drop",
+        });
+
+      if (placement.kind === "split") {
+        if (!handleDrop(targetId, source, placement.position)) {
+          throw Error(`[useGridLayout#${id}] insertTemplate, split rejected`);
+        }
+      } else if (targetStack) {
+        stackAfter(targetStack.id);
+        if (placement.kind === "replace") {
+          dispatchGridLayoutAction({ id: targetId, type: "close" });
+        }
+      } else if (
+        !handleDrop(
+          targetId,
+          source,
+          placement.kind === "replace" ? "centre" : "header",
+        )
+      ) {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, ${placement.kind} rejected`,
+        );
+      }
+
+      const previousIds = new Set(before.items.map(({ id: itemId }) => itemId));
+      const inserted = gridController
+        .getSnapshot()
+        .items.find(
+          ({ id: itemId }) =>
+            !previousIds.has(itemId) && contentRegistryRef.current.has(itemId),
+        );
+      if (!inserted) {
+        throw Error(
+          `[useGridLayout#${id}] insertTemplate, ${placement.kind} rejected`,
+        );
+      }
+      return inserted.id;
+    },
+    [
+      dispatchGridLayoutAction,
+      dragCoordinator,
+      gridController,
+      handleDrop,
+      handleDropStackedItem,
+      id,
+    ],
+  );
+
+  const commandsRegistry = useGridLayoutCommandsRegistry();
+  useEffect(() => {
+    if (!commandsRegistry) {
+      return;
+    }
+    const commands: GridLayoutCommands = {
+      getContentItemIds: () =>
+        gridController
+          .getSnapshot()
+          .items.filter(({ id: itemId }) =>
+            contentRegistryRef.current.has(itemId),
+          )
+          .map(({ id: itemId }) => itemId),
+      getPlaceholderIds: () =>
+        gridController
+          .getSnapshot()
+          .items.filter(
+            ({ id: itemId }) => !contentRegistryRef.current.has(itemId),
+          )
+          .map(({ id: itemId }) => itemId),
+      getSnapshot: gridController.getSnapshot,
+      gridId: id,
+      insertTemplate,
+      subscribe: gridController.subscribe,
+    };
+    return commandsRegistry.register(commands);
+  }, [commandsRegistry, gridController, id, insertTemplate]);
 
   useEffect(() => {
     return gridController.subscribeCommitted((transition) => {

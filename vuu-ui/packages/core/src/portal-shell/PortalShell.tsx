@@ -30,7 +30,10 @@ import {
   type CommonShellProps,
 } from "../common-shell/CommonShell";
 import type { ServerMonitorOptions } from "../connection-management/server-status";
-import { useContextPanelSlot } from "../context-panel/ContextPanelSlot";
+import {
+  type ContextPanelSlotPlacement,
+  useContextPanelSlot,
+} from "../context-panel/ContextPanelSlot";
 import {
   ShellContextPanel,
   ShellContextPanelProvider,
@@ -75,8 +78,20 @@ const isPortalLandingPage = (
   isValidElement<PortalLandingPageProps>(child) &&
   child.type === PortalLandingPage;
 
+export interface PortalShellContextPanelOptions {
+  /**
+   * How the shell's context panel is displayed for content that doesn't ask
+   * for a placement when it claims the panel, including module context
+   * panels. `"overlay"` (the default) slides out over the content;
+   * `"inline"` takes its own column and the content shrinks.
+   */
+  placement?: ContextPanelSlotPlacement;
+}
+
 export interface PortalShellProps extends CommonShellProps {
   children?: ReactNode;
+  /** Options for the shell's context panel. */
+  contextPanel?: PortalShellContextPanelOptions;
   /**
    * Whether the layout has a header row for a `PortalHeader`. `false`
    * removes the row so the navigation and content take the full height.
@@ -158,10 +173,14 @@ const OpenModuleTracker = ({
   return null;
 };
 
-/** Content in the context panel belongs to the module that opened it. */
-const CloseContextPanelOnNavigation = () => {
+/**
+ * Content in the context panel belongs to the route that opened it, unless
+ * its owner keeps it open across navigation (e.g. the Panels palette, which
+ * stays open between workspaces).
+ */
+export const CloseContextPanelOnNavigation = () => {
   const { pathname } = useLocation();
-  const closeContextPanel = useContextPanelSlot()?.close;
+  const closeContextPanel = useContextPanelSlot()?.closeOnNavigation;
   useEffect(() => {
     closeContextPanel?.();
   }, [closeContextPanel, pathname]);
@@ -188,6 +207,7 @@ const OptionalWorkspaces = ({
 const PortalLayout = () => {
   const {
     children,
+    contextPanel,
     header = true,
     id,
     navWidth,
@@ -242,7 +262,9 @@ const PortalLayout = () => {
           portalId={portalId}
         >
           <OptionalWorkspaces options={workspaces} portalId={portalId}>
-            <ShellContextPanelProvider>
+            <ShellContextPanelProvider
+              defaultPlacement={contextPanel?.placement}
+            >
               <CloseContextPanelOnNavigation />
               <div
                 className={clsx(classBase, {

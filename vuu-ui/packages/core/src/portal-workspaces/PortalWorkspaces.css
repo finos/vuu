@@ -154,12 +154,26 @@ button.vuuPortalNav-link {
 .vuuPortalWorkspace-body {
   display: flex;
   flex: 1 1 auto;
-  flex-direction: column;
   min-height: 0;
   position: relative;
+}
+
+/* The GridLayout, and the drag hint over it. */
+.vuuPortalWorkspace-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  background: var(--salt-container-secondary-background);
 
   > .vuuGridLayout {
     flex: 1 1 auto;
+  }
+
+  .vuuGridPlaceholder:has(.vuuWorkspaceDropZone) {
+    background: transparent;
   }
 }
 

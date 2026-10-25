@@ -15,6 +15,14 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { PanelsPalette } from "../panels-palette/PanelsPalette";
+import {
+  PanelsPaletteStateProvider,
+  usePanelsPaletteState,
+} from "../panels-palette/PanelsPaletteState";
+import { TemplateDragHint } from "../panels-palette/TemplateDragHint";
+import { OpenPanelProvider } from "../panels-palette/useOpenPanel";
+import { WorkspaceDropZone } from "../panels-palette/WorkspaceDropZone";
 import type { WorkspaceController } from "../workspace/WorkspaceController";
 import { WorkspacePersistentStateProvider } from "../workspace/WorkspacePersistentState";
 import { useWorkspace } from "../workspace/WorkspaceProvider";
@@ -30,12 +38,22 @@ import portalWorkspacesCss from "./PortalWorkspaces.css";
 
 const classBase = "vuuPortalWorkspace";
 
-/** The GridLayout of an open workspace. */
+/** Panels added to a workspace get a header, with their title and close. */
+const layoutOptions = { newChildItem: { header: true } };
+
+export interface PortalWorkspaceGridProps {
+  controller: WorkspaceController;
+}
+
+/**
+ * The GridLayout of an open workspace. With an `AddPanelButton`, it renders
+ * the Panels palette, within its GridLayoutProvider and OpenPanelProvider,
+ * and an empty workspace shows a drop zone.
+ */
 export const PortalWorkspaceGrid = ({
   controller,
-}: {
-  controller: WorkspaceController;
-}) => {
+}: PortalWorkspaceGridProps) => {
+  const paletteAvailable = usePanelsPaletteState()?.available === true;
   const [isEmpty, setIsEmpty] = useState(
     controller.snapshot.layout.components.length === 0,
   );
@@ -62,12 +80,27 @@ export const PortalWorkspaceGrid = ({
         documentController={controller.documentController}
         onDocumentChange={handleDocumentChange}
         onDocumentError={handleDocumentError}
+        options={layoutOptions}
         settingsCodecs={controller.settingsCodecs}
       >
-        <GridLayout
-          id={controller.snapshot.layout.layout.id}
-          placeholderContent={isEmpty ? <WorkspaceStartPanel /> : undefined}
-        />
+        <OpenPanelProvider gridId={controller.snapshot.layout.layout.id}>
+          <div className={`${classBase}-grid`}>
+            <GridLayout
+              id={controller.snapshot.layout.layout.id}
+              placeholderContent={
+                isEmpty ? (
+                  paletteAvailable ? (
+                    <WorkspaceDropZone />
+                  ) : (
+                    <WorkspaceStartPanel />
+                  )
+                ) : undefined
+              }
+            />
+            <TemplateDragHint />
+          </div>
+          {paletteAvailable ? <PanelsPalette /> : null}
+        </OpenPanelProvider>
       </GridLayoutProvider>
     </WorkspacePersistentStateProvider>
   );
@@ -99,6 +132,19 @@ export interface PortalWorkspaceProps {
    */
   headerActions?: ReactNode;
 }
+
+/** Opens the Panels palette, if available, when a new workspace arrives. */
+const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
+  const paletteState = usePanelsPaletteState();
+  const available = paletteState?.available === true;
+  const setOpen = paletteState?.setOpen;
+  useEffect(() => {
+    if (open && available) {
+      setOpen?.(true);
+    }
+  }, [available, open, setOpen]);
+  return null;
+};
 
 /**
  * Route element for `/workspaces/:workspaceId`. Makes the workspace in the
@@ -209,7 +255,8 @@ export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
     );
   } else {
     content = (
-      <>
+      <PanelsPaletteStateProvider>
+        <OpenPaletteForNewWorkspace open={editNameId === summary.id} />
         <PortalWorkspaceHeader
           actions={headerActions}
           editName={editNameId === summary.id}
@@ -227,7 +274,7 @@ export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
             <WorkspaceState state="opening" title="Opening workspace…" />
           )}
         </div>
-      </>
+      </PanelsPaletteStateProvider>
     );
   }
 
