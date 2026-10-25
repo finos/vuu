@@ -10,7 +10,7 @@ import {
   type NamedWorkspaceMetadataV1,
   type WorkspaceSnapshotRecordV1,
   WorkspaceValidationError,
-} from "../workspace-management/workspace-schemas";
+} from "./workspace-schemas";
 import type {
   UserPersistenceScope,
   WorkspacePersistenceService,

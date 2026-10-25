@@ -4,7 +4,7 @@ import { useWindow } from "@salt-ds/window";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import type { HTMLAttributes } from "react";
-import { useWorkspace } from "./WorkspaceProvider";
+import { useWorkspace } from "@vuu-ui/core";
 import layoutListCss from "./LayoutList.css";
 
 const classBase = "vuuLayoutList";

@@ -88,6 +88,8 @@ vi.mock("@vuu-ui/vuu-notifications", () => ({
     showNotification: () => undefined,
   }),
 }));
+// The workspace model is not exercised here and pulls in heavy UI controls.
+vi.mock("../../src/workspace", () => ({}));
 vi.mock("../../src/notifications/PortalNotificationBanners", () => ({
   PortalNotificationBanners: () => null,
 }));

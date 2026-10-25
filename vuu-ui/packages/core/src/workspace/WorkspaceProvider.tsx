@@ -21,16 +21,15 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import {
-  useOptionalWorkspacePersistenceService,
-  type WorkspacePersistenceService,
-} from "../persistence-manager";
+import { useOptionalWorkspacePersistenceService } from "./WorkspacePersistenceContext";
+import type { WorkspacePersistenceService } from "./WorkspacePersistenceService";
 import { WorkspaceController } from "./WorkspaceController";
 import {
   APPLICATION_SESSION_VERSION,
   NAMED_WORKSPACE_DEFINITION_VERSION,
   WORKSPACE_SNAPSHOT_VERSION,
   cloneWorkspaceValue,
+  workspaceMetadata,
   type ApplicationSessionV1,
   type NamedWorkspaceDefinitionV1,
   type NamedWorkspaceMetadataV1,
@@ -65,6 +64,25 @@ export const emptyWorkspaceSnapshot: WorkspaceSnapshotV1 = {
 
 export type WorkspaceStatus = "empty" | "error" | "loading" | "ready";
 
+export type WorkspaceKind = "named" | "system";
+
+/** A workspace entry suitable for listing in navigation. */
+export interface WorkspaceSummary {
+  readonly description?: string;
+  readonly id: string;
+  /**
+   * True when a system workspace has been edited by the user, i.e. a
+   * personal copy is shadowing the read-only system definition. Always
+   * false for named workspaces.
+   */
+  readonly isModified: boolean;
+  /** True when a per-user personal copy shadows this system workspace. */
+  readonly isPersonalCopy: boolean;
+  readonly kind: WorkspaceKind;
+  readonly name: string;
+  readonly updatedAt?: string;
+}
+
 export interface WorkspaceProps {
   /** @deprecated Migrate this layout to defaultWorkspace. */
   readonly activeLayoutIndex?: number;
@@ -92,6 +110,8 @@ export interface WorkspaceProviderProps extends WorkspaceProps {
 
 export interface WorkspaceContextValue {
   readonly activeWorkspace?: WorkspaceController;
+  /** The system or named workspace id backing the active workspace instance. */
+  readonly activeWorkspaceId: string | null;
   readonly activeWorkspaceInstanceId: string | null;
   readonly closeWorkspace: (instanceId: string) => Promise<void>;
   readonly componentRenderers?: GridComponentRendererRegistry;
@@ -100,6 +120,9 @@ export interface WorkspaceContextValue {
     snapshot: WorkspaceSnapshotV1,
     title?: string,
   ) => Promise<string>;
+  /** Creates, persists, opens and activates a new empty named workspace. Resolves to its id. */
+  readonly createWorkspace: (name?: string) => Promise<string>;
+  /** Deletes a named workspace and closes any open instance of it. System workspaces cannot be deleted. */
   readonly deleteNamedWorkspace: (definitionId: string) => Promise<void>;
   readonly error?: Error;
   readonly getApplicationSetting: (key: string) => JsonValue | undefined;
@@ -111,19 +134,29 @@ export interface WorkspaceContextValue {
   readonly openSystemWorkspace: (
     definition: NamedWorkspaceDefinitionV1,
   ) => Promise<void>;
+  /** Renames a named workspace and any open instance of it. System workspaces cannot be renamed. */
+  readonly renameNamedWorkspace: (
+    definitionId: string,
+    name: string,
+  ) => Promise<void>;
   readonly renameWorkspace: (
     instanceId: string,
     title: string,
   ) => Promise<void>;
+  /** Discards the personal copy of a system workspace, restoring its default layout. */
+  readonly resetToDefault: (workspaceId: string) => Promise<void>;
+  /** Saves the active workspace as a new named workspace ("Save as new…"). Resolves to its id. */
   readonly saveActiveWorkspaceAs: (
     name: string,
     description?: string,
-  ) => Promise<void>;
+  ) => Promise<string>;
   readonly saveApplicationSettings: (
     settings: JsonValue,
     key?: string,
   ) => Promise<void>;
   readonly selectWorkspace: (instanceId: string) => Promise<void>;
+  /** Activates the system or named workspace with this id, opening it if necessary. */
+  readonly setActiveWorkspace: (workspaceId: string) => Promise<void>;
   readonly setApplicationSetting: (
     key: string,
     value: JsonValue,
@@ -135,6 +168,8 @@ export interface WorkspaceContextValue {
   readonly status: WorkspaceStatus;
   readonly systemWorkspaces: readonly NamedWorkspaceDefinitionV1[];
   readonly resetApplication: () => Promise<void>;
+  /** System workspaces (with personal copies applied) followed by named workspaces. */
+  readonly workspaces: readonly WorkspaceSummary[];
 }
 
 const missing = async () => {
@@ -142,29 +177,37 @@ const missing = async () => {
 };
 
 const WorkspaceContext = createContext<WorkspaceContextValue>({
+  activeWorkspaceId: null,
   activeWorkspaceInstanceId: null,
   closeWorkspace: missing,
   createWorkspaceFromSnapshot: async () => {
     throw new Error("WorkspaceProvider is not mounted");
   },
   controllers: [],
+  createWorkspace: missing,
   deleteNamedWorkspace: missing,
   getApplicationSetting: () => undefined,
   getApplicationSettings: () => undefined,
   namedWorkspaces: [],
   openNamedWorkspace: missing,
   openSystemWorkspace: missing,
+  renameNamedWorkspace: missing,
   renameWorkspace: missing,
+  resetToDefault: missing,
   saveActiveWorkspaceAs: missing,
   saveApplicationSettings: missing,
   selectWorkspace: missing,
+  setActiveWorkspace: missing,
   setApplicationSetting: missing,
   settings: {},
   scopeIdentity: "missing",
   status: "loading",
   systemWorkspaces: [],
   resetApplication: missing,
+  workspaces: [],
 });
+
+const NO_SYSTEM_WORKSPACES: readonly NamedWorkspaceDefinitionV1[] = [];
 
 let nextWorkspaceInstance = 1;
 const createInstanceId = () =>
@@ -221,7 +264,7 @@ export const WorkspaceProvider = ({
   persistenceService: serviceProp,
   settingsCodecs,
   showTabs,
-  systemWorkspaces = [],
+  systemWorkspaces = NO_SYSTEM_WORKSPACES,
   TabstripProps,
   userId,
   workspaceJSON,
@@ -233,9 +276,21 @@ export const WorkspaceProvider = ({
   const controllersRef = useRef<WorkspaceController[]>([]);
   const [session, setSession] = useState<ApplicationSessionV1>();
   const sessionRef = useRef<ApplicationSessionV1 | undefined>(undefined);
-  const [namedWorkspaces, setNamedWorkspaces] = useState<
+  // Metadata for every persisted definition, including personal copies of
+  // system workspaces (which share the id of the system workspace they shadow).
+  const [definitionMetadata, setDefinitionMetadataState] = useState<
     readonly NamedWorkspaceMetadataV1[]
   >([]);
+  const definitionMetadataRef = useRef<readonly NamedWorkspaceMetadataV1[]>([]);
+  const systemWorkspacesRef = useRef(systemWorkspaces);
+  systemWorkspacesRef.current = systemWorkspaces;
+  const adHocSystemWorkspaces = useRef(
+    new Map<string, NamedWorkspaceDefinitionV1>(),
+  );
+  const definitionQueue = useRef<Promise<void>>(Promise.resolve());
+  const pendingDefinitionSnapshots = useRef(
+    new Map<string, WorkspaceSnapshotV1>(),
+  );
   const [loadedScope, setLoadedScope] = useState<string>();
   const [loadError, setLoadError] = useState<Error>();
   const generation = useRef(0);
@@ -326,6 +381,117 @@ export const WorkspaceProvider = ({
     setControllers(next);
   }, []);
 
+  const setDefinitionMetadata = useCallback(
+    (
+      update: (
+        current: readonly NamedWorkspaceMetadataV1[],
+      ) => readonly NamedWorkspaceMetadataV1[],
+    ) => {
+      const next = update(definitionMetadataRef.current);
+      definitionMetadataRef.current = next;
+      setDefinitionMetadataState(next);
+    },
+    [],
+  );
+
+  const upsertDefinitionMetadata = useCallback(
+    (definition: NamedWorkspaceDefinitionV1) => {
+      const metadata = workspaceMetadata(definition);
+      setDefinitionMetadata((current) =>
+        current.some(({ id }) => id === metadata.id)
+          ? current.map((entry) =>
+              entry.id === metadata.id ? metadata : entry,
+            )
+          : [...current, metadata],
+      );
+    },
+    [setDefinitionMetadata],
+  );
+
+  const findSystemWorkspace = useCallback(
+    (id: string): NamedWorkspaceDefinitionV1 | undefined =>
+      systemWorkspacesRef.current.find((definition) => definition.id === id) ??
+      adHocSystemWorkspaces.current.get(id),
+    [],
+  );
+
+  const enqueueDefinitionTask = useCallback(
+    <T,>(guard: ScopeGuard, task: () => Promise<T>): Promise<T> => {
+      assertScope(guard);
+      const result = definitionQueue.current
+        .catch(() => undefined)
+        .then(async () => {
+          assertScope(guard);
+          return task();
+        });
+      definitionQueue.current = result.then(
+        () => undefined,
+        () => undefined,
+      );
+      return result;
+    },
+    [assertScope],
+  );
+
+  /**
+   * Persists edits to the definition backing a workspace instance. Edits to a
+   * read-only system workspace transparently create (then update) a personal
+   * copy which shadows it, keeping the system workspace id. Writes are
+   * serialized and coalesced so only the latest snapshot is written.
+   */
+  const syncDefinition = useCallback(
+    (
+      guard: ScopeGuard,
+      definitionId: string,
+      snapshot: WorkspaceSnapshotV1,
+    ) => {
+      const pending = pendingDefinitionSnapshots.current;
+      const alreadyQueued = pending.has(definitionId);
+      pending.set(definitionId, snapshot);
+      if (alreadyQueued) {
+        return;
+      }
+      void enqueueDefinitionTask(guard, async () => {
+        const latest = pending.get(definitionId);
+        pending.delete(definitionId);
+        const system = findSystemWorkspace(definitionId);
+        const existing = definitionMetadataRef.current.find(
+          ({ id }) => id === definitionId,
+        );
+        if (!latest || (!system && !existing)) {
+          return;
+        }
+        const now = new Date().toISOString();
+        const description = existing
+          ? existing.description
+          : system?.description;
+        const definition: NamedWorkspaceDefinitionV1 = {
+          createdAt: existing?.createdAt ?? now,
+          ...(description === undefined ? {} : { description }),
+          id: definitionId,
+          name: existing?.name ?? system?.name ?? definitionId,
+          snapshot: latest,
+          updatedAt: now,
+          version: NAMED_WORKSPACE_DEFINITION_VERSION,
+        };
+        await guard.service.saveNamedWorkspaceDefinition(definition);
+        assertScope(guard);
+        upsertDefinitionMetadata(definition);
+      }).catch((cause: unknown) => {
+        if (!(cause instanceof StaleWorkspaceScopeError)) {
+          notifyError("Failed to Save Workspace", cause);
+        }
+      });
+    },
+    [
+      assertScope,
+      enqueueDefinitionTask,
+      findSystemWorkspace,
+      notifyError,
+      upsertDefinitionMetadata,
+    ],
+  );
+
   useEffect(() => {
     for (const controller of controllersRef.current) {
       void controller.dispose();
@@ -334,7 +500,10 @@ export const WorkspaceProvider = ({
     setControllers([]);
     setSession(undefined);
     sessionRef.current = undefined;
-    setNamedWorkspaces([]);
+    setDefinitionMetadata(() => []);
+    definitionQueue.current = Promise.resolve();
+    pendingDefinitionSnapshots.current.clear();
+    adHocSystemWorkspaces.current.clear();
     setLoadError(undefined);
     setLoadedScope(undefined);
     operationQueue.current = Promise.resolve();
@@ -424,6 +593,15 @@ export const WorkspaceProvider = ({
                 instanceId,
                 name:
                   descriptor.title ?? definitionMetadata?.name ?? instanceId,
+                onEdit:
+                  descriptor.definitionId === undefined
+                    ? undefined
+                    : (edited) =>
+                        syncDefinition(
+                          guard,
+                          descriptor.definitionId as string,
+                          edited,
+                        ),
                 onError: (error) => {
                   try {
                     assertScope(guard);
@@ -502,7 +680,7 @@ export const WorkspaceProvider = ({
         replaceControllers(restored);
         sessionRef.current = resolvedSession;
         setSession(resolvedSession);
-        setNamedWorkspaces(metadata);
+        setDefinitionMetadata(() => metadata);
         setLoadedScope(scopeKey);
       } catch (cause: unknown) {
         restored.forEach((controller) => {
@@ -546,8 +724,10 @@ export const WorkspaceProvider = ({
     scopeIsValid,
     scopeKey,
     service,
+    setDefinitionMetadata,
     settingsCodecs,
     showTabs,
+    syncDefinition,
     TabstripProps,
     userId,
     workspaceJSON,
@@ -614,6 +794,10 @@ export const WorkspaceProvider = ({
           name,
           onError: (error) =>
             void notifyError("Failed to Save Workspace", error),
+          onEdit:
+            definitionId === undefined
+              ? undefined
+              : (edited) => syncDefinition(guard, definitionId, edited),
           renderers: componentRenderers,
           service: guard.service,
           settingsCodecs,
@@ -667,6 +851,7 @@ export const WorkspaceProvider = ({
       replaceControllers,
       service,
       settingsCodecs,
+      syncDefinition,
       writeSession,
     ],
   );
@@ -682,11 +867,38 @@ export const WorkspaceProvider = ({
     [addWorkspace],
   );
 
+  /** Resolves a system workspace to its personal copy, when one exists. */
+  const resolveSystemDefinition = useCallback(
+    async (
+      definition: NamedWorkspaceDefinitionV1,
+      guard: ScopeGuard,
+    ): Promise<NamedWorkspaceDefinitionV1> => {
+      if (
+        !definitionMetadataRef.current.some(({ id }) => id === definition.id)
+      ) {
+        return definition;
+      }
+      const personalCopy = await guard.service.loadNamedWorkspaceDefinition(
+        definition.id,
+      );
+      assertScope(guard);
+      return personalCopy ?? definition;
+    },
+    [assertScope],
+  );
+
   const openSystemWorkspace = useCallback(
     async (definition: NamedWorkspaceDefinitionV1): Promise<void> => {
-      await addDefinition(definition);
+      const guard = captureScope();
+      if (!systemWorkspacesRef.current.some(({ id }) => id === definition.id)) {
+        adHocSystemWorkspaces.current.set(definition.id, definition);
+      }
+      await addDefinition(
+        await resolveSystemDefinition(definition, guard),
+        guard,
+      );
     },
-    [addDefinition],
+    [addDefinition, captureScope, resolveSystemDefinition],
   );
 
   const createWorkspaceFromSnapshot = useCallback(
@@ -862,15 +1074,35 @@ export const WorkspaceProvider = ({
       if (!service) {
         throw new Error("Workspace persistence service is not configured");
       }
+      if (findSystemWorkspace(definitionId)) {
+        throw new Error(
+          `System workspace "${definitionId}" cannot be deleted; use resetToDefault to discard a personal copy`,
+        );
+      }
       const guard = captureScope();
-      assertScope(guard);
-      await guard.service.deleteNamedWorkspaceDefinition(definitionId);
-      assertScope(guard);
-      setNamedWorkspaces((current) =>
-        current.filter(({ id }) => id !== definitionId),
-      );
+      for (const controller of controllersRef.current.filter(
+        (candidate) => candidate.definitionId === definitionId,
+      )) {
+        await closeWorkspace(controller.instanceId);
+      }
+      await enqueueDefinitionTask(guard, async () => {
+        pendingDefinitionSnapshots.current.delete(definitionId);
+        await guard.service.deleteNamedWorkspaceDefinition(definitionId);
+        assertScope(guard);
+        setDefinitionMetadata((current) =>
+          current.filter(({ id }) => id !== definitionId),
+        );
+      });
     },
-    [assertScope, captureScope, service],
+    [
+      assertScope,
+      captureScope,
+      closeWorkspace,
+      enqueueDefinitionTask,
+      findSystemWorkspace,
+      service,
+      setDefinitionMetadata,
+    ],
   );
 
   const saveActiveWorkspaceAs = useCallback(
@@ -898,21 +1130,254 @@ export const WorkspaceProvider = ({
         updatedAt: now,
         version: NAMED_WORKSPACE_DEFINITION_VERSION,
       };
-      await guard.service.saveNamedWorkspaceDefinition(definition);
-      assertScope(guard);
-      setNamedWorkspaces((current) => [
-        ...current,
-        {
-          createdAt: now,
-          ...(description === undefined ? {} : { description }),
-          id,
-          name,
-          updatedAt: now,
-          version: NAMED_WORKSPACE_DEFINITION_VERSION,
-        },
-      ]);
+      await enqueueDefinitionTask(guard, async () => {
+        await guard.service.saveNamedWorkspaceDefinition(definition);
+        assertScope(guard);
+        upsertDefinitionMetadata(definition);
+      });
+      return id;
     },
-    [assertScope, captureScope, service],
+    [
+      assertScope,
+      captureScope,
+      enqueueDefinitionTask,
+      service,
+      upsertDefinitionMetadata,
+    ],
+  );
+
+  const createWorkspace = useCallback(
+    async (name = "Untitled"): Promise<string> => {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        throw new Error("Workspace name must not be empty");
+      }
+      const guard = captureScope();
+      const now = new Date().toISOString();
+      const definition: NamedWorkspaceDefinitionV1 = {
+        createdAt: now,
+        id: createInstanceId(),
+        name: trimmedName,
+        snapshot: emptyWorkspaceSnapshot,
+        updatedAt: now,
+        version: NAMED_WORKSPACE_DEFINITION_VERSION,
+      };
+      await enqueueDefinitionTask(guard, async () => {
+        await guard.service.saveNamedWorkspaceDefinition(definition);
+        assertScope(guard);
+        upsertDefinitionMetadata(definition);
+      });
+      await addDefinition(definition, guard);
+      return definition.id;
+    },
+    [
+      addDefinition,
+      assertScope,
+      captureScope,
+      enqueueDefinitionTask,
+      upsertDefinitionMetadata,
+    ],
+  );
+
+  const renameNamedWorkspace = useCallback(
+    async (definitionId: string, name: string) => {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        throw new Error("Workspace name must not be empty");
+      }
+      if (findSystemWorkspace(definitionId)) {
+        throw new Error(`System workspace "${definitionId}" cannot be renamed`);
+      }
+      const guard = captureScope();
+      await enqueueDefinitionTask(guard, async () => {
+        const definition =
+          await guard.service.loadNamedWorkspaceDefinition(definitionId);
+        assertScope(guard);
+        if (!definition) {
+          throw new Error(
+            `Workspace definition "${definitionId}" was not found`,
+          );
+        }
+        const renamed: NamedWorkspaceDefinitionV1 = {
+          ...definition,
+          name: trimmedName,
+          updatedAt: new Date().toISOString(),
+        };
+        await guard.service.saveNamedWorkspaceDefinition(renamed);
+        assertScope(guard);
+        upsertDefinitionMetadata(renamed);
+      });
+      for (const controller of controllersRef.current.filter(
+        (candidate) => candidate.definitionId === definitionId,
+      )) {
+        await renameWorkspace(controller.instanceId, trimmedName);
+      }
+    },
+    [
+      assertScope,
+      captureScope,
+      enqueueDefinitionTask,
+      findSystemWorkspace,
+      renameWorkspace,
+      upsertDefinitionMetadata,
+    ],
+  );
+
+  const resetToDefault = useCallback(
+    async (workspaceId: string) => {
+      const system = findSystemWorkspace(workspaceId);
+      if (!system) {
+        throw new Error(`"${workspaceId}" is not a system workspace`);
+      }
+      if (!componentRenderers || !settingsCodecs) {
+        throw new Error("Workspace runtime is not configured");
+      }
+      const guard = captureScope();
+      // Replace open instances first so their controllers can no longer
+      // write to the personal copy we are about to discard.
+      await enqueueOperation(guard, async () => {
+        const current = sessionRef.current;
+        const targets = controllersRef.current.filter(
+          ({ definitionId }) => definitionId === workspaceId,
+        );
+        if (!current || targets.length === 0) {
+          return;
+        }
+        const replacements = new Map<
+          WorkspaceController,
+          WorkspaceController
+        >();
+        try {
+          for (const target of targets) {
+            const instanceId = createInstanceId();
+            const snapshot = remapSnapshot(system.snapshot, instanceId);
+            const controller = new WorkspaceController({
+              definitionId: workspaceId,
+              instanceId,
+              name: system.name,
+              onEdit: (edited) => syncDefinition(guard, workspaceId, edited),
+              onError: (error) =>
+                void notifyError("Failed to Save Workspace", error),
+              renderers: componentRenderers,
+              service: guard.service,
+              settingsCodecs,
+              snapshot,
+            });
+            replacements.set(target, controller);
+            await controller.repository.save(snapshot);
+            assertScope(guard);
+          }
+          const instanceIds = new Map(
+            [...replacements].map(([previous, next]) => [
+              previous.instanceId,
+              next.instanceId,
+            ]),
+          );
+          await writeSession(
+            {
+              ...current,
+              activeWorkspaceInstanceId:
+                current.activeWorkspaceInstanceId === null
+                  ? null
+                  : (instanceIds.get(current.activeWorkspaceInstanceId) ??
+                    current.activeWorkspaceInstanceId),
+              openWorkspaces: current.openWorkspaces.map((workspace) => {
+                const instanceId = instanceIds.get(workspace.instanceId);
+                return instanceId === undefined
+                  ? workspace
+                  : {
+                      ...workspace,
+                      instanceId,
+                      snapshotId: instanceId,
+                      title: system.name,
+                    };
+              }),
+              workspaceOrder: current.workspaceOrder.map(
+                (id) => instanceIds.get(id) ?? id,
+              ),
+            },
+            guard,
+          );
+        } catch (cause: unknown) {
+          for (const controller of replacements.values()) {
+            await controller.dispose();
+            await guard.service.deleteWorkspaceSnapshot(controller.instanceId);
+          }
+          throw cause;
+        }
+        replaceControllers(
+          controllersRef.current.map(
+            (controller) => replacements.get(controller) ?? controller,
+          ),
+        );
+        for (const previous of replacements.keys()) {
+          await previous.dispose();
+          assertScope(guard);
+          await guard.service.deleteWorkspaceSnapshot(previous.instanceId);
+          assertScope(guard);
+        }
+      });
+      await enqueueDefinitionTask(guard, async () => {
+        pendingDefinitionSnapshots.current.delete(workspaceId);
+        if (
+          definitionMetadataRef.current.some(({ id }) => id === workspaceId)
+        ) {
+          await guard.service.deleteNamedWorkspaceDefinition(workspaceId);
+          assertScope(guard);
+          setDefinitionMetadata((current) =>
+            current.filter(({ id }) => id !== workspaceId),
+          );
+        }
+      });
+    },
+    [
+      assertScope,
+      captureScope,
+      componentRenderers,
+      enqueueDefinitionTask,
+      enqueueOperation,
+      findSystemWorkspace,
+      notifyError,
+      replaceControllers,
+      setDefinitionMetadata,
+      settingsCodecs,
+      syncDefinition,
+      writeSession,
+    ],
+  );
+
+  const setActiveWorkspace = useCallback(
+    async (workspaceId: string) => {
+      const open = controllersRef.current.find(
+        ({ definitionId }) => definitionId === workspaceId,
+      );
+      if (open) {
+        await selectWorkspace(open.instanceId);
+        return;
+      }
+      const guard = captureScope();
+      const system = findSystemWorkspace(workspaceId);
+      let definition: NamedWorkspaceDefinitionV1 | undefined;
+      if (system) {
+        definition = await resolveSystemDefinition(system, guard);
+      } else {
+        definition =
+          await guard.service.loadNamedWorkspaceDefinition(workspaceId);
+        assertScope(guard);
+      }
+      if (!definition) {
+        throw new Error(`Workspace "${workspaceId}" was not found`);
+      }
+      await addDefinition(definition, guard);
+    },
+    [
+      addDefinition,
+      assertScope,
+      captureScope,
+      findSystemWorkspace,
+      resolveSystemDefinition,
+      selectWorkspace,
+    ],
   );
 
   const setApplicationSetting = useCallback(
@@ -1015,6 +1480,43 @@ export const WorkspaceProvider = ({
     }
   }, [assertScope, captureScope, replaceControllers]);
 
+  const { namedWorkspaces, workspaces } = useMemo(() => {
+    const systemIds = new Set(systemWorkspaces.map(({ id }) => id));
+    const metadataById = new Map(
+      definitionMetadata.map((metadata) => [metadata.id, metadata]),
+    );
+    const named = definitionMetadata.filter(({ id }) => !systemIds.has(id));
+    const summaries: WorkspaceSummary[] = [
+      ...systemWorkspaces.map((definition): WorkspaceSummary => {
+        const personalCopy = metadataById.get(definition.id);
+        const description = personalCopy
+          ? personalCopy.description
+          : definition.description;
+        return {
+          ...(description === undefined ? {} : { description }),
+          id: definition.id,
+          isModified: personalCopy !== undefined,
+          isPersonalCopy: personalCopy !== undefined,
+          kind: "system",
+          name: personalCopy?.name ?? definition.name,
+          updatedAt: personalCopy?.updatedAt ?? definition.updatedAt,
+        };
+      }),
+      ...named.map(
+        ({ description, id, name, updatedAt }): WorkspaceSummary => ({
+          ...(description === undefined ? {} : { description }),
+          id,
+          isModified: false,
+          isPersonalCopy: false,
+          kind: "named",
+          name,
+          updatedAt,
+        }),
+      ),
+    ];
+    return { namedWorkspaces: named, workspaces: summaries };
+  }, [definitionMetadata, systemWorkspaces]);
+
   const value = useMemo<WorkspaceContextValue>(() => {
     const settings = session?.settings ?? {};
     const visibleControllers = status === "loading" ? [] : controllers;
@@ -1023,10 +1525,12 @@ export const WorkspaceProvider = ({
     );
     return {
       activeWorkspace,
+      activeWorkspaceId: activeWorkspace?.definitionId ?? null,
       activeWorkspaceInstanceId: session?.activeWorkspaceInstanceId ?? null,
       closeWorkspace,
       componentRenderers,
       controllers: visibleControllers,
+      createWorkspace,
       createWorkspaceFromSnapshot,
       deleteNamedWorkspace,
       error: loadError,
@@ -1036,10 +1540,13 @@ export const WorkspaceProvider = ({
       namedWorkspaces,
       openNamedWorkspace,
       openSystemWorkspace,
+      renameNamedWorkspace,
       renameWorkspace,
+      resetToDefault,
       saveActiveWorkspaceAs,
       saveApplicationSettings,
       selectWorkspace,
+      setActiveWorkspace,
       setApplicationSetting,
       settings,
       settingsCodecs,
@@ -1047,28 +1554,34 @@ export const WorkspaceProvider = ({
       status,
       systemWorkspaces,
       resetApplication,
+      workspaces,
     };
   }, [
     closeWorkspace,
     componentRenderers,
     controllers,
+    createWorkspace,
     createWorkspaceFromSnapshot,
     deleteNamedWorkspace,
     loadError,
     namedWorkspaces,
     openNamedWorkspace,
     openSystemWorkspace,
+    renameNamedWorkspace,
     renameWorkspace,
+    resetToDefault,
     saveActiveWorkspaceAs,
     saveApplicationSettings,
     selectWorkspace,
     session,
+    setActiveWorkspace,
     setApplicationSetting,
     settingsCodecs,
     scopeKey,
     status,
     systemWorkspaces,
     resetApplication,
+    workspaces,
   ]);
 
   return (

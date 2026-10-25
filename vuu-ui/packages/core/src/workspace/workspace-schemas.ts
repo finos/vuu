@@ -74,10 +74,10 @@ export type WorkspaceSchemaName =
 
 export interface WorkspaceValidationIssue {
   readonly code:
-  | "INVALID_JSON_VALUE"
-  | "INVALID_VALUE"
-  | "UNEXPECTED_FIELD"
-  | "UNSUPPORTED_VERSION";
+    | "INVALID_JSON_VALUE"
+    | "INVALID_VALUE"
+    | "UNEXPECTED_FIELD"
+    | "UNSUPPORTED_VERSION";
   readonly message: string;
   readonly path: string;
 }

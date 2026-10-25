@@ -3,7 +3,7 @@ import type {
   NamedWorkspaceDefinitionV1,
   NamedWorkspaceMetadataV1,
   WorkspaceSnapshotRecordV1,
-} from "../workspace-management/workspace-schemas";
+} from "./workspace-schemas";
 
 export interface PersistenceScope {
   readonly applicationNamespace: string;
