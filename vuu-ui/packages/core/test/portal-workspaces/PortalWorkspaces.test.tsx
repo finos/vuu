@@ -1,8 +1,4 @@
-import {
-  GridComponentRendererRegistry,
-  GridComponentSettingsRegistry,
-  type GridLayoutDocument,
-} from "@vuu-ui/grid-layout";
+import type { GridLayoutDocument } from "@vuu-ui/grid-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -24,6 +20,10 @@ import {
   InMemoryPersistenceBackend,
   type PortalPersistenceService,
 } from "../../src/persistence";
+import { AddPanelButton, PanelsPalette } from "../../src/panels-palette";
+import { createPortalComponentRegistries } from "../../src/portal-components";
+import { PortalModuleRegistryProvider } from "../../src/portal-module-registry/PortalModuleRegistry";
+import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 import { PortalNav } from "../../src/portal-nav/PortalNav";
 import type { PortalNavProps } from "../../src/portal-nav/portal-nav-types";
 import { PortalWorkspace } from "../../src/portal-workspaces/PortalWorkspace";
@@ -127,8 +127,24 @@ class MemoryService implements WorkspacePersistenceService {
 
 const TRADER = definition("trader", "Trader");
 const ASIA = definition("asia-open", "Asia open");
-const renderers = new GridComponentRendererRegistry();
-const codecs = new GridComponentSettingsRegistry();
+const { renderers, settingsCodecs: codecs } = createPortalComponentRegistries({
+  renderModule: (module) => <div>{module.title}</div>,
+});
+const BLOTTER: RemoteModuleDescriptor = {
+  accessRole: "",
+  clientIdentifier: "blotter",
+  id: "blotter",
+  mfComponent: "./Module",
+  mfScope: "blotter",
+  mfUrl: "http://localhost/blotter",
+  name: "blotter",
+  navLocation: "/Apps",
+  path: "/blotter",
+  title: "Blotter",
+  version: 1,
+  workspace: { paletteGroup: "Trading" },
+};
+const paletteModules = [BLOTTER];
 
 let pathname = "";
 let navigate: NavigateFunction;
@@ -213,10 +229,12 @@ describe("Portal workspaces", () => {
 
   const render = async ({
     nav = {},
+    palette = false,
     path = "/",
     service = new MemoryService([ASIA]),
   }: {
     nav?: Partial<PortalNavProps>;
+    palette?: boolean;
     path?: string;
     service?: MemoryService;
   } = {}) => {
@@ -241,7 +259,20 @@ describe("Portal workspaces", () => {
                       element={
                         <PortalWorkspace
                           headerActions={
-                            <button type="button">Add panel</button>
+                            palette ? (
+                              <AddPanelButton />
+                            ) : (
+                              <button type="button">Add panel</button>
+                            )
+                          }
+                          sidePanel={
+                            palette ? (
+                              <PortalModuleRegistryProvider
+                                remoteModules={paletteModules}
+                              >
+                                <PanelsPalette />
+                              </PortalModuleRegistryProvider>
+                            ) : undefined
                           }
                         />
                       }
@@ -433,6 +464,66 @@ describe("Portal workspaces", () => {
       expect(latest.activeWorkspaceId).toBeNull();
       await click(buttonByText("Open Trader", state ?? document));
       expect(pathname).toBe("/workspaces/trader");
+    });
+  });
+
+  describe("panels palette", () => {
+    it("a new workspace shows a drop zone and opens the palette", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "false",
+      );
+
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() =>
+        expect(pathname).not.toBe("/workspaces/asia-open"),
+      );
+      await vi.waitFor(() => expect(q(".vuuPanelsPalette")).not.toBeNull());
+      expect(
+        q(".vuuPortalWorkspace-body .vuuWorkspaceDropZone")?.textContent,
+      ).toContain("This workspace is empty");
+      expect(q(".vuuPortalWorkspace-body .vuuWorkspaceStartPanel")).toBeNull();
+    });
+
+    it("Add panel toggles the palette", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      expect(
+        q(".vuuPortalWorkspace-body aside[aria-label='Panels']"),
+      ).not.toBeNull();
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "true",
+      );
+      await click(buttonByText("Add panel"));
+      expect(q(".vuuPanelsPalette")).toBeNull();
+    });
+
+    it("adds panels with a header", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() => expect(q(".vuuPanelsPalette")).not.toBeNull());
+      await click(
+        qa(".vuuPanelsPalette-row").find((row) =>
+          row.textContent?.includes("Blotter"),
+        ),
+      );
+      await vi.waitFor(() =>
+        expect(q(".vuuPortalWorkspace-body .vuuGridLayoutItem")).not.toBeNull(),
+      );
+      expect(
+        q(".vuuPortalWorkspace-body .vuuGridLayoutItemHeader-title")
+          ?.textContent,
+      ).toContain("Blotter");
     });
   });
 

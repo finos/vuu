@@ -27,6 +27,11 @@ export interface PortalWorkspacesOptions {
   persistenceService?: WorkspacePersistenceService;
   settingsCodecs?: GridComponentSettingsRegistry;
   /**
+   * Rendered beside the workspace GridLayout, e.g. `<PanelsPalette />`, with
+   * `<AddPanelButton />` in `headerActions` to open it.
+   */
+  sidePanel?: ReactNode;
+  /**
    * Workspaces shipped with the portal. Users edit a personal copy and can
    * reset it to the default.
    */

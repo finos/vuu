@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import type {
   GridComponentRendererRegistry,
@@ -40,6 +41,10 @@ import {
 import type { ComponentTemplate } from "./GridLayoutContext";
 import { isTypedComponentTemplate } from "./GridLayoutContext";
 import type { GridCommittedTransition } from "./GridController";
+import {
+  type GridLayoutCommands,
+  GridLayoutCommandsRegistry,
+} from "./GridLayoutCommands";
 
 type GridLayoutOptions = {
   newChildItem: {
@@ -54,6 +59,7 @@ export type DeserializedGridLayout = LegacyDeserializedGridLayout;
 export type { SerializedGridLayout } from "./GridLayoutLegacyCompatibility";
 
 interface GridLayoutProviderContext {
+  commandsRegistry?: GridLayoutCommandsRegistry;
   /**
    * Returns a 'deserialized' copy of a grid layout. Deserialized means the
    * child gridItems have already been reconstituted as React Elements
@@ -413,6 +419,8 @@ export const GridLayoutProvider = (
     templateComponentIds.current.delete(id);
   }, []);
 
+  const commandsRegistry = useMemo(() => new GridLayoutCommandsRegistry(), []);
+
   const onCommittedSnapshot = useCallback(
     (
       transition: GridCommittedTransition,
@@ -542,6 +550,7 @@ export const GridLayoutProvider = (
     <TemplateDragSessionContext.Provider value={templateDragSession}>
       <GridLayoutProviderContext.Provider
         value={{
+          commandsRegistry,
           getSavedGrid,
           onCommittedSnapshot,
           options,
@@ -569,6 +578,30 @@ export const useGridChangeHandler = () => {
     releaseTemplateComponent,
     renderTemplateComponent,
   };
+};
+
+/** @internal used by useGridLayout to register its commands. */
+export const useGridLayoutCommandsRegistry = () =>
+  useContext(GridLayoutProviderContext).commandsRegistry;
+
+const NO_COMMANDS_VERSION = () => 0;
+const NO_SUBSCRIPTION = () => () => undefined;
+
+/**
+ * The commands of a GridLayout mounted within the nearest GridLayoutProvider.
+ * Without a gridId, the first mounted GridLayout. Undefined until the
+ * GridLayout has mounted, or outside a GridLayoutProvider.
+ */
+export const useGridLayoutCommands = (
+  gridId?: string,
+): GridLayoutCommands | undefined => {
+  const registry = useGridLayoutCommandsRegistry();
+  useSyncExternalStore(
+    registry?.subscribe ?? NO_SUBSCRIPTION,
+    registry?.getVersion ?? NO_COMMANDS_VERSION,
+    registry?.getVersion ?? NO_COMMANDS_VERSION,
+  );
+  return registry?.get(gridId);
 };
 
 const NO_SETTINGS_UPDATE: GridComponentSettingsUpdater = () => false;

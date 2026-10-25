@@ -74,6 +74,8 @@ const TestDataProvider = ({ children }: { children: ReactNode }) => (
 
 const localServers = [
   { connectionId: "server-a", DataSourceProvider: TestDataProvider },
+  // The same id as local mode's own connection.
+  { connectionId: "local", DataSourceProvider: TestDataProvider },
 ];
 
 const documentFor = (settings: VuuTableComponentSettings): GridLayoutDocument =>
@@ -194,6 +196,14 @@ describe("vuu-table renderer", () => {
       serverId: "server-a",
       table: "prices",
       tableState: { config: { columns: [{ name: "price" }] } },
+    });
+  });
+
+  it("uses a local server called local", async () => {
+    await renderTable({ module: "SIMUL", serverId: "local", table: "prices" });
+    expect(getTableSchema).toHaveBeenCalledWith({
+      module: "SIMUL",
+      table: "prices",
     });
   });
 

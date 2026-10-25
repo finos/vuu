@@ -15,6 +15,13 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  PanelsPaletteStateProvider,
+  usePanelsPaletteState,
+} from "../panels-palette/PanelsPaletteState";
+import { TemplateDragHint } from "../panels-palette/TemplateDragHint";
+import { OpenPanelProvider } from "../panels-palette/useOpenPanel";
+import { WorkspaceDropZone } from "../panels-palette/WorkspaceDropZone";
 import type { WorkspaceController } from "../workspace/WorkspaceController";
 import { WorkspacePersistentStateProvider } from "../workspace/WorkspacePersistentState";
 import { useWorkspace } from "../workspace/WorkspaceProvider";
@@ -30,12 +37,24 @@ import portalWorkspacesCss from "./PortalWorkspaces.css";
 
 const classBase = "vuuPortalWorkspace";
 
+/** Panels added to a workspace get a header, with their title and close. */
+const layoutOptions = { newChildItem: { header: true } };
+
+export interface PortalWorkspaceGridProps {
+  controller: WorkspaceController;
+  /**
+   * Rendered beside the GridLayout, within its GridLayoutProvider and
+   * OpenPanelProvider, e.g. `PanelsPalette`. An empty workspace shows a
+   * drop zone when there is a side panel.
+   */
+  sidePanel?: ReactNode;
+}
+
 /** The GridLayout of an open workspace. */
 export const PortalWorkspaceGrid = ({
   controller,
-}: {
-  controller: WorkspaceController;
-}) => {
+  sidePanel,
+}: PortalWorkspaceGridProps) => {
   const [isEmpty, setIsEmpty] = useState(
     controller.snapshot.layout.components.length === 0,
   );
@@ -62,12 +81,27 @@ export const PortalWorkspaceGrid = ({
         documentController={controller.documentController}
         onDocumentChange={handleDocumentChange}
         onDocumentError={handleDocumentError}
+        options={layoutOptions}
         settingsCodecs={controller.settingsCodecs}
       >
-        <GridLayout
-          id={controller.snapshot.layout.layout.id}
-          placeholderContent={isEmpty ? <WorkspaceStartPanel /> : undefined}
-        />
+        <OpenPanelProvider gridId={controller.snapshot.layout.layout.id}>
+          <div className={`${classBase}-grid`}>
+            <GridLayout
+              id={controller.snapshot.layout.layout.id}
+              placeholderContent={
+                isEmpty ? (
+                  sidePanel ? (
+                    <WorkspaceDropZone />
+                  ) : (
+                    <WorkspaceStartPanel />
+                  )
+                ) : undefined
+              }
+            />
+            <TemplateDragHint />
+          </div>
+          {sidePanel}
+        </OpenPanelProvider>
       </GridLayoutProvider>
     </WorkspacePersistentStateProvider>
   );
@@ -98,14 +132,33 @@ export interface PortalWorkspaceProps {
    * e.g. "Add panel".
    */
   headerActions?: ReactNode;
+  /**
+   * Rendered beside the workspace GridLayout, e.g. `PanelsPalette`. See
+   * `PortalWorkspaceGrid`.
+   */
+  sidePanel?: ReactNode;
 }
+
+/** Opens the Panels palette when a new workspace arrives. */
+const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
+  const setOpen = usePanelsPaletteState()?.setOpen;
+  useEffect(() => {
+    if (open) {
+      setOpen?.(true);
+    }
+  }, [open, setOpen]);
+  return null;
+};
 
 /**
  * Route element for `/workspaces/:workspaceId`. Makes the workspace in the
  * URL the active workspace and renders it, with a header. An unknown id
  * shows a not-found state.
  */
-export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
+export const PortalWorkspace = ({
+  headerActions,
+  sidePanel,
+}: PortalWorkspaceProps) => {
   useComponentCssInjection({
     testId: "vuu-portal-workspaces",
     css: portalWorkspacesCss,
@@ -209,7 +262,10 @@ export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
     );
   } else {
     content = (
-      <>
+      <PanelsPaletteStateProvider>
+        {sidePanel ? (
+          <OpenPaletteForNewWorkspace open={editNameId === summary.id} />
+        ) : null}
         <PortalWorkspaceHeader
           actions={headerActions}
           editName={editNameId === summary.id}
@@ -222,12 +278,13 @@ export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
             <PortalWorkspaceGrid
               controller={controller}
               key={controller.instanceId}
+              sidePanel={sidePanel}
             />
           ) : (
             <WorkspaceState state="opening" title="Opening workspace…" />
           )}
         </div>
-      </>
+      </PanelsPaletteStateProvider>
     );
   }
 

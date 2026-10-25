@@ -247,7 +247,8 @@ Turn workspaces on with the `workspaces` option of `PortalShell`:
     componentRenderers,
     headerActions: <AddPanelButton />,
     settingsCodecs,
-    systemWorkspaces: [traderWorkspace],
+    sidePanel: <PanelsPalette />,
+    systemWorkspaces: [defaultWorkspace],
   }}
 >
   <PortalNav remoteModules={remoteModules} />
@@ -259,6 +260,7 @@ Turn workspaces on with the `workspaces` option of `PortalShell`:
 | `systemWorkspaces` | | Workspaces shipped with the portal (`NamedWorkspaceDefinitionV1`). |
 | `componentRenderers`, `settingsCodecs` | | The panels a workspace can contain, as for `GridLayout`. |
 | `headerActions` | | Content for the actions slot of the workspace header, e.g. **Add panel**. |
+| `sidePanel` | | Rendered to the right of the workspace grid, e.g. `<PanelsPalette />`. See [Panels palette](#panels-palette). |
 | `persistenceService` | local storage | Where workspaces are saved. The default `LocalWorkspacePersistenceService` is scoped to the portal id and the signed-in user (namespace `PORTAL_WORKSPACE_NAMESPACE`). Pass a stable instance. |
 
 Without the option the shell renders no `WorkspaceProvider` and no
@@ -304,7 +306,7 @@ and back and forward all select the workspace. An id that isn't a known
 workspace shows **Workspace not found**, with a button to open the first
 workspace. The grid is `PortalWorkspaceGrid`, a `GridLayout` with the
 workspace's saved component state; an empty workspace shows
-`WorkspaceStartPanel`.
+`WorkspaceStartPanel`, or `WorkspaceDropZone` when there is a `sidePanel`.
 
 `PortalWorkspaceHeader` shows a **Workspaces /** crumb and the name. A named
 workspace's name is a button that edits it in place, and its status is
@@ -323,6 +325,86 @@ header shows **Reset to default**. It opens a popover:
 - **Save as new…** asks for a name (default "{name} copy"), saves the current
   layout as a named workspace (`saveActiveWorkspaceAs`), resets the system
   workspace, then opens the new workspace.
+
+### Panels palette
+
+The Panels palette adds panels to the open workspace. It is in
+`src/panels-palette`, exported from `@vuu-ui/core/portal`. Put
+`<AddPanelButton />` in `headerActions` and `<PanelsPalette />` in
+`sidePanel`. `PortalWorkspace` provides the palette's open state
+(`PanelsPaletteStateProvider`, `usePanelsPaletteState`) and the click rule
+(`OpenPanelProvider`) for the open workspace. **+ New workspace** opens the
+palette.
+
+The palette, titled **Panels**, is docked to the right of the grid. **Add
+panel** toggles it. It has a search box ("Search panels & tables"), three
+tabs and a footer hint.
+
+- **Modules** lists `usePaletteModules()`: modules whose descriptor has
+  `workspace.paletteGroup`, grouped by it, with `workspace.iconUrl` or the
+  nav icon. Each row is a `portal-module` template.
+- **Tables** has a server picker and lists that server's tables, grouped by
+  Vuu module, by name only. Each row is a `vuu-table` template. Servers
+  are the portal's own server, the current connection and the servers of
+  registered modules, or the local servers in local mode. Tables are
+  listed through the portal's connection management (`ServerTablesLoader`,
+  which uses `useVuuServerConnection`). The chosen server is saved.
+- **Recent** lists the last 10 panels the user added.
+
+The search filters the current tab; every word must match a row's name,
+description or group. Groups collapse. The list is a listbox: ↑ ↓ Home End
+move, Enter opens the active row, Shift+Enter or **+** adds it, and Escape
+closes the palette. The search box passes ↑ ↓ Enter and Escape to the list.
+The pin button keeps the palette open; otherwise it closes after a panel is
+added.
+
+Every row can be:
+
+- **dragged** onto the workspace (`usePortalDragSource`). The GridLayout
+  compass and ghost place it. While a template is dragged
+  (`useTemplateDragState`), `TemplateDragHint` shows "Drop on a panel edge
+  to split, centre to tab", and an empty workspace's `WorkspaceDropZone` is
+  highlighted. Dragging never prompts.
+- **added** with **+**. This fills the empty workspace's placeholder, or
+  splits the focused panel. A module's `workspace.defaultSize` chooses the
+  side: wider than tall goes below, taller than wide goes beside, otherwise
+  the focused panel's longer side is split (`getSplitPosition`).
+- **clicked**, which follows the click rule.
+
+Panels added to a workspace get a header with their title and a close
+button (`PortalWorkspace` sets the grid's `newChildItem.header` option).
+
+**The click rule.** With no panels, a click adds the panel. With one, it
+replaces it. With several, a prompt anchored to the focused panel offers
+**Replace "‹focused panel›"** (R) or **Open as new tab** (T), which stacks
+the new panel with the focused one. ↑ ↓ and Enter choose, and Escape or a
+click outside cancels. The focused panel is the last panel the user clicked
+or focused, or else the last panel.
+
+The rule is `useOpenPanel()`, for any component inside an
+`OpenPanelProvider` (`useOptionalOpenPanel()` outside one):
+
+```tsx
+const { addPanel, openPanel } = useOpenPanel();
+const result = await openPanel(vuuTableTemplate({ module, serverId, table }));
+// result.action: "add" | "replace" | "stack" | "cancel", result.itemId
+```
+
+`OpenPanelProvider` takes the `gridId` of its GridLayout and uses
+`useGridLayoutCommands(gridId)` from `@vuu-ui/grid-layout`. These commands
+let code outside the grid read its items and `insertTemplate(template,
+placement)`, where placement replaces, splits or stacks with a target item.
+
+Saved state (user-scoped `ApplicationStateProvider` keys):
+
+| Key | |
+| --- | --- |
+| `workspace/palettePinned` | Whether the palette is pinned open. |
+| `workspace/paletteServer` | The server chosen on the Tables tab. |
+| `workspace/recentPanels` | The Recent tab. |
+
+The `VuuPortal/PanelsPalette` showcase example combines `PortalShell`
+`workspaces`, the palette, a few modules and local tables.
 
 ## WindowHost and module launch menus
 
@@ -613,6 +695,7 @@ core/
 |   |-- context-definitions/
 |   |-- modal-provider/
 |   |-- notifications/
+|   |-- panels-palette/
 |   |-- persistence/
 |   |-- portal-app-switcher/
 |   |-- portal-header/

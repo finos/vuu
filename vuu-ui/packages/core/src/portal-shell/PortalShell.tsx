@@ -275,6 +275,7 @@ const PortalLayout = () => {
                         element={
                           <PortalWorkspace
                             headerActions={workspaces.headerActions}
+                            sidePanel={workspaces.sidePanel}
                           />
                         }
                       />
