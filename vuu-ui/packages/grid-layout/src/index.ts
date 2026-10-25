@@ -64,6 +64,8 @@ export { GridLayoutItem } from "./GridLayoutItem";
 export {
   GridLayoutProvider,
   GridLayoutDocumentController,
+  useGridComponentSettingsUpdater,
+  type GridComponentSettingsUpdater,
   type GridLayoutDocumentChange,
   type GridLayoutDocumentChangeHandler,
   type GridLayoutDocumentStoreListener,

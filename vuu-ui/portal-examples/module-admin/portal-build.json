@@ -50,6 +50,11 @@
         "requiredVersion": "package:@vuu-ui/core",
         "strictVersion": true
       },
+      "@vuu-ui/grid-layout": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
+      },
       "@vuu-ui/vuu-data-editing": {
         "singleton": true,
         "requiredVersion": "package:@vuu-ui/core",

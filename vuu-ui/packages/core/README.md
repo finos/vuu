@@ -8,3 +8,7 @@ Portal host and remote-module APIs are exported separately from
 module.
 
 See [the portal design](./docs/portal-design.md) for details.
+
+See [workspace components](./docs/workspace-components.md) for the
+`portal-module` and `vuu-table` workspace item types, the workspace palette
+and `usePortalDragSource`.
