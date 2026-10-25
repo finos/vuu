@@ -47,8 +47,6 @@
             <scope>test</scope>
         </dependency>
 
-
-
     </dependencies>
 
     <build>
@@ -96,6 +94,20 @@
                     <execution>
                         <goals>
                             <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-third-party-file</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-third-party</goal>
                         </goals>
                     </execution>
                 </executions>

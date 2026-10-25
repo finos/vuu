@@ -14,13 +14,31 @@
     <name>${project.artifactId}</name>
 
     <properties>
-        <vuu.caffeine.version>3.3.0</vuu.caffeine.version>
-        <vuu.clickhouse.client.version>0.10.0</vuu.clickhouse.client.version>
+        <vuu.caffeine.version>3.3.1</vuu.caffeine.version>
+        <vuu.clickhouse.client.version>0.11.0</vuu.clickhouse.client.version>
     </properties>
 
     <modules>
         <module>virtualized-table-plugin</module>
         <module>clickhouse-plugin</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-third-party-file</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-third-party</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

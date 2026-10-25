@@ -292,27 +292,16 @@
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
+                <artifactId>license-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>generate-third-party-file</id>
+                        <phase>generate-resources</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>add-third-party</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Xmx10G</argument>
-                        <argument>-classpath</argument>
-                        <classpath />
-                        <argument>-Dvuu.webroot=../vuu-ui/deployed_apps/app-vuu-example</argument>
-                        <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
-                        <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
-                        <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
-                        <argument>org.finos.vuu.SimulMain</argument>
-                    </arguments>
-                </configuration>
             </plugin>
 
             <plugin>
