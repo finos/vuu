@@ -294,7 +294,7 @@ export const PanelsPalette = ({
       openPanel(item.template, { defaultSize: item.defaultSize })
         .then((result) => handleOpened(item, result))
         .catch((error: unknown) =>
-          console.warn(`[PanelsPalette] unable to open ${item.label}`, error),
+          console.warn("[PanelsPalette] unable to open %s", item.label, error),
         );
     },
     [handleOpened, openPanel],
@@ -309,7 +309,7 @@ export const PanelsPalette = ({
           addPanel(item.template, { defaultSize: item.defaultSize }),
         );
       } catch (error) {
-        console.warn(`[PanelsPalette] unable to add ${item.label}`, error);
+        console.warn("[PanelsPalette] unable to add %s", item.label, error);
       }
     },
     [addPanel, handleOpened],
