@@ -342,7 +342,11 @@ button. The palette claims the panel (`useContextPanelSlot().claim`) and
 renders into it with a React portal, so it stays in the workspace's React
 tree, under its GridLayoutProvider, and dragging rows onto the grid works.
 Opening the palette doesn't move focus, so a new workspace's name stays in
-edit mode.
+edit mode. The palette claims the panel with an `inline` placement (see
+[Inline or overlay](#inline-or-overlay)): the panel takes its own column and
+the workspace shrinks beside it, so the palette never covers a drop target,
+the compass or the empty workspace's drop zone. Clicking the workspace
+doesn't close it.
 It has a search box ("Search panels & tables") with the pin button, three
 tabs and a footer hint. Outside a shell context panel (e.g. in tests) the
 palette renders in place, with its own header.
@@ -352,6 +356,8 @@ The context panel has one owner at a time:
 - A module showing its context panel replaces the palette. **Add panel** is
   no longer pressed, and the palette stays pinned if it was.
 - Opening the palette replaces a module's content.
+- The layout follows the owner: a module's panel overlays the content (the
+  default), the palette is inline.
 - The panel's close button, or Escape, closes and unpins the palette.
 
 Navigation:
@@ -500,7 +506,8 @@ layout flags allows the two shells to evolve independently.
 ## Context panel
 
 Both `PortalShell` and `WindowShell` host a context panel: a slide-out drawer
-overlaying the right edge of the shell, used for content such as a table
+at the right edge of the shell (in `PortalShell`, overlaying the content or
+[inline](#inline-or-overlay) beside it), used for content such as a table
 column picker or filter container. It is rendered in the `vuu-shell-context`
 landmark element, and the panel itself has the id `context-panel`
 (`VuuShellLocation.ContextPanel`).
@@ -539,13 +546,41 @@ the element that was focused when it opened.
 
 Owners within the shell can claim the panel directly, with
 `useContextPanelSlot()` from `src/context-panel/ContextPanelSlot`:
-`claim(owner, title, onRelease, { autoFocus, keepOnNavigation })` and
+`claim(owner, title, onRelease, { autoFocus, keepOnNavigation, placement })` and
 `release(owner)`. With `autoFocus: false` the panel leaves focus where it
 is when it opens, rather than moving it to the close button.
 `onRelease` receives `"close"` (close button, Escape or navigation) or
 `"replaced"` (another owner claimed the panel). An owner claiming with
 `keepOnNavigation` keeps the panel when the portal navigates, and must
 release it when it unmounts. The Panels palette does this.
+
+### Inline or overlay
+
+The shell's panel has a placement, chosen by the owner that claims it:
+
+- `"overlay"` (the default): the panel slides out over the right edge of the
+  shell, covering part of the content.
+- `"inline"`: the panel takes its own column at the right of the shell's grid
+  and the header, banners and content columns shrink to make room. The
+  column's width follows the panel's as it slides out, so the content
+  resizes with the animation, and anything that measures the content (e.g. a
+  GridLayout's drop targets) sees the smaller area.
+
+Neither placement has a scrim: clicking the content doesn't close the panel.
+The panel closes from its close button, Escape, or its owner. The placement
+is applied while the owner holds the panel and kept until the next claim, so
+an inline panel slides closed in its own column. When a claim with a
+different placement replaces the owner, the layout switches. With
+`prefers-reduced-motion: reduce` the panel opens and closes without
+animating.
+
+`claim(..., { placement })` sets it per claim. Claims without one, including
+module content shown with `useContextPanel()`, use the shell's default,
+`PortalShell contextPanel={{ placement }}` (`"overlay"` unless set). The
+host element (`vuu-shell-context`) has `data-placement`, and the panel the
+`vuuContextPanel-overlay` or `vuuContextPanel-inline` class. This is
+separate from a module's `contextPanelPlacement` below, which chooses between
+the shell's panel and one in the module's frame.
 
 ### Placement
 

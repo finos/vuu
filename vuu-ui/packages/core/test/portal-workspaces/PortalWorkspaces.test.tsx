@@ -214,6 +214,10 @@ const contextPanelTitle = () =>
   q(".vuuContextPanel-title")?.textContent ?? undefined;
 const contextPanelExpanded = () =>
   q(".vuuContextPanel")?.classList.contains("vuuContextPanel-expanded");
+const contextPanelPlacement = () => ({
+  host: q("#vuu-shell-context")?.getAttribute("data-placement"),
+  inline: q(".vuuContextPanel")?.classList.contains("vuuContextPanel-inline"),
+});
 const click = async (element: Element | null | undefined) => {
   expect(element).toBeTruthy();
   await act(async () => {
@@ -575,10 +579,16 @@ describe("Portal workspaces", () => {
       await click(buttonByText("Add panel"));
       await click(q(".vuuPanelsPalette-search button[aria-pressed]"));
       expect(appState.get("workspace/palettePinned")).toBe(true);
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
 
-      // A module's panel replaces the palette, which stays pinned.
+      // A module's panel replaces the palette, which stays pinned. The
+      // module's panel overlays the content, the default.
       await click(buttonByText("Show module panel"));
       expect(contextPanelTitle()).toBe("Order details");
+      expect(contextPanelPlacement()).toEqual({
+        host: "overlay",
+        inline: false,
+      });
       expect(q("[data-testid='module-panel']")).not.toBeNull();
       expect(q(".vuuPanelsPalette")).toBeNull();
       expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
@@ -591,6 +601,40 @@ describe("Portal workspaces", () => {
       expect(contextPanelTitle()).toBe("Panels");
       expect(q("[data-testid='module-panel']")).toBeNull();
       expect(q(".vuuContextPanel-content .vuuPanelsPalette")).not.toBeNull();
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
+    });
+
+    it("displays the palette inline, beside the workspace", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      expect(contextPanelPlacement()).toEqual({
+        host: "overlay",
+        inline: false,
+      });
+      await click(buttonByText("Add panel"));
+      expect(contextPanelExpanded()).toBe(true);
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
+      // The workspace is not within the panel's column.
+      const workspace = q(".vuuPortalWorkspace");
+      expect(workspace).not.toBeNull();
+      expect(q("#vuu-shell-context")?.contains(workspace)).toBe(false);
+
+      // No scrim: clicking the workspace leaves the palette open.
+      await act(async () => {
+        workspace?.dispatchEvent(
+          new PointerEvent("pointerdown", { bubbles: true }),
+        );
+      });
+      await click(workspace);
+      expect(contextPanelExpanded()).toBe(true);
+      expect(q(".vuuContextPanel-scrim, .saltScrim")).toBeNull();
+
+      // Closing keeps the inline placement, so it slides closed in place.
+      await click(buttonByText("Add panel"));
+      expect(contextPanelExpanded()).toBe(false);
+      expect(contextPanelPlacement()).toEqual({ host: "inline", inline: true });
     });
 
     it("stays open between workspaces and closes on other routes", async () => {

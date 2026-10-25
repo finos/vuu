@@ -51,6 +51,7 @@ export {
 } from "./window-host/window-host-routing";
 export {
   PortalShell,
+  type PortalShellContextPanelOptions,
   type PortalShellProps,
 } from "./portal-shell/PortalShell";
 export {

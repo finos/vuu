@@ -31,6 +31,12 @@ type ContextPanelOwner = object;
  */
 export type ContextPanelReleaseReason = "close" | "replaced";
 
+/**
+ * How the slot's panel is displayed: sliding out over the content (overlay),
+ * or in its own column, the content shrinking to make room (inline).
+ */
+export type ContextPanelSlotPlacement = "overlay" | "inline";
+
 export interface ContextPanelClaimOptions {
   /**
    * Move focus to the panel's close button when it opens. Default `true`.
@@ -44,6 +50,11 @@ export interface ContextPanelClaimOptions {
    * owner that keeps the panel releases it when it unmounts.
    */
   readonly keepOnNavigation?: boolean;
+  /**
+   * How the panel is displayed while this owner holds it. Defaults to the
+   * slot's default placement, `"overlay"` unless the host sets another.
+   */
+  readonly placement?: ContextPanelSlotPlacement;
 }
 
 /**
@@ -69,6 +80,11 @@ export interface ContextPanelSlot {
    */
   readonly closeOnNavigation: () => void;
   readonly owner?: ContextPanelOwner;
+  /**
+   * How the panel is displayed. Set by the latest claim and kept after the
+   * panel closes, so that it closes the way it opened.
+   */
+  readonly placement: ContextPanelSlotPlacement;
   /** Closes the panel, if `owner` owns it. */
   readonly release: (owner: ContextPanelOwner) => void;
   readonly setTarget: (target: HTMLElement | null) => void;
@@ -88,9 +104,20 @@ type SlotState = {
   readonly title: string;
 };
 
+export interface ContextPanelSlotOptions {
+  /** Placement for claims that don't specify one. Default `"overlay"`. */
+  readonly defaultPlacement?: ContextPanelSlotPlacement;
+}
+
 /** Creates a slot. Provide it, and render a `ContextPanelSlotHost` for it. */
-export const useCreateContextPanelSlot = (): ContextPanelSlot => {
+export const useCreateContextPanelSlot = ({
+  defaultPlacement = "overlay",
+}: ContextPanelSlotOptions = {}): ContextPanelSlot => {
   const [state, setState] = useState<SlotState>();
+  const [placement, setPlacement] =
+    useState<ContextPanelSlotPlacement>(defaultPlacement);
+  const defaultPlacementRef = useRef(defaultPlacement);
+  defaultPlacementRef.current = defaultPlacement;
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const currentOwner = useRef<{
     keepOnNavigation: boolean;
@@ -116,6 +143,7 @@ export const useCreateContextPanelSlot = (): ContextPanelSlot => {
         owner,
         onRelease,
       };
+      setPlacement(options?.placement ?? defaultPlacementRef.current);
       setState({ autoFocus: options?.autoFocus !== false, owner, title });
     },
     [],
@@ -159,12 +187,13 @@ export const useCreateContextPanelSlot = (): ContextPanelSlot => {
       close,
       closeOnNavigation,
       owner: state?.owner,
+      placement,
       release,
       setTarget,
       target,
       title: state?.title,
     }),
-    [claim, close, closeOnNavigation, release, state, target],
+    [claim, close, closeOnNavigation, placement, release, state, target],
   );
 };
 
@@ -182,14 +211,14 @@ export const ContextPanelSlotHost = ({
   panelId,
   slot,
 }: ContextPanelSlotHostProps) => (
-  <div className={className} id={id}>
+  <div className={className} data-placement={slot.placement} id={id}>
     <ContextPanel
       autoFocus={slot.autoFocus}
       contentRef={slot.setTarget}
       expanded={slot.owner !== undefined}
       id={panelId}
       onClose={slot.close}
-      overlay
+      overlay={slot.placement === "overlay"}
       title={slot.title}
     />
   </div>

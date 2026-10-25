@@ -862,18 +862,22 @@ describe("Portal and window shells", () => {
         join(import.meta.dirname, "../../src/portal-shell/PortalShell.css"),
         "utf8",
       ).replace(/\s+/g, " ");
+      // The last column is empty unless the context panel is inline.
       expect(css).toContain(
-        "grid-template-columns: var(--vuuPortalShell-navWidth, 56px) 1fr;",
+        "grid-template-columns: var(--vuuPortalShell-navWidth, 56px) var(--vuuPortalShell-columnGap, var(--salt-spacing-50)) minmax(0, 1fr) auto;",
       );
       expect(css).toContain("grid-template-rows: 56px auto 1fr;");
       expect(css).toContain(
-        'grid-template-areas: "nav header" "nav banners" "nav content";',
+        'grid-template-areas: "nav . header" "nav . banners" "nav . content";',
+      );
+      expect(css).toMatch(
+        /&\[data-placement="inline"\] \{ grid-column: 4; justify-self: stretch; width: auto;/,
       );
       expect(css).toContain(
         "transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 0s)",
       );
       expect(css).toMatch(
-        /&\.vuuPortalShell-noHeader \{ grid-template-rows: auto 1fr; grid-template-areas: "nav banners" "nav content"; \}/,
+        /&\.vuuPortalShell-noHeader \{ grid-template-rows: auto 1fr; grid-template-areas: "nav \. banners" "nav \. content"; \}/,
       );
     });
   });

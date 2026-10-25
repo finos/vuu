@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import {
+  type ContextPanelClaimOptions,
   type ContextPanelReleaseReason,
   useContextPanelSlot,
 } from "../context-panel/ContextPanelSlot";
@@ -26,8 +27,13 @@ const pinnedMetadata = {
 export const PANELS_PALETTE_TITLE = "Panels";
 
 // The palette opens beside the user's work, e.g. a new workspace's name in
-// edit mode, so it leaves focus there.
-const claimOptions = { autoFocus: false, keepOnNavigation: true };
+// edit mode, so it leaves focus there. Inline, so it never covers the
+// workspace's drop targets.
+const claimOptions: ContextPanelClaimOptions = {
+  autoFocus: false,
+  keepOnNavigation: true,
+  placement: "inline",
+};
 
 export interface PanelsPaletteState {
   /** Whether an "Add panel" control (`AddPanelButton`) is mounted. */
