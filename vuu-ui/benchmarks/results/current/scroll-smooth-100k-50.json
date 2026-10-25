@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "scenario": {
+    "id": "scroll-smooth-100k-50",
+    "description": "Scroll 3 rows per frame for 300 frames, 50 columns",
+    "dataset": {
+      "rows": 100000,
+      "cols": 50,
+      "cellType": "formatted",
+      "seed": 20261020
+    },
+    "run": {
+      "kind": "scroll-smooth",
+      "axis": "vertical",
+      "step": 3,
+      "frames": 300
+    }
+  },
+  "env": {
+    "gitSha": "49f6f39f2b6490f4e42bedbba46b2a6c0ee73786-dirty",
+    "target": "current",
+    "buildMode": "production",
+    "browser": "chromium",
+    "browserVersion": "151.0.7922.34",
+    "headless": true,
+    "gpu": "on",
+    "cpuThrottle": 4,
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 8,
+    "platform": "darwin arm64"
+  },
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-smooth-100k-50",
+      "pass": "timing",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:37:21.106Z",
+      "mount": {
+        "dataGenMs": 226,
+        "dataSourceMs": 242,
+        "firstRowsMs": 245,
+        "firstPaintMs": 284
+      },
+      "result": {
+        "rowsScrolled": 900,
+        "durationMs": 11473,
+        "frames": {
+          "count": 301,
+          "mean": 38.04,
+          "p50": 33.5,
+          "p95": 50.6,
+          "p99": 51,
+          "max": 51.1,
+          "jankyFrames": 298,
+          "jankyPct": 99
+        },
+        "longFrames": {
+          "count": 0,
+          "blockingMs": 0
+        }
+      },
+      "cdp": {
+        "layoutCount": 301,
+        "layoutMs": 291,
+        "recalcStyleCount": 301,
+        "recalcStyleMs": 33,
+        "scriptMs": 9804,
+        "taskMs": 11501,
+        "jsHeapUsedMB": 117.8,
+        "domNodes": 2229,
+        "jsEventListeners": 455
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-smooth-100k-50",
+      "pass": "instrumented",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:37:45.632Z",
+      "mount": {
+        "dataGenMs": 230,
+        "dataSourceMs": 261,
+        "firstRowsMs": 244,
+        "firstPaintMs": 284
+      },
+      "result": {
+        "rowsScrolled": 900,
+        "durationMs": 11486,
+        "frames": {
+          "count": 301,
+          "mean": 38.1,
+          "p50": 33.5,
+          "p95": 50.8,
+          "p99": 50.9,
+          "max": 51,
+          "jankyFrames": 299,
+          "jankyPct": 99.34
+        },
+        "longFrames": {
+          "count": 0,
+          "blockingMs": 0
+        },
+        "dom": {
+          "rowMounts": 5,
+          "rowMoves": 0,
+          "elementsInserted": 115,
+          "elementsRemoved": 0,
+          "textChanges": 14033,
+          "attributeChanges": 1791,
+          "rowUnmounts": 0,
+          "tableNodes": 1276
+        }
+      },
+      "cdp": {
+        "layoutCount": 301,
+        "layoutMs": 287,
+        "recalcStyleCount": 301,
+        "recalcStyleMs": 35,
+        "scriptMs": 9811,
+        "taskMs": 11511,
+        "jsHeapUsedMB": 117.9,
+        "domNodes": 2229,
+        "jsEventListeners": 455
+      }
+    }
+  ],
+  "summary": {
+    "mount.dataGenMs": 226,
+    "mount.dataSourceMs": 242,
+    "mount.firstRowsMs": 245,
+    "mount.firstPaintMs": 284,
+    "cdp.layoutCount": 301,
+    "cdp.layoutMs": 291,
+    "cdp.recalcStyleCount": 301,
+    "cdp.recalcStyleMs": 33,
+    "cdp.scriptMs": 9804,
+    "cdp.taskMs": 11501,
+    "cdp.jsHeapUsedMB": 117.8,
+    "cdp.domNodes": 2229,
+    "cdp.jsEventListeners": 455,
+    "frames.count": 301,
+    "frames.mean": 38.04,
+    "frames.p50": 33.5,
+    "frames.p95": 50.6,
+    "frames.p99": 51,
+    "frames.max": 51.1,
+    "frames.jankyFrames": 298,
+    "frames.jankyPct": 99,
+    "longFrames.count": 0,
+    "longFrames.blockingMs": 0,
+    "durationMs": 11473,
+    "dom.rowMounts": 5,
+    "dom.rowMoves": 0,
+    "dom.elementsInserted": 115,
+    "dom.elementsRemoved": 0,
+    "dom.textChanges": 14033,
+    "dom.attributeChanges": 1791,
+    "dom.rowUnmounts": 0,
+    "dom.tableNodes": 1276,
+    "perUnit.rowMountsPerRowScrolled": 0.006,
+    "perUnit.elementsInsertedPerRowScrolled": 0.128,
+    "perUnit.layoutsPerFrame": 1
+  }
+}

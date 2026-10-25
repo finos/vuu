@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-popups",
-  "version": "4.0.0-alpha.20",
+  "version": "4.0.0-alpha.27",
   "description": "VUU popup components - Context Menu, Dialog etc",
   "main": "src/index.ts",
   "author": "heswell",
@@ -15,11 +15,11 @@
     "@salt-ds/core": "1.72.0",
     "@salt-ds/styles": "0.4.1",
     "@salt-ds/window": "0.1.2",
-    "@vuu-ui/vuu-context-menu": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-data-types": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-layout": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-utils": "4.0.0-alpha.20",
-    "@vuu-ui/vuu-ui-controls": "4.0.0-alpha.20"
+    "@vuu-ui/vuu-context-menu": "4.0.0-alpha.27",
+    "@vuu-ui/vuu-data-types": "4.0.0-alpha.27",
+    "@vuu-ui/vuu-layout": "4.0.0-alpha.27",
+    "@vuu-ui/vuu-utils": "4.0.0-alpha.27",
+    "@vuu-ui/vuu-ui-controls": "4.0.0-alpha.27"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
