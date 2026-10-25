@@ -82,6 +82,7 @@ export {
 export {
   DEFAULT_WORKSPACE_NAME,
   WORKSPACE_ROUTE,
+  WORKSPACE_ROUTE_PATTERN,
   getWorkspaceIdFromPath,
   getWorkspacePath,
   nextWorkspaceName,

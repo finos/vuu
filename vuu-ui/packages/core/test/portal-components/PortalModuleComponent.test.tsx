@@ -1,11 +1,27 @@
+import {
+  GridLayout,
+  type GridLayoutDocument,
+  type GridLayoutDocumentChange,
+  GridLayoutProvider,
+} from "@vuu-ui/grid-layout";
 import { act, useContext } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import {
+  createMemoryRouter,
+  RouterProvider,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { usePortalModuleInstanceId } from "../../src";
 import { PortalModuleIdContext } from "../../src/notifications/PortalNotificationsContext";
 import {
+  createPortalComponentRegistries,
   PortalModuleComponent,
+  type PortalModuleComponentSettings,
   PortalModuleRegistryProvider,
   type RemoteModuleDescriptor,
+  WORKSPACE_ROUTE_PATTERN,
 } from "../../src/portal";
 
 const remoteModuleProps = vi.fn();
@@ -129,5 +145,146 @@ describe("PortalModuleComponent", () => {
     expect(container.querySelector("[data-testid='custom']")?.textContent).toBe(
       "Baskets:compact",
     );
+  });
+});
+
+/** A module that navigates with its own router, as the admin modules do. */
+const RoutingModule = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const instanceId = usePortalModuleInstanceId();
+  return (
+    <div data-instance-id={instanceId} data-testid="routing-module">
+      <span data-testid="module-location">{pathname}</span>
+      <button
+        data-testid="navigate"
+        onClick={() => navigate("/baskets/orders/7")}
+        type="button"
+      />
+    </div>
+  );
+};
+
+const documentFor = (
+  settings: PortalModuleComponentSettings,
+): GridLayoutDocument =>
+  ({
+    components: [
+      { id: "component-m", settings, type: "portal-module", version: 1 },
+    ],
+    kind: "grid-layout",
+    layout: {
+      columns: ["1fr"],
+      id: "workspace",
+      items: [
+        {
+          column: { span: 1, start: 1 },
+          componentInstanceId: "component-m",
+          id: "m",
+          row: { span: 1, start: 1 },
+        },
+      ],
+      placeholderIds: [],
+      rows: ["1fr"],
+      stacks: [],
+    },
+    version: 2,
+  }) as unknown as GridLayoutDocument;
+
+type ChangeHandler = (
+  document: GridLayoutDocument,
+  change: GridLayoutDocumentChange,
+) => void;
+
+describe("PortalModuleComponent in a workspace", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  let onDocumentChange: ReturnType<typeof vi.fn<ChangeHandler>>;
+
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    onDocumentChange = vi.fn<ChangeHandler>();
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  const renderWorkspace = (settings: PortalModuleComponentSettings) => {
+    const { renderers, settingsCodecs } = createPortalComponentRegistries({
+      renderModule: () => <RoutingModule />,
+    });
+    const router = createMemoryRouter(
+      [
+        {
+          element: (
+            <PortalModuleRegistryProvider remoteModules={[descriptor()]}>
+              <GridLayoutProvider
+                componentRenderers={renderers}
+                document={documentFor(settings)}
+                onDocumentChange={onDocumentChange}
+                settingsCodecs={settingsCodecs}
+              >
+                <GridLayout id="workspace" />
+              </GridLayoutProvider>
+            </PortalModuleRegistryProvider>
+          ),
+          path: WORKSPACE_ROUTE_PATTERN,
+        },
+      ],
+      { initialEntries: ["/workspaces/ws-1"] },
+    );
+    act(() => root.render(<RouterProvider router={router} />));
+    return router;
+  };
+
+  const moduleLocation = () =>
+    container.querySelector("[data-testid='module-location']")?.textContent;
+
+  it("routes the module in memory, leaving the workspace URL alone", () => {
+    const router = renderWorkspace({ moduleId: "3" });
+    expect(moduleLocation()).toBe("/baskets");
+
+    act(() => {
+      container.querySelector<HTMLElement>("[data-testid='navigate']")?.click();
+    });
+
+    expect(moduleLocation()).toBe("/baskets/orders/7");
+    expect(router.state.location.pathname).toBe("/workspaces/ws-1");
+    expect(container.querySelector("[data-testid='routing-module']")).not.toBe(
+      null,
+    );
+  });
+
+  it("saves the module's location with the item and restores it", () => {
+    renderWorkspace({ moduleId: "3", props: { mode: "compact" } });
+    act(() => {
+      container.querySelector<HTMLElement>("[data-testid='navigate']")?.click();
+    });
+    expect(onDocumentChange.mock.lastCall?.[1].kind).toBe("settings");
+    const saved = onDocumentChange.mock.lastCall?.[0].components[0].settings;
+    expect(saved).toEqual({
+      location: "/baskets/orders/7",
+      moduleId: "3",
+      props: { mode: "compact" },
+    });
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    renderWorkspace(saved as PortalModuleComponentSettings);
+    expect(moduleLocation()).toBe("/baskets/orders/7");
+  });
+
+  it("identifies the module instance by its workspace item", () => {
+    renderWorkspace({ moduleId: "3" });
+    expect(
+      container
+        .querySelector("[data-testid='routing-module']")
+        ?.getAttribute("data-instance-id"),
+    ).toBe("component-m");
   });
 });

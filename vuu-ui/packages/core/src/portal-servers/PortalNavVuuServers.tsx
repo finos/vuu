@@ -4,11 +4,9 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useOptionalIdentityContext } from "../auth/AuthenticationProvider";
-import type { VuuServerPresence } from "../connection-management/server-status";
-import { useVuuServerConnection } from "../portal-components/vuu-table-component";
-import { useVuuServerStatus } from "../server-monitor/VuuServerMonitorProvider";
 import { AddServerForm } from "./AddServerForm";
+import type { VuuServerPresence } from "../connection-management/server-status";
+import { useVuuServerPresence } from "./vuu-server-presence";
 import {
   type PortalVuuServer,
   useManualVuuServers,
@@ -51,23 +49,6 @@ const PRESENCE_LABELS: Record<VuuServerPresence, string> = {
   unauthorized: "Not authorized",
   unavailable: "Unavailable",
   unknown: "Status unknown",
-};
-
-/**
- * The presence of a server for display: offline if the portal cannot
- * connect to it at all, online for a local server, otherwise as monitored.
- */
-export const useVuuServerPresence = (serverId: string): VuuServerPresence => {
-  const identity = useOptionalIdentityContext();
-  const resolution = useVuuServerConnection(serverId);
-  const { presence } = useVuuServerStatus(serverId);
-  if (resolution.status === "unavailable") {
-    return "offline";
-  }
-  if (identity?.localServers?.has(serverId)) {
-    return "online";
-  }
-  return presence;
 };
 
 const ServerRow = ({

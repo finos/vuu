@@ -3,6 +3,10 @@ export * from "./connection-management";
 export * from "./context-panel";
 export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
 export {
+  PortalModuleInstanceContext,
+  usePortalModuleInstanceId,
+} from "./module-instance/PortalModuleInstanceContext";
+export {
   isNestedModule,
   type PortalModuleRegistry,
   type RemoteModuleDescriptor,

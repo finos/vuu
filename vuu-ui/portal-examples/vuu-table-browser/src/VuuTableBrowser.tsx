@@ -26,7 +26,7 @@ import {
   useRetryConnection,
   usePortalVuuServers,
   useTransientWorkspace,
-  useVuuServerConnection,
+  useVuuServerUnreachable,
   WorkspaceDropZone,
 } from "@vuu-ui/core/portal";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
@@ -266,9 +266,11 @@ const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
     name: serverId,
     settingsCodecs,
   });
-  const resolution = useVuuServerConnection(serverId);
+  // Unknown servers, and known servers that are down or refuse the user,
+  // offer Retry and Change server. When a server comes back, this updates
+  // and the page recovers.
+  const unavailable = useVuuServerUnreachable(serverId);
   const openTables = useMemo(() => getOpenTables(snapshot), [snapshot]);
-  const unavailable = resolution.status === "unavailable";
 
   const emptyContent: ReactNode = unavailable ? (
     <ServerUnavailable basePath={basePath} serverId={serverId} />

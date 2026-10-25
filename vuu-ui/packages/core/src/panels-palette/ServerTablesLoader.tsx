@@ -9,6 +9,7 @@ import {
 import { useData } from "../context-definitions/DataProvider";
 import { useVuuServerConnection } from "../portal-components/vuu-table-component";
 import { useManualVuuServers } from "../portal-servers/ManualVuuServers";
+import { useVuuServerUnreachable } from "../portal-servers/vuu-server-presence";
 
 export interface PanelsServerOption {
   readonly connectionId: string;
@@ -131,13 +132,16 @@ const LOADING: ServerTablesState = { status: "loading" };
 
 /**
  * Lists the tables of a Vuu server, through the portal's connection
- * management, and reports them with `onChange`. Renders nothing.
+ * management, and reports them with `onChange`. Renders nothing. While the
+ * server is unreachable it reports an error; when the server comes back the
+ * tables load again.
  */
 export const ServerTablesLoader = ({
   onChange,
   serverId,
 }: ReportProps & { serverId: string }) => {
   const resolution = useVuuServerConnection(serverId);
+  const unreachable = useVuuServerUnreachable(serverId);
   const unavailable = useMemo<ServerTablesState>(
     () => ({
       message: `Vuu server ${serverId} is not available.`,
@@ -145,11 +149,12 @@ export const ServerTablesLoader = ({
     }),
     [serverId],
   );
+  if (unreachable || resolution.status === "unavailable") {
+    return <Report onChange={onChange} state={unavailable} />;
+  }
   switch (resolution.status) {
     case "pending":
       return <Report onChange={onChange} state={LOADING} />;
-    case "unavailable":
-      return <Report onChange={onChange} state={unavailable} />;
     case "current":
       return (
         <LoaderErrorBoundary key={serverId} onChange={onChange}>

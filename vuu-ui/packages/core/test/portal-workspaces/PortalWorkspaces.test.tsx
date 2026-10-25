@@ -326,6 +326,10 @@ describe("Portal workspaces", () => {
       expect(getWorkspacePath("a b")).toBe("/workspaces/a%20b");
       expect(getWorkspaceIdFromPath("/workspaces/a%20b")).toBe("a b");
       expect(getWorkspaceIdFromPath("/Trading/Orders")).toBeUndefined();
+      // A sub-path keeps the workspace, rather than matching nothing.
+      expect(getWorkspaceIdFromPath("/workspaces/ws-1/admin/users")).toBe(
+        "ws-1",
+      );
     });
 
     it("names new workspaces uniquely", () => {

@@ -20,8 +20,11 @@ export {
   getVuuServerIdFromPath,
   PortalNavVuuServers,
   type PortalNavVuuServersProps,
-  useVuuServerPresence,
 } from "./PortalNavVuuServers";
+export {
+  useVuuServerPresence,
+  useVuuServerUnreachable,
+} from "./vuu-server-presence";
 export {
   VuuTableChangeServerDialog,
   type VuuTableChangeServerDialogProps,
