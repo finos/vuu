@@ -1,19 +1,19 @@
-import {
+import type {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
   ColumnFilterOp,
   ColumnFilterValue,
   ExtendedFilterOptions,
 } from "@vuu-ui/vuu-filter-types";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { InputProps, useControlled } from "@salt-ds/core";
-import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { type InputProps, useControlled } from "@salt-ds/core";
+import { type ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import {
-  CommitHandler,
+  type CommitHandler,
   isBetweenOperator,
   isValidRange,
 } from "@vuu-ui/vuu-utils";
-import { DataItemEditControlProps } from "@vuu-ui/vuu-data-react";
+import type { DataItemEditControlProps } from "@vuu-ui/vuu-data-editing";
 
 const injectInputProps = (
   InputProps: InputProps | undefined,
@@ -101,7 +101,7 @@ export const useColumnFilter = ({
           );
         } else {
           throw Error(
-            `[useColumnFilterNext] value has been initialised incorrectly for non-range filter`,
+            "[useColumnFilterNext] value has been initialised incorrectly for non-range filter",
           );
         }
       } else {
@@ -141,7 +141,7 @@ export const useColumnFilter = ({
         );
       } else {
         throw Error(
-          `[useColumnFilterNext] value has been initialised incorrectly for range filter`,
+          "[useColumnFilterNext] value has been initialised incorrectly for range filter",
         );
       }
     },

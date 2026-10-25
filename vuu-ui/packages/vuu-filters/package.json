@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-context-menu": "4.0.0-alpha.20",
+    "@vuu-ui/vuu-data-editing": "4.0.0-alpha.20",
     "@vuu-ui/vuu-data-react": "4.0.0-alpha.20",
     "@vuu-ui/vuu-filter-parser": "4.0.0-alpha.20",
     "@vuu-ui/vuu-popups": "4.0.0-alpha.20",

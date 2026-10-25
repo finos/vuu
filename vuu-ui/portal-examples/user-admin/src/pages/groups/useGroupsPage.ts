@@ -1,11 +1,6 @@
 import { useData } from "@vuu-ui/core";
-import type {
-  DataRow,
-  TableConfig,
-  TableRowSelectHandler,
-} from "@vuu-ui/vuu-table-types";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { useMemo } from "react";
 import {
   GROUP_APPLICATION_CELL_RENDERER,
   GROUP_NAME_CELL_RENDERER,
@@ -21,9 +16,6 @@ export const GROUP_ROW_HEIGHT = 44;
 
 export const useGroupsPage = () => {
   const { VuuDataSource } = useData();
-  const [params, setParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
-  const [dataRow, setDataRow] = useState<DataRow>();
 
   const dataSource = useMemo(
     () =>
@@ -94,52 +86,5 @@ export const useGroupsPage = () => {
     [],
   );
 
-  const handleCreateGroup = useCallback(() => {
-    setDataRow({ key: "__vuu_new_row__" } as DataRow);
-    setOpen(true);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    setDataRow(undefined);
-    setOpen(false);
-    if (params.has("create")) {
-      const next = new URLSearchParams(params);
-      next.delete("create");
-      setParams(next, { replace: true });
-    }
-  }, [params, setParams]);
-
-  const handleSelect = useCallback<TableRowSelectHandler>(
-    (nextDataRow) => {
-      if (nextDataRow) {
-        setDataRow(nextDataRow);
-        setOpen(true);
-      } else {
-        handleClose();
-      }
-    },
-    [handleClose],
-  );
-
-  useEffect(() => {
-    if (params.get("create") === "true") {
-      handleCreateGroup();
-      const next = new URLSearchParams(params);
-      next.delete("create");
-      setParams(next, { replace: true });
-    }
-  }, [handleCreateGroup, params, setParams]);
-
-  return {
-    application,
-    config,
-    dataRow,
-    dataSource,
-    createGroup: handleCreateGroup,
-    close: handleClose,
-    onSelect: handleSelect,
-    open,
-    setApplication,
-    setOpen,
-  };
+  return { application, config, dataSource, setApplication };
 };
