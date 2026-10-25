@@ -19,6 +19,11 @@ const EMPTY_SERVER: ManualServer = {
   websocketUrl: "",
 };
 
+export const INVALID_WEBSOCKET_URL_MESSAGE =
+  "Enter a WebSocket URL (wss or ws)";
+export const INVALID_AUTH_URL_MESSAGE =
+  "Enter an authentication URL (https or http)";
+
 const hasProtocol = (value: string, protocols: string[], base?: string) => {
   try {
     return protocols.includes(new URL(value, base).protocol);
@@ -42,14 +47,14 @@ export const validateManualServer = (
     errors.connectionId = "A server with this name is already listed";
   }
   if (!hasProtocol(server.websocketUrl, ["ws:", "wss:"])) {
-    errors.websocketUrl = "Enter a ws:// or wss:// URL";
+    errors.websocketUrl = INVALID_WEBSOCKET_URL_MESSAGE;
   }
   // Relative URLs resolve against the page, e.g. a proxied authn endpoint.
   if (
     !server.restUrl ||
     !hasProtocol(server.restUrl, ["http:", "https:"], document.baseURI)
   ) {
-    errors.restUrl = "Enter an http:// or https:// URL";
+    errors.restUrl = INVALID_AUTH_URL_MESSAGE;
   }
   return errors;
 };

@@ -20,6 +20,8 @@ import {
 import {
   getVuuServerBrowsePath,
   getVuuServerIdFromPath,
+  INVALID_AUTH_URL_MESSAGE,
+  INVALID_WEBSOCKET_URL_MESSAGE,
   MANUAL_VUU_SERVERS_KEY,
   ManualVuuServersProvider,
   PortalNavVuuServers,
@@ -213,8 +215,8 @@ describe("portal servers", () => {
         ),
       ).toEqual({
         connectionId: "Enter a name for the server",
-        restUrl: "Enter an http:// or https:// URL",
-        websocketUrl: "Enter a ws:// or wss:// URL",
+        restUrl: INVALID_AUTH_URL_MESSAGE,
+        websocketUrl: INVALID_WEBSOCKET_URL_MESSAGE,
       });
       expect(
         validateManualServer(
@@ -238,7 +240,7 @@ describe("portal servers", () => {
       expect(container.textContent).toContain(
         "A server with this name is already listed",
       );
-      expect(container.textContent).toContain("Enter a ws:// or wss:// URL");
+      expect(container.textContent).toContain(INVALID_WEBSOCKET_URL_MESSAGE);
       expect(servers()).toHaveLength(2);
       await click(button("Cancel"));
       expect(container.querySelector("form")).toBeNull();
