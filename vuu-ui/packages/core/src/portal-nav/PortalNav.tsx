@@ -95,6 +95,7 @@ export const PortalNav = ({
   onDisplayModeChange,
   remoteModules,
   renderBadge,
+  renderItemChildren,
   sections: sectionStyle = "headings",
   width,
   workspaces: showWorkspaces = true,
@@ -299,6 +300,7 @@ export const PortalNav = ({
             key={section.id}
             onCollapsedChange={setSectionCollapsed}
             renderBadge={renderBadge}
+            renderItemChildren={renderItemChildren}
             section={section}
             sectionStyle={sectionStyle}
           />

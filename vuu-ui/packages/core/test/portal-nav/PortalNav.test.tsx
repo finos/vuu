@@ -422,6 +422,38 @@ describe("PortalNav", () => {
     });
   });
 
+  describe("item children", () => {
+    const renderItemChildren: PortalNavProps["renderItemChildren"] = (
+      item,
+      { active },
+    ) =>
+      item.moduleId === "m1" ? (
+        <ul className="children" data-active={String(active)}>
+          <li>child</li>
+        </ul>
+      ) : null;
+
+    it("nests renderItemChildren output under its item", async () => {
+      await render({ renderItemChildren });
+      const children = container.querySelector<HTMLElement>(".children");
+      expect(children?.closest("li")?.textContent).toContain("Fills");
+      expect(children?.dataset.active).toBe("false");
+      expect(container.querySelectorAll(".children")).toHaveLength(1);
+    });
+
+    it("tells the children whether their item is active", async () => {
+      await render({ renderItemChildren }, { path: "/m1/detail" });
+      expect(
+        container.querySelector<HTMLElement>(".children")?.dataset.active,
+      ).toBe("true");
+    });
+
+    it("hides them in the icons rail", async () => {
+      await render({ defaultDisplayMode: "icons", renderItemChildren });
+      expect(container.querySelector(".children")).toBeNull();
+    });
+  });
+
   describe("notification indicator", () => {
     it("shows a dot on the icon of an item with unread notifications", async () => {
       await render();

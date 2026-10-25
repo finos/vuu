@@ -21,6 +21,7 @@ export {
   type PortalNavCollapsedMode,
   type PortalNavDensity,
   type PortalNavDisplayMode,
+  type PortalNavItemChildrenContext,
   type PortalNavProps,
   type PortalNavSectionStyle,
   type PortalNavSlot,
@@ -72,6 +73,12 @@ export {
   type PortalWorkspacesProviderProps,
 } from "./portal-workspaces/PortalWorkspacesProvider";
 export { WORKSPACES_SECTION_ID } from "./portal-workspaces/PortalNavWorkspaces";
+export {
+  MemoryWorkspacePersistenceService,
+  type TransientWorkspace,
+  type TransientWorkspaceOptions,
+  useTransientWorkspace,
+} from "./portal-workspaces/useTransientWorkspace";
 export {
   DEFAULT_WORKSPACE_NAME,
   WORKSPACE_ROUTE,
@@ -159,3 +166,4 @@ export type {
 
 export * from "./portal-components";
 export * from "./panels-palette";
+export * from "./portal-servers";

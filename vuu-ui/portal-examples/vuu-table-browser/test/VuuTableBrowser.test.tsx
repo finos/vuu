@@ -1,327 +1,514 @@
 import {
   AuthenticationProvider,
+  DataProvider,
   type LocalVuuServer,
-  type PortalModuleRegistry,
+  WorkspaceProvider,
 } from "@vuu-ui/core";
 import {
   ApplicationStateProvider,
   type ApplicationStateStore,
+  createPortalComponentRegistries,
   createPortalPersistenceService,
   InMemoryPersistenceBackend,
+  MemoryWorkspacePersistenceService,
+  PANELS_PALETTE_PINNED_KEY,
   type PortalPersistenceService,
 } from "@vuu-ui/core/portal";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import VuuTableBrowser, { browserBasePath } from "../src/VuuTableBrowser";
+import VuuTableBrowser, {
+  browserBasePath,
+  getDefaultWorkspaceName,
+  getOpenTables,
+} from "../src/VuuTableBrowser";
 
-const viewerModule: PortalModuleRegistry["modules"][number] = {
-  accessRole: "vuu-table-viewer-access",
-  clientIdentifier: "vuu-table-viewer",
-  description: "Vuu table viewer",
-  id: "vuu-table-viewer",
-  mfComponent: "VuuTableViewer",
-  mfScope: "vuuTableViewer",
-  mfUrl: "http://localhost:5005",
-  name: "vuu-table-viewer",
-  navLocation: "",
-  path: "/tables/view",
-  title: "Vuu Table Viewer",
-  version: 1,
+const tables: VuuTable[] = [
+  { module: "SIMUL", table: "prices" },
+  { module: "SIMUL", table: "instruments" },
+  { module: "BASKET", table: "basket" },
+];
+
+const getTableList = vi.fn(async () => ({ tables }));
+// Never resolves: table panels stay loading, the tests are about the layout.
+const getTableSchema = vi.fn(
+  (_table: VuuTable) => new Promise<never>(() => undefined),
+);
+
+type DataProviderProps = Parameters<typeof DataProvider>[0];
+
+const LocalDataProvider = ({ children }: { children: ReactNode }) => (
+  <DataProvider
+    getServerAPI={
+      (async () => ({
+        getTableList,
+        getTableSchema,
+      })) as unknown as DataProviderProps["getServerAPI"]
+    }
+    VuuDataSource={undefined as unknown as DataProviderProps["VuuDataSource"]}
+  >
+    {children}
+  </DataProvider>
+);
+
+const localServers: LocalVuuServer[] = [
+  { connectionId: "simul", DataSourceProvider: LocalDataProvider },
+  { connectionId: "basket", DataSourceProvider: LocalDataProvider },
+];
+
+const { renderers, settingsCodecs } = createPortalComponentRegistries();
+
+class TestDataTransfer {
+  effectAllowed = "uninitialized";
+  readonly values = new Map<string, string>();
+  setData(type: string, value: string) {
+    this.values.set(type, value);
+  }
+}
+
+const dispatchDrag = (
+  element: Element,
+  type: string,
+  dataTransfer: TestDataTransfer,
+  point = { clientX: 50, clientY: 90 },
+) => {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperties(event, {
+    clientX: { value: point.clientX },
+    clientY: { value: point.clientY },
+    dataTransfer: { value: dataTransfer },
+  });
+  act(() => element.dispatchEvent(event));
 };
 
-const localServer = (connectionId: string): LocalVuuServer => ({
-  connectionId,
-  DataSourceProvider: ({ children }: { children: ReactNode }) => children,
-});
+const setRect = (element: Element) => {
+  element.getBoundingClientRect = () =>
+    ({
+      bottom: 100,
+      height: 100,
+      left: 0,
+      right: 100,
+      top: 0,
+      width: 100,
+      x: 0,
+      y: 0,
+    }) as DOMRect;
+};
 
-/** The config.json each test module publishes, keyed by its URL. */
-const remoteConfigs = new Map<string, Record<string, string>>();
-
-const stubRemoteConfigFetch = () =>
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(
-      async (url: string) =>
-        new Response(JSON.stringify(remoteConfigs.get(url) ?? {})),
-    ),
-  );
-
-const featureModule = (
-  name: string,
-  title: string,
-  connectionId?: string,
-): PortalModuleRegistry["modules"][number] => {
-  const mfUrl = `http://localhost/${name}`;
-  remoteConfigs.set(
-    `${mfUrl}/config.json`,
-    connectionId ? { connectionId } : {},
-  );
-  return {
-    ...viewerModule,
-    clientIdentifier: name,
-    id: name,
-    mfUrl,
-    name,
-    title,
-  };
+let location = "";
+const LocationSpy = () => {
+  location = useLocation().pathname;
+  return null;
 };
 
 describe("VuuTableBrowser", () => {
   let container: HTMLDivElement;
   let root: Root;
+  let persistence: PortalPersistenceService;
+  let appState: ApplicationStateStore;
+  let workspaceService: MemoryWorkspacePersistenceService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // @ts-expect-error React test flag
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-    stubRemoteConfigFetch();
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) =>
+      setTimeout(() => callback(0), 0),
+    );
+    vi.stubGlobal("cancelAnimationFrame", (id: number) => clearTimeout(id));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}")),
+    );
+    persistence = createPortalPersistenceService({
+      backend: new InMemoryPersistenceBackend(),
+      user: "alice",
+      window: null,
+    });
+    appState = persistence.getStore("portal", 1);
+    await appState.ready;
+    workspaceService = new MemoryWorkspacePersistenceService();
+    getTableList.mockClear();
+    getTableSchema.mockClear();
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
   });
 
-  afterEach(() => {
-    act(() => root.unmount());
+  afterEach(async () => {
+    await act(async () => root.unmount());
     container.remove();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
-  const renderBrowser = async (
-    registry: PortalModuleRegistry,
-    wrap: (children: ReactNode) => ReactNode = (children) => children,
-  ) => {
-    await act(async () => {
+  const render = async ({
+    path = "/tables/browse/simul",
+    workspaces = true,
+  }: {
+    path?: string;
+    workspaces?: boolean;
+  } = {}) => {
+    const routes = (
+      <Routes>
+        <Route element={<VuuTableBrowser />} path="/tables/browse/*" />
+        <Route
+          element={<div data-route="workspace" />}
+          path="/workspaces/:id"
+        />
+      </Routes>
+    );
+    await act(async () =>
       root.render(
-        <AuthenticationProvider
-          localServers={[localServer("simul"), localServer("basket")]}
-          mode="local"
-          registry={registry}
-        >
-          <MemoryRouter initialEntries={["/tables/browse"]}>
-            <Routes>
-              <Route
-                element={wrap(<VuuTableBrowser />)}
-                path="/tables/browse/*"
-              />
-            </Routes>
-          </MemoryRouter>
-        </AuthenticationProvider>,
+        <MemoryRouter initialEntries={[path]}>
+          <LocationSpy />
+          <ApplicationStateProvider store={appState}>
+            <AuthenticationProvider localServers={localServers} mode="local">
+              {workspaces ? (
+                <WorkspaceProvider
+                  componentRenderers={renderers}
+                  persistenceService={workspaceService}
+                  settingsCodecs={settingsCodecs}
+                  userId="alice"
+                >
+                  {routes}
+                </WorkspaceProvider>
+              ) : (
+                routes
+              )}
+            </AuthenticationProvider>
+          </ApplicationStateProvider>
+        </MemoryRouter>,
+      ),
+    );
+  };
+
+  const query = <T extends Element = HTMLElement>(selector: string) =>
+    container.querySelector<T>(selector);
+
+  const queryAll = (selector: string) => [
+    ...container.querySelectorAll<HTMLElement>(selector),
+  ];
+
+  const rowLabels = () =>
+    queryAll(".vuuPanelsPalette-row .vuuPanelsPalette-label").map(
+      (element) => element.textContent,
+    );
+
+  const row = (label: string) => {
+    const element = queryAll(".vuuPanelsPalette-row").find(
+      (candidate) =>
+        candidate.querySelector(".vuuPanelsPalette-label")?.textContent ===
+        label,
+    );
+    if (!element) {
+      throw Error(`no palette row ${label}`);
+    }
+    return element;
+  };
+
+  const button = (name: string, scope: ParentNode = container) => {
+    const element = [...scope.querySelectorAll<HTMLElement>("button")].find(
+      (candidate) =>
+        candidate.getAttribute("aria-label") === name ||
+        candidate.textContent?.trim() === name,
+    );
+    if (!element) {
+      throw Error(`no button ${name}`);
+    }
+    return element;
+  };
+
+  const click = async (element: Element) => {
+    await act(async () => {
+      element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+  };
+
+  const key = async (element: Element, keyName: string) => {
+    await act(async () => {
+      element.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: keyName,
+        }),
       );
     });
   };
 
-  it("lists the distinct servers of registered modules that have a local implementation", async () => {
-    await renderBrowser({
-      modules: [
-        viewerModule,
-        featureModule("simple-div", "Saved state demo", "simul"),
-        featureModule("orders", "Orders", "orders"),
-        featureModule("baskets", "Basket Trading", "basket"),
-        featureModule("tiles", "Instrument tiles", "simul"),
-      ],
-    });
+  const prompt = () =>
+    document.body.querySelector<HTMLElement>(".vuuOpenPanelPrompt");
 
-    const labels = Array.from(
-      container.querySelectorAll(
-        '[aria-label="Vuu servers"] .saltVerticalNavigationItemLabel',
-      ),
-      (label) => [label.textContent, label.getAttribute("title")],
+  /** The tables requested by open panels, most recent last. */
+  const openedTables = () => [
+    ...new Set(getTableSchema.mock.calls.map(([{ table }]) => table)),
+  ];
+
+  const tablePanelCount = () => queryAll(".vuuTableComponent").length;
+
+  const waitForTables = () =>
+    vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
+
+  const savePopover = () => {
+    const form = document.body.querySelector<HTMLElement>(
+      "[aria-label='Save as workspace'] form",
     );
-    expect(labels).toEqual([
-      ["basket", "Used by Basket Trading"],
-      ["simul", "Used by Saved state demo, Instrument tiles"],
-    ]);
-    expect(container.textContent).toContain(
-      "Select a server and table to begin.",
+    if (!form) {
+      throw Error("no save popover");
+    }
+    return form;
+  };
+
+  it("keeps the browser's base path when a server is selected", () => {
+    expect(browserBasePath("/tables/browse/simul", "simul")).toBe(
+      "/tables/browse",
     );
+    expect(browserBasePath("/tables/browse", "")).toBe("/tables/browse");
   });
 
-  it("explains when no table viewer is registered", async () => {
-    await renderBrowser({
-      modules: [featureModule("simple-div", "Saved state demo", "simul")],
-    });
-
-    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
-      "The Vuu table viewer is not available.",
-    );
+  it("lists the servers on the landing page", async () => {
+    await render({ path: "/tables/browse" });
+    const links = queryAll("ul[aria-label='Vuu servers'] a");
+    expect(links.map((link) => link.textContent)).toEqual(["simul", "basket"]);
+    expect(links[0].getAttribute("href")).toBe("/tables/browse/simul");
   });
 
-  describe("manually added servers", () => {
-    let service: PortalPersistenceService;
-    let store: ApplicationStateStore;
-
-    beforeEach(async () => {
-      service = createPortalPersistenceService({
-        backend: new InMemoryPersistenceBackend(),
-        user: "steve",
-        window: null,
-      });
-      store = service.getStore("vuu-table-browser", 1);
-      await store.ready;
+  describe("Browse page", () => {
+    it("opens with the Tables palette pinned, on the selected server", async () => {
+      await render();
+      expect(query("h1")?.textContent).toBe("simul");
+      expect(query(".vuuPortalWorkspaceHeader-crumb")?.textContent).toBe(
+        "Tables / Browse /",
+      );
+      expect(query("aside[aria-label='Panels']")).not.toBeNull();
+      expect(
+        query("aside[aria-label='Panels'] [role='tab'][aria-selected='true']")
+          ?.textContent,
+      ).toContain("Tables");
+      expect(
+        query<HTMLSelectElement>(".vuuPanelsPalette-server select")?.value,
+      ).toBe("simul");
+      await waitForTables();
+      expect(
+        queryAll(".vuuPanelsPalette-groupHeader").map((e) => e.textContent),
+      ).toEqual(["SIMUL", "BASKET"]);
+      expect(rowLabels()).toEqual(["instruments", "prices", "basket"]);
+      expect(queryAll(".vuuPanelsPalette-subtitle")).toHaveLength(0);
+      expect(query(".vuuWorkspaceDropZone h4")?.textContent).toBe(
+        "Pick a table",
+      );
+      expect(query(".vuuPortalWorkspaceHeader-status")?.textContent).toBe("");
     });
 
-    afterEach(() => service.dispose());
+    it("preselects the server of the route, not the user's saved choice", async () => {
+      await render({ path: "/tables/browse/basket" });
+      expect(
+        query<HTMLSelectElement>(".vuuPanelsPalette-server select")?.value,
+      ).toBe("basket");
+      expect(query("[data-server-id]")?.dataset.serverId).toBe("basket");
+    });
 
-    const registry = {
-      modules: [
-        viewerModule,
-        featureModule("baskets", "Basket Trading", "basket"),
-      ],
-    };
+    it("is pinned, without saving that as the user's choice", async () => {
+      await render();
+      await waitForTables();
+      // Pinned: adding a table leaves the palette open.
+      await click(button("Add instruments"));
+      expect(query("aside[aria-label='Panels']")).not.toBeNull();
+      await click(button("Unpin panels"));
+      await click(button("Pin panels open"));
+      expect(button("Unpin panels")).toBeDefined();
+      expect(appState.get(PANELS_PALETTE_PINNED_KEY)).toBeUndefined();
+    });
+  });
 
-    const renderWithStore = () =>
-      renderBrowser(registry, (children) => (
-        <ApplicationStateProvider store={store}>
-          {children}
-        </ApplicationStateProvider>
-      ));
+  describe("opening tables", () => {
+    it("click adds a table to the empty page, then replaces the only table", async () => {
+      await render();
+      await waitForTables();
+      await click(row("instruments"));
+      expect(prompt()).toBeNull();
+      expect(tablePanelCount()).toBe(1);
+      await vi.waitFor(() => expect(openedTables()).toEqual(["instruments"]));
+      expect(query(".vuuPortalWorkspaceHeader-status")?.textContent).toBe(
+        "Unsaved layout",
+      );
 
-    const serverLabels = () =>
-      Array.from(
-        container.querySelectorAll(
-          '[aria-label="Vuu servers"] .saltVerticalNavigationItemLabel',
+      await click(row("prices"));
+      expect(prompt()).toBeNull();
+      expect(tablePanelCount()).toBe(1);
+      await vi.waitFor(() =>
+        expect(openedTables()).toEqual(["instruments", "prices"]),
+      );
+    });
+
+    it("+ adds a table beside the others", async () => {
+      await render();
+      await waitForTables();
+      await click(button("Add instruments"));
+      await click(button("Add prices"));
+      expect(prompt()).toBeNull();
+      expect(tablePanelCount()).toBe(2);
+    });
+
+    it("with several tables, asks: R replaces the focused table, T opens a tab, Esc cancels", async () => {
+      await render();
+      await waitForTables();
+      await click(button("Add instruments"));
+      await click(button("Add prices"));
+      expect(tablePanelCount()).toBe(2);
+
+      await click(row("basket"));
+      expect(prompt()?.textContent).toContain("Replace");
+      expect(prompt()?.textContent).toContain("Open as new tab");
+      await key(prompt() as Element, "Escape");
+      expect(prompt()).toBeNull();
+      expect(tablePanelCount()).toBe(2);
+
+      await click(row("basket"));
+      await key(prompt() as Element, "r");
+      expect(prompt()).toBeNull();
+      expect(tablePanelCount()).toBe(2);
+      await vi.waitFor(() => expect(openedTables()).toContain("basket"));
+
+      await click(row("instruments"));
+      await key(prompt() as Element, "t");
+      expect(prompt()).toBeNull();
+      await vi.waitFor(() =>
+        expect(query(".vuuPortalWorkspaceHeader-status")?.textContent).toBe(
+          "Unsaved layout",
         ),
-        (label) => [label.textContent, label.getAttribute("title")],
       );
+      // Stacked with the focused table.
+      expect(
+        queryAll(".saltTabTrigger")
+          .map((tab) => tab.textContent)
+          .sort(),
+      ).toEqual(["basket", "instruments"]);
+    });
 
-    const buttonNamed = (name: string) =>
-      Array.from(container.querySelectorAll("button")).find(
-        (button) => button.textContent === name,
-      ) as HTMLButtonElement;
-
-    const setInput = (name: string, value: string) => {
-      const input = container.querySelector(
-        `input[name="${name}"]`,
-      ) as HTMLInputElement;
-      const setter = Object.getOwnPropertyDescriptor(
-        HTMLInputElement.prototype,
-        "value",
-      )?.set;
-      act(() => {
-        setter?.call(input, value);
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      });
-    };
-
-    const submitForm = (values: Record<string, string>) => {
-      act(() => buttonNamed("Add server").click());
-      for (const [name, value] of Object.entries(values)) {
-        setInput(name, value);
+    it("dragging a table into the content area places it, without a prompt", async () => {
+      await render();
+      await waitForTables();
+      await click(row("instruments"));
+      const target = query(".vuuGridLayoutItem .vuuGridLayoutItemContent");
+      const source = row("prices");
+      if (!target) {
+        throw Error("no panel");
       }
-      act(() => buttonNamed("Add").click());
-    };
-
-    it("adds a server entered by the user and saves it", async () => {
-      await renderWithStore();
-      submitForm({
-        connectionId: "dev",
-        restUrl: "https://dev:8443/api/authn",
-        websocketUrl: "wss://dev:8090/websocket",
-      });
-
-      expect(serverLabels()).toEqual([
-        ["basket", "Used by Basket Trading"],
-        ["dev", "Added manually: wss://dev:8090/websocket"],
-      ]);
-      expect(container.querySelector("form")).toBeNull();
-      expect(store.get("manualServers")).toEqual([
-        {
-          connectionId: "dev",
-          restUrl: "https://dev:8443/api/authn",
-          websocketUrl: "wss://dev:8090/websocket",
-        },
-      ]);
-    });
-
-    it("restores saved servers", async () => {
-      store.set("manualServers", [
-        {
-          connectionId: "dev",
-          restUrl: "https://dev:8443/api/authn",
-          websocketUrl: "wss://dev:8090/websocket",
-        },
-      ]);
-      await renderWithStore();
-
-      expect(serverLabels()).toEqual([
-        ["basket", "Used by Basket Trading"],
-        ["dev", "Added manually: wss://dev:8090/websocket"],
-      ]);
-    });
-
-    it("rejects invalid or duplicate entries", async () => {
-      await renderWithStore();
-      submitForm({
-        connectionId: "basket",
-        restUrl: "ftp://dev/api/authn",
-        websocketUrl: "https://dev:8090/websocket",
-      });
-
-      expect(container.querySelector("form")?.textContent).toContain(
-        "A server with this name is already listed",
-      );
-      expect(container.querySelector("form")?.textContent).toContain(
-        "Enter a ws:// or wss:// URL",
-      );
-      expect(container.querySelector("form")?.textContent).toContain(
-        "Enter an http:// or https:// URL",
-      );
-      expect(store.get("manualServers")).toBeUndefined();
-    });
-
-    it("prefers a registered server over a saved server of the same name", async () => {
-      store.set("manualServers", [
-        {
-          connectionId: "basket",
-          restUrl: "https://dev:8443/api/authn",
-          websocketUrl: "wss://dev:8090/websocket",
-        },
-      ]);
-      await renderWithStore();
-
-      expect(serverLabels()).toEqual([["basket", "Used by Basket Trading"]]);
-    });
-
-    it("removes a manually added server", async () => {
-      store.set("manualServers", [
-        {
-          connectionId: "dev",
-          restUrl: "https://dev:8443/api/authn",
-          websocketUrl: "wss://dev:8090/websocket",
-        },
-      ]);
-      await renderWithStore();
-
-      const devTrigger = Array.from(
-        container.querySelectorAll('[aria-label="Vuu servers"] button'),
-      ).find((button) => button.textContent?.includes("dev")) as HTMLElement;
-      await act(async () => devTrigger.click());
-      await act(async () => buttonNamed("Remove server").click());
-
-      expect(serverLabels()).toEqual([["basket", "Used by Basket Trading"]]);
-      expect(store.get("manualServers")).toEqual([]);
+      setRect(source);
+      setRect(target);
+      const dataTransfer = new TestDataTransfer();
+      dispatchDrag(source, "dragstart", dataTransfer);
+      dispatchDrag(target, "dragenter", dataTransfer);
+      dispatchDrag(target, "dragover", dataTransfer);
+      dispatchDrag(target, "drop", dataTransfer);
+      dispatchDrag(source, "dragend", dataTransfer);
+      expect(prompt()).toBeNull();
+      await vi.waitFor(() => expect(tablePanelCount()).toBe(2));
+      expect(openedTables().sort()).toEqual(["instruments", "prices"]);
     });
   });
 
-  it.each([
-    ["/tables/browse", undefined, "/tables/browse"],
-    ["/tables/browse/", "", "/tables/browse"],
-    [
-      "/tables/browse/simul/SIMUL/instruments",
-      "simul/SIMUL/instruments",
-      "/tables/browse",
-    ],
-    [
-      "/tables/browse/simul/SIMUL/instruments/",
-      "simul/SIMUL/instruments/",
-      "/tables/browse",
-    ],
-    [
-      "/tables/browse/my%20server/SIMUL/instruments",
-      "my server/SIMUL/instruments",
-      "/tables/browse",
-    ],
-  ])("links tables from the browser path for %s", (pathname, route, base) => {
-    expect(browserBasePath(pathname, route)).toBe(base);
+  describe("Save as workspace", () => {
+    it("builds the default name from the open tables", () => {
+      expect(getDefaultWorkspaceName("simul", [])).toBe("simul tables");
+      expect(
+        getDefaultWorkspaceName("simul", [
+          { module: "SIMUL", table: "instruments" },
+          { module: "SIMUL", table: "prices" },
+        ]),
+      ).toBe("SIMUL instruments + prices");
+      expect(
+        getDefaultWorkspaceName("simul", [
+          { module: "SIMUL", table: "prices" },
+          { module: "BASKET", table: "basket" },
+        ]),
+      ).toBe("SIMUL prices + BASKET basket");
+    });
+
+    it("saves the layout as a named workspace and opens it", async () => {
+      await render();
+      await waitForTables();
+      await click(button("Add instruments"));
+      await click(button("Add prices"));
+      await click(button("Save as workspace"));
+
+      const form = savePopover();
+      const input = form.querySelector<HTMLInputElement>(
+        "input[name='workspaceName']",
+      );
+      const name = input?.value;
+      expect(name).toMatch(
+        /^SIMUL (instruments \+ prices|prices \+ instruments)$/,
+      );
+      expect(
+        form.querySelector<HTMLInputElement>("input[type='checkbox']")?.checked,
+      ).toBe(true);
+
+      await click(button("Save", form));
+
+      await vi.waitFor(async () =>
+        expect(
+          await workspaceService.listNamedWorkspaceMetadata(),
+        ).toHaveLength(1),
+      );
+      const [saved] = await workspaceService.listNamedWorkspaceMetadata();
+      expect(saved.name).toBe(name);
+      const definition = await workspaceService.loadNamedWorkspaceDefinition(
+        saved.id,
+      );
+      expect(
+        definition &&
+          getOpenTables(definition.snapshot)
+            .map(({ table }) => table)
+            .sort(),
+      ).toEqual(["instruments", "prices"]);
+      await vi.waitFor(() =>
+        expect(location).toBe(`/workspaces/${encodeURIComponent(saved.id)}`),
+      );
+    });
+
+    it("can stay on Browse, which resets to empty", async () => {
+      await render();
+      await waitForTables();
+      await click(button("Add instruments"));
+      await click(button("Save as workspace"));
+      const form = savePopover();
+      await click(
+        form.querySelector("input[type='checkbox']") as HTMLInputElement,
+      );
+      await click(button("Save", form));
+      await vi.waitFor(async () =>
+        expect(
+          await workspaceService.listNamedWorkspaceMetadata(),
+        ).toHaveLength(1),
+      );
+      expect(location).toBe("/tables/browse/simul");
+      await vi.waitFor(() => expect(tablePanelCount()).toBe(0));
+      expect(query(".vuuWorkspaceDropZone h4")?.textContent).toBe(
+        "Pick a table",
+      );
+      expect(query(".vuuPortalWorkspaceHeader-status")?.textContent).toBe("");
+    });
+
+    it("is not offered without workspaces", async () => {
+      await render({ workspaces: false });
+      expect(() => button("Save as workspace")).toThrow();
+      expect(query("aside[aria-label='Panels']")).not.toBeNull();
+    });
+  });
+
+  describe("unreachable server", () => {
+    it("shows an error with Retry and Change server", async () => {
+      await render({ path: "/tables/browse/uat" });
+      const alert = query("[role='alert']");
+      expect(alert?.textContent).toContain("uat is unreachable");
+      expect(button("Retry", alert as Element)).toBeDefined();
+      await click(button("Change server", alert as Element));
+      expect(location).toBe("/tables/browse");
+      expect(queryAll("ul[aria-label='Vuu servers'] a")).toHaveLength(2);
+    });
   });
 });

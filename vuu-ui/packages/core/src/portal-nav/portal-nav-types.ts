@@ -24,6 +24,13 @@ export interface PortalNavSlotContext {
   setDisplayMode: (displayMode: PortalNavDisplayMode) => void;
 }
 
+/** Passed to `renderItemChildren`. */
+export interface PortalNavItemChildrenContext {
+  /** True when the item is the active (current page) item. */
+  active: boolean;
+  displayMode: Exclude<PortalNavDisplayMode, "minimized" | "icons">;
+}
+
 export type PortalNavSlot =
   | ReactNode
   | ((context: PortalNavSlotContext) => ReactNode);
@@ -57,6 +64,15 @@ export interface PortalNavProps {
    * `icons` rail a count above zero shows as a pip, other content is hidden.
    */
   renderBadge?: (item: PortalNavItem) => ReactNode;
+  /**
+   * Content nested under an item, e.g. the servers of a table browser,
+   * shown in the expanded display modes (not the `icons` rail). Return
+   * nothing for an item without children.
+   */
+  renderItemChildren?: (
+    item: PortalNavItem,
+    context: PortalNavItemChildrenContext,
+  ) => ReactNode;
   /** Section headings (default), collapsible headings, or none. */
   sections?: PortalNavSectionStyle;
   /** Width (px) of the `icons-and-text` mode. Default 248. */

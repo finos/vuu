@@ -98,6 +98,9 @@ vi.mock("../../src/portal-workspaces/PortalWorkspacesProvider", () => ({
     <div data-provider="workspaces">{children}</div>
   ),
 }));
+vi.mock("../../src/portal-servers/VuuTableChangeServerDialog", () => ({
+  VuuTableChangeServerDialog: () => null,
+}));
 vi.mock("../../src/notifications/PortalNotificationBanners", () => ({
   PortalNotificationBanners: () => null,
 }));

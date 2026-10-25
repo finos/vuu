@@ -64,6 +64,12 @@ export interface PanelsPaletteStateProviderProps {
   children: ReactNode;
   /** Open the palette initially, even if it isn't pinned. */
   defaultOpen?: boolean;
+  /**
+   * Pin the palette initially (or not), instead of following the user's
+   * saved choice. Pinning is then not saved, e.g. for a Browse page whose
+   * palette is always pinned when the page opens.
+   */
+  defaultPinned?: boolean;
 }
 
 /**
@@ -81,22 +87,26 @@ export interface PanelsPaletteStateProviderProps {
 export const PanelsPaletteStateProvider = ({
   children,
   defaultOpen = false,
+  defaultPinned,
 }: PanelsPaletteStateProviderProps) => {
   const { load, save } = usePersistedState();
+  const savePinned = defaultPinned === undefined;
   const [pinned, setPinnedState] = useState(
-    () => load<boolean>(PANELS_PALETTE_PINNED_KEY) === true,
+    () => defaultPinned ?? load<boolean>(PANELS_PALETTE_PINNED_KEY) === true,
   );
   const [open, setOpenState] = useState(() => defaultOpen || pinned);
 
   const setPinned = useCallback(
     (nextPinned: boolean) => {
       setPinnedState(nextPinned);
-      save(nextPinned, PANELS_PALETTE_PINNED_KEY, pinnedMetadata);
+      if (savePinned) {
+        save(nextPinned, PANELS_PALETTE_PINNED_KEY, pinnedMetadata);
+      }
       if (nextPinned) {
         setOpenState(true);
       }
     },
-    [save],
+    [save, savePinned],
   );
 
   const setOpen = useCallback(
