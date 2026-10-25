@@ -53,6 +53,12 @@ export type VuuConnectionResult =
     }
   | { status: "rejected" };
 
+/**
+ * How many recently closed viewport ids are remembered, so that messages
+ * already in flight for them can be dropped silently.
+ */
+const MAX_CLOSED_VIEWPORTS = 500;
+
 type RegisteredViewport = {
   postMessageToClientDataSource: PostMessageToClientCallback;
   request: ServerProxySubscribeMessage;
@@ -74,6 +80,8 @@ class ConnectionChannel {
   #deferredServerAPI = new DeferredPromise<ServerAPI>();
   #pendingRequests = new Map<string, { resolve: (value: unknown) => void }>();
   #viewports = new Map<string, RegisteredViewport>();
+  /** Ids of viewports which have been unsubscribed, oldest first. */
+  #closedViewports = new Set<string>();
   #worker: DedicatedWorker;
   readonly #serverAPI: ServerAPI;
 
@@ -88,9 +96,10 @@ class ConnectionChannel {
       subscribe: (message, callback) => {
         if (this.#viewports.get(message.viewport)) {
           throw Error(
-            `ConnectionManager attempting to subscribe with an existing viewport id`,
+            "ConnectionManager attempting to subscribe with an existing viewport id",
           );
         }
+        this.#closedViewports.delete(message.viewport);
         this.#viewports.set(message.viewport, {
           status: "subscribing",
           request: message,
@@ -100,6 +109,7 @@ class ConnectionChannel {
       },
 
       unsubscribe: (viewport) => {
+        this.#markClosed(viewport);
         this.#worker.send({ type: "unsubscribe", viewport });
       },
 
@@ -110,6 +120,7 @@ class ConnectionChannel {
       destroy: (viewportId?: string) => {
         if (viewportId && this.#viewports.has(viewportId)) {
           this.#viewports.delete(viewportId);
+          this.#markClosed(viewportId);
         }
       },
 
@@ -187,6 +198,15 @@ class ConnectionChannel {
     this.#worker.terminate();
   }
 
+  #markClosed(viewportId: string) {
+    this.#closedViewports.delete(viewportId);
+    this.#closedViewports.add(viewportId);
+    if (this.#closedViewports.size > MAX_CLOSED_VIEWPORTS) {
+      const [oldest] = this.#closedViewports;
+      this.#closedViewports.delete(oldest);
+    }
+  }
+
   private handleMessageFromWorker = (
     message: VuuUIMessageIn | DataSourceCallbackMessage | ConnectionStatus,
   ) => {
@@ -194,9 +214,13 @@ class ConnectionChannel {
       const viewport = this.#viewports.get(message.clientViewportId);
       if (viewport) {
         viewport.postMessageToClientDataSource(message);
+      } else if (this.#closedViewports.has(message.clientViewportId)) {
+        // Messages may still be in flight for a viewport which has just been
+        // unsubscribed, e.g. when its component unmounts. They are expected.
       } else {
         console.error(
-          `[ConnectionManager] ${message.type} message received, viewport not found`,
+          "[ConnectionManager] %s message received, viewport not found",
+          message.type,
         );
       }
     } else if (isWebSocketConnectionStatus(message)) {
@@ -265,10 +289,7 @@ class ConnectionChannel {
 class ConnectionManager extends EventEmitter<ConnectionEvents> {
   static #instance: ConnectionManager;
   #connections = new Map<string, ConnectionChannel>();
-  #connectionStatusListeners = new Map<
-    string,
-    Set<ConnectionStatusListener>
-  >();
+  #connectionStatusListeners = new Map<string, Set<ConnectionStatusListener>>();
 
   private constructor() {
     super();
@@ -323,10 +344,7 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     return this.getConnection(connectionId).connected;
   }
 
-  onConnectionStatus(
-    connectionId: string,
-    listener: ConnectionStatusListener,
-  ) {
+  onConnectionStatus(connectionId: string, listener: ConnectionStatusListener) {
     const listeners =
       this.#connectionStatusListeners.get(connectionId) ??
       new Set<ConnectionStatusListener>();

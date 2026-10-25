@@ -4,7 +4,7 @@ import type {
 } from "@vuu-ui/grid-layout";
 import { featureFromJson, type DynamicFeatureProps } from "@vuu-ui/vuu-utils";
 import { Feature } from "../feature";
-import type { WorkspaceComponentRegistration } from "./workspace-component-registry";
+import type { WorkspaceComponentRegistration } from "@vuu-ui/core";
 
 const isRecord = (
   value: JsonValue,

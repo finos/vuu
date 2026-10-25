@@ -26,20 +26,65 @@ export type ContextPanelPlacement = "shell" | "module";
 type ContextPanelOwner = object;
 
 /**
+ * Why an owner lost the panel: it was closed (close button, Escape or
+ * navigation) or another owner claimed it.
+ */
+export type ContextPanelReleaseReason = "close" | "replaced";
+
+/**
+ * How the slot's panel is displayed: sliding out over the content (overlay),
+ * or in its own column, the content shrinking to make room (inline).
+ */
+export type ContextPanelSlotPlacement = "overlay" | "inline";
+
+export interface ContextPanelClaimOptions {
+  /**
+   * Move focus to the panel's close button when it opens. Default `true`.
+   * Content that is opened without the user asking, or that manages focus
+   * itself, can leave focus where it is.
+   */
+  readonly autoFocus?: boolean;
+  /**
+   * Keep the panel open when the portal navigates. By default, content
+   * belongs to the route that opened it and is closed on navigation. An
+   * owner that keeps the panel releases it when it unmounts.
+   */
+  readonly keepOnNavigation?: boolean;
+  /**
+   * How the panel is displayed while this owner holds it. Defaults to the
+   * slot's default placement, `"overlay"` unless the host sets another.
+   */
+  readonly placement?: ContextPanelSlotPlacement;
+}
+
+/**
  * A context panel that displays content owned by others. Owners keep their
  * content in their own React tree and portal it into `target`, so it sees
  * their context rather than that of the panel's host.
  */
 export interface ContextPanelSlot {
+  /** Whether the panel takes focus when it opens, see `claim`. */
+  readonly autoFocus: boolean;
   /** Opens the panel for `owner`. A different current owner is released. */
   readonly claim: (
     owner: ContextPanelOwner,
     title: string,
-    onRelease: () => void,
+    onRelease: (reason: ContextPanelReleaseReason) => void,
+    options?: ContextPanelClaimOptions,
   ) => void;
   /** Closes the panel, whoever owns it. */
   readonly close: () => void;
+  /**
+   * Called when the portal navigates. Closes the panel, unless its owner
+   * claimed it with `keepOnNavigation`.
+   */
+  readonly closeOnNavigation: () => void;
   readonly owner?: ContextPanelOwner;
+  /**
+   * How the panel is displayed. Set by the latest claim and kept after the
+   * panel closes, so that it closes the way it opened.
+   */
+  readonly placement: ContextPanelSlotPlacement;
   /** Closes the panel, if `owner` owns it. */
   readonly release: (owner: ContextPanelOwner) => void;
   readonly setTarget: (target: HTMLElement | null) => void;
@@ -54,34 +99,52 @@ export const ContextPanelSlotContext = createContext<
 export const useContextPanelSlot = () => useContext(ContextPanelSlotContext);
 
 type SlotState = {
+  readonly autoFocus: boolean;
   readonly owner: ContextPanelOwner;
   readonly title: string;
 };
 
+export interface ContextPanelSlotOptions {
+  /** Placement for claims that don't specify one. Default `"overlay"`. */
+  readonly defaultPlacement?: ContextPanelSlotPlacement;
+}
+
 /** Creates a slot. Provide it, and render a `ContextPanelSlotHost` for it. */
-export const useCreateContextPanelSlot = (): ContextPanelSlot => {
+export const useCreateContextPanelSlot = ({
+  defaultPlacement = "overlay",
+}: ContextPanelSlotOptions = {}): ContextPanelSlot => {
   const [state, setState] = useState<SlotState>();
+  const [placement, setPlacement] =
+    useState<ContextPanelSlotPlacement>(defaultPlacement);
+  const defaultPlacementRef = useRef(defaultPlacement);
+  defaultPlacementRef.current = defaultPlacement;
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const currentOwner = useRef<{
+    keepOnNavigation: boolean;
     owner: ContextPanelOwner;
-    onRelease: () => void;
+    onRelease: (reason: ContextPanelReleaseReason) => void;
   }>(undefined);
   const trigger = useRef<HTMLElement | null>(null);
   const targetRef = useRef(target);
   targetRef.current = target;
 
   const claim = useCallback<ContextPanelSlot["claim"]>(
-    (owner, title, onRelease) => {
+    (owner, title, onRelease, options) => {
       const current = currentOwner.current;
       if (current === undefined) {
         const { activeElement } = targetRef.current?.ownerDocument ?? document;
         trigger.current =
           activeElement instanceof HTMLElement ? activeElement : null;
       } else if (current.owner !== owner) {
-        current.onRelease();
+        current.onRelease("replaced");
       }
-      currentOwner.current = { owner, onRelease };
-      setState({ owner, title });
+      currentOwner.current = {
+        keepOnNavigation: options?.keepOnNavigation === true,
+        owner,
+        onRelease,
+      };
+      setPlacement(options?.placement ?? defaultPlacementRef.current);
+      setState({ autoFocus: options?.autoFocus !== false, owner, title });
     },
     [],
   );
@@ -106,22 +169,31 @@ export const useCreateContextPanelSlot = (): ContextPanelSlot => {
   const close = useCallback(() => {
     const current = currentOwner.current;
     if (current) {
-      current.onRelease();
+      current.onRelease("close");
       release(current.owner);
     }
   }, [release]);
 
+  const closeOnNavigation = useCallback(() => {
+    if (currentOwner.current?.keepOnNavigation !== true) {
+      close();
+    }
+  }, [close]);
+
   return useMemo(
     () => ({
+      autoFocus: state?.autoFocus ?? true,
       claim,
       close,
+      closeOnNavigation,
       owner: state?.owner,
+      placement,
       release,
       setTarget,
       target,
       title: state?.title,
     }),
-    [claim, close, release, state, target],
+    [claim, close, closeOnNavigation, placement, release, state, target],
   );
 };
 
@@ -139,13 +211,14 @@ export const ContextPanelSlotHost = ({
   panelId,
   slot,
 }: ContextPanelSlotHostProps) => (
-  <div className={className} id={id}>
+  <div className={className} data-placement={slot.placement} id={id}>
     <ContextPanel
+      autoFocus={slot.autoFocus}
       contentRef={slot.setTarget}
       expanded={slot.owner !== undefined}
       id={panelId}
       onClose={slot.close}
-      overlay
+      overlay={slot.placement === "overlay"}
       title={slot.title}
     />
   </div>

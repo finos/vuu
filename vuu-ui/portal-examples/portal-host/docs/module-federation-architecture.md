@@ -89,8 +89,8 @@ implements each configured `connectionId` in the browser with
 `createLocalVuuServer`, serving MODULE_DISCOVERY, USER_ADMIN, BASKET, and SIMUL
 respectively, and the host passes them to `AuthenticationProvider` as
 `localServers`. The table browser and viewer need no local adapter: the browser
-lists the servers derived from remote configs, and a viewer rendered with an
-explicit `vuu` override for `connectionId: "simul"` sees only the SIMUL tables.
+lists the servers derived from remote configs, and each table it opens names
+its server, so a `simul` table sees only the SIMUL tables.
 The local user-admin descriptor maps its tables to the browser-only
 `USER_ADMIN` module; module-admin uses the browser-only `MODULE_DISCOVERY`
 module.
@@ -162,3 +162,66 @@ deployed or port 5003 is not mapped to it. HTML or an SPA fallback response
 means the server is applying its history fallback to `mf-manifest.json`;
 static federation manifests and assets must be served before the fallback
 location, with only unknown application routes returning the remote HTML.
+
+## Workspaces and the table browser
+
+The example host enables named workspaces and the Panels palette:
+
+```tsx
+const { renderers, settingsCodecs } = createPortalComponentRegistries();
+
+<PortalShell
+  contextPanel={{ placement: "inline" }}
+  workspaces={{
+    componentRenderers: renderers,
+    headerActions: <AddPanelButton />,
+    settingsCodecs,
+  }}
+>
+  <PortalNav
+    renderItemChildren={(item) =>
+      item.mfScope === "vuuTableBrowser" ? (
+        <PortalNavVuuServers basePath={item.href} />
+      ) : null
+    }
+    sections="collapsible"
+  />
+  <PortalHeader />
+</PortalShell>
+```
+
+- `workspaces` adds the Workspaces nav section, `+ New workspace` and the
+  `/workspaces/:id` route. Workspaces are saved with the portal's persistence
+  service. The registries render `portal-module` and `vuu-table` items.
+- `contextPanel.placement: "inline"` shows the Panels palette beside the
+  content rather than over it.
+- `workspaces.palette: { tabs: ["tables"] }` makes the Panels palette offer
+  only Vuu tables. The palette's Tables tab is opt-in: by default it offers
+  Modules and Recent.
+- `renderItemChildren` recognises the table browser's nav item by its
+  `mfScope`, which the module's build fixes. Don't match `moduleId`: a
+  server-supplied module registry assigns its own, often numeric, ids.
+- `PortalNavVuuServers` lists, under Tables › Browse, the Vuu servers the
+  portal knows (its own, those of registered modules, or the local servers),
+  each with its status, and an **Add server** entry. Servers the user adds are
+  kept in the user's saved portal state (`servers/manual`).
+- With `workspaces`, `PortalShell` also handles **Change server** from a
+  `vuu-table` item that cannot reach its server.
+
+The table browser (`/tables/browse/<server>`) is an unsaved workspace: a grid
+of `vuu-table` items with the Panels palette pinned, offering only its Tables
+tab, that server selected. It uses the host's registries when the host enables
+workspaces, and **Save as workspace** then saves the layout as a named
+workspace. The table viewer shows one table, given as props
+(`serverId`, `module`, `table`) or by its own route,
+`/tables/view/<server>/<module>/<table>`.
+
+What the portal host must provide for these modules:
+
+- `PortalShell` with `workspaces` (for Save as workspace and Change server),
+  and `PortalNavVuuServers` for the server list in the nav.
+- Strict singletons, shared with the remotes: `react`, `react-dom`,
+  `react-router-dom`, `@vuu-ui/core`, `@vuu-ui/core/portal`,
+  `@vuu-ui/grid-layout` and `@vuu-ui/vuu-notifications`, as configured in
+  `portal-build.json`. The Browse page renders the host's workspace and
+  palette contexts, so a second copy of any of these would not see them.

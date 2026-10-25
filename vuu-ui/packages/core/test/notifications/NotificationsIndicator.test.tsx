@@ -37,6 +37,10 @@ const notification = (
   ...rest,
 });
 
+// Long enough that the ticker never hides on its own mid-test, however slow
+// the runner. The test of hiding advances fake timers instead.
+const TICKER_MS = 60_000;
+
 describe("NotificationsIndicator", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -49,7 +53,9 @@ describe("NotificationsIndicator", () => {
     return null;
   };
 
-  const render = (content = <NotificationsIndicator tickerDurationMs={50} />) =>
+  const render = (
+    content = <NotificationsIndicator tickerDurationMs={TICKER_MS} />,
+  ) =>
     act(async () =>
       root.render(
         <AuthenticationProvider mode="local" registry={{ modules }}>
@@ -73,6 +79,7 @@ describe("NotificationsIndicator", () => {
   });
 
   afterEach(async () => {
+    vi.useRealTimers();
     await act(async () => root.unmount());
     container.remove();
     vi.restoreAllMocks();
@@ -111,6 +118,7 @@ describe("NotificationsIndicator", () => {
 
   it("shows and announces a new notification, then hides the ticker", async () => {
     await render();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     await upsert(notification("2"));
     expect(ticker()?.textContent).toContain("title 2");
     expect(container.querySelector("[aria-live]")?.textContent).toBe(
@@ -118,7 +126,9 @@ describe("NotificationsIndicator", () => {
     );
     await act(async () => ticker()?.click());
     expect(presentation?.panelRequest).toEqual({ focusKey: "simul:2" });
-    await act(() => new Promise((resolve) => setTimeout(resolve, 80)));
+    await act(async () => vi.advanceTimersByTime(TICKER_MS - 1));
+    expect(ticker()).not.toBeNull();
+    await act(async () => vi.advanceTimersByTime(1));
     expect(ticker()).toBeNull();
   });
 
@@ -133,7 +143,7 @@ describe("NotificationsIndicator", () => {
 
   it("counts only unclaimed notifications with scope unclaimed", async () => {
     await render(
-      <NotificationsIndicator scope="unclaimed" tickerDurationMs={50} />,
+      <NotificationsIndicator scope="unclaimed" tickerDurationMs={TICKER_MS} />,
     );
     await upsert(notification("4"));
     expect(bell()?.getAttribute("aria-label")).toBe("Notifications");

@@ -1,8 +1,8 @@
 import { Button } from "@salt-ds/core";
 import { useContextPanel } from "@vuu-ui/core";
-import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import { MouseEventHandler, useCallback, useMemo } from "react";
+import { MouseEventHandler, useCallback } from "react";
+import { useBasketConstituentsDataSource } from "../../basket-session";
 import { ConstituentSearch } from "./ConstituentSearch";
 
 import "./ColHeaderAddSymbol.css";
@@ -11,18 +11,7 @@ const classBase = "vuuColHeaderAddSymbol";
 
 export const ColHeaderAddSymbol = () => {
   const showContextPanel = useContextPanel();
-  const { getDataSource } = useSessionDataSource();
-
-  const dataSource = useMemo(() => {
-    const ds = getDataSource("data-source-basket-constituent");
-    if (ds) {
-      return ds;
-    } else {
-      throw Error(
-        "ColHeaderAddSymbol expects Basket Constituent datasource to be available in session store",
-      );
-    }
-  }, [getDataSource]);
+  const dataSource = useBasketConstituentsDataSource();
 
   const handleClick = useCallback<MouseEventHandler>(
     (e) => {
