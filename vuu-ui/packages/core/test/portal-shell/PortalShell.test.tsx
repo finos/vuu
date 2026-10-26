@@ -138,7 +138,7 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
       const modulePath =
         remoteModules
           .find((module) => module.mfComponent === mfComponent)
-          ?.path.replace(/\/\*$/, "") ?? "/";
+          ?.path?.replace(/\/\*$/, "") ?? "/";
       return (
         <>
           <output data-module={mfComponent} data-url={mfUrl}>
@@ -294,6 +294,36 @@ describe("Portal and window shells", () => {
     expect(
       container.querySelectorAll('[data-provider="workspaces"]'),
     ).toHaveLength(count);
+  });
+
+  it("does not route palette-only modules, which have no location or route", async () => {
+    const paletteOnly = {
+      clientIdentifier: "vuu-panel",
+      description: "A panel",
+      id: 3,
+      accessRole: "panel-access",
+      mfComponent: "Panel",
+      mfScope: "panel",
+      mfUrl: "http://localhost:5009",
+      name: "panel",
+      title: "Panel",
+      version: 1,
+      workspace: { paletteGroup: "Panels" },
+    } satisfies RemoteModuleDescriptor;
+    window.history.replaceState(null, "", "/orders");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={[...modules, paletteOnly]}
+          title="Portal"
+        />,
+      );
+    });
+    expect(
+      [...container.querySelectorAll("output")].map(
+        (element) => element.dataset.module,
+      ),
+    ).toEqual(["Orders"]);
   });
 
   it("renders PortalLandingPage at the root path and navigates to a module", async () => {

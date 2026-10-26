@@ -8,6 +8,8 @@ export {
 } from "./module-instance/PortalModuleInstanceContext";
 export {
   isNestedModule,
+  isPaletteOnlyModule,
+  isRoutedModule,
   type PortalModuleRegistry,
   type RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";

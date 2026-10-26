@@ -61,6 +61,12 @@ omits it, and another module renders it with `RemoteModule`. The table viewer
 nested in the table browser is an example. `isNestedModule(descriptor)` tests
 for this.
 
+A top-level descriptor (`parentModuleId` 0) with no `navLocation` and no
+`path`, carrying only `workspace` metadata, is a *palette-only* module: it is
+listed only in the Panels palette and rendered by the `portal-module`
+renderer. The navigation and the shell's routes skip it. `isRoutedModule` and
+`isPaletteOnlyModule` test for these cases.
+
 ### Layout
 
 The shell is a grid with a nav column, then header, banners and content rows.
@@ -269,6 +275,9 @@ provider is mounted.
 
 **Kinds.** A *system* workspace ships with the portal. The first edit saves a
 personal copy with the same id, and the shipped definition is never changed.
+View state is saved but is not an edit: selecting a tab in a stack does not
+create a copy or mark it edited. Creating the copy keeps panels mounted, so
+scrolled tables keep their position.
 A *named* workspace belongs to the user. `WorkspaceSummary` has `kind`,
 `isPersonalCopy` and `isModified` for each.
 

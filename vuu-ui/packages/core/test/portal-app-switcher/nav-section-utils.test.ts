@@ -170,6 +170,24 @@ describe("buildNavSections", () => {
     ).toEqual([["Trading", ["Orders"]]]);
   });
 
+  it("skips palette-only modules, which have no location or route", () => {
+    const {
+      navLocation: _navLocation,
+      path: _path,
+      ...paletteOnly
+    } = remoteModule("", "", {
+      id: "palette-only",
+      workspace: { paletteGroup: "Trading" },
+    });
+    expect(
+      outline([
+        remoteModule("/Trading/Orders", "/orders"),
+        paletteOnly,
+        remoteModule("/Trading/Fills", "", { id: "no-route" }),
+      ]),
+    ).toEqual([["Trading", ["Orders"]]]);
+  });
+
   it("returns no sections for no modules", () => {
     expect(buildNavSections([])).toEqual([]);
   });

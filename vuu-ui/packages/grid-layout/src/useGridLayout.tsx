@@ -163,6 +163,32 @@ const assertNeverGridLayoutAction = (action: never): never => {
  * Create the list of GridLayoutItem elements to be rendered.
  * The GridLayoutItem elements may be explicitly coded in JSX.
  */
+/**
+ * Keep children that were already rendered in their existing order and append
+ * new ones. Grid placement comes from CSS grid-area, so DOM order carries no
+ * meaning, but if React reorders sibling nodes it re-inserts them, which resets
+ * the scroll position of any scrollable content without a scroll event.
+ */
+export const preserveChildOrder = (
+  previous: GridLayoutItemElements,
+  next: GridLayoutItemElements,
+): GridLayoutItemElements => {
+  const previousIndex = new Map(
+    previous.map((child, index) => [child.props.id, index]),
+  );
+  return next
+    .map((child, index) => ({ child, index }))
+    .sort((a, b) => {
+      const pa = previousIndex.get(a.child.props.id);
+      const pb = previousIndex.get(b.child.props.id);
+      if (pa !== undefined && pb !== undefined) return pa - pb;
+      if (pa !== undefined) return -1;
+      if (pb !== undefined) return 1;
+      return a.index - b.index;
+    })
+    .map(({ child }) => child);
+};
+
 export const useGridLayout = ({
   children: childrenProp,
   id,
@@ -375,10 +401,15 @@ export const useGridLayout = ({
       ),
     [childElements],
   );
-  const renderedChildren = snapshot.items.flatMap(({ id: itemId }) => {
-    const element = contentRegistryRef.current.get(itemId);
-    return element ? [element] : [];
-  });
+  const renderedChildrenRef = useRef<GridLayoutItemElements>([]);
+  const renderedChildren = preserveChildOrder(
+    renderedChildrenRef.current,
+    snapshot.items.flatMap(({ id: itemId }) => {
+      const element = contentRegistryRef.current.get(itemId);
+      return element ? [element] : [];
+    }),
+  );
+  renderedChildrenRef.current = renderedChildren;
   const nonContentGridItems = useMemo<NonContentGridItems>(() => {
     const placeholderPreview =
       dragCoordinator.state.phase === "previewing" &&

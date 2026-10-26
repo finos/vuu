@@ -1,8 +1,5 @@
-import {
-  isNestedModule,
-  type RemoteModuleDescriptor,
-} from "../RemoteModuleDescriptor";
-import { toNavigationPath } from "./nav-item-utils";
+import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import { isNavigableModule, toNavigationPath } from "./nav-item-utils";
 
 export interface PortalNavItem {
   href: string;
@@ -56,7 +53,8 @@ const lowestNavOrder = ({ items }: PortalNavSection) =>
 /**
  * Groups modules into navigation sections by the first `navLocation` segment.
  *
- * - Nested modules (empty or `/` `navLocation`) are excluded.
+ * - Nested modules (empty or `/` `navLocation`) and palette-only modules
+ *   (no `path`) are excluded.
  * - An item's title is the remaining segments joined with `": "`. A
  *   single-segment location (`/Reports`) gives an item titled with that
  *   segment, in the section of the same name.
@@ -70,7 +68,7 @@ export const buildNavSections = (
   const sections = new Map<string, PortalNavSection>();
 
   for (const module of registeredModules) {
-    if (isNestedModule(module)) {
+    if (!isNavigableModule(module)) {
       continue;
     }
     const {

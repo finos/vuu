@@ -67,6 +67,26 @@ describe("getPaletteModules", () => {
     });
   });
 
+  it("includes palette-only modules, which have no location or route", () => {
+    const {
+      navLocation: _navLocation,
+      path: _path,
+      ...paletteOnly
+    } = module(5, { workspace: { paletteGroup: "Panels" } });
+    const [group] = getPaletteModules([paletteOnly]);
+    expect(group).toMatchObject({
+      modules: [
+        {
+          label: "Module 5",
+          template: {
+            component: { settings: { moduleId: "5" }, type: "portal-module" },
+          },
+        },
+      ],
+      paletteGroup: "Panels",
+    });
+  });
+
   it("returns no groups when no module has a workspace descriptor", () => {
     expect(getPaletteModules([module(1), module(2)])).toEqual([]);
   });
