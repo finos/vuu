@@ -130,6 +130,13 @@ export const createShowcaseRsbuilds = async (
   );
   const host = await createRsbuild({
     config: {
+      dev: {
+        // The host is an ES module build, so it has no HMR. With lazy
+        // compilation, each lazily built dynamic import (e.g. the Theme
+        // Browser's theme models) triggers a full page reload, which
+        // re-requests the import, which reloads again, forever.
+        lazyCompilation: false,
+      },
       html: {
         template: path.join(uiDirectory, "tools/vuu-showcase/public/index.html"),
       },
