@@ -786,7 +786,7 @@ The following portal examples demonstrate the complete pattern:
 
 - `portal-examples/portal-host`: remote and local host entries;
 - `portal-examples/portal-host/src/local-module-registry.json`: checked-in local
-  descriptors (nav icons in `portal-host/public/icons`);
+  descriptors;
 - `portal-examples/basket-trading`: production and local basket exposures;
 - `portal-examples/user-admin`: production and local user-admin exposures;
 - `portal-examples/feature-simple-div`: saved state with `usePersistedState`
