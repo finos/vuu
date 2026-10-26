@@ -173,11 +173,14 @@ export const normalizeVuuAuthTarget = (
     );
   }
 
-  return {
-    connectionId: connection.connectionId,
-    restUrl,
-    websocketUrl,
-  };
+  return connection.auth === undefined
+    ? { connectionId: connection.connectionId, restUrl, websocketUrl }
+    : {
+        auth: connection.auth,
+        connectionId: connection.connectionId,
+        restUrl,
+        websocketUrl,
+      };
 };
 
 const unusableServerReason = (

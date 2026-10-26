@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AuthHandler } from "../../src/auth/AuthHandler";
 import {
+  isSessionEnded,
+  SESSION_EVICTED,
   VuuConnectionRegistry,
   type VuuConnectionClient,
 } from "../../src/connection-management/VuuConnectionRegistry";
@@ -95,7 +97,7 @@ class TestConnectionClient implements VuuConnectionClient {
   connectCount = 0;
   destroyCount = 0;
   connected = false;
-  listener?: (status: "disconnected") => void;
+  listener?: (status: "disconnected" | "session-evicted") => void;
 
   async connectWithLoginResponseTo(
     connectionId: string,
@@ -126,7 +128,7 @@ class TestConnectionClient implements VuuConnectionClient {
 
   onConnectionStatus(
     _connectionId: string,
-    listener: (status: "disconnected") => void,
+    listener: (status: "disconnected" | "session-evicted") => void,
   ) {
     this.listener = listener;
     return () => {
@@ -420,6 +422,41 @@ describe("VuuConnectionRegistry", () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
     expect(connect).toHaveBeenCalledTimes(2);
     expect(errorListener).toHaveBeenCalledOnce();
+    registry.release(target.connectionId);
+  });
+
+  it("does not reconnect a session the server evicted for a newer login", async () => {
+    const connectionClient = new TestConnectionClient();
+    const connect = vi.spyOn(connectionClient, "connectWithLoginResponseTo");
+    const exchangeToken = vi.fn().mockResolvedValue(session);
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+      retryIntervals: [0, 0, 0],
+    });
+    await registry.acquire(authHandler, target);
+    const errorListener = vi.fn();
+    registry.subscribe(target.connectionId, vi.fn(), errorListener);
+
+    // Reconnecting would evict the newer session, which would reconnect
+    // and evict this one, and so on.
+    connectionClient.connected = false;
+    connectionClient.listener?.("session-evicted");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(connect).toHaveBeenCalledTimes(1);
+    expect(exchangeToken).toHaveBeenCalledTimes(1);
+    expect(registry.getState(target.connectionId)).toBe("failed");
+    expect(errorListener).toHaveBeenCalledOnce();
+    expect(errorListener).toHaveBeenCalledWith(
+      expect.objectContaining({ message: SESSION_EVICTED }),
+    );
+    expect(isSessionEnded(errorListener.mock.calls[0][0])).toBe(true);
+
+    // A later drop of the old socket doesn't start reconnecting either.
+    connectionClient.listener?.("disconnected");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(connect).toHaveBeenCalledTimes(1);
     registry.release(target.connectionId);
   });
 

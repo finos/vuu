@@ -1,8 +1,11 @@
+import type { VuuServerAuthMode } from "@vuu-ui/vuu-data-types";
 import type { User } from "./AuthHandler";
 import type { PortalModuleRegistry } from "../RemoteModuleDescriptor";
 import { parseVuuUserFromToken } from "./VuuUser";
 
 export interface VuuAuthTarget {
+  /** Default `token-exchange`. */
+  auth?: VuuServerAuthMode;
   connectionId: string;
   restUrl: string;
   websocketUrl: string;
@@ -18,6 +21,7 @@ export interface VuuSession {
 export type VuuTokenExchangeFailure =
   | "authentication-rejected"
   | "authorization-denied"
+  | "credentials-required"
   | "service-unavailable"
   | "exchange-failed";
 
@@ -53,10 +57,11 @@ export class VuuTokenExchangeError extends Error {
   constructor(
     message: string,
     readonly status?: number,
+    failure: VuuTokenExchangeFailure = getFailure(status),
   ) {
     super(message);
     this.name = "VuuTokenExchangeError";
-    this.failure = getFailure(status);
+    this.failure = failure;
   }
 }
 

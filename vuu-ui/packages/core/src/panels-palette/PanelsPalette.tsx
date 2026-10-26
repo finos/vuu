@@ -5,17 +5,16 @@ import {
   ChevronRightIcon,
   CloseIcon,
   DashboardIcon,
-  DatabaseIcon,
   DragRowIcon,
   GridIcon,
   PinIcon,
   PinSolidIcon,
+  RefreshIcon,
   SearchIcon,
 } from "@salt-ds/icons";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
-  type ChangeEvent,
   type DragEvent,
   type KeyboardEvent,
   useCallback,
@@ -30,6 +29,16 @@ import { useContextPanelSlot } from "../context-panel/ContextPanelSlot";
 import { usePersistedState } from "../persistence/PersistenceContext";
 import { usePaletteModules } from "../portal-components/palette-modules";
 import {
+  getVuuServerCredentials,
+  setVuuServerCredentials,
+  type VuuServerCredentials,
+} from "../auth/VuuServerLogin";
+import {
+  type ManualVuuServer,
+  useManualVuuServers,
+} from "../portal-servers/ManualVuuServers";
+import { useRetryConnection } from "../server-monitor/VuuServerMonitorProvider";
+import {
   PortalDragSourceScope,
   usePortalDragSource,
 } from "../portal-components/usePortalDragSource";
@@ -42,6 +51,7 @@ import {
 } from "./panel-items";
 import {
   PANELS_PALETTE_TITLE,
+  TABLES_PALETTE_TITLE,
   usePanelsPaletteState,
 } from "./PanelsPaletteState";
 import {
@@ -50,6 +60,12 @@ import {
   usePanelsServerOptions,
 } from "./ServerTablesLoader";
 import { type OpenPanelResult, useOpenPanel } from "./useOpenPanel";
+import {
+  AddServerDialog,
+  type PaletteServer,
+  PaletteServers,
+  ServerSignInDialog,
+} from "./PaletteServers";
 import { useRecentPanels } from "./useRecentPanels";
 
 import panelsPaletteCss from "./PanelsPalette.css";
@@ -58,6 +74,9 @@ const classBase = "vuuPanelsPalette";
 
 /** Portal saved state key (in `vuu.portal`) for the Tables tab server. */
 export const PANELS_PALETTE_SERVER_KEY = "workspace/paletteServer";
+/** Portal saved state key for the collapsed servers list of the palette. */
+export const PANELS_PALETTE_SERVERS_COLLAPSED_KEY =
+  "workspace/paletteServersCollapsed";
 
 export type PanelsPaletteTab = "modules" | "tables" | "recent";
 
@@ -92,11 +111,13 @@ const RECENT_GROUP = "Recently added";
 export interface PanelsPaletteProps {
   className?: string;
   /**
-   * The server initially selected on the Tables tab, instead of the user's
-   * saved choice. Selected even if it is not one of the known servers, so an
+   * The server the Tables tab lists initially, instead of the user's saved
+   * choice. Used even if it is not one of the known servers, so an
    * unreachable server shows its error.
    */
   defaultServerId?: string;
+  /** Called with the server whose tables the Tables tab lists. */
+  onServerChange?: (serverId: string | undefined) => void;
   /**
    * The tab shown initially. Default: the first of `tabs`. Ignored if it is
    * not one of `tabs`.
@@ -179,7 +200,8 @@ const PanelRow = ({
       <span aria-hidden className={`${classBase}-grip`}>
         <DragRowIcon />
       </span>
-      <PanelIcon item={item} />
+      {/* Tables all share one icon, which adds nothing: the label says it. */}
+      {item.kind === "table" ? null : <PanelIcon item={item} />}
       <span className={`${classBase}-text`}>
         <span className={`${classBase}-label`}>{item.label}</span>
         {item.kind === "module" && item.subtitle ? (
@@ -198,6 +220,43 @@ const PanelRow = ({
         type="button"
       >
         <AddIcon aria-hidden />
+      </button>
+    </div>
+  );
+};
+
+const SKELETON_WIDTHS = [64, 48, 72, 56, 40];
+
+const TablesLoading = ({ serverId }: { serverId: string }) => (
+  <div className={`${classBase}-loading`} role="status">
+    <span className={`${classBase}-loadingTitle`}>
+      <span aria-hidden className={`${classBase}-spinner`} />
+      Loading tables from {serverId}…
+    </span>
+    {SKELETON_WIDTHS.map((width) => (
+      <span aria-hidden className={`${classBase}-skeleton`} key={width}>
+        <span style={{ width: `${width}%` }} />
+      </span>
+    ))}
+  </div>
+);
+
+const TablesError = ({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) => {
+  return (
+    <div className={`${classBase}-error`}>
+      <div className={`${classBase}-errorMessage`} role="alert">
+        <strong>Can’t list tables</strong>
+        <span>{message}</span>
+      </div>
+      <button className={`${classBase}-retry`} onClick={onRetry} type="button">
+        <RefreshIcon aria-hidden />
+        Retry
       </button>
     </div>
   );
@@ -243,6 +302,7 @@ export const PanelsPalette = ({
   className,
   defaultServerId,
   defaultTab,
+  onServerChange,
   tabs: tabsProp,
 }: PanelsPaletteProps) => {
   useComponentCssInjection({
@@ -257,7 +317,23 @@ export const PanelsPalette = ({
   const { addPanel, openPanel } = useOpenPanel();
   const { load, save } = usePersistedState();
   const paletteModules = usePaletteModules();
-  const servers = usePanelsServerOptions();
+  const serverOptions = usePanelsServerOptions();
+  const {
+    addServer,
+    removeServer,
+    servers: manualServers,
+  } = useManualVuuServers();
+  const retryConnection = useRetryConnection();
+  const servers = useMemo<PaletteServer[]>(() => {
+    const manualIds = new Set(
+      manualServers.map(({ connectionId }) => connectionId),
+    );
+    return serverOptions.map(({ connectionId, websocketUrl }) => ({
+      connectionId,
+      manual: manualIds.has(connectionId),
+      websocketUrl,
+    }));
+  }, [manualServers, serverOptions]);
   const [recent, addRecentPanel] = useRecentPanels();
   // Keyed on the tab ids, so an inline `tabs` array doesn't recompute them.
   const tabsKey = tabsProp?.join() ?? "";
@@ -271,33 +347,157 @@ export const PanelsPalette = ({
   const tab = tabs.some(({ id }) => id === selectedTab)
     ? selectedTab
     : tabs[0].id;
-  const tablesTab = tabs.some(({ id }) => id === "tables");
   const [filter, setFilter] = useState("");
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
   const [activeKey, setActiveKey] = useState<string>();
-  const [savedServerId, setSavedServerId] = useState(
+  const [selectedServerId, setSelectedServerId] = useState(
     () => defaultServerId ?? load<string>(PANELS_PALETTE_SERVER_KEY),
   );
-  const [tablesState, setTablesState] = useState<ServerTablesState>(LOADING);
+  const [serversCollapsed, setServersCollapsed] = useState(
+    () => load<boolean>(PANELS_PALETTE_SERVERS_COLLAPSED_KEY) === true,
+  );
+  const [adding, setAdding] = useState(false);
+  const [signIn, setSignIn] = useState<{ error?: string; serverId: string }>();
+  // Servers whose sign-in the user cancelled, so it isn't asked again.
+  const [signInDeclined, setSignInDeclined] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const [attempt, setAttempt] = useState(0);
+  // Tagged with its server, so a newly chosen server shows as loading.
+  const [loadedTables, setLoadedTables] = useState<{
+    serverId: string;
+    state: ServerTablesState;
+  }>();
   const listRef = useRef<HTMLDivElement>(null);
   const idBase = useId();
 
   const serverId =
-    savedServerId !== undefined &&
-    (savedServerId === defaultServerId ||
-      servers.some(({ connectionId }) => connectionId === savedServerId))
-      ? savedServerId
+    selectedServerId !== undefined &&
+    (selectedServerId === defaultServerId ||
+      servers.some(({ connectionId }) => connectionId === selectedServerId))
+      ? selectedServerId
       : servers[0]?.connectionId;
-  const serverOptions = useMemo(
-    () =>
-      serverId === undefined ||
-      servers.some(({ connectionId }) => connectionId === serverId)
-        ? servers
-        : [...servers, { connectionId: serverId }],
-    [serverId, servers],
+  const tablesState =
+    loadedTables !== undefined && loadedTables.serverId === serverId
+      ? loadedTables.state
+      : LOADING;
+  const handleTablesChange = useCallback(
+    (state: ServerTablesState) => {
+      if (serverId !== undefined) {
+        setLoadedTables({ serverId, state });
+      }
+    },
+    [serverId],
   );
+
+  useEffect(() => {
+    onServerChange?.(serverId);
+  }, [onServerChange, serverId]);
+
+  const manualServer = (id: string | undefined) =>
+    manualServers.find(({ connectionId }) => connectionId === id);
+  const needsVuuLogin = (id: string | undefined) =>
+    manualServer(id)?.auth === "vuu-login";
+
+  const selectServer = useCallback(
+    (nextServerId: string) => {
+      setSelectedServerId(nextServerId);
+      setActiveKey(undefined);
+      save(nextServerId, PANELS_PALETTE_SERVER_KEY, {
+        group: "Workspaces",
+        label: "Tables panel server",
+      });
+    },
+    [save],
+  );
+
+  const toggleServers = useCallback(() => {
+    setServersCollapsed((value) => {
+      save(!value, PANELS_PALETTE_SERVERS_COLLAPSED_KEY, {
+        group: "Workspaces",
+        label: "Tables panel servers collapsed",
+      });
+      return !value;
+    });
+  }, [save]);
+
+  const handleRemoveServer = (connectionId: string) => {
+    removeServer(connectionId);
+    if (connectionId === serverId) {
+      const next = servers.find(
+        (server) => server.connectionId !== connectionId,
+      );
+      if (next) {
+        selectServer(next.connectionId);
+      }
+    }
+  };
+
+  const handleAddServer = (
+    server: ManualVuuServer,
+    credentials?: VuuServerCredentials,
+  ) => {
+    addServer(server, credentials);
+    setAdding(false);
+    selectServer(server.connectionId);
+  };
+
+  const retryTables = useCallback(() => {
+    if (serverId !== undefined) {
+      retryConnection(serverId);
+      setAttempt((value) => value + 1);
+    }
+  }, [retryConnection, serverId]);
+
+  // A Vuu login server asks for a username and password: when it has none,
+  // or when listing its tables fails, e.g. the password was rejected.
+  const vuuLogin = needsVuuLogin(serverId);
+  const hasCredentials =
+    serverId !== undefined && getVuuServerCredentials(serverId) !== undefined;
+  const tablesError =
+    tablesState.status === "error" ? tablesState.message : undefined;
+  useEffect(() => {
+    if (
+      tab !== "tables" ||
+      serverId === undefined ||
+      !vuuLogin ||
+      signInDeclined.has(serverId)
+    ) {
+      return;
+    }
+    if (!hasCredentials) {
+      setSignIn((current) =>
+        current?.serverId === serverId ? current : { serverId },
+      );
+    } else if (tablesError) {
+      setSignIn({ error: tablesError, serverId });
+    }
+  }, [hasCredentials, serverId, signInDeclined, tab, tablesError, vuuLogin]);
+
+  const handleSignIn = (credentials: VuuServerCredentials) => {
+    if (!signIn) {
+      return;
+    }
+    setVuuServerCredentials(signIn.serverId, credentials);
+    setSignIn(undefined);
+    retryTables();
+  };
+
+  const cancelSignIn = () => {
+    if (signIn) {
+      const declined = signIn.serverId;
+      setSignInDeclined((current) => new Set(current).add(declined));
+    }
+    setSignIn(undefined);
+  };
+
+  const title = tab === "tables" ? TABLES_PALETTE_TITLE : PANELS_PALETTE_TITLE;
+  const setPaletteTitle = paletteState?.setTitle;
+  useEffect(() => {
+    setPaletteTitle?.(title);
+  }, [setPaletteTitle, title]);
 
   const groups = useMemo<PanelItemGroup[]>(() => {
     switch (tab) {
@@ -315,11 +515,13 @@ export const PanelsPalette = ({
     }
   }, [paletteModules, recent, serverId, tab, tablesState]);
 
+  // The Tables tab has no search: its list is short, under the servers.
+  const activeFilter = tab === "tables" ? "" : filter;
   const filteredGroups = useMemo(
-    () => filterPanelItemGroups(groups, filter),
-    [filter, groups],
+    () => filterPanelItemGroups(groups, activeFilter),
+    [activeFilter, groups],
   );
-  const filtering = filter.trim() !== "";
+  const filtering = activeFilter.trim() !== "";
 
   const visibleItems = useMemo(
     () =>
@@ -329,8 +531,8 @@ export const PanelsPalette = ({
     [collapsed, filteredGroups, filtering],
   );
 
-  const activeItem =
-    visibleItems.find(({ key }) => key === activeKey) ?? visibleItems[0];
+  // No row is active until the user moves to one: nothing looks selected.
+  const activeItem = visibleItems.find(({ key }) => key === activeKey);
   const rowId = (item: PanelItem) => `${idBase}-${item.key}`;
 
   const activeRowId = activeItem ? rowId(activeItem) : undefined;
@@ -409,19 +611,6 @@ export const PanelsPalette = ({
     });
   }, []);
 
-  const handleServerChange = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const nextServerId = event.target.value;
-      setSavedServerId(nextServerId);
-      setTablesState(LOADING);
-      save(nextServerId, PANELS_PALETTE_SERVER_KEY, {
-        group: "Workspaces",
-        label: "Panels palette server",
-      });
-    },
-    [save],
-  );
-
   const moveActive = useCallback(
     (delta: number | "first" | "last") => {
       if (visibleItems.length === 0) {
@@ -460,16 +649,23 @@ export const PanelsPalette = ({
             moveActive("last");
           }
           return;
-        case "Enter":
-          if (activeItem) {
+        case "Enter": {
+          // From the search box, Enter takes the first match.
+          const item =
+            activeItem ??
+            (event.currentTarget === listRef.current
+              ? undefined
+              : visibleItems[0]);
+          if (item) {
             event.preventDefault();
             if (event.shiftKey) {
-              handleAdd(activeItem);
+              handleAdd(item);
             } else {
-              handleOpen(activeItem);
+              handleOpen(item);
             }
           }
           return;
+        }
         case "+":
           if (activeItem && event.currentTarget === listRef.current) {
             event.preventDefault();
@@ -492,6 +688,7 @@ export const PanelsPalette = ({
       moveActive,
       paletteState,
       inContextPanel,
+      visibleItems,
     ],
   );
 
@@ -512,33 +709,38 @@ export const PanelsPalette = ({
       ? "Panels you add appear here."
       : tab === "tables" && !serverId
         ? "No Vuu servers available."
-        : tab === "tables" && tablesState.status === "loading"
-          ? "Loading tables..."
-          : tab === "tables" && tablesState.status === "error"
-            ? tablesState.message
-            : filtering
-              ? `No panels match "${filter.trim()}".`
-              : "No panels available.";
+        : filtering
+          ? `No ${tab === "tables" ? "tables" : "panels"} match “${filter.trim()}”`
+          : tab === "tables"
+            ? "No tables available."
+            : "No panels available.";
 
   const listId = `${idBase}-list`;
   const pinned = paletteState?.pinned ?? false;
-  const pinButton = paletteState ? (
-    <button
-      aria-label={pinned ? "Unpin panels" : "Pin panels open"}
-      aria-pressed={pinned}
-      className={`${classBase}-iconButton`}
-      onClick={() => paletteState.setPinned(!pinned)}
-      title={pinned ? "Unpin" : "Pin open"}
-      type="button"
-    >
-      {pinned ? <PinSolidIcon aria-hidden /> : <PinIcon aria-hidden />}
-    </button>
-  ) : null;
+  // The Tables tab has no pin: a page that lists tables pins the palette
+  // itself (`defaultPinned`).
+  const pinButton =
+    paletteState && tab !== "tables" ? (
+      <button
+        aria-label={
+          pinned
+            ? `Unpin ${title.toLowerCase()}`
+            : `Pin ${title.toLowerCase()} open`
+        }
+        aria-pressed={pinned}
+        className={`${classBase}-iconButton`}
+        onClick={() => paletteState.setPinned(!pinned)}
+        title={pinned ? "Unpin" : "Pin open"}
+        type="button"
+      >
+        {pinned ? <PinSolidIcon aria-hidden /> : <PinIcon aria-hidden />}
+      </button>
+    ) : null;
 
   const palette = (
     <PortalDragSourceScope>
       <aside
-        aria-label={PANELS_PALETTE_TITLE}
+        aria-label={title}
         className={cx(classBase, className, {
           [`${classBase}-inContextPanel`]: inContextPanel,
         })}
@@ -546,12 +748,12 @@ export const PanelsPalette = ({
         {inContextPanel ? null : (
           <div className={`${classBase}-title`}>
             <AddIcon aria-hidden />
-            <h2>{PANELS_PALETTE_TITLE}</h2>
+            <h2>{title}</h2>
             {paletteState ? (
               <>
                 {pinButton}
                 <button
-                  aria-label="Close panels"
+                  aria-label={`Close ${title.toLowerCase()}`}
                   className={`${classBase}-iconButton`}
                   onClick={() => paletteState.setOpen(false)}
                   title="Close"
@@ -563,22 +765,22 @@ export const PanelsPalette = ({
             ) : null}
           </div>
         )}
-        <div className={`${classBase}-search`}>
-          <SearchIcon aria-hidden />
-          <input
-            aria-activedescendant={activeRowId}
-            aria-controls={listId}
-            aria-label={
-              tablesTab ? "Search panels and tables" : "Search panels"
-            }
-            onChange={(event) => setFilter(event.target.value)}
-            onKeyDown={handleListKeyDown}
-            placeholder={tablesTab ? "Search panels & tables" : "Search panels"}
-            type="search"
-            value={filter}
-          />
-          {inContextPanel ? pinButton : null}
-        </div>
+        {tab === "tables" ? null : (
+          <div className={`${classBase}-search`}>
+            <SearchIcon aria-hidden />
+            <input
+              aria-activedescendant={activeRowId}
+              aria-controls={listId}
+              aria-label="Search panels"
+              onChange={(event) => setFilter(event.target.value)}
+              onKeyDown={handleListKeyDown}
+              placeholder="Search panels"
+              type="search"
+              value={filter}
+            />
+            {inContextPanel ? pinButton : null}
+          </div>
+        )}
         {tabs.length > 1 ? (
           <div
             aria-label="Panel sources"
@@ -603,28 +805,21 @@ export const PanelsPalette = ({
             ))}
           </div>
         ) : null}
-        {tab === "tables" && serverOptions.length > 0 ? (
-          <label className={`${classBase}-server`}>
-            <span>Server</span>
-            <span className={`${classBase}-serverSelect`}>
-              <DatabaseIcon aria-hidden />
-              <select onChange={handleServerChange} value={serverId}>
-                {serverOptions.map(({ connectionId, websocketUrl }) => (
-                  <option key={connectionId} value={connectionId}>
-                    {websocketUrl
-                      ? `${connectionId} · ${websocketUrl}`
-                      : connectionId}
-                  </option>
-                ))}
-              </select>
-              <ChevronDownIcon aria-hidden />
-            </span>
-          </label>
+        {tab === "tables" ? (
+          <PaletteServers
+            collapsed={serversCollapsed}
+            onAdd={() => setAdding(true)}
+            onRemove={handleRemoveServer}
+            onSelect={selectServer}
+            onToggle={toggleServers}
+            selectedId={serverId}
+            servers={servers}
+          />
         ) : null}
         {tab === "tables" && serverId ? (
           <ServerTablesLoader
-            key={serverId}
-            onChange={setTablesState}
+            key={`${serverId}#${attempt}`}
+            onChange={handleTablesChange}
             serverId={serverId}
           />
         ) : null}
@@ -638,9 +833,19 @@ export const PanelsPalette = ({
           role="listbox"
           tabIndex={0}
         >
-          {filteredGroups.length === 0 ? (
+          {tab === "tables" && serverId && tablesState.status === "loading" ? (
+            <TablesLoading serverId={serverId} />
+          ) : tab === "tables" && serverId && tablesState.status === "error" ? (
+            <TablesError message={tablesState.message} onRetry={retryTables} />
+          ) : filteredGroups.length === 0 ? (
             <div className={`${classBase}-empty`} role="status">
               {emptyMessage}
+              {tab === "tables" && filtering ? (
+                <span className={`${classBase}-emptyHint`}>
+                  Tables from other servers are listed when you choose that
+                  server under Tables › Browse.
+                </span>
+              ) : null}
             </div>
           ) : (
             filteredGroups.map(({ items, label }) => {
@@ -664,7 +869,10 @@ export const PanelsPalette = ({
                     ) : (
                       <ChevronRightIcon aria-hidden />
                     )}
-                    {label}
+                    <span className={`${classBase}-groupLabel`}>{label}</span>
+                    <span className={`${classBase}-groupCount`}>
+                      {items.length}
+                    </span>
                   </button>
                   {expanded
                     ? items.map((item) => (
@@ -686,8 +894,42 @@ export const PanelsPalette = ({
           )}
         </div>
         <div className={`${classBase}-footer`}>
-          Drag onto the workspace, or press + to add
+          <span>
+            <b>Click</b> opens
+          </span>
+          <span aria-hidden>·</span>
+          <span>
+            <b>Drag</b> places
+          </span>
+          <span aria-hidden>·</span>
+          <span>
+            <b>+</b> adds beside
+          </span>
         </div>
+        <AddServerDialog
+          existingIds={new Set(servers.map(({ connectionId }) => connectionId))}
+          onAdd={handleAddServer}
+          onClose={() => setAdding(false)}
+          open={adding}
+        />
+        <ServerSignInDialog
+          error={signIn?.error}
+          onCancel={cancelSignIn}
+          onSignIn={handleSignIn}
+          server={
+            signIn
+              ? (servers.find(
+                  ({ connectionId }) => connectionId === signIn.serverId,
+                ) ?? { connectionId: signIn.serverId })
+              : undefined
+          }
+          username={
+            signIn
+              ? (getVuuServerCredentials(signIn.serverId)?.username ??
+                manualServer(signIn.serverId)?.username)
+              : undefined
+          }
+        />
       </aside>
     </PortalDragSourceScope>
   );

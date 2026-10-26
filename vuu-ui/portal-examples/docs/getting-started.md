@@ -603,6 +603,39 @@ Use unique ports and keep these values aligned:
 - local registry `mfUrl`; and
 - nginx/development-server mapping.
 
+### Choose the portal Vuu server ports
+
+The authenticated build connects portal-host and module-admin to the portal
+Vuu server at `wss://localhost:8091/websocket-portal`, with REST on
+`https://localhost:8443`. To use other ports without rebuilding, run
+`portal:launch`:
+
+```sh
+npm run portal:launch -- --ws-port 9091 --https-port 9443
+```
+
+It sets the URLs in `dist_portal/portal-host/config.json` and
+`dist_portal/module-admin/config.json`. Whatever serves `dist_portal`, such
+as nginx, picks them up on the next page load. Start the portal Vuu server on
+the same ports. `--ws-path` and `--hostname` change the rest of the URL. Only
+the parts given change. Each option can also be set with an env var
+(`VUU_WEBSOCKET_PORT`, `VUU_HTTPS_PORT`, `VUU_WEBSOCKET_PATH`,
+`VUU_HOSTNAME`).
+
+The options are saved in `portal-examples/.portal-urls.json` (gitignored),
+merged with those saved before, and a run with no options applies the saved
+ones. The portal builds (`npm run build:mf`, and the portal-host and
+module-admin builds) run it afterwards, so a rebuild keeps the chosen ports.
+`npm run portal:launch -- --reset` forgets them; the next build then leaves
+the defaults.
+
+`portal:serve` runs the same step before it starts serving, reading the env
+vars:
+
+```sh
+VUU_WEBSOCKET_PORT=9091 VUU_HTTPS_PORT=9443 npm run portal:serve
+```
+
 ## 7. Migrate existing standalone SPAs
 
 Migrate incrementally. A remote SPA can continue to run standalone while it is

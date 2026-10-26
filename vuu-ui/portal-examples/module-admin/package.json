@@ -5,6 +5,7 @@
   "scripts": {
     "prebuild": "npm run build --workspace @vuu-ui/portal-build",
     "build": "portal-build --config ./portal-build.json",
+    "postbuild": "node ../scripts/set-portal-urls.ts",
     "dev": "rsbuild dev",
     "test": "vitest run --root ../.. portal-examples/module-admin/test",
     "typecheck": "tsc --noEmit -p tsconfig.json",
