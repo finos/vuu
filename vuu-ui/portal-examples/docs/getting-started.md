@@ -79,6 +79,7 @@ portal/
 │       ├── index.tsx
 │       ├── local-bootstrap.tsx
 │       ├── local-index.tsx
+│       ├── local-module-registry.json
 │       └── local-module-registry.ts
 ├── orders/
 │   ├── package.json
@@ -582,10 +583,11 @@ configure this example, or pass another config to launch a different portal.
 The selected output directories must contain the built `index.html` and
 `serve.json`. After starting the default setup, open `http://localhost:5001`.
 
-Each artifact's `public/serve.json` is copied into its `dist_portal` folder
-during the build. It configures SPA fallback for root and nested routes; the
-remote artifacts also set a development CORS header so the host can load their
-federation manifests and chunks. These settings only affect the local Vercel
+Each remote's build writes a default `serve.json` into its `dist_portal`
+folder. It configures SPA fallback for root and nested routes and sets a
+development CORS header so the host can load the remote's federation manifest
+and chunks. The host supplies its own `public/serve.json`, which is copied
+into its output instead; a remote can do the same to override the default. These settings only affect the local Vercel
 `serve` example.
 
 When using nginx, map its host listener to `dist_portal/portal-host` and map
@@ -783,8 +785,8 @@ After portal deployment is stable:
 The following portal examples demonstrate the complete pattern:
 
 - `portal-examples/portal-host`: remote and local host entries;
-- `portal-examples/portal-host/src/local-module-registry.ts`: checked-in local
-  descriptors;
+- `portal-examples/portal-host/src/local-module-registry.json`: checked-in local
+  descriptors (nav icons in `portal-host/public/icons`);
 - `portal-examples/basket-trading`: production and local basket exposures;
 - `portal-examples/user-admin`: production and local user-admin exposures;
 - `portal-examples/feature-simple-div`: saved state with `usePersistedState`
