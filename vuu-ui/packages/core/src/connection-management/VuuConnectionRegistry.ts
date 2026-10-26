@@ -11,6 +11,7 @@ import {
   type VuuAuthTarget,
   type VuuSession,
 } from "../auth/VuuTokenExchange";
+import { isCredentialsFailure } from "../auth/VuuServerLogin";
 import {
   IdentityTokenSessionResolver,
   type VuuSessionResolver,
@@ -90,6 +91,20 @@ const toError = (error: unknown, connectionId: string) =>
 
 export const isSessionLimitExceeded = (error: unknown) =>
   (error instanceof Error ? error.message : error) === SESSION_LIMIT_EXCEEDED;
+
+/** The error of a session the server ended for a newer login. */
+export const SESSION_EVICTED =
+  "Session ended: you signed in again elsewhere. Retry to use it here.";
+
+export const isSessionEvicted = (error: unknown) =>
+  (error instanceof Error ? error.message : error) === SESSION_EVICTED;
+
+/**
+ * True when the server refused or ended the user's session. Retrying
+ * automatically would take a session from another browser or tab.
+ */
+export const isSessionEnded = (error: unknown) =>
+  isSessionLimitExceeded(error) || isSessionEvicted(error);
 
 const connectionFailed = (status: ConnectionStatus) =>
   status === "connection-failed" ||
@@ -271,7 +286,9 @@ export class VuuConnectionRegistry {
     if (existing) {
       if (
         existing.target.restUrl !== target.restUrl ||
-        existing.target.websocketUrl !== target.websocketUrl
+        existing.target.websocketUrl !== target.websocketUrl ||
+        (existing.target.auth ?? "token-exchange") !==
+          (target.auth ?? "token-exchange")
       ) {
         throw Error(
           `Connection ${target.connectionId} has conflicting VUU endpoints`,
@@ -337,6 +354,10 @@ export class VuuConnectionRegistry {
     entry.unsubscribeStatus ??= this.#connectionClient.onConnectionStatus(
       entry.target.connectionId,
       (nextStatus) => {
+        if (nextStatus === "session-evicted") {
+          this.#endEvictedSession(entry);
+          return;
+        }
         if (
           !entry.intentionalDisconnect &&
           entry.refCount > 0 &&
@@ -352,6 +373,22 @@ export class VuuConnectionRegistry {
       listener(connectedSession);
     });
     return connectedSession;
+  }
+
+  /**
+   * The server ended the session because the user logged in again
+   * elsewhere. Not reconnected: that would evict the newer session, which
+   * would reconnect and evict this one, and so on.
+   */
+  #endEvictedSession(entry: ConnectionRegistryEntry) {
+    if (entry.intentionalDisconnect || entry.state === "failed") {
+      return;
+    }
+    const error = new Error(SESSION_EVICTED);
+    this.#setState(entry, "failed", error);
+    entry.errorListeners.forEach((listener) => {
+      listener(error);
+    });
   }
 
   #reconnect(entry: ConnectionRegistryEntry) {
@@ -379,7 +416,11 @@ export class VuuConnectionRegistry {
         } catch (error) {
           this.#settleReconnectAttempt(entry);
           lastError = toError(error, entry.target.connectionId);
-          if (isAuthorizationDenied(error) || isSessionLimitExceeded(error)) {
+          if (
+            isAuthorizationDenied(error) ||
+            isCredentialsFailure(error) ||
+            isSessionLimitExceeded(error)
+          ) {
             break;
           }
         }

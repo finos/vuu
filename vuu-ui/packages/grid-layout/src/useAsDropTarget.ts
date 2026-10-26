@@ -162,7 +162,15 @@ const createActiveDropTargetState = (
   };
 };
 
-export const useAsDropTarget = () => {
+export interface AsDropTargetOptions {
+  /**
+   * A drop anywhere on the target fills it, as on an empty placeholder,
+   * which cannot be split: every position is the centre.
+   */
+  fill?: boolean;
+}
+
+export const useAsDropTarget = ({ fill = false }: AsDropTargetOptions = {}) => {
   const dropTargetStateRef = useRef<DropTargetState>(createDropTargetState());
 
   const drop = useGridLayoutDropHandler();
@@ -271,13 +279,9 @@ export const useAsDropTarget = () => {
 
               const { pctX, pctY /*, closeToTheEdge */ } =
                 pointPositionWithinRect(clientX, clientY, rect);
-              const position = getPositionWithinBox(
-                clientX,
-                clientY,
-                rect,
-                pctX,
-                pctY,
-              );
+              const position: GridLayoutDropPosition = fill
+                ? "centre"
+                : getPositionWithinBox(clientX, clientY, rect, pctX, pctY);
               // console.log(
               //   `[useAsDropTarget] onDragOver ${dropTarget.gridLayoutItemId} position ${position}`,
               // );
@@ -310,7 +314,7 @@ export const useAsDropTarget = () => {
         }
       }
     },
-    [dragContext, layoutId, leave, preview],
+    [dragContext, fill, layoutId, leave, preview],
   );
 
   const onDragLeave = useCallback<DragEventHandler>(

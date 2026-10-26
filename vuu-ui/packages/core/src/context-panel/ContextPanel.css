@@ -1,9 +1,6 @@
 .vuuContextPanel {
   --header-height: var(--vuuContextPanel-header-height, 48px);
-  background: var(
-    --vuuContextPanel-background,
-    var(--salt-container-primary-background)
-  );
+  background: var(--vuuContextPanel-background, var(--salt-container-primary-background));
   position: relative;
   transition: width 0.3s ease-in-out;
   width: var(--vuu-side-panel-width, 0px);
@@ -23,6 +20,16 @@
 .vuuContextPanel-overlay {
   transition: none;
   width: 0px;
+}
+
+/* Inline, the panel takes its own column beside the content rather than
+   sliding over it, so its edge is a rule, not a shadow. */
+.vuuContextPanel-inline.vuuContextPanel-expanded {
+  --vuu-side-panel-shadow: none;
+
+  .vuuContextPanel-inner {
+    border-left: 1px solid color-mix(in srgb, var(--salt-content-primary-foreground) 11%, transparent);
+  }
 }
 
 .vuuContextPanel-inner {

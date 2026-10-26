@@ -201,9 +201,17 @@ runtime as the legacy remote-module builder:
 }
 ```
 
+Every build empties its output folder first. Chunk and entry file names carry
+a content hash (`index.43e7174307.js`), so a browser never runs a stale chunk
+after a rebuild. A few files keep their names: `index.html`,
+`mf-manifest.json`, `config.json` and a remote's entry (`<name>.js`, which
+module registries reference by URL). Whatever serves the output must have
+browsers revalidate those, e.g. `Cache-Control: no-cache`.
+
 A remote-module build also writes a `serve.json` into its output folder for
 the `serve` static server used by `portal-serve`. It allows cross-origin loads
-from the host (`Access-Control-Allow-Origin: *`) and falls back to
+from the host (`Access-Control-Allow-Origin: *`), sends
+`Cache-Control: no-cache` so browsers revalidate every file, and falls back to
 `index.html` for standalone routes. To use different settings, add
 `public/serve.json` to the application; it is copied into the output and the
 default is not written.

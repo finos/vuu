@@ -17,10 +17,12 @@
 
 .vuuPortalNavServers-server {
   position: relative;
+}
 
-  &.vuuPortalNavServers-server-manual .vuuPortalNavServers-link {
-    padding-right: 28px;
-  }
+/* Room for the remove button of added servers, on every row so the status
+   dots stay aligned. */
+.vuuPortalNavServers-list-removable .vuuPortalNavServers-link {
+  padding-right: 28px;
 }
 
 .vuuPortalNavServers-link,

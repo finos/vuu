@@ -617,6 +617,37 @@ describe("GridLayout React drag/drop lifecycle", () => {
     expect(target.classList.contains("vuuDropTarget-centre")).toBe(false);
   });
 
+  it.each([
+    ["west edge", { clientX: 4, clientY: 50 }],
+    ["north edge", { clientX: 50, clientY: 4 }],
+    ["east edge", { clientX: 96, clientY: 50 }],
+  ])("fills an empty placeholder dropped on its %s", (_label, point) => {
+    act(() => root.render(<PlaceholderFixture />));
+    const source = container.querySelector("[data-testid='palette-item']");
+    const target = container.querySelector(".vuuGridPlaceholder");
+    if (!source || !target) {
+      throw Error("placeholder drag fixture did not render");
+    }
+    setTargetRect(source);
+    setTargetRect(target);
+    const dataTransfer = new TestDataTransfer();
+
+    dispatchDrag(source, "dragstart", dataTransfer);
+    flushAnimationFrames();
+    dispatchDrag(target, "dragenter", dataTransfer, point);
+    const dragOver = dispatchDrag(target, "dragover", dataTransfer, point);
+
+    expect(dragOver.defaultPrevented).toBe(true);
+    expect(target.classList.contains("vuuDropTarget-centre")).toBe(true);
+
+    dispatchDrag(target, "drop", dataTransfer, point);
+    dispatchDrag(source, "dragend", dataTransfer);
+
+    expect(
+      container.querySelector("[data-testid='template-content']"),
+    ).not.toBeNull();
+  });
+
   it("does not enable drop or render an affordance for an invalid split", () => {
     act(() => root.render(<InvalidTargetFixture />));
     const source = container.querySelector(
