@@ -161,6 +161,11 @@ const workspaceDocument = (panels: readonly Panel[]): GridLayoutDocument => {
   } as unknown as GridLayoutDocument;
 };
 
+/** Palette props offering every tab, including the opt-in Tables tab. */
+const WITH_TABLES: PanelsPaletteProps = {
+  tabs: ["modules", "tables", "recent"],
+};
+
 const ORDERS = { id: "orders-panel", moduleId: "orders", title: "Orders" };
 const CHART = { id: "chart-panel", moduleId: "chart", title: "Chart" };
 
@@ -375,6 +380,64 @@ describe("PanelsPalette", () => {
   });
 
   describe("tabs", () => {
+    const tabLabels = () =>
+      queryAll("[role='tab']").map((element) => element.textContent);
+
+    it("offers Modules and Recent by default, not Tables", async () => {
+      await render();
+      expect(tabLabels()).toEqual(["Modules", "Recent"]);
+      expect(
+        query("input[aria-label='Search panels']")?.getAttribute("placeholder"),
+      ).toBe("Search panels");
+      expect(query(".vuuPanelsPalette-server")).toBeNull();
+      expect(getTableList).not.toHaveBeenCalled();
+    });
+
+    it("offers the Tables tab when opted in", async () => {
+      await render({ paletteProps: WITH_TABLES });
+      expect(tabLabels()).toEqual(["Modules", "Tables", "Recent"]);
+      expect(
+        query("input[aria-label='Search panels and tables']"),
+      ).not.toBeNull();
+      await selectTab("Tables");
+      await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
+    });
+
+    it("ignores a defaultTab that isn't offered", async () => {
+      await render({ paletteProps: { defaultTab: "tables" } });
+      expect(button("Modules").getAttribute("aria-selected")).toBe("true");
+      expect(query(".vuuPanelsPalette-server")).toBeNull();
+    });
+
+    it("hides the tab strip when a single tab is offered", async () => {
+      await render({ paletteProps: { tabs: ["tables"] } });
+      expect(query("[role='tablist']")).toBeNull();
+      expect(query("[role='listbox']")?.getAttribute("aria-label")).toBe(
+        "Tables",
+      );
+      await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
+      expect(groupLabels()).toEqual(["SIMUL", "BASKET"]);
+    });
+
+    it("offers a single Recent tab, which lists added panels", async () => {
+      await render({ panels: [], paletteProps: { tabs: ["recent"] } });
+      expect(query("[role='tablist']")).toBeNull();
+      expect(query(".vuuPanelsPalette-empty")?.textContent).toBe(
+        "Panels you add appear here.",
+      );
+      appState.set(RECENT_PANELS_KEY, [
+        tablePanelItem("local-a", "SIMUL", "prices"),
+      ]);
+      await act(async () => root.unmount());
+      root = createRoot(container);
+      await render({ panels: [], paletteProps: { tabs: ["recent"] } });
+      expect(rowLabels()).toEqual(["prices"]);
+      await click(button("Add prices"));
+      expect(lastDocument().components).toEqual([
+        expect.objectContaining({ type: "vuu-table" }),
+      ]);
+    });
+
     it("lists palette modules grouped by paletteGroup, with icons", async () => {
       await render();
       expect(query("aside[aria-label='Panels']")).not.toBeNull();
@@ -392,7 +455,7 @@ describe("PanelsPalette", () => {
     });
 
     it("lists the tables of the selected server, grouped by module, names only", async () => {
-      await render();
+      await render({ paletteProps: WITH_TABLES });
       await selectTab("Tables");
       await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
       expect(getTableList).toHaveBeenCalledTimes(1);
@@ -431,7 +494,11 @@ describe("PanelsPalette", () => {
     it("opens on the Tables tab of a given server, not the saved one", async () => {
       appState.set(PANELS_PALETTE_SERVER_KEY, "other");
       await render({
-        paletteProps: { defaultServerId: "local-a", defaultTab: "tables" },
+        paletteProps: {
+          ...WITH_TABLES,
+          defaultServerId: "local-a",
+          defaultTab: "tables",
+        },
       });
       expect(button("Tables").getAttribute("aria-selected")).toBe("true");
       expect(
@@ -442,7 +509,11 @@ describe("PanelsPalette", () => {
 
     it("selects a given server that isn't known, to show its error", async () => {
       await render({
-        paletteProps: { defaultServerId: "uat", defaultTab: "tables" },
+        paletteProps: {
+          defaultServerId: "uat",
+          defaultTab: "tables",
+          tabs: ["tables"],
+        },
       });
       const server = query<HTMLSelectElement>(
         ".vuuPanelsPalette-server select",
@@ -480,7 +551,7 @@ describe("PanelsPalette", () => {
     });
 
     it("applies to the Tables tab", async () => {
-      await render();
+      await render({ paletteProps: WITH_TABLES });
       await selectTab("Tables");
       await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
       await setFilter("pri");
@@ -573,7 +644,7 @@ describe("PanelsPalette", () => {
     });
 
     it("+ adds a table panel", async () => {
-      await render({ panels: [] });
+      await render({ panels: [], paletteProps: WITH_TABLES });
       await selectTab("Tables");
       await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
       await click(button("Add prices"));

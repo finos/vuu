@@ -358,8 +358,7 @@ edit mode. The palette claims the panel with an `inline` placement (see
 the workspace shrinks beside it, so the palette never covers a drop target,
 the compass or the empty workspace's drop zone. Clicking the workspace
 doesn't close it.
-It has a search box ("Search panels & tables") with the pin button, three
-tabs and a footer hint. Outside a shell context panel (e.g. in tests) the
+It has a search box with the pin button, its tabs and a footer hint. Outside a shell context panel (e.g. in tests) the
 palette renders in place, with its own header.
 
 The context panel has one owner at a time:
@@ -381,6 +380,29 @@ Navigation:
   Returning to a workspace reopens the palette only if it is pinned.
 - Module content still closes on every navigation, including between
   workspaces.
+
+**Tabs.** `PanelsPalette`'s `tabs` prop chooses the tabs, in order, from
+`"modules"`, `"tables"` and `"recent"`. The default
+(`DEFAULT_PANELS_PALETTE_TABS`) is `["modules", "recent"]`: **Tables**,
+which offers the raw tables of a Vuu server, is opt-in. It is a development
+tool; a host that wants a table in production packages it as a
+pre-configured module, offered on the Modules tab. `defaultTab` chooses the
+initial tab (default: the first). With a single tab, the tab strip is not
+shown. The search box reads "Search panels & tables" when Tables is offered,
+"Search panels" otherwise.
+
+Hosts set the palette's props with `PortalShell`'s `workspaces.palette`,
+which `PortalWorkspace` (`paletteProps`) passes to `PortalWorkspaceGrid`:
+
+```tsx
+const workspaces: PortalWorkspacesOptions = {
+  headerActions: <AddPanelButton />,
+  palette: { tabs: ["modules", "tables", "recent"] },
+};
+```
+
+A page rendering its own `PortalWorkspaceGrid`, such as the table browser,
+passes `paletteProps` to it directly.
 
 - **Modules** lists `usePaletteModules()`: modules whose descriptor has
   `workspace.paletteGroup`, grouped by it, with `workspace.iconUrl` or the

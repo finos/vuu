@@ -195,6 +195,9 @@ const { renderers, settingsCodecs } = createPortalComponentRegistries();
   service. The registries render `portal-module` and `vuu-table` items.
 - `contextPanel.placement: "inline"` shows the Panels palette beside the
   content rather than over it.
+- `workspaces.palette: { tabs: ["tables"] }` makes the Panels palette offer
+  only Vuu tables. The palette's Tables tab is opt-in: by default it offers
+  Modules and Recent.
 - `renderItemChildren` recognises the table browser's nav item by its
   `mfScope`, which the module's build fixes. Don't match `moduleId`: a
   server-supplied module registry assigns its own, often numeric, ids.
@@ -206,8 +209,8 @@ const { renderers, settingsCodecs } = createPortalComponentRegistries();
   `vuu-table` item that cannot reach its server.
 
 The table browser (`/tables/browse/<server>`) is an unsaved workspace: a grid
-of `vuu-table` items with the Panels palette pinned on the Tables tab, that
-server selected. It uses the host's registries when the host enables
+of `vuu-table` items with the Panels palette pinned, offering only its Tables
+tab, that server selected. It uses the host's registries when the host enables
 workspaces, and **Save as workspace** then saves the layout as a named
 workspace. The table viewer shows one table, given as props
 (`serverId`, `module`, `table`) or by its own route,

@@ -24,6 +24,8 @@ const { renderers, settingsCodecs } = createPortalComponentRegistries();
 const workspaces: PortalWorkspacesOptions = {
   componentRenderers: renderers,
   headerActions: <AddPanelButton />,
+  // The portal example offers Vuu tables only, not modules.
+  palette: { tabs: ["tables"] },
   settingsCodecs,
 };
 

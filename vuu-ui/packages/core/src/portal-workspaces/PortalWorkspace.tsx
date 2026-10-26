@@ -143,6 +143,11 @@ export interface PortalWorkspaceProps {
    * e.g. "Add panel".
    */
   headerActions?: ReactNode;
+  /**
+   * Props of the Panels palette, e.g. its `tabs`. `PortalShell` passes
+   * `workspaces.palette`.
+   */
+  paletteProps?: PanelsPaletteProps;
 }
 
 /** Opens the Panels palette, if available, when a new workspace arrives. */
@@ -163,7 +168,10 @@ const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
  * URL the active workspace and renders it, with a header. An unknown id
  * shows a not-found state.
  */
-export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
+export const PortalWorkspace = ({
+  headerActions,
+  paletteProps,
+}: PortalWorkspaceProps) => {
   useComponentCssInjection({
     testId: "vuu-portal-workspaces",
     css: portalWorkspacesCss,
@@ -281,6 +289,7 @@ export const PortalWorkspace = ({ headerActions }: PortalWorkspaceProps) => {
             <PortalWorkspaceGrid
               controller={controller}
               key={controller.instanceId}
+              paletteProps={paletteProps}
             />
           ) : (
             <WorkspaceState state="opening" title="Opening workspace…" />

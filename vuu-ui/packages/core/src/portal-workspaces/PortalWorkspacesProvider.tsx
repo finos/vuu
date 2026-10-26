@@ -3,6 +3,7 @@ import type {
   GridComponentSettingsRegistry,
 } from "@vuu-ui/grid-layout";
 import { type ReactNode, useMemo } from "react";
+import type { PanelsPaletteProps } from "../panels-palette/PanelsPalette";
 import { useOptionalAuthenticatedUser } from "../auth/AuthenticationProvider";
 import { ANONYMOUS_USER } from "../common-shell/PortalPersistenceRoot";
 import { DEFAULT_PORTAL_ID } from "../persistence/LocalStoragePersistenceBackend";
@@ -23,6 +24,12 @@ export interface PortalWorkspacesOptions {
    * the Panels palette in the shell's context panel.
    */
   headerActions?: ReactNode;
+  /**
+   * Options of the Panels palette that `<AddPanelButton />` opens, e.g.
+   * `{ tabs: ["modules", "tables", "recent"] }` to offer the Tables tab,
+   * which is not shown by default.
+   */
+  palette?: PanelsPaletteProps;
   /**
    * Where workspaces are saved. Pass a stable instance. Default: browser
    * local storage, scoped to the portal id and the signed in user.

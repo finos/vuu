@@ -61,11 +61,31 @@ export const PANELS_PALETTE_SERVER_KEY = "workspace/paletteServer";
 
 export type PanelsPaletteTab = "modules" | "tables" | "recent";
 
-const tabs: readonly { id: PanelsPaletteTab; label: string }[] = [
-  { id: "modules", label: "Modules" },
-  { id: "tables", label: "Tables" },
-  { id: "recent", label: "Recent" },
+const TAB_LABELS: Record<PanelsPaletteTab, string> = {
+  modules: "Modules",
+  recent: "Recent",
+  tables: "Tables",
+};
+
+/**
+ * The tabs of the palette when `tabs` is not set. Tables, which lists the
+ * raw tables of a Vuu server, is opt-in: hosts that want a table offer it as
+ * a pre-configured module instead.
+ */
+export const DEFAULT_PANELS_PALETTE_TABS: readonly PanelsPaletteTab[] = [
+  "modules",
+  "recent",
 ];
+
+const getTabs = (tabs?: readonly PanelsPaletteTab[]) => {
+  const ids = Array.from(
+    new Set((tabs ?? []).filter((id) => id in TAB_LABELS)),
+  );
+  return (ids.length > 0 ? ids : DEFAULT_PANELS_PALETTE_TABS).map((id) => ({
+    id,
+    label: TAB_LABELS[id],
+  }));
+};
 
 const RECENT_GROUP = "Recently added";
 
@@ -77,8 +97,17 @@ export interface PanelsPaletteProps {
    * unreachable server shows its error.
    */
   defaultServerId?: string;
-  /** The tab shown initially. Default `"modules"`. */
+  /**
+   * The tab shown initially. Default: the first of `tabs`. Ignored if it is
+   * not one of `tabs`.
+   */
   defaultTab?: PanelsPaletteTab;
+  /**
+   * The tabs offered, in order. Default `["modules", "recent"]`: the Tables
+   * tab is opt-in, e.g. `["modules", "tables", "recent"]`. With a single
+   * tab, the tab strip is not shown.
+   */
+  tabs?: readonly PanelsPaletteTab[];
 }
 
 const PanelIcon = ({ item }: { item: PanelItem }) => (
@@ -213,7 +242,8 @@ const LOADING: ServerTablesState = { status: "loading" };
 export const PanelsPalette = ({
   className,
   defaultServerId,
-  defaultTab = "modules",
+  defaultTab,
+  tabs: tabsProp,
 }: PanelsPaletteProps) => {
   useComponentCssInjection({
     testId: "vuu-panels-palette",
@@ -229,7 +259,19 @@ export const PanelsPalette = ({
   const paletteModules = usePaletteModules();
   const servers = usePanelsServerOptions();
   const [recent, addRecentPanel] = useRecentPanels();
-  const [tab, setTab] = useState<PanelsPaletteTab>(defaultTab);
+  // Keyed on the tab ids, so an inline `tabs` array doesn't recompute them.
+  const tabsKey = tabsProp?.join() ?? "";
+  const tabs = useMemo(
+    () => getTabs(tabsKey.split(",") as PanelsPaletteTab[]),
+    [tabsKey],
+  );
+  const [selectedTab, setTab] = useState<PanelsPaletteTab>(
+    () => tabs.find(({ id }) => id === defaultTab)?.id ?? tabs[0].id,
+  );
+  const tab = tabs.some(({ id }) => id === selectedTab)
+    ? selectedTab
+    : tabs[0].id;
+  const tablesTab = tabs.some(({ id }) => id === "tables");
   const [filter, setFilter] = useState("");
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -526,37 +568,41 @@ export const PanelsPalette = ({
           <input
             aria-activedescendant={activeRowId}
             aria-controls={listId}
-            aria-label="Search panels and tables"
+            aria-label={
+              tablesTab ? "Search panels and tables" : "Search panels"
+            }
             onChange={(event) => setFilter(event.target.value)}
             onKeyDown={handleListKeyDown}
-            placeholder="Search panels & tables"
+            placeholder={tablesTab ? "Search panels & tables" : "Search panels"}
             type="search"
             value={filter}
           />
           {inContextPanel ? pinButton : null}
         </div>
-        <div
-          aria-label="Panel sources"
-          className={`${classBase}-tabs`}
-          role="tablist"
-        >
-          {tabs.map(({ id, label }) => (
-            <button
-              aria-controls={listId}
-              aria-selected={tab === id}
-              className={`${classBase}-tab`}
-              key={id}
-              onClick={() => {
-                setTab(id);
-                setActiveKey(undefined);
-              }}
-              role="tab"
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {tabs.length > 1 ? (
+          <div
+            aria-label="Panel sources"
+            className={`${classBase}-tabs`}
+            role="tablist"
+          >
+            {tabs.map(({ id, label }) => (
+              <button
+                aria-controls={listId}
+                aria-selected={tab === id}
+                className={`${classBase}-tab`}
+                key={id}
+                onClick={() => {
+                  setTab(id);
+                  setActiveKey(undefined);
+                }}
+                role="tab"
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        ) : null}
         {tab === "tables" && serverOptions.length > 0 ? (
           <label className={`${classBase}-server`}>
             <span>Server</span>

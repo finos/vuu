@@ -152,18 +152,23 @@ const marketsWorkspace: NamedWorkspaceDefinitionV1 = {
 const workspaces: PortalWorkspacesOptions = {
   componentRenderers: renderers,
   headerActions: <AddPanelButton />,
+  // The Tables tab is opt-in.
+  palette: { tabs: ["modules", "tables", "recent"] },
   settingsCodecs,
   systemWorkspaces: [marketsWorkspace],
 };
 
-/**
- * Workspaces with the Panels palette. Open Markets, or "+ New workspace",
- * then use Add panel, which opens the palette in the shell's context panel.
- * It stays open as you switch workspaces. Drag a module or table onto the workspace, press + to
- * add it, or click it: with one panel a click replaces it, with several you
- * choose to replace the focused panel (R) or open a new tab (T).
- */
-export const WorkspacesWithPanelsPalette = () => (
+/** The palette's default tabs: Modules and Recent. */
+const defaultPaletteWorkspaces: PortalWorkspacesOptions = {
+  ...workspaces,
+  palette: undefined,
+};
+
+const PanelsPaletteDemo = ({
+  workspaces,
+}: {
+  workspaces: PortalWorkspacesOptions;
+}) => (
   <AuthenticationProvider
     localServers={localServers}
     mode="local"
@@ -189,4 +194,24 @@ export const WorkspacesWithPanelsPalette = () => (
       </PortalLandingPage>
     </PortalShell>
   </AuthenticationProvider>
+);
+
+/**
+ * Workspaces with the Panels palette, opted in to its Tables tab. Open
+ * Markets, or "+ New workspace", then use Add panel, which opens the palette
+ * in the shell's context panel. It stays open as you switch workspaces. Drag
+ * a module or table onto the workspace, press + to add it, or click it: with
+ * one panel a click replaces it, with several you choose to replace the
+ * focused panel (R) or open a new tab (T).
+ */
+export const WorkspacesWithPanelsPalette = () => (
+  <PanelsPaletteDemo workspaces={workspaces} />
+);
+
+/**
+ * The Panels palette with its default tabs, Modules and Recent. The Tables
+ * tab is opt-in (`workspaces.palette.tabs`).
+ */
+export const WorkspacesWithDefaultPanelsPalette = () => (
+  <PanelsPaletteDemo workspaces={defaultPaletteWorkspaces} />
 );
