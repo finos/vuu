@@ -13,8 +13,12 @@
   min-height: 0;
 }
 
-.vuuTableComponent-table {
+.vuuTableComponent-filterTable {
+  --vuuDatasourceStats-gap: var(--salt-spacing-200);
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .vuuTableComponent-status,

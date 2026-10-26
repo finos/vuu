@@ -9,8 +9,11 @@ import type {
 import {
   DeferredPromise,
   EventEmitter,
+  INVALID_SESSION,
+  INVALID_TOKEN,
   isLoginErrorMessage,
   logger,
+  SESSION_LIMIT_EXCEEDED,
 } from "@vuu-ui/vuu-utils";
 
 export type ConnectionPhase =
@@ -26,7 +29,12 @@ export type ConnectionStatus =
   | "disconnected"
   | "failed"
   | "connection-failed"
-  | "inactive";
+  | "inactive"
+  /**
+   * The server ended the session because the user logged in again
+   * elsewhere. Not reconnected: that would evict the other session.
+   */
+  | "session-evicted";
 
 export const isInvalidTokenReason = (
   text: string,
@@ -53,6 +61,7 @@ export const isWebSocketConnectionStatus = (
     "disconnected",
     "closed",
     "failed",
+    "session-evicted",
   ].includes(msg);
 
 export const isConnected = (
@@ -82,6 +91,27 @@ export type WebSocketConnectionConfig = {
 };
 
 const DEFAULT_CONNECTION_TIMEOUT = 10000;
+
+/** WebSocket close codes a Vuu server uses to end or refuse a session. */
+export const VuuCloseCode = {
+  /** The user logged in again and this (oldest) session was evicted. */
+  SessionEvicted: 4001,
+  InvalidSession: 4002,
+  /** Login refused, the user already has maxSessionsPerUser sessions. */
+  SessionLimitReached: 4003,
+  /** Login refused, e.g. an invalid or expired token. */
+  LoginFailed: 4004,
+} as const;
+
+/** The login rejection a refusing close code stands for. */
+const loginRefusalReasons: Partial<Record<number, LoginErrorMessage>> = {
+  [VuuCloseCode.InvalidSession]: INVALID_SESSION,
+  [VuuCloseCode.SessionLimitReached]: SESSION_LIMIT_EXCEEDED,
+  [VuuCloseCode.LoginFailed]: INVALID_TOKEN,
+};
+
+const looksLikeJson = (data: unknown) =>
+  typeof data === "string" && data.trimStart().startsWith("{");
 
 const parseWebSocketMessage = (message: string): VuuServerMessage => {
   try {
@@ -229,7 +259,22 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
       clearTimeout(timer);
     };
 
-    ws.onclose = () => {
+    ws.onclose = (evt?: CloseEvent) => {
+      const code = evt?.code;
+      if (!this.isClosed && code === VuuCloseCode.SessionEvicted) {
+        this.confirmedOpen = false;
+        this.connectionStatus = "session-evicted";
+        this.close("failure");
+        return;
+      }
+      const refusal =
+        code === undefined ? undefined : loginRefusalReasons[code];
+      if (!this.isClosed && !this.confirmedOpen && refusal) {
+        // A refused login: reject it rather than retry as a lost connection.
+        this.#callback({ type: "LOGIN_REJECTED", reason: refusal });
+        this.close(refusal);
+        return;
+      }
       if (!this.isClosed) {
         this.confirmedOpen = false;
         // Do we emit disconnected even if not confirmed open ?
@@ -249,9 +294,9 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
 
   private receive = (evt: MessageEvent) => {
     if (isLoginErrorMessage(evt.data)) {
-      console.warn(`[WebSocketConnection] closed because of login issue`);
+      console.warn("[WebSocketConnection] closed because of login issue");
       if (this.#deferredOpen) {
-        console.warn(`... and we have a deferred connection`);
+        console.warn("... and we have a deferred connection");
       }
 
       this.#callback({
@@ -259,6 +304,10 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
         reason: evt.data,
       });
       this.close(evt.data);
+    } else if (!this.confirmedOpen && !looksLikeJson(evt.data)) {
+      // A server refusing a login may send its reason as plain text, then
+      // close with a code saying why (see ws.onclose).
+      console.warn(`[WebSocketConnection] login refused: ${evt.data}`);
     } else {
       const vuuMessageFromServer = parseWebSocketMessage(evt.data);
 

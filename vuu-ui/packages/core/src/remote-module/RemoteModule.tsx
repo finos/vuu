@@ -11,9 +11,12 @@ import React, {
   Suspense,
   lazy,
   use,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 import { ModuleContextPanel } from "../context-panel/ModuleContextPanel";
 import type { ContextPanelPlacement } from "../context-panel/ContextPanelSlot";
@@ -381,9 +384,30 @@ function RawRemoteModule(props: RemoteModuleProps) {
 
 type RoutedRemoteModuleProps = RemoteModuleProps;
 
-const RoutedRemoteModule = (props: RoutedRemoteModuleProps) => {
-  const location = useLocation();
-  return <RawRemoteModule key={location.key} {...props} />;
+/**
+ * A module that failed to load is retried after the next navigation. A
+ * working module stays mounted while the location changes, so routes within
+ * it keep its state.
+ */
+const RoutedRemoteModule = ({ onError, ...props }: RoutedRemoteModuleProps) => {
+  const { key: locationKey } = useLocation();
+  const [attempt, setAttempt] = useState(0);
+  const failed = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on navigation
+  useEffect(() => {
+    if (failed.current) {
+      failed.current = false;
+      setAttempt((count) => count + 1);
+    }
+  }, [locationKey]);
+  const handleError = useCallback(
+    (error: Error) => {
+      failed.current = true;
+      onError?.(error);
+    },
+    [onError],
+  );
+  return <RawRemoteModule key={attempt} {...props} onError={handleError} />;
 };
 
 export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) =>

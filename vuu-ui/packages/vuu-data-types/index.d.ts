@@ -514,7 +514,18 @@ export interface DataSourceConstructorProps
  * The Vuu server a remote module connects to. Published by the remote in its
  * `config.json`, not by the module registry.
  */
+/**
+ * How the portal gets a Vuu token for a server:
+ * - `token-exchange`: exchanges the portal's identity token (e.g. Keycloak)
+ *   at `restUrl`.
+ * - `vuu-login`: posts a username and password to `restUrl`, the Vuu
+ *   server's own login endpoint (e.g. `/api/authn` of the Scala server).
+ */
+export type VuuServerAuthMode = "token-exchange" | "vuu-login";
+
 export interface RemoteModuleConnection {
+  /** Default `token-exchange`. */
+  auth?: VuuServerAuthMode;
   connectionId: string;
   restUrl?: string;
   websocketUrl?: string;

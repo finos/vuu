@@ -2,13 +2,15 @@
   --portalNav-row: 32px;
   --portalNav-radius: 7px;
   --portalNav-iconSize: 18px;
-  --portalNav-accent: var(--vuuPortalNav-accent, var(--salt-accent-background));
+  --portalNav-accent: var(--vuuPortalNav-accent, var(--vuu-selected-accent, var(--salt-accent-background)));
   --portalNav-background: var(--vuuPortalNav-background, var(--salt-container-secondary-background));
   --portalNav-borderColor: var(--vuuPortalNav-borderColor, var(--salt-separable-tertiary-borderColor));
   --portalNav-foreground: var(--salt-content-primary-foreground);
   --portalNav-foreground-dim: var(--salt-content-secondary-foreground);
   --portalNav-hover: var(--salt-navigable-background-hover, var(--salt-selectable-background-hover));
-  --portalNav-active: var(--vuuPortalNav-activeBackground, var(--salt-selectable-background-selected));
+  /* The theme's selected item colours (vuu-theme), not Salt's selected
+     background, a pale cyan that glares in dark mode. */
+  --portalNav-active: var(--vuuPortalNav-activeBackground, var(--vuu-selected-background, color-mix(in srgb, var(--salt-accent-background) 13%, transparent)));
   --portalNav-transition: var(--vuuPortalShell-navTransitionDuration, 180ms) var(--vuuPortalShell-navTransitionTimingFunction, ease);
 
   box-sizing: border-box;

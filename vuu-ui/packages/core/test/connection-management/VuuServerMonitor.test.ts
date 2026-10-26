@@ -6,6 +6,7 @@ import {
   type VuuSession,
 } from "../../src/auth/VuuTokenExchange";
 import { ModuleServerMap } from "../../src/connection-management/ModuleServerMap";
+import { SESSION_EVICTED } from "../../src/connection-management/VuuConnectionRegistry";
 import type {
   VuuConnectionRegistry,
   VuuConnectionStateListener,
@@ -327,6 +328,28 @@ describe("VuuServerMonitor", () => {
     });
   });
 
+  it("keeps a failed server it doesn't track offline until retried", async () => {
+    const { monitor, registry } = await setup({ count: 1 });
+    // e.g. a server the user added, acquired by a table and released on failure.
+    registry.setState("manual", "authenticating");
+    registry.setState("manual", "failed", Error("Login failed"));
+    registry.release("manual");
+    expect(registry.getState("manual")).toBeUndefined();
+    expect(monitor.getStatus("manual")).toMatchObject({
+      detail: { error: "Login failed" },
+      presence: "offline",
+    });
+    // An attempt by someone else stays offline until it succeeds.
+    registry.setState("manual", "authenticating");
+    expect(monitor.getStatus("manual").presence).toBe("offline");
+    registry.release("manual");
+
+    monitor.retry("manual");
+    expect(monitor.getStatus("manual").presence).toBe("unknown");
+    registry.setState("manual", "connected");
+    expect(monitor.getStatus("manual").presence).toBe("online");
+  });
+
   it("does not show a brief connection drop as offline", async () => {
     const { monitor, registry } = await setup({
       count: 1,
@@ -474,6 +497,30 @@ describe("VuuServerMonitor", () => {
     expect(monitor.getModuleStatus("m0").presence).toBe("online");
   });
 
+  it("keeps a tracked server offline after someone else's attempt hits the session limit", async () => {
+    // s1 is selected but still queued behind s0, so the monitor holds no
+    // connection to it when a table connects and is refused.
+    const { monitor, registry } = await setup({ count: 2 });
+    expect(acquiredIds(registry)).toEqual(["s0"]);
+    registry.setState("s1", "authenticating");
+    registry.setState("s1", "failed", Error("User session limit exceeded"));
+    registry.release("s1");
+    expect(registry.getState("s1")).toBeUndefined();
+
+    // Still offline once released, so the table does not connect again.
+    expect(monitor.getStatus("s1")).toMatchObject({
+      detail: {
+        reason: "User session limit exceeded. Close another session and retry.",
+      },
+      presence: "offline",
+    });
+    // Nor does the monitor, until the user retries.
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(acquiredIds(registry)).toEqual(["s0"]);
+    monitor.retry("s1");
+    expect(acquiredIds(registry)).toEqual(["s0", "s1"]);
+  });
+
   it("releases and probes a held server when the registry gives up", async () => {
     const { monitor, registry } = await setup({
       count: 1,
@@ -516,6 +563,30 @@ describe("VuuServerMonitor", () => {
     await vi.advanceTimersByTimeAsync(10000);
     expect(acquiredIds(registry)).toEqual(["s0"]);
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("keeps an evicted server offline without probing, so it doesn't evict the newer session", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { probeIntervalMs: 1000 },
+    });
+    registry.settle("s0");
+    await vi.advanceTimersByTimeAsync(0);
+    registry.setState("s0", "failed", new Error(SESSION_EVICTED));
+
+    expect(monitor.getModuleStatus("m0")).toMatchObject({
+      presence: "offline",
+      detail: {
+        reason:
+          "Session ended: you signed in again elsewhere. Retry to use it here.",
+      },
+    });
+    expect(monitor.getModuleStatus("m0").detail?.nextAttemptAt).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(acquiredIds(registry)).toEqual(["s0"]);
+
+    monitor.retryModule("m0");
+    expect(acquiredIds(registry)).toEqual(["s0", "s0"]);
   });
 
   it("reports a module with a failed config as unavailable and retries it", async () => {

@@ -143,7 +143,12 @@ export const PortalNavVuuServers = ({
 
   return (
     <div className={cx(classBase, className)}>
-      <ul aria-label="Vuu servers" className={`${classBase}-list`}>
+      <ul
+        aria-label="Vuu servers"
+        className={cx(`${classBase}-list`, {
+          [`${classBase}-list-removable`]: servers.some(({ manual }) => manual),
+        })}
+      >
         {servers.map((server) => (
           <ServerRow
             active={server.connectionId === activeServerId}
@@ -157,8 +162,8 @@ export const PortalNavVuuServers = ({
       {adding ? (
         <AddServerForm
           existingIds={existingIds}
-          onAdd={(server) => {
-            addServer(server);
+          onAdd={(server, credentials) => {
+            addServer(server, credentials);
             setAdding(false);
             navigate(getVuuServerBrowsePath(basePath, server.connectionId));
           }}

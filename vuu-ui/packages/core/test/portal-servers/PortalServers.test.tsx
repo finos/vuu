@@ -25,6 +25,8 @@ import {
   MANUAL_VUU_SERVERS_KEY,
   ManualVuuServersProvider,
   PortalNavVuuServers,
+  getVuuServerCredentials,
+  MISSING_USERNAME_MESSAGE,
   validateManualServer,
   VuuTableChangeServerDialog,
 } from "../../src/portal-servers";
@@ -274,6 +276,36 @@ describe("portal servers", () => {
         "basket",
         "my-server",
       ]);
+    });
+
+    it("adds a Vuu-login server, saving the username but not the password", async () => {
+      await render(<PortalNavVuuServers basePath="/tables/browse" />);
+      await click(button("Add server"));
+      expect(container.querySelector("input[name='username']")).toBeNull();
+      await type("connectionId", MY_SERVER.connectionId);
+      await type("websocketUrl", MY_SERVER.websocketUrl);
+      await type("restUrl", MY_SERVER.restUrl);
+      const vuuLogin = container.querySelector(
+        "input[name='auth'][value='vuu-login']",
+      );
+      expect(vuuLogin).not.toBeNull();
+      await click(vuuLogin as Element);
+      await submit();
+      expect(container.textContent).toContain(MISSING_USERNAME_MESSAGE);
+
+      await type("username", "steve");
+      await type("password", "secret");
+      await submit();
+      expect(appState.get(MANUAL_VUU_SERVERS_KEY)).toEqual([
+        { ...MY_SERVER, auth: "vuu-login", username: "steve" },
+      ]);
+      expect(getVuuServerCredentials(MY_SERVER.connectionId)).toEqual({
+        password: "secret",
+        username: "steve",
+      });
+
+      await click(button("Remove my-server"));
+      expect(getVuuServerCredentials(MY_SERVER.connectionId)).toBeUndefined();
     });
 
     it("removes an added server, leaving its Browse page", async () => {
