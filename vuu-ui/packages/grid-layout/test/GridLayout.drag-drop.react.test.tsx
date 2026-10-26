@@ -905,4 +905,197 @@ describe("GridLayout React drag/drop lifecycle", () => {
     });
     expect(states.at(-1)).toEqual({ dragging: false });
   });
+  describe("drop compass", () => {
+    const compassOf = (target: Element) =>
+      target.querySelector<HTMLElement>(":scope > .vuuDropCompass");
+    const tileOf = (target: Element, zone: string) =>
+      target.querySelector<HTMLElement>(
+        `.vuuDropCompass [data-compass-zone='${zone}']`,
+      );
+
+    const startTemplateDrag = () => {
+      act(() => root.render(<PaletteFixture />));
+      const source = container.querySelector("[data-testid='palette-item']");
+      const target = container.querySelector(
+        "#target .vuuGridLayoutItemContent",
+      );
+      if (!source || !target) {
+        throw Error("drop compass fixture did not render");
+      }
+      setTargetRect(source);
+      setTargetRect(target);
+      const dataTransfer = new TestDataTransfer();
+      dispatchDrag(source, "dragstart", dataTransfer);
+      flushAnimationFrames();
+      return { dataTransfer, source, target };
+    };
+
+    it("renders over the hovered panel during a template drag, highlighting the zone under the pointer", () => {
+      const { dataTransfer, source, target } = startTemplateDrag();
+      expect(compassOf(target)).toBeNull();
+
+      dispatchDrag(target, "dragenter", dataTransfer, {
+        clientX: 90,
+        clientY: 50,
+      });
+      const dragOver = dispatchDrag(target, "dragover", dataTransfer, {
+        clientX: 90,
+        clientY: 50,
+      });
+
+      const compass = compassOf(target);
+      expect(compass).not.toBeNull();
+      expect(compass?.getAttribute("aria-hidden")).toBe("true");
+      expect(
+        [
+          ...(compass?.querySelectorAll<HTMLElement>("[data-compass-zone]") ??
+            []),
+        ].map((tile) => tile.dataset.compassZone),
+      ).toEqual(["north", "west", "centre", "east", "south"]);
+      expect(compass?.dataset.activeZone).toBe("east");
+      expect(
+        tileOf(target, "east")?.classList.contains(
+          "vuuDropCompass-zone-active",
+        ),
+      ).toBe(true);
+      expect(target.classList.contains("vuuDropTarget-east")).toBe(true);
+      expect(dragOver.defaultPrevented).toBe(true);
+
+      dispatchDrag(target, "dragover", dataTransfer, {
+        clientX: 50,
+        clientY: 10,
+      });
+      expect(compassOf(target)?.dataset.activeZone).toBe("north");
+      expect(
+        tileOf(target, "east")?.classList.contains(
+          "vuuDropCompass-zone-active",
+        ),
+      ).toBe(false);
+      expect(target.classList.contains("vuuDropTarget-north")).toBe(true);
+      expect(target.classList.contains("vuuDropTarget-east")).toBe(false);
+
+      dispatchDrag(source, "dragend", dataTransfer);
+      expect(compassOf(target)).toBeNull();
+      expect(target.classList.contains("vuuDropTarget-north")).toBe(false);
+    });
+
+    it("splits the panel when dropped on a direction tile", () => {
+      const { dataTransfer, source, target } = startTemplateDrag();
+      const point = { clientX: 50, clientY: 50 };
+      dispatchDrag(target, "dragenter", dataTransfer, point);
+      dispatchDrag(target, "dragover", dataTransfer, point);
+      const west = tileOf(target, "west");
+      if (!west) {
+        throw Error("drop compass did not render");
+      }
+      // The pointer is in the panel's central region, over the west tile.
+      dispatchDrag(west, "dragover", dataTransfer, {
+        clientX: 51,
+        clientY: 50,
+      });
+      expect(compassOf(target)?.dataset.activeZone).toBe("west");
+      expect(target.classList.contains("vuuDropTarget-west")).toBe(true);
+
+      dispatchDrag(west, "drop", dataTransfer, { clientX: 51, clientY: 50 });
+      dispatchDrag(source, "dragend", dataTransfer);
+
+      expect(
+        container.querySelector("[data-testid='template-content']"),
+      ).not.toBeNull();
+      expect(container.querySelector("#target")).not.toBeNull();
+      expect(container.querySelectorAll("[role='tab']")).toHaveLength(0);
+      expect(container.querySelector(".vuuDropCompass")).toBeNull();
+    });
+
+    it("stacks the template with the panel, as a tab, when dropped on the centre", () => {
+      const { dataTransfer, source, target } = startTemplateDrag();
+      const point = { clientX: 50, clientY: 50 };
+      dispatchDrag(target, "dragenter", dataTransfer, point);
+      dispatchDrag(target, "dragover", dataTransfer, point);
+      expect(compassOf(target)?.dataset.activeZone).toBe("centre");
+      expect(target.classList.contains("vuuDropTarget-centre")).toBe(true);
+      const centre = tileOf(target, "centre");
+      if (!centre) {
+        throw Error("drop compass did not render");
+      }
+
+      dispatchDrag(centre, "drop", dataTransfer, point);
+      dispatchDrag(source, "dragend", dataTransfer);
+
+      expect(
+        container.querySelector("[data-testid='template-content']"),
+      ).not.toBeNull();
+      expect(
+        [...container.querySelectorAll("[role='tab']")].map(
+          (tab) => tab.textContent,
+        ),
+      ).toEqual(expect.arrayContaining(["Target", "Template"]));
+      expect(container.querySelector(".vuuDropCompass")).toBeNull();
+    });
+
+    it("is removed when Esc cancels the drag", () => {
+      const { dataTransfer, target } = startTemplateDrag();
+      const point = { clientX: 90, clientY: 50 };
+      dispatchDrag(target, "dragenter", dataTransfer, point);
+      dispatchDrag(target, "dragover", dataTransfer, point);
+      expect(compassOf(target)).not.toBeNull();
+
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      });
+
+      expect(compassOf(target)).toBeNull();
+      expect(target.classList.contains("vuuDropTarget-east")).toBe(false);
+      expect(
+        container.querySelector("[data-testid='template-content']"),
+      ).toBeNull();
+    });
+
+    it("is not shown when an existing item is dragged within the grid", () => {
+      act(() => root.render(<ExistingItemFixture />));
+      const source = container.querySelector(
+        "#source .vuuGridLayoutItemHeader-title",
+      );
+      const target = container.querySelector(
+        "#target .vuuGridLayoutItemContent",
+      );
+      if (!source || !target) {
+        throw Error("existing-item drag fixture did not render");
+      }
+      setTargetRect(target);
+      const dataTransfer = new TestDataTransfer();
+      const point = { clientX: 50, clientY: 50 };
+
+      dispatchDrag(source, "dragstart", dataTransfer);
+      flushAnimationFrames();
+      dispatchDrag(target, "dragenter", dataTransfer, point);
+      dispatchDrag(target, "dragover", dataTransfer, point);
+
+      // The centre still replaces the target, with no compass.
+      expect(target.classList.contains("vuuDropTarget-centre")).toBe(true);
+      expect(container.querySelector(".vuuDropCompass")).toBeNull();
+      dispatchDrag(source, "dragend", dataTransfer);
+    });
+
+    it("is not shown over an empty placeholder", () => {
+      act(() => root.render(<PlaceholderFixture />));
+      const source = container.querySelector("[data-testid='palette-item']");
+      const target = container.querySelector(".vuuGridPlaceholder");
+      if (!source || !target) {
+        throw Error("placeholder drag fixture did not render");
+      }
+      setTargetRect(source);
+      setTargetRect(target);
+      const dataTransfer = new TestDataTransfer();
+
+      dispatchDrag(source, "dragstart", dataTransfer);
+      flushAnimationFrames();
+      dispatchDrag(target, "dragenter", dataTransfer);
+      dispatchDrag(target, "dragover", dataTransfer);
+
+      expect(target.classList.contains("vuuDropTarget-centre")).toBe(true);
+      expect(container.querySelector(".vuuDropCompass")).toBeNull();
+      dispatchDrag(source, "dragend", dataTransfer);
+    });
+  });
 });

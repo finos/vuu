@@ -1,3 +1,4 @@
+import { Button } from "@salt-ds/core";
 import {
   AuthenticationProvider,
   type NamedWorkspaceDefinitionV1,
@@ -12,6 +13,7 @@ import {
   PortalShell,
   type PortalWorkspacesOptions,
   type RemoteModuleDescriptor,
+  WorkspaceDropZone,
 } from "@vuu-ui/core/portal";
 import {
   basketModule,
@@ -164,6 +166,22 @@ const defaultPaletteWorkspaces: PortalWorkspacesOptions = {
   palette: undefined,
 };
 
+/**
+ * A custom empty workspace: `workspaces.emptyContent` receives the
+ * palette's open action.
+ */
+const customEmptyContentWorkspaces: PortalWorkspacesOptions = {
+  ...workspaces,
+  emptyContent: ({ openPalette }) => (
+    <WorkspaceDropZone title="Start your workspace">
+      Drop a module or table here, or{" "}
+      <Button appearance="transparent" onClick={openPalette}>
+        browse panels
+      </Button>
+    </WorkspaceDropZone>
+  ),
+};
+
 const PanelsPaletteDemo = ({
   workspaces,
 }: {
@@ -214,4 +232,13 @@ export const WorkspacesWithPanelsPalette = () => (
  */
 export const WorkspacesWithDefaultPanelsPalette = () => (
   <PanelsPaletteDemo workspaces={defaultPaletteWorkspaces} />
+);
+
+/**
+ * A custom empty workspace (`workspaces.emptyContent`). Create one with
+ * "+ New workspace": its placeholder reads "Start your workspace", and its
+ * "browse panels" button opens the palette.
+ */
+export const WorkspacesWithCustomEmptyContent = () => (
+  <PanelsPaletteDemo workspaces={customEmptyContentWorkspaces} />
 );

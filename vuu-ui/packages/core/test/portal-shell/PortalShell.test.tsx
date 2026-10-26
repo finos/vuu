@@ -91,11 +91,19 @@ vi.mock("@vuu-ui/vuu-notifications", () => ({
 // The workspace model is not exercised here and pulls in heavy UI controls.
 vi.mock("../../src/workspace", () => ({}));
 vi.mock("../../src/portal-workspaces/PortalWorkspace", () => ({
-  PortalWorkspace: ({ paletteProps }: { paletteProps?: unknown }) => (
+  PortalWorkspace: ({
+    emptyContent,
+    paletteProps,
+  }: {
+    emptyContent?: ReactNode;
+    paletteProps?: unknown;
+  }) => (
     <div
       data-palette-props={JSON.stringify(paletteProps)}
       data-testid="portal-workspace"
-    />
+    >
+      {emptyContent}
+    </div>
   ),
 }));
 vi.mock("../../src/portal-workspaces/PortalWorkspacesProvider", () => ({
@@ -316,6 +324,26 @@ describe("Portal and window shells", () => {
       container.querySelector<HTMLElement>('[data-testid="portal-workspace"]')
         ?.dataset.paletteProps,
     ).toBe(JSON.stringify({ tabs: ["tables"] }));
+  });
+
+  it("passes workspaces.emptyContent to the workspace", async () => {
+    window.history.replaceState(null, "", "/workspaces/markets");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={modules}
+          title="Portal"
+          workspaces={{
+            emptyContent: <p data-testid="custom-empty">Start here</p>,
+          }}
+        />,
+      );
+    });
+    expect(
+      container.querySelector(
+        '[data-testid="portal-workspace"] [data-testid="custom-empty"]',
+      )?.textContent,
+    ).toBe("Start here");
   });
 
   it("does not route palette-only modules, which have no location or route", async () => {

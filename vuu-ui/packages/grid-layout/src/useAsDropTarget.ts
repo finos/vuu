@@ -8,23 +8,38 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { type DragEventHandler, useCallback, useEffect, useRef } from "react";
 import {
+  sourceIsTemplate,
   useGridLayoutDragLeaveHandler,
   useGridLayoutDragPreviewHandler,
   useGridLayoutDropHandler,
   useGridLayoutId,
 } from "./GridLayoutContext";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
+import {
+  type DropCompassZone,
+  getDropCompass,
+  getDropCompassPosition,
+  getDropCompassZone,
+  hideDropCompass,
+  showDropCompass,
+} from "./drag-drop-next/DropCompass";
 
 const DROPTARGET_CLASSNAME = "vuuDropTarget";
 const GRIDITEM_QUERY = ".vuuGridLayoutItem";
 const DROPTARGET_QUERY = "[data-drop-target]";
 
-const removeDropTargetPositionClassName = (el: HTMLElement) => {
-  el.classList.forEach((className) => {
+const removePositionClassNames = (el: HTMLElement) => {
+  for (const className of [...el.classList]) {
     if (className.match(/(north|east|south|west|centre|tabs|header)$/)) {
       el.classList.remove(className);
     }
-  });
+  }
+};
+
+/** Removes the drop affordances of a target: its ghost and drop compass. */
+const removeDropTargetPositionClassName = (el: HTMLElement) => {
+  removePositionClassNames(el);
+  hideDropCompass(el);
 };
 
 const addDropTargetPositionClassName = (
@@ -34,6 +49,12 @@ const addDropTargetPositionClassName = (
   removeDropTargetPositionClassName(el);
   el.classList.add(`${DROPTARGET_CLASSNAME}-${position}`);
 };
+
+const isPlaceholder = (el: HTMLElement) =>
+  el.classList.contains("vuuGridPlaceholder");
+
+const isStacked = (el: HTMLElement) =>
+  queryClosest(el, GRIDITEM_QUERY)?.classList.contains("vuu-stacked") === true;
 
 interface MousePosition {
   clientX: number;
@@ -131,6 +152,8 @@ type DropTargetState = {
   position: GridLayoutDropPosition | undefined;
   rect: rect;
   dropTarget: DropTarget | undefined;
+  /** The drop compass zone under the pointer, during a template drag. */
+  zone?: DropCompassZone;
 };
 
 const NullRect: rect = {
@@ -211,6 +234,7 @@ export const useAsDropTarget = () => {
           dropTargetStateRef.current.dropTarget = undefined;
           dropTargetStateRef.current.accepted = false;
           dropTargetStateRef.current.position = undefined;
+          dropTargetStateRef.current.zone = undefined;
           removeDropTargetPositionClassName(currentDropTarget.target);
           leave();
           // console.log(
@@ -263,7 +287,62 @@ export const useAsDropTarget = () => {
             const { clientX, clientY } = evt;
             const { mousePos } = dropTargetStateRef.current;
 
-            if (clientX !== mousePos.clientX || clientY !== mousePos.clientY) {
+            const showCompass =
+              dropTarget.type === "content" &&
+              sourceIsTemplate(dragContext.dragSource) &&
+              !isPlaceholder(dropTarget.target);
+
+            if (
+              showCompass &&
+              (clientX !== mousePos.clientX ||
+                clientY !== mousePos.clientY ||
+                !getDropCompass(dropTarget.target))
+            ) {
+              mousePos.clientX = clientX;
+              mousePos.clientY = clientY;
+              const state = dropTargetStateRef.current;
+              const zone = getDropCompassZone(
+                evt.target,
+                clientX,
+                clientY,
+                state.rect,
+              );
+              if (zone !== state.zone || !getDropCompass(dropTarget.target)) {
+                const stacked = isStacked(dropTarget.target);
+                const position = getDropCompassPosition(zone, { stacked });
+                const accepted =
+                  position !== undefined &&
+                  preview(
+                    dropTarget.gridLayoutItemId,
+                    dragContext.dragSource,
+                    position,
+                  );
+                state.accepted = accepted;
+                state.position = position;
+                state.zone = zone;
+                removePositionClassNames(dropTarget.target);
+                if (
+                  dropTargetStateRef.current !== state ||
+                  state.dropTarget === undefined
+                ) {
+                  // The preview cancelled the drag.
+                  hideDropCompass(dropTarget.target);
+                } else {
+                  if (accepted) {
+                    dropTarget.target.classList.add(
+                      `${DROPTARGET_CLASSNAME}-${zone}`,
+                    );
+                  }
+                  showDropCompass(dropTarget.target, {
+                    activeZone: accepted ? zone : undefined,
+                    centreDisabled: stacked,
+                  });
+                }
+              }
+            } else if (
+              !showCompass &&
+              (clientX !== mousePos.clientX || clientY !== mousePos.clientY)
+            ) {
               mousePos.clientX = clientX;
               mousePos.clientY = clientY;
 
@@ -318,19 +397,21 @@ export const useAsDropTarget = () => {
       if (dragContext.dragSource === undefined) {
         return;
       }
-      const { dropTarget: currentDropTarget, rect: currentDropTargetRect } = dropTargetStateRef.current;
+      const { dropTarget: currentDropTarget, rect: currentDropTargetRect } =
+        dropTargetStateRef.current;
 
-      if (currentDropTarget?.target && !boxContainsPoint(currentDropTargetRect, evt.clientX, evt.clientY)) {
-
+      if (
+        currentDropTarget?.target &&
+        !boxContainsPoint(currentDropTargetRect, evt.clientX, evt.clientY)
+      ) {
         dropTargetStateRef.current.dropTarget = undefined;
         dropTargetStateRef.current.accepted = false;
         dropTargetStateRef.current.position = undefined;
+        dropTargetStateRef.current.zone = undefined;
         leave();
 
         removeDropTargetPositionClassName(currentDropTarget.target);
       }
-
-
     },
     [dragContext, leave],
   );
@@ -375,6 +456,7 @@ export const useAsDropTarget = () => {
       dropTargetStateRef.current.dropTarget = undefined;
       dropTargetStateRef.current.accepted = false;
       dropTargetStateRef.current.position = undefined;
+      dropTargetStateRef.current.zone = undefined;
     },
     [dragContext, drop, layoutId],
   );

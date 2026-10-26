@@ -28,6 +28,8 @@ import {
 import {
   AddPanelButton,
   type PanelsPaletteProps,
+  type WorkspaceEmptyContent,
+  type WorkspaceEmptyContentActions,
 } from "../../src/panels-palette";
 import { CloseContextPanelOnNavigation } from "../../src/portal-shell/PortalShell";
 import { createPortalComponentRegistries } from "../../src/portal-components";
@@ -261,6 +263,7 @@ describe("Portal workspaces", () => {
   });
 
   const render = async ({
+    emptyContent,
     nav = {},
     palette = false,
     paletteProps,
@@ -268,6 +271,7 @@ describe("Portal workspaces", () => {
     service = new MemoryService([ASIA]),
     systemWorkspaces = [TRADER],
   }: {
+    emptyContent?: WorkspaceEmptyContent;
     nav?: Partial<PortalNavProps>;
     palette?: boolean;
     paletteProps?: PanelsPaletteProps;
@@ -298,6 +302,7 @@ describe("Portal workspaces", () => {
                         <Route
                           element={
                             <PortalWorkspace
+                              emptyContent={emptyContent}
                               headerActions={
                                 palette ? (
                                   <AddPanelButton />
@@ -532,6 +537,71 @@ describe("Portal workspaces", () => {
       expect(document.activeElement).toBe(
         q(".vuuPortalWorkspaceHeader-nameInput"),
       );
+    });
+
+    it("a new workspace shows custom emptyContent", async () => {
+      await render({
+        emptyContent: <p className="customEmpty">Nothing here yet</p>,
+        palette: true,
+        path: "/workspaces/asia-open",
+      });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() => expect(q(".customEmpty")).not.toBeNull());
+      expect(q(".customEmpty")?.textContent).toBe("Nothing here yet");
+      expect(q(".vuuPortalWorkspace-body .vuuWorkspaceDropZone")).toBeNull();
+    });
+
+    it("an emptyContent function receives openPalette", async () => {
+      const emptyContent = vi.fn(
+        ({ openPalette }: WorkspaceEmptyContentActions) => (
+          <button className="customOpen" onClick={openPalette} type="button">
+            Browse panels
+          </button>
+        ),
+      );
+      await render({
+        emptyContent,
+        palette: true,
+        path: "/workspaces/asia-open",
+      });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() => expect(q(".customOpen")).not.toBeNull());
+      expect(emptyContent).toHaveBeenCalledWith({
+        openPalette: expect.any(Function),
+      });
+      // A new workspace opens the palette: close it, then reopen it from
+      // the empty content.
+      await vi.waitFor(() => expect(q(".vuuPanelsPalette")).not.toBeNull());
+      await click(buttonByText("Add panel"));
+      expect(q(".vuuPanelsPalette")).toBeNull();
+      await click(q(".customOpen"));
+      await vi.waitFor(() => expect(q(".vuuPanelsPalette")).not.toBeNull());
+      expect(buttonByText("Add panel")?.getAttribute("aria-pressed")).toBe(
+        "true",
+      );
+    });
+
+    it("emptyContent is not shown without the palette", async () => {
+      await render({
+        emptyContent: <p className="customEmpty">Nothing here yet</p>,
+        path: "/workspaces/asia-open",
+      });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(q(".vuuPortalNav-newWorkspace button"));
+      await vi.waitFor(() =>
+        expect(
+          q(".vuuPortalWorkspace-body .vuuWorkspaceStartPanel"),
+        ).not.toBeNull(),
+      );
+      expect(q(".customEmpty")).toBeNull();
     });
 
     it("the palette offers Modules and Recent, not Tables, by default", async () => {
