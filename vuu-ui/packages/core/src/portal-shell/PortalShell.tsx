@@ -304,6 +304,7 @@ const PortalLayout = () => {
                           element={
                             <PortalWorkspace
                               headerActions={workspaces.headerActions}
+                              paletteProps={workspaces.palette}
                             />
                           }
                         />

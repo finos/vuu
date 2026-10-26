@@ -25,7 +25,10 @@ import {
   ShellContextPanel,
   ShellContextPanelProvider,
 } from "../../src/context-panel/ShellContextPanel";
-import { AddPanelButton } from "../../src/panels-palette";
+import {
+  AddPanelButton,
+  type PanelsPaletteProps,
+} from "../../src/panels-palette";
 import { CloseContextPanelOnNavigation } from "../../src/portal-shell/PortalShell";
 import { createPortalComponentRegistries } from "../../src/portal-components";
 import { PortalModuleRegistryProvider } from "../../src/portal-module-registry/PortalModuleRegistry";
@@ -260,12 +263,14 @@ describe("Portal workspaces", () => {
   const render = async ({
     nav = {},
     palette = false,
+    paletteProps,
     path = "/",
     service = new MemoryService([ASIA]),
     systemWorkspaces = [TRADER],
   }: {
     nav?: Partial<PortalNavProps>;
     palette?: boolean;
+    paletteProps?: PanelsPaletteProps;
     path?: string;
     service?: MemoryService;
     systemWorkspaces?: NamedWorkspaceDefinitionV1[];
@@ -300,6 +305,7 @@ describe("Portal workspaces", () => {
                                   <button type="button">Add panel</button>
                                 )
                               }
+                              paletteProps={paletteProps}
                             />
                           }
                           path={WORKSPACE_ROUTE}
@@ -528,6 +534,36 @@ describe("Portal workspaces", () => {
       );
     });
 
+    it("the palette offers Modules and Recent, not Tables, by default", async () => {
+      await render({ palette: true, path: "/workspaces/asia-open" });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      expect(
+        qa(".vuuPanelsPalette [role='tab']").map(
+          (element) => element.textContent,
+        ),
+      ).toEqual(["Modules", "Recent"]);
+    });
+
+    it("passes paletteProps to the palette, e.g. to offer Tables", async () => {
+      await render({
+        palette: true,
+        paletteProps: { tabs: ["modules", "tables", "recent"] },
+        path: "/workspaces/asia-open",
+      });
+      await vi.waitFor(() =>
+        expect(latest.activeWorkspaceId).toBe("asia-open"),
+      );
+      await click(buttonByText("Add panel"));
+      expect(
+        qa(".vuuPanelsPalette [role='tab']").map(
+          (element) => element.textContent,
+        ),
+      ).toEqual(["Modules", "Tables", "Recent"]);
+    });
+
     it("Add panel toggles the palette", async () => {
       await render({ palette: true, path: "/workspaces/asia-open" });
       await vi.waitFor(() =>
@@ -566,7 +602,7 @@ describe("Portal workspaces", () => {
       await click(buttonByText("Add panel"));
       await act(async () =>
         keyDown(
-          q("input[aria-label='Search panels and tables']") as HTMLElement,
+          q("input[aria-label='Search panels']") as HTMLElement,
           "Escape",
         ),
       );

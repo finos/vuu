@@ -91,7 +91,12 @@ vi.mock("@vuu-ui/vuu-notifications", () => ({
 // The workspace model is not exercised here and pulls in heavy UI controls.
 vi.mock("../../src/workspace", () => ({}));
 vi.mock("../../src/portal-workspaces/PortalWorkspace", () => ({
-  PortalWorkspace: () => <div data-testid="portal-workspace" />,
+  PortalWorkspace: ({ paletteProps }: { paletteProps?: unknown }) => (
+    <div
+      data-palette-props={JSON.stringify(paletteProps)}
+      data-testid="portal-workspace"
+    />
+  ),
 }));
 vi.mock("../../src/portal-workspaces/PortalWorkspacesProvider", () => ({
   PortalWorkspacesProvider: ({ children }: { children: ReactNode }) => (
@@ -294,6 +299,23 @@ describe("Portal and window shells", () => {
     expect(
       container.querySelectorAll('[data-provider="workspaces"]'),
     ).toHaveLength(count);
+  });
+
+  it("passes workspaces.palette to the workspace's Panels palette", async () => {
+    window.history.replaceState(null, "", "/workspaces/trader");
+    await act(async () => {
+      root.render(
+        <PortalShell
+          remoteModules={modules}
+          title="Portal"
+          workspaces={{ palette: { tabs: ["tables"] } }}
+        />,
+      );
+    });
+    expect(
+      container.querySelector<HTMLElement>('[data-testid="portal-workspace"]')
+        ?.dataset.paletteProps,
+    ).toBe(JSON.stringify({ tabs: ["tables"] }));
   });
 
   it("does not route palette-only modules, which have no location or route", async () => {

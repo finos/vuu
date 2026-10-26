@@ -20,6 +20,7 @@ import {
   createPortalComponentRegistries,
   getVuuServerBrowsePath,
   getWorkspacePath,
+  type PanelsPaletteProps,
   PanelsPaletteStateProvider,
   PortalStateScope,
   PortalWorkspaceGrid,
@@ -248,6 +249,11 @@ const useBrowseRegistries = () => {
   };
 };
 
+const browsePaletteProps = (serverId: string): PanelsPaletteProps => ({
+  defaultServerId: serverId,
+  tabs: ["tables"],
+});
+
 interface BrowsePageProps {
   basePath: string;
   serverId: string;
@@ -255,7 +261,7 @@ interface BrowsePageProps {
 
 /**
  * The Browse page of a server: an unsaved workspace with the Panels palette
- * pinned on its Tables tab, showing that server's tables. "Save as
+ * pinned, offering only its Tables tab, showing that server's tables. "Save as
  * workspace" keeps the layout as a named workspace.
  */
 const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
@@ -331,7 +337,7 @@ const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
             controller={controller}
             emptyContent={emptyContent}
             key={controller.instanceId}
-            paletteProps={{ defaultServerId: serverId, defaultTab: "tables" }}
+            paletteProps={browsePaletteProps(serverId)}
           />
         </div>
       </div>

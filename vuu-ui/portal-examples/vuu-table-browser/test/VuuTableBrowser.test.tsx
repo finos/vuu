@@ -295,10 +295,13 @@ describe("VuuTableBrowser", () => {
         "Tables / Browse /",
       );
       expect(query("aside[aria-label='Panels']")).not.toBeNull();
+      // Tables is the only tab, so there is no tab strip.
+      expect(query("aside[aria-label='Panels'] [role='tablist']")).toBeNull();
       expect(
-        query("aside[aria-label='Panels'] [role='tab'][aria-selected='true']")
-          ?.textContent,
-      ).toContain("Tables");
+        query("aside[aria-label='Panels'] [role='listbox']")?.getAttribute(
+          "aria-label",
+        ),
+      ).toBe("Tables");
       expect(
         query<HTMLSelectElement>(".vuuPanelsPalette-server select")?.value,
       ).toBe("simul");

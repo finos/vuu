@@ -5,6 +5,7 @@ export {
   type OpenPanelPromptProps,
 } from "./OpenPanelPrompt";
 export {
+  DEFAULT_PANELS_PALETTE_TABS,
   PANELS_PALETTE_SERVER_KEY,
   PanelsPalette,
   type PanelsPaletteProps,
