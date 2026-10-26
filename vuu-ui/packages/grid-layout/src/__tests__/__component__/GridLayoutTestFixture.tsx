@@ -22,6 +22,8 @@ export type GridLayoutFixtureVariant =
   | "non-resizable"
   | "palette"
   | "palette-target"
+  | "palette-target-compact"
+  | "palette-target-short"
   | "proportional"
   | "proportional-coupled"
   | "proportional-minimums"
@@ -173,12 +175,12 @@ const PaletteLayout = () => (
   </GridLayout>
 );
 
-const PaletteTargetLayout = () => (
+const PaletteTargetLayout = ({ height = 320 }: { height?: number }) => (
   <GridLayout
     colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
     data-testid="grid-layout"
     id="ct-grid"
-    style={{ height: 320, width: 640 }}
+    style={{ height, width: 640 }}
   >
     <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
       <TemplatePalette />
@@ -892,6 +894,12 @@ export const GridLayoutTestFixture = ({
     {variant === "non-resizable" ? <NonResizableLayout /> : null}
     {variant === "palette" ? <PaletteLayout /> : null}
     {variant === "palette-target" ? <PaletteTargetLayout /> : null}
+    {variant === "palette-target-compact" ? (
+      <PaletteTargetLayout height={130} />
+    ) : null}
+    {variant === "palette-target-short" ? (
+      <PaletteTargetLayout height={205} />
+    ) : null}
     {variant === "proportional" ? <ProportionalLayout /> : null}
     {variant === "proportional-coupled" ? <CoupledProportionalLayout /> : null}
     {variant === "proportional-minimums" ? (

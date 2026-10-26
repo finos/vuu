@@ -76,7 +76,16 @@ export class GridLayoutDriver {
     );
   }
 
-  async nativeDrag(source: Locator, target: Locator, zone: DropZone) {
+  /**
+   * Drags natively onto a target. The drop point is the zone's region of the
+   * target, or an explicit offset, in px, from the target's top left.
+   */
+  async nativeDrag(
+    source: Locator,
+    target: Locator,
+    zone: DropZone,
+    offset?: { x: number; y: number },
+  ) {
     const targetBox = await target.boundingBox();
     if (!targetBox) {
       throw Error("GridLayoutDriver native drag requires visible elements");
@@ -100,7 +109,7 @@ export class GridLayoutDriver {
     const dragHandle =
       (await nestedDragHandle.count()) > 0 ? nestedDragHandle.first() : source;
     await dragHandle.dragTo(target, {
-      targetPosition: {
+      targetPosition: offset ?? {
         x: targetBox.width * position.x,
         y: targetBox.height * position.y,
       },

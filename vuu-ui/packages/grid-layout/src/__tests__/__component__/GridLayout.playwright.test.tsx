@@ -195,6 +195,44 @@ test.describe("GridLayout browser interactions", () => {
     await expect(component.locator(".vuuDropCompass")).toHaveCount(0);
   });
 
+  for (const { size, variant, tileSize } of [
+    { size: "compact", variant: "palette-target-compact", tileSize: 22 },
+    { size: "regular", variant: "palette-target-short", tileSize: 34 },
+  ] as const) {
+    test(`native GridPalette drop in the gap around the ${size} compass centre stacks, as a tab`, async ({
+      mount,
+      page,
+    }) => {
+      const component = await mount(fixture, { variant });
+      const grid = new GridLayoutDriver(component, page);
+      const target = grid.content("palette-target");
+      const box = await target.boundingBox();
+      if (!box) {
+        throw Error("drop target has no bounding box");
+      }
+      expect(Math.min(box.width, box.height) < 160).toBe(size === "compact");
+      // Just above the centre tile, in the 3px gap between it and the north
+      // tile. Outside the central 20% of the target, which alone would split.
+      const gapOffset = tileSize / 2 + 1.5;
+      expect(gapOffset).toBeGreaterThan(box.height * 0.1);
+
+      await grid.nativeDrag(
+        component.getByTestId("palette-item-1").getByRole("button"),
+        target,
+        "centre",
+        { x: box.width / 2, y: box.height / 2 - gapOffset },
+      );
+
+      await expect(
+        component.getByRole("tab", { name: "Drop target" }),
+      ).toBeVisible();
+      await expect(
+        component.getByRole("tab", { name: "Template A" }),
+      ).toBeVisible();
+      await expect(component.locator(".vuuDropCompass")).toHaveCount(0);
+    });
+  }
+
   test("native GridPalette swatch drag onto a header creates a stack", async ({
     mount,
     page,

@@ -8,8 +8,10 @@ export {
 } from "./drag-drop-next/DragDropProviderNext";
 export {
   DROP_COMPASS_ZONES,
+  getDropCompassGeometry,
   getDropCompassPosition,
   getDropCompassZone,
+  type DropCompassGeometry,
   type DropCompassZone,
 } from "./drag-drop-next/DropCompass";
 export {

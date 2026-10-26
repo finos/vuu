@@ -18,6 +18,7 @@ import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   type DropCompassZone,
   getDropCompass,
+  getDropCompassGeometry,
   getDropCompassPosition,
   getDropCompassZone,
   hideDropCompass,
@@ -306,6 +307,10 @@ export const useAsDropTarget = () => {
                 clientX,
                 clientY,
                 state.rect,
+                getDropCompassGeometry(
+                  state.rect,
+                  getDropCompass(dropTarget.target),
+                ),
               );
               if (zone !== state.zone || !getDropCompass(dropTarget.target)) {
                 const stacked = isStacked(dropTarget.target);
