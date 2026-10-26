@@ -148,8 +148,8 @@ project defaults, the standalone target config's `moduleFederation.shared`,
 then the target's optional `shared` exceptions. Later declarations override
 only the fields they specify, so a target can change `strictVersion` without
 repeating its required version or singleton setting. Standalone
-`portal-build.json` files remain complete and behave the same when invoked
-directly. The API equivalent is `buildPortalAll({ configPath, mode,
+`portal-build.json` files (with their `extends` chain) behave the same when
+invoked directly. The API equivalent is `buildPortalAll({ configPath, mode,
 targetName })`; `createPortalBuildAllPlan` exposes the validated deterministic
 plan without running Rsbuild.
 
@@ -200,6 +200,13 @@ runtime as the legacy remote-module builder:
   }
 }
 ```
+
+A remote-module build also writes a `serve.json` into its output folder for
+the `serve` static server used by `portal-serve`. It allows cross-origin loads
+from the host (`Access-Control-Allow-Origin: *`) and falls back to
+`index.html` for standalone routes. To use different settings, add
+`public/serve.json` to the application; it is copied into the output and the
+default is not written.
 
 Remote `moduleFederation.exposes` requests beginning with `src/` are normalized
 to `./src/` for Rspack. `publicPath` controls the runtime URL used to load
@@ -261,6 +268,42 @@ CSS-inline build settings without emitting a federation container or manifest.
   }
 }
 ```
+
+When `cssInline` is omitted, CSS imports are inlined for the VUU packages
+that need it (`/packages/core/`, `/packages/vuu-table/`, and so on), excluding
+`.stories.tsx` files. Set `include`/`exclude` to change that, or `false` to
+turn it off.
+
+### Sharing settings with `extends`
+
+A config can extend one or more base configs, so a family of remotes keeps
+their common settings in one place:
+
+```json
+{
+  "extends": "../portal-build.remote.json",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "output": "../../dist_portal/orders",
+    "publicPath": "http://localhost:5010/"
+  },
+  "manifest": { "filename": "./config.json", "remote": {} },
+  "moduleFederation": {
+    "name": "orders",
+    "exposes": { "./Orders": "./src/Orders" }
+  }
+}
+```
+
+`extends` takes a path or an array of paths (merged in order), each relative
+to the file that declares it, and a base can itself extend another. The
+extending config is merged on top: objects merge key by key, while arrays and
+other values replace the base value. File paths in a base config (`entry`,
+`entries`, `htmlTemplate`, `output`, `preEntry`) resolve relative to the base
+file. `publicPath` and `assetPrefix` are URLs and are used as written. A base
+config does not need to be valid on its own; only the merged result is
+validated. `portal-examples/portal-build.remote.json` is the base for the
+example remotes.
 
 `paths.assetPrefix` controls the URL prefix Rsbuild writes for JavaScript,
 CSS, and other static assets in the generated HTML. It defaults to `"./"` so

@@ -7,6 +7,7 @@ import {
   createPortalBuildPlan,
   loadPortalBuildAllConfig,
   loadPortalBuildConfig,
+  mergeConfigValues,
   parsePortalBuildAllConfig,
   parsePortalBuildConfig,
 } from "../src/index.js";
@@ -460,5 +461,91 @@ describe("portal build configuration", () => {
     );
     expect(selectedPlan.targets).toHaveLength(1);
     expect(selectedPlan.targets[0]?.plan.target).toBe("remote-module");
+  });
+});
+
+describe("portal build config extends", () => {
+  const writeJson = (filePath: string, value: unknown) => {
+    mkdirSync(path.dirname(filePath), { recursive: true });
+    writeFileSync(filePath, JSON.stringify(value));
+  };
+
+  const createExtendsFixture = () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), "portal-build-extends-"));
+    temporaryDirectories.push(root);
+    writeJson(path.join(root, "base", "portal-build.remote.json"), {
+      version: 1,
+      target: "remote-module",
+      paths: { htmlTemplate: "./template/index.html" },
+      moduleFederation: {
+        dts: false,
+        shared: {
+          react: { requiredVersion: "^19.2.3", strictVersion: true },
+          "@vuu-ui/core": { requiredVersion: "package", singleton: true },
+        },
+      },
+    });
+    const appDir = path.join(root, "apps", "orders");
+    writeJson(path.join(appDir, "package.json"), {
+      dependencies: { "@vuu-ui/core": "3.3.12" },
+    });
+    return { appDir, root };
+  };
+
+  it("merges a base config, resolving base paths from the base file", () => {
+    const { appDir, root } = createExtendsFixture();
+    writeJson(path.join(appDir, "portal-build.json"), {
+      extends: "../../base/portal-build.remote.json",
+      paths: {
+        entry: "./src/index.tsx",
+        output: "./dist",
+        publicPath: "http://localhost:5010/",
+      },
+      manifest: { filename: "./config.json", remote: {} },
+      moduleFederation: {
+        name: "orders",
+        exposes: { "./Orders": "./src/Orders" },
+        shared: { react: { singleton: true } },
+      },
+    });
+
+    const loaded = loadPortalBuildConfig(path.join(appDir, "portal-build.json"));
+    const plan = createPortalBuildPlan(loaded);
+
+    expect(plan.target).toBe("remote-module");
+    expect(plan.htmlTemplate).toBe(
+      path.join(root, "base", "template", "index.html"),
+    );
+    expect(plan.entry).toBe(path.join(appDir, "src", "index.tsx"));
+    expect(plan.dts).toBe(false);
+    expect(plan.moduleFederation.shared).toEqual({
+      react: {
+        requiredVersion: "^19.2.3",
+        singleton: true,
+        strictVersion: true,
+      },
+      "@vuu-ui/core": { requiredVersion: "3.3.12", singleton: true },
+    });
+  });
+
+  it("rejects circular extends", () => {
+    const { appDir } = createExtendsFixture();
+    writeJson(path.join(appDir, "a.json"), { extends: "./b.json" });
+    writeJson(path.join(appDir, "b.json"), { extends: "./a.json" });
+
+    expect(() => loadPortalBuildConfig(path.join(appDir, "a.json"))).toThrow(
+      /circular extends/,
+    );
+  });
+});
+
+describe("mergeConfigValues", () => {
+  it("merges objects and replaces arrays", () => {
+    expect(
+      mergeConfigValues(
+        { a: { b: 1, c: [1, 2] }, d: 1 },
+        { a: { c: [3] }, e: 2 },
+      ),
+    ).toEqual({ a: { b: 1, c: [3] }, d: 1, e: 2 });
   });
 });
