@@ -580,6 +580,71 @@ describe("PortalNav", () => {
         "icons-and-text",
       );
     });
+
+    const brandLink = () =>
+      container.querySelector<HTMLAnchorElement>(".vuuPortalNav-brandLink");
+
+    it.each([
+      "/workspaces/w1",
+      "/Trading/Orders/detail",
+    ])("links the brand to the portal root, from %s", async (path) => {
+      await render({ brand: <span>Logo</span> }, { path });
+      expect(location).toBe(path);
+      const home = brandLink()!;
+      expect(home.tagName).toBe("A");
+      expect(home.getAttribute("href")).toBe("/");
+      expect(home.getAttribute("aria-label")).toBe("Home");
+      await click(home);
+      expect(location).toBe("/");
+    });
+
+    it("is a focusable link, named by brandLabel, reached with the arrow keys", async () => {
+      await render({ brand: <span>Logo</span>, brandLabel: "Portal home" });
+      const home = brandLink()!;
+      expect(home.getAttribute("aria-label")).toBe("Portal home");
+      home.focus();
+      expect(document.activeElement).toBe(home);
+      await press({ key: "ArrowDown" }, home);
+      expect(document.activeElement).toBe(link("Orders"));
+    });
+
+    it("links to the basename of the portal router", async () => {
+      await act(async () =>
+        root.render(
+          <MemoryRouter basename="/portal" initialEntries={["/portal/x"]}>
+            <ApplicationStateProvider store={appState}>
+              <PortalNav brand={<span>Logo</span>} remoteModules={modules} />
+            </ApplicationStateProvider>
+          </MemoryRouter>,
+        ),
+      );
+      expect(brandLink()?.getAttribute("href")).toBe("/portal");
+    });
+
+    it("does not nest controls in the brand inside the link", async () => {
+      const onClick = vi.fn();
+      await render(
+        {
+          brand: (
+            <>
+              <span>Logo</span>
+              <button aria-label="Bell" onClick={onClick} type="button" />
+            </>
+          ),
+        },
+        { path: "/Trading/Orders" },
+      );
+      expect(brandLink()?.childElementCount).toBe(0);
+      expect(button("Bell")?.closest("a")).toBeNull();
+      await click(button("Bell"));
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(location).toBe("/Trading/Orders");
+    });
+
+    it("has no link with brandHref false", async () => {
+      await render({ brand: <span>Logo</span>, brandHref: false });
+      expect(brandLink()).toBeNull();
+    });
   });
 
   describe("presence", () => {

@@ -43,8 +43,19 @@ export interface PortalNavProps {
    * rail. Transient: the user's chosen mode is kept.
    */
   autoCollapseBelow?: number;
-  /** Logo, product name, environment chip etc. at the top of the nav. */
+  /**
+   * Logo, product name, environment chip etc. at the top of the nav. Clicking
+   * it goes to `brandHref`; controls in it, e.g. a bell, keep their own
+   * behaviour.
+   */
   brand?: PortalNavSlot;
+  /**
+   * Where the brand links to, on the portal (host) router. Defaults to the
+   * portal root, `/`. Pass `false` for a brand that is not a link.
+   */
+  brandHref?: string | false;
+  /** Accessible name of the brand link. Default "Home". */
+  brandLabel?: string;
   className?: string;
   /** Target of the collapse button and ⌘B / Ctrl+B. Default `icons`. */
   collapseTo?: PortalNavCollapsedMode;
