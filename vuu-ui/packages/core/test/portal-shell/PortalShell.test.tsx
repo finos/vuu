@@ -302,7 +302,7 @@ describe("Portal and window shells", () => {
   });
 
   it("passes workspaces.palette to the workspace's Panels palette", async () => {
-    window.history.replaceState(null, "", "/workspaces/trader");
+    window.history.replaceState(null, "", "/workspaces/markets");
     await act(async () => {
       root.render(
         <PortalShell
