@@ -13,7 +13,7 @@
   ],
   "type": "module",
   "devDependencies": {
-    "@vuu-ui/portal-build": "0.1.0",
+    "@vuu-ui/portal-build": "^0.3.0",
     "rsbuild-plugin-inline-css": "1.0.0"
   },
   "dependencies": {

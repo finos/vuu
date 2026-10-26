@@ -16,7 +16,7 @@
   ],
   "main": "index.ts",
   "devDependencies": {
-    "@vuu-ui/portal-build": "0.1.0"
+    "@vuu-ui/portal-build": "^0.3.0"
   },
   "dependencies": {
     "@salt-ds/core": "1.72.0",
