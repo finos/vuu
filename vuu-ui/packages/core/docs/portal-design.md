@@ -130,6 +130,8 @@ unchanged. Render it as a child of `PortalShell`, typically with
 | `density` | `comfortable` | 32px rows, or 26px for `compact`. |
 | `sections` | `headings` | `headings`, `collapsible` headings, or `none`. |
 | `brand`, `footer` | | Nodes, or functions of `{ displayMode, allowedDisplayModes, setDisplayMode }`. The footer is pinned at the bottom. |
+| `brandHref` | `/` | Where clicking the brand goes, on the portal router (so a router basename applies). The link sits behind the brand content, so controls in the brand, e.g. the bell, keep their own behaviour. `false` for no link. |
+| `brandLabel` | `Home` | Accessible name of the brand link. |
 | `renderBadge` | | A live value for an item, usually chosen by `item.navBadge`. |
 | `width` | `248` | Width (px) of `icons-and-text`. |
 | `workspaces` | `true` | Show the [Workspaces](#workspaces) section when a workspace model is provided. |

@@ -16,7 +16,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { buildNavSections } from "../portal-app-switcher/nav-section-utils";
 import { usePortalShellNav } from "../portal-shell/PortalShellNavContext";
 import {
@@ -86,6 +86,8 @@ export const PortalNav = ({
   allowedDisplayModes: allowedDisplayModesProp,
   autoCollapseBelow,
   brand,
+  brandHref = "/",
+  brandLabel = "Home",
   className,
   collapseTo = "icons",
   defaultDisplayMode,
@@ -245,6 +247,17 @@ export const PortalNav = ({
       <div className={`${classBase}-header`}>
         {brand !== undefined ? (
           <div className={`${classBase}-brand`}>
+            {brandHref === false ? null : (
+              // Behind the brand content rather than around it, so controls
+              // in the brand (e.g. the bell) are not nested in a link.
+              <Link
+                aria-label={brandLabel}
+                className={`${classBase}-brandLink`}
+                data-portal-nav-focusable=""
+                title={brandLabel}
+                to={brandHref}
+              />
+            )}
             {renderSlot(brand, slotContext)}
           </div>
         ) : null}
