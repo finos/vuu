@@ -11,13 +11,11 @@ import {
 } from "@vuu-ui/grid-layout";
 import type {
   DataSource,
+  DataSourceConfig,
+  DataSourceFilter,
   RemoteModuleConnection,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import type {
-  TableConfig,
-  TableConfigChangeHandler,
-} from "@vuu-ui/vuu-table-types";
 import { toColumnName } from "@vuu-ui/vuu-utils";
 import {
   Component,
@@ -46,13 +44,13 @@ import {
   isNonEmptyString,
   isRecord,
 } from "./settings-validation";
+import type { VuuFilterTableState } from "./VuuFilterTableView";
 import vuuTableComponentCss from "./VuuTableComponent.css";
 
-// Loaded lazily: @vuu-ui/vuu-table depends, indirectly, on @vuu-ui/core, so a
-// static import would make core evaluate it before core itself has loaded.
-const Table = lazy(() =>
-  import("@vuu-ui/vuu-table").then(({ Table }) => ({ default: Table })),
-);
+// Loaded lazily: the table, filter and footer packages depend, directly or
+// indirectly, on @vuu-ui/core, so a static import would make core evaluate
+// them before core itself has loaded.
+const VuuFilterTableView = lazy(() => import("./VuuFilterTableView"));
 
 export const VUU_TABLE_COMPONENT_TYPE = "vuu-table";
 
@@ -73,9 +71,12 @@ export interface VuuTableComponentSettings {
   readonly tableState?: JsonValue;
 }
 
-/** The shape of `tableState` written by the `vuu-table` renderer. */
-export interface VuuTableState {
-  config?: TableConfig;
+/**
+ * The shape of `tableState` written by the `vuu-table` renderer: the
+ * FilterTable's state, and the filter applied to the data source.
+ */
+export interface VuuTableState extends VuuFilterTableState {
+  filterSpec?: DataSourceFilter;
 }
 
 export const isVuuTableComponentSettings = (
@@ -232,7 +233,8 @@ export const useVuuServerConnection = (
       ({ connectionId }) => connectionId === serverId,
     );
     if (manualServer) {
-      return { connection: { ...manualServer }, status: "connection" };
+      const { username: _username, ...connection } = manualServer;
+      return { connection, status: "connection" };
     }
     return identity.moduleServerMap.settled
       ? { status: "unavailable" }
@@ -305,20 +307,18 @@ class VuuTableErrorBoundary extends Component<
   }
 }
 
-const readTableConfig = (tableState: JsonValue | undefined) =>
-  isRecord(tableState) && isRecord(tableState.config)
-    ? (tableState.config as unknown as TableConfig)
-    : undefined;
+const readTableState = (tableState: JsonValue | undefined) =>
+  isRecord(tableState) ? (tableState as unknown as VuuTableState) : undefined;
 
 interface VuuTableContentProps
   extends Pick<VuuTableComponentSettings, "module" | "table" | "tableState"> {
-  onConfigChange: TableConfigChangeHandler;
+  onStateChange: (state: Partial<VuuTableState>) => void;
   renderError: (message: string) => ReactNode;
 }
 
 const VuuTableContent = ({
   module,
-  onConfigChange,
+  onStateChange,
   renderError,
   table,
   tableState,
@@ -352,16 +352,41 @@ const VuuTableContent = ({
     };
   }, [getServerAPI, module, table]);
 
+  // Read the saved state once, when the item mounts. Later changes come from
+  // the table and filter bar, so feeding them back would reset their state.
+  const savedState = useRef(readTableState(tableState));
+
   const dataSource = useMemo<DataSource | undefined>(
     () =>
       schema
         ? new VuuDataSource({
             columns: schema.columns.map(toColumnName),
+            filterSpec: savedState.current?.filterSpec,
             table: schema.table,
           })
         : undefined,
     [schema, VuuDataSource],
   );
+
+  // The applied filter, so a restored table shows the same rows.
+  const lastFilter = useRef(savedState.current?.filterSpec?.filter ?? "");
+  useEffect(() => {
+    if (!dataSource) {
+      return;
+    }
+    const handleConfig = (config: DataSourceConfig | undefined) => {
+      const filterSpec = config?.filterSpec;
+      const filter = filterSpec?.filter ?? "";
+      if (filter !== lastFilter.current) {
+        lastFilter.current = filter;
+        onStateChange({ filterSpec: filter ? filterSpec : undefined });
+      }
+    };
+    dataSource.on("config", handleConfig);
+    return () => {
+      dataSource.removeListener("config", handleConfig);
+    };
+  }, [dataSource, onStateChange]);
 
   useEffect(
     () => () => {
@@ -370,29 +395,20 @@ const VuuTableContent = ({
     [dataSource],
   );
 
-  // Read the saved config once, when the schema arrives. Later changes come
-  // from the Table itself, so feeding them back would reset its state.
-  const savedConfig = useRef(readTableConfig(tableState));
-  const config = useMemo<TableConfig | undefined>(
-    () =>
-      schema ? (savedConfig.current ?? { columns: schema.columns }) : undefined,
-    [schema],
-  );
-
   if (error) {
     return renderError(error);
   }
-  if (!dataSource || !config) {
+  if (!dataSource || !schema) {
     return <VuuTableStatus>Loading table...</VuuTableStatus>;
   }
   return (
     <Suspense fallback={<VuuTableStatus>Loading table...</VuuTableStatus>}>
-      <Table
-        className={`${classBase}-table`}
-        config={config}
+      <VuuFilterTableView
+        className={`${classBase}-filterTable`}
         dataSource={dataSource}
-        onConfigChange={onConfigChange}
-        renderBufferSize={20}
+        onStateChange={onStateChange}
+        savedState={savedState.current}
+        schema={schema}
       />
     </Suspense>
   );
@@ -406,8 +422,9 @@ export interface VuuTableComponentProps
 
 /**
  * Renders a Vuu table from `vuu-table` settings: connects to `serverId`,
- * fetches the table schema and shows the table, saving column configuration
- * in `tableState`. If the server is unavailable or the table can't be
+ * fetches the table schema and shows it as a FilterTable (filter bar, table,
+ * footer with row counts and settings), saving columns and filters in
+ * `tableState`. If the server is unavailable or the table can't be
  * loaded, shows an error with Retry and Change server.
  */
 export const VuuTableComponent = ({
@@ -458,9 +475,19 @@ export const VuuTableComponent = ({
     [componentId, updateSettings],
   );
 
-  const handleConfigChange = useCallback<TableConfigChangeHandler>(
-    (config) => {
-      const state = toJsonValue({ config });
+  const handleStateChange = useCallback(
+    (change: Partial<VuuTableState>) => {
+      const current = settingsRef.current.tableState;
+      const next: Record<string, unknown> = {
+        ...(isRecord(current) ? current : undefined),
+        ...change,
+      };
+      for (const key of Object.keys(next)) {
+        if (next[key] === undefined) {
+          delete next[key];
+        }
+      }
+      const state = toJsonValue(next);
       if (state.ok) {
         saveSettings({ ...settingsRef.current, tableState: state.value });
       }
@@ -515,7 +542,7 @@ export const VuuTableComponent = ({
     const tableContent = (
       <VuuTableContent
         module={module}
-        onConfigChange={handleConfigChange}
+        onStateChange={handleStateChange}
         renderError={renderError}
         table={table}
         tableState={settingsRef.current.tableState}

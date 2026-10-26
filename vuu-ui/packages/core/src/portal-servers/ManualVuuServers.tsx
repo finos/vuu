@@ -10,13 +10,23 @@ import {
   useOptionalIdentityContext,
   useVuuServers,
 } from "../auth/AuthenticationProvider";
+import type { VuuServerAuthMode } from "@vuu-ui/vuu-data-types";
+import {
+  clearVuuServerCredentials,
+  setVuuServerCredentials,
+  type VuuServerCredentials,
+} from "../auth/VuuServerLogin";
 import { usePersistedState } from "../persistence/PersistenceContext";
 import type { JsonValue } from "../persistence/StateDocument";
 
 /** A Vuu server added by the user, rather than referenced by a module. */
 export interface ManualVuuServer {
+  /** Default `token-exchange`. */
+  readonly auth?: VuuServerAuthMode;
   readonly connectionId: string;
   readonly restUrl: string;
+  /** For `vuu-login`, the username to sign in with. */
+  readonly username?: string;
   readonly websocketUrl: string;
 }
 
@@ -24,7 +34,14 @@ export interface ManualVuuServer {
 export const MANUAL_VUU_SERVERS_KEY = "servers/manual";
 
 export interface ManualVuuServersAPI {
-  readonly addServer: (server: ManualVuuServer) => void;
+  /**
+   * Adds a server. For `vuu-login`, `credentials` are kept for this browser
+   * session only; the password is never saved with the portal state.
+   */
+  readonly addServer: (
+    server: ManualVuuServer,
+    credentials?: VuuServerCredentials,
+  ) => void;
   readonly removeServer: (connectionId: string) => void;
   readonly servers: readonly ManualVuuServer[];
 }
@@ -44,17 +61,31 @@ const isManualVuuServer = (value: unknown): value is ManualVuuServer => {
   if (typeof value !== "object" || value === null) {
     return false;
   }
-  const { connectionId, restUrl, websocketUrl } = value as Record<
-    string,
-    unknown
-  >;
+  const { auth, connectionId, restUrl, username, websocketUrl } =
+    value as Record<string, unknown>;
   return (
     typeof connectionId === "string" &&
     connectionId.length > 0 &&
     typeof restUrl === "string" &&
-    typeof websocketUrl === "string"
+    typeof websocketUrl === "string" &&
+    (auth === undefined || auth === "token-exchange" || auth === "vuu-login") &&
+    (username === undefined || typeof username === "string")
   );
 };
+
+const toSavedServer = ({
+  auth,
+  connectionId,
+  restUrl,
+  username,
+  websocketUrl,
+}: ManualVuuServer): JsonValue => ({
+  connectionId,
+  restUrl,
+  websocketUrl,
+  ...(auth === undefined ? {} : { auth }),
+  ...(username === undefined ? {} : { username }),
+});
 
 const readServers = (
   value: JsonValue | undefined,
@@ -88,11 +119,7 @@ export const ManualVuuServersProvider = ({
         const next = change(current);
         if (next !== current) {
           save(
-            next.map(({ connectionId, restUrl, websocketUrl }) => ({
-              connectionId,
-              restUrl,
-              websocketUrl,
-            })),
+            next.map(toSavedServer),
             MANUAL_VUU_SERVERS_KEY,
             { group: "Servers", label: "Added Vuu servers" },
           );
@@ -103,22 +130,28 @@ export const ManualVuuServersProvider = ({
   );
 
   const addServer = useCallback(
-    (server: ManualVuuServer) =>
+    (server: ManualVuuServer, credentials?: VuuServerCredentials) => {
+      if (credentials) {
+        setVuuServerCredentials(server.connectionId, credentials);
+      }
       update((current) =>
         current.some(({ connectionId }) => connectionId === server.connectionId)
           ? current
           : [...current, server],
-      ),
+      );
+    },
     [update],
   );
 
   const removeServer = useCallback(
-    (connectionId: string) =>
+    (connectionId: string) => {
+      clearVuuServerCredentials(connectionId);
       update((current) =>
         current.some((server) => server.connectionId === connectionId)
           ? current.filter((server) => server.connectionId !== connectionId)
           : current,
-      ),
+      );
+    },
     [update],
   );
 
@@ -139,6 +172,7 @@ export const useManualVuuServers = (): ManualVuuServersAPI =>
   useContext(ManualVuuServersContext);
 
 export interface PortalVuuServer {
+  readonly auth?: VuuServerAuthMode;
   readonly connectionId: string;
   /** True for a server the user added. */
   readonly manual: boolean;
@@ -175,7 +209,8 @@ export const usePortalVuuServers = (): readonly PortalVuuServer[] => {
       }
     }
     for (const server of manualServers) {
-      add({ ...server, manual: true });
+      const { username: _username, ...connection } = server;
+      add({ ...connection, manual: true });
     }
     return Array.from(servers.values());
   }, [identity, manualServers, moduleServers]);

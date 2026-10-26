@@ -6,14 +6,21 @@ body {
   overflow: hidden;
 }
 
-#portal-demo {
-  --vuuPortalShell-leftPanel-width: 272px;
-  --vuuPortalShell-leftPanel-background: var(--vuu-color-deep-purple);
-  --vuuPortalShell-leftPanel-color: white;
+#portal-demo .vuuPortalShell-content {
+  min-width: 0;
+  min-height: 0;
+}
 
-  --vuuPortalNav-itemLabel-color: white;
+.portalDemoNav {
+  .portalDemoNavBrand-name {
+    font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: var(--salt-text-fontWeight-strong, 600);
+  }
 
-  .vuuNavContainer .vuuPortalLogo {
-    grid-area: logo;
+  .portalDemoNavBrand-bell {
+    margin-left: auto;
   }
 }

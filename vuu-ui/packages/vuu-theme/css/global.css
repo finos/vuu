@@ -18,6 +18,21 @@
   color-scheme: dark;
 }
 
+/*
+ * The selected item of a navigation list or panel list: a tint of the
+ * accent behind it, and the accent for its icon or marker. Dark mode uses a
+ * lighter accent, which reads on a dark background.
+ */
+.salt-theme.vuu-theme {
+  --vuu-selected-background: color-mix(in srgb, var(--salt-accent-background) 13%, transparent);
+  --vuu-selected-accent: var(--salt-accent-background);
+}
+
+.salt-theme.vuu-theme[data-mode="dark"] {
+  --vuu-selected-background: color-mix(in srgb, color-mix(in srgb, var(--salt-accent-background) 80%, white) 52%, transparent);
+  --vuu-selected-accent: color-mix(in srgb, var(--salt-accent-background) 35%, white);
+}
+
 /* This uses the :where selector so it doesn't add any specificity */
 :where(.salt-theme.vuu-theme) :focus-visible {
   outline: var(--salt-focused-outline);

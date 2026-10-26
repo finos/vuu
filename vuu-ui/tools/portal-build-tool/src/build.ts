@@ -21,13 +21,18 @@ export interface BuildPortalOptions {
 
 /**
  * `serve` config for a remote module's output folder: allow cross-origin
- * loads from the host and fall back to index.html for standalone routes.
+ * loads from the host, have browsers revalidate every file (index.html,
+ * mf-manifest.json and config.json keep their names across builds), and
+ * fall back to index.html for standalone routes.
  */
 export const defaultRemoteServeConfig = {
   headers: [
     {
       source: "**",
-      headers: [{ key: "Access-Control-Allow-Origin", value: "*" }],
+      headers: [
+        { key: "Access-Control-Allow-Origin", value: "*" },
+        { key: "Cache-Control", value: "no-cache" },
+      ],
     },
   ],
   rewrites: [
@@ -73,6 +78,9 @@ export const buildPortal = async ({
     plan.target === "remote-module"
       ? {
           name: plan.moduleFederation.name,
+          // The remote entry keeps its name: module registries reference it
+          // by URL. Only the chunks it loads are hashed.
+          filename: `${plan.moduleFederation.name}.js`,
           dts: plan.dts,
           exposes: Object.fromEntries(
             Object.entries(plan.exposes ?? {}).map(([name, request]) => [
@@ -117,12 +125,16 @@ export const buildPortal = async ({
             },
             output: {
               assetPrefix: plan.assetPrefix,
+              // Old chunks are removed, not left beside the new ones.
+              cleanDistPath: true,
               distPath: {
                 root: plan.outputRoot,
                 css: "./",
                 js: "./",
               },
-              filenameHash: false,
+              // Content hashes in chunk names, so a browser never reuses a stale
+              // chunk from an earlier build.
+              filenameHash: true,
               minify: false,
               manifest: {
                 filename: plan.manifest.filename,
@@ -176,12 +188,16 @@ export const buildPortal = async ({
               },
               output: {
                 assetPrefix: plan.assetPrefix,
+                // Old chunks are removed, not left beside the new ones.
+                cleanDistPath: true,
                 distPath: {
                   root: plan.outputRoot,
                   css: "./",
                   js: "./",
                 },
-                filenameHash: false,
+                // Content hashes in chunk names, so a browser never reuses a stale
+                // chunk from an earlier build.
+                filenameHash: true,
                 minify: false,
                 module: true,
                 sourceMap: {
@@ -234,12 +250,16 @@ export const buildPortal = async ({
       },
       output: {
         assetPrefix: plan.assetPrefix,
+        // Old chunks are removed, not left beside the new ones.
+        cleanDistPath: true,
         distPath: {
           root: plan.outputRoot,
           css: "./",
           js: "./",
         },
-        filenameHash: false,
+        // Content hashes in chunk names, so a browser never reuses a stale
+        // chunk from an earlier build.
+        filenameHash: true,
         minify: false,
         module: true,
         sourceMap: {
