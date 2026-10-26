@@ -315,8 +315,28 @@ and back and forward all select the workspace. An id that isn't a known
 workspace shows **Workspace not found**, with a button to open the first
 workspace. The grid is `PortalWorkspaceGrid`, a `GridLayout` with the
 workspace's saved component state; an empty workspace shows
-`WorkspaceStartPanel`, or `WorkspaceDropZone` when there is an
-`AddPanelButton`.
+`WorkspaceStartPanel`, or, when there is an `AddPanelButton`, the
+workspace's empty content: `WorkspaceDropZone` by default.
+
+**Empty content.** Hosts replace the drop zone with `PortalShell`'s
+`workspaces.emptyContent`, which `PortalWorkspace` (`emptyContent`) passes
+to `PortalWorkspaceGrid`. It is a `WorkspaceEmptyContent`: a React node, or
+a function that receives `{ openPalette }` and returns one. It is shown only
+when the palette is available; otherwise the workspace shows
+`WorkspaceStartPanel`. It is the content of the empty workspace's
+placeholder, which stays a drop target for palette rows.
+
+```tsx
+const workspaces: PortalWorkspacesOptions = {
+  headerActions: <AddPanelButton />,
+  emptyContent: ({ openPalette }) => (
+    <WorkspaceDropZone title="Nothing here yet">
+      Drag a panel here, or{" "}
+      <Button onClick={openPalette}>browse panels</Button>.
+    </WorkspaceDropZone>
+  ),
+};
+```
 
 `PortalWorkspaceHeader` shows a **Workspaces /** crumb and the name. A named
 workspace's name is a button that edits it in place, and its status is
@@ -430,6 +450,26 @@ Every row can be:
   (`useTemplateDragState`), `TemplateDragHint` shows "Drop on a panel edge
   to split, centre to tab", and an empty workspace's `WorkspaceDropZone` is
   highlighted. Dragging never prompts.
+
+**The drop compass.** While a palette row (a template) is dragged over a
+panel, `@vuu-ui/grid-layout` shows a compass centred on it: a cross of
+five tiles. The ghost shows where the panel will go, and the tile of the
+zone under the pointer is highlighted:
+
+- **north**, **south**, **west**, **east** split the panel on that side.
+- **centre** stacks the new panel with it, as a tab: the existing
+  create-stack drop, the same as a drop on its header.
+
+The pointer is in a tile's zone when it is over the tile; elsewhere over
+the panel, the zone is the nearest edge, or the centre in the middle
+(`getDropCompassZone`). `getDropCompassPosition` maps a zone to the GridLayout
+drop position. A panel in a stack has no centre zone (its tile is
+disabled): drop on the stack's tabs instead. Panels smaller than 160px get
+a compact compass. The compass is decorative (`aria-hidden`); Escape
+cancels the drag and removes it. It is shown only for template drags:
+moving a panel within the grid keeps its existing drop targets, where the
+centre replaces the target. An empty workspace's placeholder has no
+compass; a drop fills it.
 - **added** with **+**. This fills the empty workspace's placeholder, or
   splits the focused panel. A module's `workspace.defaultSize` chooses the
   side: wider than tall goes below, taller than wide goes beside, otherwise

@@ -25,7 +25,10 @@ import {
 } from "../panels-palette/PanelsPaletteState";
 import { TemplateDragHint } from "../panels-palette/TemplateDragHint";
 import { OpenPanelProvider } from "../panels-palette/useOpenPanel";
-import { WorkspaceDropZone } from "../panels-palette/WorkspaceDropZone";
+import {
+  WorkspaceDropZone,
+  type WorkspaceEmptyContent,
+} from "../panels-palette/WorkspaceDropZone";
 import type { WorkspaceController } from "../workspace/WorkspaceController";
 import { WorkspacePersistentStateProvider } from "../workspace/WorkspacePersistentState";
 import { useWorkspace } from "../workspace/WorkspaceProvider";
@@ -48,9 +51,10 @@ export interface PortalWorkspaceGridProps {
   controller: WorkspaceController;
   /**
    * Placeholder content of an empty workspace when the Panels palette is
-   * available. Defaults to a `WorkspaceDropZone`.
+   * available: a node, or a function that receives `{ openPalette }` and
+   * returns one. Defaults to a `WorkspaceDropZone`.
    */
-  emptyContent?: ReactNode;
+  emptyContent?: WorkspaceEmptyContent;
   /** Props of the Panels palette, e.g. its initial tab and server. */
   paletteProps?: PanelsPaletteProps;
 }
@@ -65,7 +69,13 @@ export const PortalWorkspaceGrid = ({
   emptyContent = <WorkspaceDropZone />,
   paletteProps,
 }: PortalWorkspaceGridProps) => {
-  const paletteAvailable = usePanelsPaletteState()?.available === true;
+  const paletteState = usePanelsPaletteState();
+  const paletteAvailable = paletteState?.available === true;
+  const setPaletteOpen = paletteState?.setOpen;
+  const openPalette = useCallback(
+    () => setPaletteOpen?.(true),
+    [setPaletteOpen],
+  );
   const [isEmpty, setIsEmpty] = useState(
     controller.snapshot.layout.components.length === 0,
   );
@@ -102,7 +112,11 @@ export const PortalWorkspaceGrid = ({
               placeholderContent={
                 isEmpty ? (
                   paletteAvailable ? (
-                    emptyContent
+                    typeof emptyContent === "function" ? (
+                      emptyContent({ openPalette })
+                    ) : (
+                      emptyContent
+                    )
                   ) : (
                     <WorkspaceStartPanel />
                   )
@@ -139,6 +153,12 @@ const WorkspaceState = ({
 
 export interface PortalWorkspaceProps {
   /**
+   * Placeholder content of an empty workspace when the Panels palette is
+   * available, see `PortalWorkspaceGridProps.emptyContent`. `PortalShell`
+   * passes `workspaces.emptyContent`.
+   */
+  emptyContent?: WorkspaceEmptyContent;
+  /**
    * Actions in the workspace header, before "Reset to default". A slot for
    * e.g. "Add panel".
    */
@@ -169,6 +189,7 @@ const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
  * shows a not-found state.
  */
 export const PortalWorkspace = ({
+  emptyContent,
   headerActions,
   paletteProps,
 }: PortalWorkspaceProps) => {
@@ -288,6 +309,7 @@ export const PortalWorkspace = ({
           {controller ? (
             <PortalWorkspaceGrid
               controller={controller}
+              emptyContent={emptyContent}
               key={controller.instanceId}
               paletteProps={paletteProps}
             />

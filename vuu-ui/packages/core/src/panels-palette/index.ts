@@ -53,4 +53,6 @@ export {
 export {
   WorkspaceDropZone,
   type WorkspaceDropZoneProps,
+  type WorkspaceEmptyContent,
+  type WorkspaceEmptyContentActions,
 } from "./WorkspaceDropZone";

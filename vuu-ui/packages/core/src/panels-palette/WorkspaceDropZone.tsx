@@ -2,6 +2,21 @@ import { AddIcon } from "@salt-ds/icons";
 import { useTemplateDragState } from "@vuu-ui/grid-layout";
 import type { ReactNode } from "react";
 
+/** Actions available to a `WorkspaceEmptyContent` render function. */
+export interface WorkspaceEmptyContentActions {
+  /** Opens the Panels palette. */
+  openPalette: () => void;
+}
+
+/**
+ * Placeholder content of an empty workspace when the Panels palette is
+ * available: a node, or a function of the actions, e.g. `openPalette`, that
+ * returns one.
+ */
+export type WorkspaceEmptyContent =
+  | ReactNode
+  | ((actions: WorkspaceEmptyContentActions) => ReactNode);
+
 export interface WorkspaceDropZoneProps {
   /** Explanatory text, below the title. */
   children?: ReactNode;

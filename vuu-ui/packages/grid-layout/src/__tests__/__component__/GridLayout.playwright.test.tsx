@@ -171,7 +171,7 @@ test.describe("GridLayout browser interactions", () => {
     });
   }
 
-  test("native GridPalette centre drop replaces existing content", async ({
+  test("native GridPalette centre drop stacks with existing content, as a tab", async ({
     mount,
     page,
   }) => {
@@ -184,9 +184,15 @@ test.describe("GridLayout browser interactions", () => {
       "centre",
     );
 
-    await expect(grid.item("palette-target")).toHaveCount(0);
+    await expect(
+      component.getByRole("tab", { name: "Drop target" }),
+    ).toBeVisible();
+    await expect(
+      component.getByRole("tab", { name: "Template A" }),
+    ).toBeVisible();
     await expect(component.getByTestId("template-content")).toBeVisible();
     await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
+    await expect(component.locator(".vuuDropCompass")).toHaveCount(0);
   });
 
   test("native GridPalette swatch drag onto a header creates a stack", async ({

@@ -7,6 +7,12 @@ export {
   useOptionalDragContext,
 } from "./drag-drop-next/DragDropProviderNext";
 export {
+  DROP_COMPASS_ZONES,
+  getDropCompassPosition,
+  getDropCompassZone,
+  type DropCompassZone,
+} from "./drag-drop-next/DropCompass";
+export {
   useTemplateDragState,
   type TemplateDragState,
 } from "./drag-drop-next/TemplateDragSession";

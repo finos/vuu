@@ -127,3 +127,89 @@
   transition-timing-function: ease-in-out;
   z-index: 100;
 }
+
+/*
+ * Drop compass, centred over the panel under the pointer while a template
+ * (e.g. a Panels palette row) is dragged. Its zone under the pointer is
+ * highlighted: a direction splits the panel, the centre stacks as a tab.
+ */
+[data-drop-target] > .vuuDropCompass {
+  --vuuDropCompass-tile-size: 34px;
+  --vuuDropCompass-accent: var(--salt-accent-background, #2f80ed);
+  display: grid;
+  gap: 3px;
+  grid-template-columns: repeat(3, var(--vuuDropCompass-tile-size));
+  grid-template-rows: repeat(3, var(--vuuDropCompass-tile-size));
+  inset: auto;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 101;
+
+  &.vuuDropCompass-compact {
+    --vuuDropCompass-tile-size: 22px;
+  }
+}
+
+.vuuDropCompass-zone {
+  --vuuDropCompass-glyph-height: 18px;
+  --vuuDropCompass-glyph-width: 18px;
+  background: var(--salt-container-primary-background, #141c26);
+  border: 1px solid color-mix(in srgb, var(--vuuDropCompass-accent) 50%, transparent);
+  border-radius: 6px;
+  box-shadow: var(--salt-overlayable-shadow-drag, none);
+  display: grid;
+  place-items: center;
+
+  &::after {
+    background: color-mix(in srgb, var(--vuuDropCompass-accent) 55%, transparent);
+    border-radius: 2px;
+    content: "";
+    height: var(--vuuDropCompass-glyph-height);
+    width: var(--vuuDropCompass-glyph-width);
+  }
+
+  .vuuDropCompass-compact > & {
+    border-radius: 4px;
+
+    &::after {
+      scale: 0.6;
+    }
+  }
+
+  &[data-compass-zone="north"] {
+    --vuuDropCompass-glyph-height: 7px;
+    grid-area: 1 / 2;
+  }
+  &[data-compass-zone="west"] {
+    --vuuDropCompass-glyph-width: 7px;
+    grid-area: 2 / 1;
+  }
+  &[data-compass-zone="centre"] {
+    grid-area: 2 / 2;
+    &::after {
+      border-radius: 3px;
+    }
+  }
+  &[data-compass-zone="east"] {
+    --vuuDropCompass-glyph-width: 7px;
+    grid-area: 2 / 3;
+  }
+  &[data-compass-zone="south"] {
+    --vuuDropCompass-glyph-height: 7px;
+    grid-area: 3 / 2;
+  }
+
+  &.vuuDropCompass-zone-active {
+    background: var(--vuuDropCompass-accent);
+    border-color: var(--salt-accent-foreground, #fff);
+    &::after {
+      background: var(--salt-accent-foreground, #fff);
+    }
+  }
+
+  &[data-disabled] {
+    opacity: 0.35;
+  }
+}

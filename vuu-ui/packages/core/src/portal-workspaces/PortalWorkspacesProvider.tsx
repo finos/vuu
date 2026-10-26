@@ -4,6 +4,7 @@ import type {
 } from "@vuu-ui/grid-layout";
 import { type ReactNode, useMemo } from "react";
 import type { PanelsPaletteProps } from "../panels-palette/PanelsPalette";
+import type { WorkspaceEmptyContent } from "../panels-palette/WorkspaceDropZone";
 import { useOptionalAuthenticatedUser } from "../auth/AuthenticationProvider";
 import { ANONYMOUS_USER } from "../common-shell/PortalPersistenceRoot";
 import { DEFAULT_PORTAL_ID } from "../persistence/LocalStoragePersistenceBackend";
@@ -19,6 +20,12 @@ export const PORTAL_WORKSPACE_NAMESPACE = "vuu-portal";
 export interface PortalWorkspacesOptions {
   /** Components that can be placed in a workspace. */
   componentRenderers?: GridComponentRendererRegistry;
+  /**
+   * Content of an empty workspace when the Panels palette is available,
+   * e.g. after "+ New workspace": a node, or a function that receives
+   * `{ openPalette }` and returns one. Default: a `WorkspaceDropZone`.
+   */
+  emptyContent?: WorkspaceEmptyContent;
   /**
    * Actions in the workspace header, e.g. `<AddPanelButton />`, which opens
    * the Panels palette in the shell's context panel.

@@ -303,6 +303,7 @@ const PortalLayout = () => {
                           path={WORKSPACE_ROUTE_PATTERN}
                           element={
                             <PortalWorkspace
+                              emptyContent={workspaces.emptyContent}
                               headerActions={workspaces.headerActions}
                               paletteProps={workspaces.palette}
                             />
