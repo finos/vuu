@@ -18,28 +18,17 @@ import {
 import {
   AddPanelButton,
   createPortalComponentRegistries,
-  getVuuServerBrowsePath,
   getWorkspacePath,
   type PanelsPaletteProps,
   PanelsPaletteStateProvider,
   PortalStateScope,
   PortalWorkspaceGrid,
-  useRetryConnection,
-  usePortalVuuServers,
   useTransientWorkspace,
-  useVuuServerUnreachable,
   WorkspaceDropZone,
 } from "@vuu-ui/core/portal";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
-import {
-  Link,
-  Route,
-  Routes,
-  useLocation,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import "./VuuTableBrowser.css";
 
@@ -54,12 +43,6 @@ export const browserBasePath = (pathname: string, routePath = "") => {
   const route = routePath.replace(/\/$/, "");
   const routeSegments = route ? route.split("/").length : 0;
   return segments.slice(0, segments.length - routeSegments).join("/");
-};
-
-const useBrowserBasePath = () => {
-  const { pathname } = useLocation();
-  const routePath = useParams()["*"];
-  return browserBasePath(pathname, routePath);
 };
 
 interface OpenTable {
@@ -210,29 +193,6 @@ const SaveAsWorkspace = ({
   );
 };
 
-interface ServerUnavailableProps {
-  basePath: string;
-  serverId: string;
-}
-
-const ServerUnavailable = ({ basePath, serverId }: ServerUnavailableProps) => {
-  const navigate = useNavigate();
-  const retryConnection = useRetryConnection();
-  return (
-    <div className={`${classBase}-error`} role="alert">
-      <strong>{serverId} is unreachable</strong>
-      <span>The Vuu server {serverId} is not available.</span>
-      <div className={`${classBase}-errorActions`}>
-        <Button onClick={() => retryConnection(serverId)}>
-          <RefreshIcon aria-hidden />
-          Retry
-        </Button>
-        <Button onClick={() => navigate(basePath)}>Change server</Button>
-      </div>
-    </div>
-  );
-};
-
 /** Component registries for a Browse page outside a `WorkspaceProvider`. */
 const useBrowseRegistries = () => {
   const workspace = useOptionalWorkspace();
@@ -249,38 +209,37 @@ const useBrowseRegistries = () => {
   };
 };
 
-const browsePaletteProps = (serverId: string): PanelsPaletteProps => ({
-  defaultServerId: serverId,
-  tabs: ["tables"],
-});
-
 interface BrowsePageProps {
-  basePath: string;
-  serverId: string;
+  /** Selected in the Tables panel when the page opens, e.g. from a link. */
+  defaultServerId?: string;
 }
 
 /**
- * The Browse page of a server: an unsaved workspace with the Panels palette
- * pinned, offering only its Tables tab, showing that server's tables. "Save as
- * workspace" keeps the layout as a named workspace.
+ * The Browse page: an unsaved workspace with the Tables panel pinned. The
+ * panel lists the servers and the selected server's tables; open tables
+ * keep their own server, so tables from several servers can be combined.
+ * "Save as workspace" keeps the layout as a named workspace.
  */
-const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
+const BrowsePage = ({ defaultServerId }: BrowsePageProps) => {
   const canSave = useOptionalWorkspace() !== undefined;
   const { componentRenderers, settingsCodecs } = useBrowseRegistries();
   const { controller, edited, reset, snapshot } = useTransientWorkspace({
     componentRenderers,
-    name: serverId,
+    name: "Tables",
     settingsCodecs,
   });
-  // Unknown servers, and known servers that are down or refuse the user,
-  // offer Retry and Change server. When a server comes back, this updates
-  // and the page recovers.
-  const unavailable = useVuuServerUnreachable(serverId);
+  const [serverId, setServerId] = useState(defaultServerId);
   const openTables = useMemo(() => getOpenTables(snapshot), [snapshot]);
+  const paletteProps = useMemo<PanelsPaletteProps>(
+    () => ({
+      defaultServerId,
+      onServerChange: setServerId,
+      tabs: ["tables"],
+    }),
+    [defaultServerId],
+  );
 
-  const emptyContent: ReactNode = unavailable ? (
-    <ServerUnavailable basePath={basePath} serverId={serverId} />
-  ) : (
+  const emptyContent: ReactNode = (
     <WorkspaceDropZone title="Pick a table">
       Click a table on the right to open it here, or drag tables in to view
       several side by side.
@@ -300,10 +259,7 @@ const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
         data-server-id={serverId}
       >
         <header className="vuuPortalWorkspaceHeader">
-          <span className="vuuPortalWorkspaceHeader-crumb">
-            Tables / Browse /
-          </span>
-          <h1 className="vuuPortalWorkspaceHeader-title">{serverId}</h1>
+          <h1 className="vuuPortalWorkspaceHeader-title">Tables</h1>
           <span className="vuuPortalWorkspaceHeader-status">
             {edited ? "Unsaved layout" : null}
           </span>
@@ -311,7 +267,10 @@ const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
           <div className="vuuPortalWorkspaceHeader-actions">
             {canSave ? (
               <SaveAsWorkspace
-                defaultName={getDefaultWorkspaceName(serverId, openTables)}
+                defaultName={getDefaultWorkspaceName(
+                  serverId ?? "Vuu",
+                  openTables,
+                )}
                 disabled={openTables.length === 0 && !edited}
                 onSaved={reset}
                 snapshot={snapshot}
@@ -337,7 +296,7 @@ const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
             controller={controller}
             emptyContent={emptyContent}
             key={controller.instanceId}
-            paletteProps={browsePaletteProps(serverId)}
+            paletteProps={paletteProps}
           />
         </div>
       </div>
@@ -345,51 +304,23 @@ const BrowsePage = ({ basePath, serverId }: BrowsePageProps) => {
   );
 };
 
-const ServerList = ({ basePath }: { basePath: string }) => {
-  const servers = usePortalVuuServers();
-  return (
-    <div className={`${classBase}-landing`}>
-      <h1>Browse tables</h1>
-      <p>Choose a Vuu server to browse its tables.</p>
-      {servers.length === 0 ? (
-        <p>No Vuu servers are configured.</p>
-      ) : (
-        <ul aria-label="Vuu servers" className={`${classBase}-serverList`}>
-          {servers.map(({ connectionId }) => (
-            <li key={connectionId}>
-              <Link to={getVuuServerBrowsePath(basePath, connectionId)}>
-                {connectionId}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
-
-const BrowseRoute = ({ basePath }: { basePath: string }) => {
-  const { serverId = "" } = useParams();
-  return <BrowsePage basePath={basePath} key={serverId} serverId={serverId} />;
+/** An older link to a server's Browse page selects that server. */
+const ServerLinkRoute = () => {
+  const { serverId } = useParams();
+  return <BrowsePage defaultServerId={serverId} />;
 };
 
 /**
- * Browses the tables of the portal's Vuu servers. The index route lists the
- * servers; `<serverId>` is that server's Browse page.
+ * Browses the tables of the portal's Vuu servers, chosen in the Tables
+ * panel. `<serverId>` (an older link) opens the page with that server.
  */
-const VuuTableBrowser = () => {
-  const basePath = useBrowserBasePath();
-  return (
-    <PortalStateScope>
-      <Routes>
-        <Route element={<ServerList basePath={basePath} />} index />
-        <Route
-          element={<BrowseRoute basePath={basePath} />}
-          path=":serverId/*"
-        />
-      </Routes>
-    </PortalStateScope>
-  );
-};
+const VuuTableBrowser = () => (
+  <PortalStateScope>
+    <Routes>
+      <Route element={<BrowsePage />} index />
+      <Route element={<ServerLinkRoute />} path=":serverId/*" />
+    </Routes>
+  </PortalStateScope>
+);
 
 export default VuuTableBrowser;

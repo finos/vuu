@@ -25,6 +25,8 @@ const pinnedMetadata = {
 
 /** The context panel title while it shows the Panels palette. */
 export const PANELS_PALETTE_TITLE = "Panels";
+/** The title instead while the palette shows its Tables tab. */
+export const TABLES_PALETTE_TITLE = "Tables";
 
 // The palette opens beside the user's work, e.g. a new workspace's name in
 // edit mode, so it leaves focus there. Inline, so it never covers the
@@ -48,6 +50,8 @@ export interface PanelsPaletteState {
   readonly pinned: boolean;
   readonly setOpen: (open: boolean) => void;
   readonly setPinned: (pinned: boolean) => void;
+  /** Sets the context panel title, which follows the palette's tab. */
+  readonly setTitle: (title: string) => void;
   readonly toggleOpen: () => void;
   /**
    * Registers an "Add panel" control, making the palette available. Returns
@@ -78,7 +82,8 @@ export interface PanelsPaletteStateProviderProps {
  * it. Pinning is kept in the portal's saved state.
  *
  * Within the shell's context panel (`ShellContextPanelProvider`), an open
- * palette claims the panel, titled "Panels", once an `AddPanelButton` is
+ * palette claims the panel, titled "Panels" ("Tables" while the palette
+ * shows its Tables tab), once an `AddPanelButton` is
  * mounted. It keeps the panel when the portal navigates and releases it
  * when closed or unmounted. Closing the panel (close button or Escape)
  * closes and unpins the palette; another owner claiming the panel, e.g. a
@@ -142,17 +147,24 @@ export const PanelsPaletteStateProvider = ({
   const claim = slot?.claim;
   const release = slot?.release;
   const shown = open && available;
+  const [title, setTitle] = useState(PANELS_PALETTE_TITLE);
+  const titleRef = useRef(title);
+  titleRef.current = title;
   useEffect(() => {
     if (shown && claim && release) {
-      claim(
-        contextPanelOwner,
-        PANELS_PALETTE_TITLE,
-        handleRelease,
-        claimOptions,
-      );
+      claim(contextPanelOwner, titleRef.current, handleRelease, claimOptions);
       return () => release(contextPanelOwner);
     }
   }, [claim, contextPanelOwner, handleRelease, release, shown]);
+  // Claiming again while shown only updates the title (the palette leaves
+  // focus where it is), so the panel is not released and reopened.
+  const shownRef = useRef(shown);
+  shownRef.current = shown;
+  useEffect(() => {
+    if (shownRef.current && claim) {
+      claim(contextPanelOwner, title, handleRelease, claimOptions);
+    }
+  }, [claim, contextPanelOwner, handleRelease, title]);
 
   const value = useMemo<PanelsPaletteState>(
     () => ({
@@ -163,6 +175,7 @@ export const PanelsPaletteStateProvider = ({
       register,
       setOpen,
       setPinned,
+      setTitle,
       toggleOpen,
     }),
     [

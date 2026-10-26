@@ -1,4 +1,7 @@
-export type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
+export type {
+  RemoteModuleConnection,
+  VuuServerAuthMode,
+} from "@vuu-ui/vuu-data-types";
 export type { AuthConfig } from "./AuthConfig";
 export {
   AuthenticationErrorBoundary,
@@ -38,6 +41,14 @@ export {
   type VuuTokenExchangeFailure,
   type VuuSession
 } from "./VuuTokenExchange";
+export {
+  clearVuuServerCredentials,
+  getVuuServerCredentials,
+  isCredentialsFailure,
+  loginToVuuServer,
+  setVuuServerCredentials,
+  type VuuServerCredentials,
+} from "./VuuServerLogin";
 export {
   parseVuuUserFromToken,
   type VuuUser

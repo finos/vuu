@@ -19,7 +19,8 @@ import notificationsIndicatorCss from "./NotificationsIndicator.css";
 
 const classBase = "vuuNotificationsIndicator";
 
-export interface NotificationsIndicatorProps extends HTMLAttributes<HTMLDivElement> {
+export interface NotificationsIndicatorProps
+  extends HTMLAttributes<HTMLDivElement> {
   /**
    * `bell-and-latest` also shows the latest notification next to the bell
    * for `tickerDurationMs` after it arrives. Default `bell-and-latest`.
@@ -40,6 +41,13 @@ const formatAge = (time: number, now: number) => {
   const minutes = Math.floor((now - time) / 60_000);
   return minutes < 1 ? "now" : `${minutes}m`;
 };
+
+/** The bell, struck through by CSS while Do not disturb is on. */
+const BellIcon = () => (
+  <span aria-hidden className={`${classBase}-bellIcon`}>
+    <NotificationIcon />
+  </span>
+);
 
 /**
  * The bell in the portal header: the unread count, the latest notification
@@ -132,21 +140,24 @@ export const NotificationsIndicator = ({
       <Button
         appearance="transparent"
         aria-expanded={presentation.panelOpen}
-        aria-label={
-          unreadCount > 0
-            ? `Notifications, ${unreadCount} unread`
-            : "Notifications"
-        }
+        aria-label={[
+          "Notifications",
+          unreadCount > 0 ? `${unreadCount} unread` : undefined,
+          presentation.doNotDisturb ? "do not disturb" : undefined,
+        ]
+          .filter(Boolean)
+          .join(", ")}
         className={`${classBase}-bell`}
+        data-do-not-disturb={presentation.doNotDisturb || undefined}
         onClick={togglePanel}
         sentiment="neutral"
       >
         {unreadCount > 0 ? (
           <Badge max={99} value={unreadCount}>
-            <NotificationIcon aria-hidden />
+            <BellIcon />
           </Badge>
         ) : (
-          <NotificationIcon aria-hidden />
+          <BellIcon />
         )}
       </Button>
       <span aria-live="polite" className={`${classBase}-announcer`}>

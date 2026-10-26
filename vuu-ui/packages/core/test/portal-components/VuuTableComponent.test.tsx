@@ -4,12 +4,9 @@ import {
   type GridLayoutDocumentChange,
   GridLayoutProvider,
 } from "@vuu-ui/grid-layout";
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { DataSourceConfig, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import type {
-  TableConfig,
-  TableConfigChangeHandler,
-} from "@vuu-ui/vuu-table-types";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,24 +18,21 @@ import {
   type VuuTableComponentSettings,
 } from "../../src/portal";
 
-const tableProps =
-  vi.fn<
-    (props: {
-      config: TableConfig;
-      onConfigChange?: TableConfigChangeHandler;
-    }) => void
-  >();
+type ViewProps = {
+  dataSource: FakeDataSource;
+  onStateChange: (state: Record<string, unknown>) => void;
+  savedState?: { config?: TableConfig };
+  schema: TableSchema;
+};
 
-vi.mock("@vuu-ui/vuu-table", () => ({
-  Table: (props: {
-    config: TableConfig;
-    onConfigChange?: TableConfigChangeHandler;
-  }) => {
-    tableProps(props);
+const viewProps = vi.fn<(props: ViewProps) => void>();
+
+vi.mock("../../src/portal-components/VuuFilterTableView", () => ({
+  default: (props: ViewProps) => {
+    viewProps(props);
+    const columns = props.savedState?.config?.columns ?? props.schema.columns;
     return (
-      <div data-columns={props.config.columns.map(({ name }) => name).join()}>
-        table
-      </div>
+      <div data-columns={columns.map(({ name }) => name).join()}>table</div>
     );
   },
 }));
@@ -55,7 +49,22 @@ const schema: TableSchema = {
 const getTableSchema = vi.fn(async (_table: VuuTable) => schema);
 
 class FakeDataSource {
-  constructor(readonly options: unknown) {}
+  readonly listeners = new Set<(config: DataSourceConfig) => void>();
+  constructor(readonly options: DataSourceConfig) {}
+  on(_event: "config", listener: (config: DataSourceConfig) => void) {
+    this.listeners.add(listener);
+  }
+  removeListener(
+    _event: "config",
+    listener: (config: DataSourceConfig) => void,
+  ) {
+    this.listeners.delete(listener);
+  }
+  emitConfig(config: DataSourceConfig) {
+    for (const listener of this.listeners) {
+      listener(config);
+    }
+  }
   unsubscribe = vi.fn();
 }
 
@@ -114,7 +123,7 @@ describe("vuu-table renderer", () => {
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-    tableProps.mockClear();
+    viewProps.mockClear();
     getTableSchema.mockClear();
     getTableSchema.mockImplementation(async () => schema);
     onDocumentChange = vi.fn<ChangeHandler>();
@@ -185,10 +194,7 @@ describe("vuu-table renderer", () => {
 
     const config = { columns: [{ name: "price" }] } as TableConfig;
     await act(async () => {
-      tableProps.mock.lastCall?.[0].onConfigChange?.(
-        config,
-        "column-removed" as never,
-      );
+      viewProps.mock.lastCall?.[0].onStateChange({ config });
     });
     expect(onDocumentChange.mock.lastCall?.[1].kind).toBe("settings");
     expect(lastSettings()).toEqual({
@@ -196,6 +202,44 @@ describe("vuu-table renderer", () => {
       serverId: "server-a",
       table: "prices",
       tableState: { config: { columns: [{ name: "price" }] } },
+    });
+  });
+
+  it("saves the applied filter with the table's other state", async () => {
+    await renderTable({
+      module: "SIMUL",
+      serverId: "server-a",
+      table: "prices",
+      tableState: { config: { columns: [{ name: "ric" }] } },
+    });
+    const dataSource = viewProps.mock.lastCall?.[0].dataSource;
+    await act(async () => {
+      dataSource?.emitConfig({
+        columns: ["ric"],
+        filterSpec: { filter: 'ric = "AAA.L"' },
+      });
+    });
+    expect(lastSettings().tableState).toEqual({
+      config: { columns: [{ name: "ric" }] },
+      filterSpec: { filter: 'ric = "AAA.L"' },
+    });
+    await act(async () => {
+      dataSource?.emitConfig({ columns: ["ric"] });
+    });
+    expect(lastSettings().tableState).toEqual({
+      config: { columns: [{ name: "ric" }] },
+    });
+  });
+
+  it("restores the applied filter when the table is created", async () => {
+    await renderTable({
+      module: "SIMUL",
+      serverId: "server-a",
+      table: "prices",
+      tableState: { filterSpec: { filter: 'ric = "AAA.L"' } },
+    });
+    expect(viewProps.mock.lastCall?.[0].dataSource.options.filterSpec).toEqual({
+      filter: 'ric = "AAA.L"',
     });
   });
 
@@ -305,10 +349,9 @@ describe("vuu-table renderer", () => {
     });
 
     await act(async () => {
-      tableProps.mock.lastCall?.[0].onConfigChange?.(
-        { columns: [{ name: "price" }] } as TableConfig,
-        "column-removed" as never,
-      );
+      viewProps.mock.lastCall?.[0].onStateChange({
+        config: { columns: [{ name: "price" }] } as TableConfig,
+      });
     });
     expect(lastSettings()).toEqual({
       module: "SIMUL",

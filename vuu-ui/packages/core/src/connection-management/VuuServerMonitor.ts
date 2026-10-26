@@ -18,7 +18,11 @@ import type {
   VuuConnectionRegistry,
   VuuServerConnectionState,
 } from "./VuuConnectionRegistry";
-import { isSessionLimitExceeded } from "./VuuConnectionRegistry";
+import {
+  isSessionEnded,
+  isSessionEvicted,
+  isSessionLimitExceeded,
+} from "./VuuConnectionRegistry";
 
 export const DEFAULT_SERVER_MONITOR_OPTIONS: Required<ServerMonitorOptions> = {
   enabled: true,
@@ -35,6 +39,8 @@ const REASON = {
   unauthorized: "You don't have access to this application's server",
   unavailable: "Application configuration could not be loaded",
   sessionLimit: "User session limit exceeded. Close another session and retry.",
+  sessionEvicted:
+    "Session ended: you signed in again elsewhere. Retry to use it here.",
 } as const;
 
 type Scheduler = {
@@ -191,12 +197,14 @@ abstract class ServerStatusStore implements VuuServerStatusSource {
   }
 }
 
+interface ServerFailure {
+  error?: Error;
+  presence: Extract<VuuServerPresence, "offline" | "unauthorized">;
+}
+
 interface ServerRecord {
   connectionId: string;
-  failure?: {
-    error?: Error;
-    presence: Extract<VuuServerPresence, "offline" | "unauthorized">;
-  };
+  failure?: ServerFailure;
   held: boolean;
   lastAttemptAt?: number;
   lastOnlineAt?: number;
@@ -247,6 +255,16 @@ export class VuuServerMonitor extends ServerStatusStore {
   readonly #random: () => number;
   readonly #lost = new Map<string, LostConnection>();
   readonly #records = new Map<string, ServerRecord>();
+  /**
+   * The last failure of a server acquired by someone else and not
+   * monitored, e.g. one the user added. Kept after its registry entry is
+   * removed, so that the server stays offline, rather than unknown, until
+   * retried or connected.
+   */
+  readonly #untrackedFailures = new Map<
+    string,
+    ServerFailure & { failedAt: number }
+  >();
   readonly #registry: VuuConnectionRegistry;
   readonly #resolveTarget: VuuServerMonitorProps["resolveTarget"];
   readonly #scheduler: Scheduler;
@@ -357,6 +375,11 @@ export class VuuServerMonitor extends ServerStatusStore {
     if (connectionId === this.map.portalConnectionId) {
       return;
     }
+    if (this.#untrackedFailures.delete(connectionId)) {
+      // Whoever holds this server acquires it again once it is not offline.
+      this.refresh();
+      return;
+    }
     const record =
       this.#records.get(connectionId) ?? this.#createRecord(connectionId);
     if (
@@ -396,9 +419,13 @@ export class VuuServerMonitor extends ServerStatusStore {
   ): VuuServerStatus {
     const isPortal = connectionId === this.map.portalConnectionId;
     const record = this.#records.get(connectionId);
+    const untrackedFailure = record
+      ? undefined
+      : this.#untrackedFailures.get(connectionId);
+    const failure = record?.failure ?? untrackedFailure;
     const state = this.#registry.getState(connectionId);
     const monitored = isPortal || this.#selected.has(connectionId);
-    const presence = this.#presence(connectionId, isPortal, state, record);
+    const presence = this.#presence(connectionId, isPortal, state, failure);
     const failed = presence === "offline" || presence === "unauthorized";
     const lost =
       state === "reconnecting" ? this.#lost.get(connectionId) : undefined;
@@ -430,18 +457,21 @@ export class VuuServerMonitor extends ServerStatusStore {
           ? {
               checking: record?.pending || undefined,
               endpoint: endpointHost(record?.target?.websocketUrl),
-              error: record?.failure?.error?.message,
-              lastAttemptAt: record?.lastAttemptAt,
+              error: failure?.error?.message,
+              lastAttemptAt:
+                record?.lastAttemptAt ?? untrackedFailure?.failedAt,
               lastOnlineAt: record?.lastOnlineAt,
               nextAttemptAt:
                 presence === "unauthorized" ? undefined : record?.nextAttemptAt,
-              reason: isSessionLimitExceeded(record?.failure?.error)
+              reason: isSessionLimitExceeded(failure?.error)
                 ? REASON.sessionLimit
-                : presence === "unauthorized"
-                  ? REASON.unauthorized
-                  : record?.wasOnline
-                    ? REASON.connectionLost
-                    : REASON.notResponding,
+                : isSessionEvicted(failure?.error)
+                  ? REASON.sessionEvicted
+                  : presence === "unauthorized"
+                    ? REASON.unauthorized
+                    : record?.wasOnline
+                      ? REASON.connectionLost
+                      : REASON.notResponding,
             }
           : undefined,
       },
@@ -453,7 +483,7 @@ export class VuuServerMonitor extends ServerStatusStore {
     connectionId: string,
     isPortal: boolean,
     state: VuuServerConnectionState | undefined,
-    record?: ServerRecord,
+    failure?: ServerFailure,
   ): VuuServerPresence {
     switch (state) {
       case "connected":
@@ -467,10 +497,10 @@ export class VuuServerMonitor extends ServerStatusStore {
       case "authenticating":
       case "connecting":
         // A probe of a failed server stays offline until it succeeds.
-        return record?.failure?.presence ?? "connecting";
+        return failure?.presence ?? "connecting";
       default:
         // The portal connection is held by the identity provider.
-        return record?.failure?.presence ?? (isPortal ? "online" : "unknown");
+        return failure?.presence ?? (isPortal ? "online" : "unknown");
     }
   }
 
@@ -556,7 +586,7 @@ export class VuuServerMonitor extends ServerStatusStore {
       if (record.failure) {
         if (
           record.failure.presence === "offline" &&
-          !isSessionLimitExceeded(record.failure.error) &&
+          !isSessionEnded(record.failure.error) &&
           !record.probeTimer
         ) {
           this.#scheduleProbe(record);
@@ -660,7 +690,7 @@ export class VuuServerMonitor extends ServerStatusStore {
     };
     if (
       !unauthorized &&
-      !isSessionLimitExceeded(error) &&
+      !isSessionEnded(error) &&
       this.#selected.has(record.connectionId)
     ) {
       this.#scheduleProbe(record);
@@ -679,6 +709,17 @@ export class VuuServerMonitor extends ServerStatusStore {
       this.#clearLost(connectionId);
     }
     const record = this.#records.get(connectionId);
+    if (!record && connectionId !== this.map.portalConnectionId) {
+      if (state === "connected") {
+        this.#untrackedFailures.delete(connectionId);
+      } else if (state === "failed" || state === "unauthorized") {
+        this.#untrackedFailures.set(connectionId, {
+          error,
+          failedAt: this.now(),
+          presence: state === "unauthorized" ? "unauthorized" : "offline",
+        });
+      }
+    }
     if (record) {
       if (state === "connected") {
         record.online = true;
@@ -709,6 +750,26 @@ export class VuuServerMonitor extends ServerStatusStore {
         // Disconnected by someone else, e.g. logout.
         record.held = false;
         this.#evaluate();
+        return;
+      }
+      if (
+        !record.held &&
+        !record.pending &&
+        (state === "failed" || state === "unauthorized")
+      ) {
+        // Someone else's attempt failed, e.g. a table refused by the session
+        // limit. Keep the server offline once they release it, so they don't
+        // connect again, and so this monitor doesn't either.
+        this.#fail(
+          record,
+          error ??
+            (state === "unauthorized"
+              ? new VuuTokenExchangeError(
+                  `VUU authorization denied for ${connectionId}`,
+                  403,
+                )
+              : new Error(`VUU connection ${connectionId} failed`)),
+        );
         return;
       }
     }

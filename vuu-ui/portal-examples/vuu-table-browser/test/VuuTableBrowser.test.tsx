@@ -4,6 +4,8 @@ import {
   LocalServerMonitor,
   type LocalVuuServer,
   ModuleServerMap,
+  ShellContextPanel,
+  ShellContextPanelProvider,
   WorkspaceProvider,
 } from "@vuu-ui/core";
 import {
@@ -147,15 +149,18 @@ describe("VuuTableBrowser", () => {
   });
 
   const render = async ({
+    contextPanel = false,
     monitor,
     path = "/tables/browse/simul",
     workspaces = true,
   }: {
+    /** Within the shell's context panel, as in the portal. */
+    contextPanel?: boolean;
     monitor?: LocalServerMonitor;
     path?: string;
     workspaces?: boolean;
   } = {}) => {
-    const browser = (
+    const routes_ = (
       <Routes>
         <Route element={<VuuTableBrowser />} path="/tables/browse/*" />
         <Route
@@ -163,6 +168,14 @@ describe("VuuTableBrowser", () => {
           path="/workspaces/:id"
         />
       </Routes>
+    );
+    const browser = contextPanel ? (
+      <ShellContextPanelProvider defaultPlacement="inline">
+        {routes_}
+        <ShellContextPanel />
+      </ShellContextPanelProvider>
+    ) : (
+      routes_
     );
     const routes = monitor ? (
       <VuuServerMonitorProvider monitor={monitor}>
@@ -280,34 +293,49 @@ describe("VuuTableBrowser", () => {
     expect(browserBasePath("/tables/browse", "")).toBe("/tables/browse");
   });
 
-  it("lists the servers on the landing page", async () => {
+  const selectedServer = () =>
+    query(".vuuPanelsPalette-serverRow-selected .vuuPanelsPalette-serverName")
+      ?.textContent ?? undefined;
+  const serverRow = (name: string) => {
+    const element = queryAll(".vuuPanelsPalette-serverRow").find(
+      (row) =>
+        row.querySelector(".vuuPanelsPalette-serverName")?.textContent === name,
+    );
+    if (!element) {
+      throw Error(`no server ${name}`);
+    }
+    return element;
+  };
+
+  it("opens the Browse page on its own path, with the first server", async () => {
     await render({ path: "/tables/browse" });
-    const links = queryAll("ul[aria-label='Vuu servers'] a");
-    expect(links.map((link) => link.textContent)).toEqual(["simul", "basket"]);
-    expect(links[0].getAttribute("href")).toBe("/tables/browse/simul");
+    expect(query("h1")?.textContent).toBe("Tables");
+    expect(
+      queryAll(".vuuPanelsPalette-serverList .vuuPanelsPalette-serverName").map(
+        (element) => element.textContent,
+      ),
+    ).toEqual(["simul", "basket"]);
+    expect(selectedServer()).toBe("simul");
+    await waitForTables();
   });
 
   describe("Browse page", () => {
     it("opens with the Tables palette pinned, on the selected server", async () => {
       await render();
-      expect(query("h1")?.textContent).toBe("simul");
-      expect(query(".vuuPortalWorkspaceHeader-crumb")?.textContent).toBe(
-        "Tables / Browse /",
-      );
-      expect(query("aside[aria-label='Panels']")).not.toBeNull();
+      expect(query("h1")?.textContent).toBe("Tables");
+      expect(query("aside[aria-label='Tables']")).not.toBeNull();
       // Tables is the only tab, so there is no tab strip.
-      expect(query("aside[aria-label='Panels'] [role='tablist']")).toBeNull();
+      expect(query("aside[aria-label='Tables'] [role='tablist']")).toBeNull();
       expect(
-        query("aside[aria-label='Panels'] [role='listbox']")?.getAttribute(
+        query("aside[aria-label='Tables'] [role='listbox']")?.getAttribute(
           "aria-label",
         ),
       ).toBe("Tables");
-      expect(
-        query<HTMLSelectElement>(".vuuPanelsPalette-server select")?.value,
-      ).toBe("simul");
+      expect(selectedServer()).toBe("simul");
+      expect(query("input[type='search']")).toBeNull();
       await waitForTables();
       expect(
-        queryAll(".vuuPanelsPalette-groupHeader").map((e) => e.textContent),
+        queryAll(".vuuPanelsPalette-groupLabel").map((e) => e.textContent),
       ).toEqual(["SIMUL", "BASKET"]);
       expect(rowLabels()).toEqual(["instruments", "prices", "basket"]);
       expect(queryAll(".vuuPanelsPalette-subtitle")).toHaveLength(0);
@@ -319,21 +347,44 @@ describe("VuuTableBrowser", () => {
 
     it("preselects the server of the route, not the user's saved choice", async () => {
       await render({ path: "/tables/browse/basket" });
-      expect(
-        query<HTMLSelectElement>(".vuuPanelsPalette-server select")?.value,
-      ).toBe("basket");
+      expect(selectedServer()).toBe("basket");
       expect(query("[data-server-id]")?.dataset.serverId).toBe("basket");
     });
 
-    it("is pinned, without saving that as the user's choice", async () => {
+    it("lists the tables of a newly chosen server, in the context panel", async () => {
+      await render({ contextPanel: true });
+      await waitForTables();
+      expect(query(".vuuPanelsPalette-inContextPanel")).not.toBeNull();
+      expect(selectedServer()).toBe("simul");
+      expect(getTableList).toHaveBeenCalledTimes(1);
+      await click(serverRow("basket"));
+      expect(selectedServer()).toBe("basket");
+      expect(query("[data-server-id]")?.dataset.serverId).toBe("basket");
+      await waitForTables();
+      expect(getTableList).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps the open tables when another server is chosen", async () => {
+      await render();
+      await waitForTables();
+      await click(button("Add instruments"));
+      expect(tablePanelCount()).toBe(1);
+      await click(serverRow("basket"));
+      expect(selectedServer()).toBe("basket");
+      expect(tablePanelCount()).toBe(1);
+      expect(query(".vuuPortalWorkspaceHeader-status")?.textContent).toBe(
+        "Unsaved layout",
+      );
+    });
+
+    it("is pinned, with no pin button, without saving that as the user's choice", async () => {
       await render();
       await waitForTables();
       // Pinned: adding a table leaves the palette open.
       await click(button("Add instruments"));
-      expect(query("aside[aria-label='Panels']")).not.toBeNull();
-      await click(button("Unpin panels"));
-      await click(button("Pin panels open"));
-      expect(button("Unpin panels")).toBeDefined();
+      expect(query("aside[aria-label='Tables']")).not.toBeNull();
+      expect(query("button[aria-label='Unpin tables']")).toBeNull();
+      expect(query("button[aria-label='Pin tables open']")).toBeNull();
       expect(appState.get(PANELS_PALETTE_PINNED_KEY)).toBeUndefined();
     });
   });
@@ -511,19 +562,21 @@ describe("VuuTableBrowser", () => {
     it("is not offered without workspaces", async () => {
       await render({ workspaces: false });
       expect(() => button("Save as workspace")).toThrow();
-      expect(query("aside[aria-label='Panels']")).not.toBeNull();
+      expect(query("aside[aria-label='Tables']")).not.toBeNull();
     });
   });
 
   describe("unreachable server", () => {
-    it("shows an error with Retry and Change server", async () => {
+    const tablesAlert = () =>
+      query("aside[aria-label='Tables'] [role='alert']");
+
+    it("shows the panel's error with Retry for an unknown server", async () => {
       await render({ path: "/tables/browse/uat" });
-      const alert = query("[role='alert']");
-      expect(alert?.textContent).toContain("uat is unreachable");
-      expect(button("Retry", alert as Element)).toBeDefined();
-      await click(button("Change server", alert as Element));
-      expect(location).toBe("/tables/browse");
-      expect(queryAll("ul[aria-label='Vuu servers'] a")).toHaveLength(2);
+      expect(tablesAlert()?.textContent).toContain("Can’t list tables");
+      expect(button("Retry")).toBeDefined();
+      expect(query(".vuuWorkspaceDropZone h4")?.textContent).toBe(
+        "Pick a table",
+      );
     });
 
     const createMonitor = () =>
@@ -536,37 +589,28 @@ describe("VuuTableBrowser", () => {
         }),
       });
 
-    it("offers Retry and Change server for a known server that is down", async () => {
+    it("retries a known server that is down", async () => {
       const monitor = createMonitor();
       monitor.setPresence("simul", "offline");
       const retry = vi.spyOn(monitor, "retry");
       await render({ monitor, path: "/tables/browse/simul" });
 
-      const alert = query("[role='alert']");
-      expect(alert?.textContent).toContain("simul is unreachable");
-      await click(button("Retry", alert as Element));
+      expect(tablesAlert()?.textContent).toContain("Can’t list tables");
+      await click(button("Retry"));
       expect(retry).toHaveBeenCalledWith("simul");
       // The palette does not try to list the tables of a server that is down.
       expect(getTableList).not.toHaveBeenCalled();
-
-      await click(button("Change server", alert as Element));
-      expect(location).toBe("/tables/browse");
     });
 
     it("recovers when the server comes back", async () => {
       const monitor = createMonitor();
       monitor.setPresence("simul", "offline");
       await render({ monitor, path: "/tables/browse/simul" });
-      expect(query("[role='alert']")?.textContent).toContain(
-        "simul is unreachable",
-      );
+      expect(tablesAlert()).not.toBeNull();
 
       await act(async () => monitor.setPresence("simul", undefined));
 
-      await vi.waitFor(() => expect(query("[role='alert']")).toBeNull());
-      expect(query(".vuuWorkspaceDropZone h4")?.textContent).toBe(
-        "Pick a table",
-      );
+      await vi.waitFor(() => expect(tablesAlert()).toBeNull());
       await waitForTables();
       expect(getTableList).toHaveBeenCalledTimes(1);
     });
@@ -575,7 +619,7 @@ describe("VuuTableBrowser", () => {
       const monitor = createMonitor();
       monitor.setPresence("simul", "degraded");
       await render({ monitor, path: "/tables/browse/simul" });
-      expect(query("[role='alert']")).toBeNull();
+      expect(tablesAlert()).toBeNull();
       await waitForTables();
     });
   });

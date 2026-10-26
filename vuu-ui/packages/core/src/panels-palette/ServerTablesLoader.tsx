@@ -10,6 +10,7 @@ import { useData } from "../context-definitions/DataProvider";
 import { useVuuServerConnection } from "../portal-components/vuu-table-component";
 import { useManualVuuServers } from "../portal-servers/ManualVuuServers";
 import { useVuuServerUnreachable } from "../portal-servers/vuu-server-presence";
+import { useVuuServerStatus } from "../server-monitor/VuuServerMonitorProvider";
 
 export interface PanelsServerOption {
   readonly connectionId: string;
@@ -142,12 +143,14 @@ export const ServerTablesLoader = ({
 }: ReportProps & { serverId: string }) => {
   const resolution = useVuuServerConnection(serverId);
   const unreachable = useVuuServerUnreachable(serverId);
+  // Why the server is unreachable, e.g. the user's session limit.
+  const reason = useVuuServerStatus(serverId).detail?.reason;
   const unavailable = useMemo<ServerTablesState>(
     () => ({
-      message: `Vuu server ${serverId} is not available.`,
+      message: reason ?? `Vuu server ${serverId} is not available.`,
       status: "error",
     }),
-    [serverId],
+    [reason, serverId],
   );
   if (unreachable || resolution.status === "unavailable") {
     return <Report onChange={onChange} state={unavailable} />;

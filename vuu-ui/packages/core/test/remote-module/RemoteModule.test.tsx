@@ -1,4 +1,4 @@
-import { act, Suspense } from "react";
+import { act, Suspense, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, useNavigate } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -230,6 +230,52 @@ describe("RemoteModule", () => {
     });
 
     expect(container.textContent).toContain("Connectionless remote loaded");
+  });
+
+  it("keeps a working module mounted when the location changes", async () => {
+    const StatefulRemote = () => {
+      const [mountedAt] = useState(() => Math.random());
+      return <div data-mounted-at={mountedAt}>Stateful remote</div>;
+    };
+    vi.mocked(loadRemote).mockResolvedValue({ default: StatefulRemote });
+
+    const StatefulRoute = () => {
+      const navigate = useNavigate();
+      return (
+        <>
+          <button onClick={() => navigate("/other")} type="button">
+            Navigate
+          </button>
+          <Suspense fallback="Loading">
+            <RemoteModule
+              mfComponent="Stateful"
+              mfScope="stateful"
+              mfUrl="http://localhost:5009"
+            />
+          </Suspense>
+        </>
+      );
+    };
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/start"]}>
+          <StatefulRoute />
+        </MemoryRouter>,
+      );
+    });
+    const mountedAt = () =>
+      container
+        .querySelector("[data-mounted-at]")
+        ?.getAttribute("data-mounted-at");
+    const before = mountedAt();
+    expect(before).toBeTruthy();
+
+    await act(async () => {
+      container.querySelector("button")?.click();
+    });
+
+    expect(mountedAt()).toBe(before);
   });
 
   describe("mfExport", () => {

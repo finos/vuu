@@ -3,6 +3,7 @@ export {
   type AddServerFormProps,
   INVALID_AUTH_URL_MESSAGE,
   INVALID_WEBSOCKET_URL_MESSAGE,
+  MISSING_USERNAME_MESSAGE,
   type ManualServerErrors,
   validateManualServer,
 } from "./AddServerForm";
@@ -29,3 +30,9 @@ export {
   VuuTableChangeServerDialog,
   type VuuTableChangeServerDialogProps,
 } from "./VuuTableChangeServerDialog";
+export {
+  clearVuuServerCredentials,
+  getVuuServerCredentials,
+  setVuuServerCredentials,
+  type VuuServerCredentials,
+} from "../auth/VuuServerLogin";

@@ -10,3 +10,5 @@ node_modules/
 tools/vuu-showcase/src/theme-browser/generated/
 .local-packages/
 tools/portal-build-tool/dist/
+# portal:launch options, re-applied after portal builds
+portal-examples/.portal-urls.json

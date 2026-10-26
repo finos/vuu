@@ -24,7 +24,10 @@ import {
   OpenPanelProvider,
   type OpenPanelResult,
   PANELS_PALETTE_PINNED_KEY,
+  MANUAL_VUU_SERVERS_KEY,
+  ManualVuuServersProvider,
   PANELS_PALETTE_SERVER_KEY,
+  PANELS_PALETTE_SERVERS_COLLAPSED_KEY,
   PanelsPalette,
   type PanelsPaletteProps,
   PanelsPaletteStateProvider,
@@ -98,6 +101,7 @@ const LocalDataProvider = ({ children }: { children: ReactNode }) => (
 
 const localServers: LocalVuuServer[] = [
   { connectionId: "local-a", DataSourceProvider: LocalDataProvider },
+  { connectionId: "local-b", DataSourceProvider: LocalDataProvider },
 ];
 
 const { renderers, settingsCodecs } = createPortalComponentRegistries({
@@ -223,30 +227,32 @@ describe("PanelsPalette", () => {
             mode="local"
             registry={{ modules }}
           >
-            <PanelsPaletteStateProvider
-              defaultOpen={defaultOpen}
-              defaultPinned={defaultPinned}
-            >
-              <AddPanelButton />
-              <GridLayoutProvider
-                componentRenderers={renderers}
-                document={workspaceDocument(panels)}
-                onDocumentChange={(document) => documents.push(document)}
-                settingsCodecs={settingsCodecs}
+            <ManualVuuServersProvider>
+              <PanelsPaletteStateProvider
+                defaultOpen={defaultOpen}
+                defaultPinned={defaultPinned}
               >
-                <OpenPanelProvider>
-                  <GridLayout
-                    id="workspace"
-                    placeholderContent={
-                      panels.length === 0 ? <WorkspaceDropZone /> : undefined
-                    }
-                  />
-                  <TemplateDragHint />
-                  <PanelsPalette {...paletteProps} />
-                  <CaptureOpenPanel />
-                </OpenPanelProvider>
-              </GridLayoutProvider>
-            </PanelsPaletteStateProvider>
+                <AddPanelButton />
+                <GridLayoutProvider
+                  componentRenderers={renderers}
+                  document={workspaceDocument(panels)}
+                  onDocumentChange={(document) => documents.push(document)}
+                  settingsCodecs={settingsCodecs}
+                >
+                  <OpenPanelProvider>
+                    <GridLayout
+                      id="workspace"
+                      placeholderContent={
+                        panels.length === 0 ? <WorkspaceDropZone /> : undefined
+                      }
+                    />
+                    <TemplateDragHint />
+                    <PanelsPalette {...paletteProps} />
+                    <CaptureOpenPanel />
+                  </OpenPanelProvider>
+                </GridLayoutProvider>
+              </PanelsPaletteStateProvider>
+            </ManualVuuServersProvider>
           </AuthenticationProvider>
         </ApplicationStateProvider>,
       ),
@@ -266,7 +272,7 @@ describe("PanelsPalette", () => {
     );
 
   const groupLabels = () =>
-    queryAll(".vuuPanelsPalette-groupHeader").map(
+    queryAll(".vuuPanelsPalette-groupLabel").map(
       (element) => element.textContent,
     );
 
@@ -278,6 +284,36 @@ describe("PanelsPalette", () => {
     );
     if (!element) {
       throw Error(`no palette row ${label}`);
+    }
+    return element;
+  };
+
+  const serverNames = () =>
+    queryAll(".vuuPanelsPalette-serverList .vuuPanelsPalette-serverName").map(
+      (element) => element.textContent,
+    );
+  const selectedServer = () =>
+    query(".vuuPanelsPalette-serverRow-selected .vuuPanelsPalette-serverName")
+      ?.textContent ?? undefined;
+  const serverRow = (name: string) => {
+    const element = queryAll(".vuuPanelsPalette-serverRow").find(
+      (row) =>
+        row.querySelector(".vuuPanelsPalette-serverName")?.textContent === name,
+    );
+    if (!element) {
+      throw Error(`no server ${name}`);
+    }
+    return element;
+  };
+
+  const groupButton = (label: string) => {
+    const element = queryAll(".vuuPanelsPalette-groupHeader").find(
+      (header) =>
+        header.querySelector(".vuuPanelsPalette-groupLabel")?.textContent ===
+        label,
+    );
+    if (!element) {
+      throw Error(`no group ${label}`);
     }
     return element;
   };
@@ -396,17 +432,25 @@ describe("PanelsPalette", () => {
     it("offers the Tables tab when opted in", async () => {
       await render({ paletteProps: WITH_TABLES });
       expect(tabLabels()).toEqual(["Modules", "Tables", "Recent"]);
-      expect(
-        query("input[aria-label='Search panels and tables']"),
-      ).not.toBeNull();
+      expect(query("input[aria-label='Search panels']")).not.toBeNull();
       await selectTab("Tables");
       await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
+      // No search on the Tables tab: the servers are listed instead.
+      expect(query("input[type='search']")).toBeNull();
+      expect(query("section[aria-label='Vuu servers']")).not.toBeNull();
+      expect(query("aside[aria-label='Tables'] h2")?.textContent).toBe(
+        "Tables",
+      );
+      await selectTab("Modules");
+      expect(query("aside[aria-label='Panels'] h2")?.textContent).toBe(
+        "Panels",
+      );
     });
 
     it("ignores a defaultTab that isn't offered", async () => {
       await render({ paletteProps: { defaultTab: "tables" } });
       expect(button("Modules").getAttribute("aria-selected")).toBe("true");
-      expect(query(".vuuPanelsPalette-server")).toBeNull();
+      expect(query("section[aria-label='Vuu servers']")).toBeNull();
     });
 
     it("hides the tab strip when a single tab is offered", async () => {
@@ -459,11 +503,23 @@ describe("PanelsPalette", () => {
       await selectTab("Tables");
       await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
       expect(getTableList).toHaveBeenCalledTimes(1);
-      const server = query<HTMLSelectElement>(
-        ".vuuPanelsPalette-server select",
-      );
-      expect(server?.value).toBe("local-a");
+      expect(serverNames()).toEqual(["local-a", "local-b"]);
+      expect(selectedServer()).toBe("local-a");
+      expect(
+        query(
+          ".vuuPanelsPalette-serverRow-selected .vuuPanelsPalette-serverDot",
+        )?.getAttribute("aria-label"),
+      ).toBe("Online");
       expect(groupLabels()).toEqual(["SIMUL", "BASKET"]);
+      expect(
+        queryAll(".vuuPanelsPalette-group .vuuPanelsPalette-groupCount").map(
+          (e) => e.textContent,
+        ),
+      ).toEqual(["2", "1"]);
+      // Tables have no icon; the label says what they are.
+      expect(
+        queryAll(".vuuPanelsPalette-row .vuuPanelsPalette-icon"),
+      ).toHaveLength(0);
       expect(rowLabels()).toEqual(["instruments", "prices", "basket"]);
       expect(queryAll(".vuuPanelsPalette-subtitle")).toHaveLength(0);
       expect(row("prices").dataset.templateComponentType).toBe("vuu-table");
@@ -491,23 +547,84 @@ describe("PanelsPalette", () => {
       expect(rowLabels()).toEqual(["Chart"]);
     });
 
-    it("opens on the Tables tab of a given server, not the saved one", async () => {
-      appState.set(PANELS_PALETTE_SERVER_KEY, "other");
+    it("lists the tables of a given server, not the saved one", async () => {
+      appState.set(PANELS_PALETTE_SERVER_KEY, "local-a");
       await render({
         paletteProps: {
           ...WITH_TABLES,
-          defaultServerId: "local-a",
+          defaultServerId: "local-b",
           defaultTab: "tables",
         },
       });
       expect(button("Tables").getAttribute("aria-selected")).toBe("true");
-      expect(
-        query<HTMLSelectElement>(".vuuPanelsPalette-server select")?.value,
-      ).toBe("local-a");
+      expect(selectedServer()).toBe("local-b");
       await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
     });
 
-    it("selects a given server that isn't known, to show its error", async () => {
+    it("lists the tables of the server chosen in the list, and saves the choice", async () => {
+      await render({ paletteProps: { tabs: ["tables"] } });
+      await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
+      await click(serverRow("local-b"));
+      expect(selectedServer()).toBe("local-b");
+      expect(appState.get(PANELS_PALETTE_SERVER_KEY)).toBe("local-b");
+      await vi.waitFor(() => expect(getTableList).toHaveBeenCalledTimes(2));
+    });
+
+    it("collapses the servers to the selected one, and keeps that", async () => {
+      await render({ paletteProps: { tabs: ["tables"] } });
+      const toggle = query(".vuuPanelsPalette-serversToggle") as HTMLElement;
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+      await click(toggle);
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      expect(query(".vuuPanelsPalette-serverList")).toBeNull();
+      expect(query(".vuuPanelsPalette-serversSelected")?.textContent).toContain(
+        "local-a",
+      );
+      expect(appState.get(PANELS_PALETTE_SERVERS_COLLAPSED_KEY)).toBe(true);
+    });
+
+    it("adds a server in a dialog, and selects it", async () => {
+      await render({ paletteProps: { tabs: ["tables"] } });
+      await click(button("Add server"));
+      const dialog = document.querySelector("[role='dialog']");
+      expect(dialog?.textContent).toContain("Add Vuu server");
+      expect(
+        dialog?.querySelector("form[aria-label='Add Vuu server']"),
+      ).not.toBeNull();
+    });
+
+    it("asks for a sign-in, in a dialog, for a Vuu login server without one", async () => {
+      sessionStorage.clear();
+      appState.set(MANUAL_VUU_SERVERS_KEY, [
+        {
+          auth: "vuu-login",
+          connectionId: "uat",
+          restUrl: "https://uat:8443/api/authn",
+          username: "steve",
+          websocketUrl: "wss://uat:8090/websocket",
+        },
+      ]);
+      await render({
+        paletteProps: { defaultServerId: "uat", tabs: ["tables"] },
+      });
+      expect(serverNames()).toEqual(["local-a", "local-b", "uat"]);
+      const dialog = () =>
+        document.querySelector("form[aria-label='Sign in to uat']");
+      await vi.waitFor(() => expect(dialog()).not.toBeNull());
+      expect(
+        dialog()?.querySelector<HTMLInputElement>("input[name='username']")
+          ?.value,
+      ).toBe("steve");
+      const cancel = Array.from(
+        dialog()?.querySelectorAll("button") ?? [],
+      ).find((element) => element.textContent === "Cancel") as HTMLElement;
+      await click(cancel);
+      expect(dialog()).toBeNull();
+      // Added servers can be removed.
+      expect(button("Remove uat")).toBeDefined();
+    });
+
+    it("lists a given server that isn't known, to show its error", async () => {
       await render({
         paletteProps: {
           defaultServerId: "uat",
@@ -515,22 +632,20 @@ describe("PanelsPalette", () => {
           tabs: ["tables"],
         },
       });
-      const server = query<HTMLSelectElement>(
-        ".vuuPanelsPalette-server select",
+      expect(serverNames()).toEqual(["local-a", "local-b"]);
+      expect(selectedServer()).toBeUndefined();
+      expect(query("[role='alert']")?.textContent).toContain(
+        "Can’t list tables",
       );
-      expect(server?.value).toBe("uat");
-      expect([...(server?.options ?? [])].map(({ value }) => value)).toEqual([
-        "local-a",
-        "uat",
-      ]);
+      expect(button("Retry")).toBeDefined();
       expect(getTableList).not.toHaveBeenCalled();
     });
 
     it("collapses and expands a group", async () => {
       await render();
-      await click(button("Trading"));
+      await click(groupButton("Trading"));
       expect(rowLabels()).toEqual(["Chart"]);
-      await click(button("Trading"));
+      await click(groupButton("Trading"));
       expect(rowLabels()).toEqual(["Orders", "Blotter", "Chart"]);
     });
   });
@@ -546,18 +661,16 @@ describe("PanelsPalette", () => {
       await setFilter("nothing like it");
       expect(rowLabels()).toEqual([]);
       expect(query(".vuuPanelsPalette-empty")?.textContent).toBe(
-        'No panels match "nothing like it".',
+        "No panels match “nothing like it”",
       );
     });
 
-    it("applies to the Tables tab", async () => {
+    it("is not offered on the Tables tab", async () => {
       await render({ paletteProps: WITH_TABLES });
+      await setFilter("chart");
       await selectTab("Tables");
       await vi.waitFor(() => expect(rowLabels()).toHaveLength(3));
-      await setFilter("pri");
-      expect(rowLabels()).toEqual(["prices"]);
-      await setFilter("basket");
-      expect(rowLabels()).toEqual(["basket"]);
+      expect(query("input[type='search']")).toBeNull();
     });
 
     it("matches every term", () => {
@@ -586,6 +699,10 @@ describe("PanelsPalette", () => {
       if (!list) {
         throw Error("no listbox");
       }
+      // Nothing is active until the user moves to a row.
+      expect(queryAll(".vuuPanelsPalette-row[data-active]")).toHaveLength(0);
+      expect(list.getAttribute("aria-activedescendant")).toBeNull();
+      await key(list, "ArrowDown");
       expect(row("Orders").dataset.active).toBe("true");
       await key(list, "ArrowDown");
       expect(row("Blotter").dataset.active).toBe("true");
@@ -609,8 +726,20 @@ describe("PanelsPalette", () => {
       }
       await setFilter("t");
       await key(input, "ArrowDown");
+      await key(input, "ArrowDown");
       await key(input, "Enter", true);
       expect(moduleTitles()).toEqual(["Blotter"]);
+    });
+
+    it("opens the first match with Enter from the search box", async () => {
+      await render({ panels: [] });
+      const input = query(".vuuPanelsPalette-search input");
+      if (!input) {
+        throw Error("no input");
+      }
+      await setFilter("t");
+      await key(input, "Enter");
+      expect(moduleTitles()).toEqual(["Orders"]);
     });
 
     it("+ adds the active row", async () => {

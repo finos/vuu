@@ -109,6 +109,23 @@ describe("NotificationsIndicator", () => {
     expect(presentation?.panelOpen).toBe(false);
   });
 
+  it("strikes through the bell and says so while Do not disturb is on", async () => {
+    await render();
+    expect(bell()?.hasAttribute("data-do-not-disturb")).toBe(false);
+    await act(async () => presentation?.setDoNotDisturb(true));
+    expect(bell()?.hasAttribute("data-do-not-disturb")).toBe(true);
+    expect(bell()?.getAttribute("aria-label")).toBe(
+      "Notifications, do not disturb",
+    );
+    await upsert(notification("1", { initial: true }));
+    expect(bell()?.getAttribute("aria-label")).toBe(
+      "Notifications, 1 unread, do not disturb",
+    );
+    await act(async () => presentation?.setDoNotDisturb(false));
+    expect(bell()?.hasAttribute("data-do-not-disturb")).toBe(false);
+    expect(bell()?.getAttribute("aria-label")).toBe("Notifications, 1 unread");
+  });
+
   it("does not show or announce initial notifications", async () => {
     await render();
     await upsert(notification("1", { initial: true }));
