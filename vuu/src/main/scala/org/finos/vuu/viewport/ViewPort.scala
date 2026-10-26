@@ -473,6 +473,11 @@ class ViewPortImpl(val id: String,
 
     logger.trace(s"VP got update for ${update.key} update, index = $index isDeleted = ${update.isDelete}, $update, pushing to queue")
 
+    // TODO call deselect???
+    if (update.isDelete) {
+      selection = selection - update.key
+    }
+
     if (isInRange(index) && this.enabled) {
       outboundQ.push(ViewPortUpdate(this.requestId, this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, ViewPortRowUpdateType, this.keys.length, timeProvider.now()))
     }
@@ -544,23 +549,23 @@ class ViewPortImpl(val id: String,
     if (subscribedKeyCount == 0) return
 
     logger.trace(s"[VP] ${this.id} Checking $subscribedKeyCount keys")
-    
+
     val initialCapacity = (subscribedKeyCount / 0.75f).toInt + 1
     val retainKeys = new java.util.HashSet[String](initialCapacity)
 
     val newKeysIterator = newKeys.iterator
     while (newKeysIterator.hasNext) {
-      val key = newKeysIterator.next()      
+      val key = newKeysIterator.next()
       if (key != null && subscribedKeys.contains(key)) {
         retainKeys.add(key)
       }
     }
 
     logger.trace(s"[VP] ${this.id} Removing ${subscribedKeyCount - retainKeys.size()} keys")
-    
+
     val subscribedKeysIterator = subscribedKeys.iterator()
     while (subscribedKeysIterator.hasNext) {
-      val subscribedKey = subscribedKeysIterator.next()      
+      val subscribedKey = subscribedKeysIterator.next()
       if (subscribedKey != null && !retainKeys.contains(subscribedKey)) {
         unsubscribeForKey(subscribedKey)
       }
