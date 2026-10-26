@@ -733,6 +733,145 @@ describe("workspace runtime", () => {
       void controller.dispose();
     });
 
+    it("does not report GridLayout's normalisation of a definition as an edit", () => {
+      const definition: GridLayoutDocument = {
+        components: ["b", "a"].map((id) => ({
+          id,
+          settings: {},
+          type: "test",
+          version: 1,
+        })),
+        kind: "grid-layout",
+        layout: {
+          columns: ["1fr", "1fr"],
+          id: "normalised",
+          items: ["b", "a"].map((id, i) => ({
+            column: { span: 1, start: i + 1 },
+            componentInstanceId: id,
+            id,
+            row: { span: 1, start: 1 },
+          })),
+          placeholderIds: [],
+          rows: ["1fr"],
+          stacks: [],
+        },
+        version: 2,
+      };
+      const normalised: GridLayoutDocument = {
+        ...definition,
+        components: [...definition.components].reverse(),
+        layout: {
+          ...definition.layout,
+          items: [...definition.layout.items].reverse().map((item) => ({
+            ...item,
+            contentVisible: true,
+            resizeable: false,
+          })),
+        },
+      };
+      const onEdit = vi.fn();
+      const controller = new WorkspaceController({
+        instanceId: "normalised",
+        name: "Normalised",
+        onEdit,
+        onError: (error) => {
+          throw error;
+        },
+        renderers,
+        service: new MemoryService(),
+        settingsCodecs: codecs,
+        snapshot: { componentState: {}, layout: definition, version: 1 },
+      });
+      controller.handleDocumentChange(normalised, {
+        document: normalised,
+        kind: "dispatch",
+        removedComponentInstanceIds: [],
+        revision: 1,
+      });
+      expect(onEdit).not.toHaveBeenCalled();
+
+      const resized: GridLayoutDocument = {
+        ...normalised,
+        layout: { ...normalised.layout, columns: ["2fr", "1fr"] },
+      };
+      controller.handleDocumentChange(resized, {
+        document: resized,
+        kind: "dispatch",
+        removedComponentInstanceIds: [],
+        revision: 2,
+      });
+      expect(onEdit).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not report a stack tab selection as an edit, but still saves it", () => {
+      const stacked = (selectedItemId: string): GridLayoutDocument => ({
+        components: [
+          { id: "a", settings: {}, type: "test", version: 1 },
+          { id: "b", settings: {}, type: "test", version: 1 },
+        ],
+        kind: "grid-layout",
+        layout: {
+          columns: ["1fr"],
+          id: "tabs",
+          items: ["a", "b"].map((id) => ({
+            column: { span: 1, start: 1 },
+            componentInstanceId: id,
+            ...(id === selectedItemId ? { contentVisible: true } : {}),
+            id,
+            row: { span: 1, start: 1 },
+          })),
+          placeholderIds: [],
+          rows: ["1fr"],
+          stacks: [{ id: "stack", itemIds: ["a", "b"], selectedItemId }],
+        },
+        version: 2,
+      });
+      const service = new MemoryService();
+      const onEdit = vi.fn();
+      const controller = new WorkspaceController({
+        instanceId: "tabs",
+        name: "Tabs",
+        onEdit,
+        onError: (error) => {
+          throw error;
+        },
+        renderers,
+        service,
+        settingsCodecs: codecs,
+        snapshot: { componentState: {}, layout: stacked("a"), version: 1 },
+      });
+      controller.handleDocumentChange(stacked("b"), {
+        document: stacked("b"),
+        kind: "dispatch",
+        removedComponentInstanceIds: [],
+        revision: 1,
+      });
+      expect(onEdit).not.toHaveBeenCalled();
+      expect(
+        service.snapshots.get("tabs")?.snapshot.layout.layout.stacks[0]
+          ?.selectedItemId,
+      ).toBe("b");
+
+      const reordered = stacked("b");
+      controller.handleDocumentChange(
+        {
+          ...reordered,
+          layout: {
+            ...reordered.layout,
+            stacks: [{ id: "stack", itemIds: ["b", "a"], selectedItemId: "b" }],
+          },
+        },
+        {
+          document: reordered,
+          kind: "dispatch",
+          removedComponentInstanceIds: [],
+          revision: 2,
+        },
+      );
+      expect(onEdit).toHaveBeenCalledTimes(1);
+      void controller.dispose();
+    });
+
     it("lists system workspaces without creating a personal copy until the first edit", async () => {
       const service = new MemoryService("alice");
       await render(service, systemWorkspaces);

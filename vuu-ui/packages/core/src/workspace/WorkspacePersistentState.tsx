@@ -115,6 +115,15 @@ export const useWorkspacePersistentStateStore =
     return store;
   };
 
+/**
+ * Like useWorkspacePersistentStateStore, but returns undefined when rendered
+ * outside a WorkspacePersistentStateProvider (e.g. a module rendered as a
+ * standalone page rather than as a workspace panel).
+ */
+export const useOptionalWorkspacePersistentStateStore = ():
+  | WorkspacePersistentStateStore
+  | undefined => useContext(WorkspacePersistentStateContext) ?? undefined;
+
 export const useComponentPersistentState = (
   componentInstanceId: string,
 ): readonly [

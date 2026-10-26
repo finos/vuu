@@ -29,7 +29,14 @@ resolved against the live module registry (`PortalModuleRegistryProvider`,
 else the identity provider's registry) each time the item renders. If the
 module is unknown, disabled or not available to the user, the item shows a
 placeholder instead. `props` (an object) are passed to the module's
-component; they can't override the module's descriptor.
+component; they can't override the module's descriptor. Palette-only
+modules (no `navLocation` or `path`, only `workspace` metadata) resolve here
+too.
+
+A module rendered both as a nav page and as a workspace panel can call
+`useOptionalWorkspacePersistentStateStore()`. It returns the workspace item
+store inside a panel and `undefined` elsewhere, where
+`useWorkspacePersistentStateStore()` throws.
 
 `portalModuleTemplate(descriptor, props?)` builds the template. A host
 that renders modules some other way, e.g. modules bundled with the host, or

@@ -262,11 +262,13 @@ describe("Portal workspaces", () => {
     palette = false,
     path = "/",
     service = new MemoryService([ASIA]),
+    systemWorkspaces = [TRADER],
   }: {
     nav?: Partial<PortalNavProps>;
     palette?: boolean;
     path?: string;
     service?: MemoryService;
+    systemWorkspaces?: NamedWorkspaceDefinitionV1[];
   } = {}) => {
     await act(async () =>
       root.render(
@@ -280,7 +282,7 @@ describe("Portal workspaces", () => {
                   componentRenderers={renderers}
                   persistenceService={service}
                   settingsCodecs={codecs}
-                  systemWorkspaces={[TRADER]}
+                  systemWorkspaces={systemWorkspaces}
                   userId="alice"
                 >
                   <PortalModuleRegistryProvider remoteModules={paletteModules}>
@@ -866,6 +868,85 @@ describe("Portal workspaces", () => {
       await vi.waitFor(() => expect(row("asia-open")).toBeNull());
       // The deleted workspace was open: go to another one.
       expect(pathname).toBe("/workspaces/trader");
+    });
+  });
+
+  describe("personal copy", () => {
+    const withPanels = (): NamedWorkspaceDefinitionV1 => {
+      const base = definition("overview", "Overview");
+      return {
+        ...base,
+        snapshot: {
+          ...base.snapshot,
+          layout: {
+            ...base.snapshot.layout,
+            components: ["a", "b"].map((id) => ({
+              id,
+              settings: { moduleId: "blotter" },
+              type: "portal-module",
+              version: 1,
+            })),
+            layout: {
+              ...base.snapshot.layout.layout,
+              columns: ["1fr", "1fr", "1fr"],
+              items: [
+                ...["a", "b"].map((id, index) => ({
+                  column: { span: 1, start: index + 1 },
+                  componentInstanceId: id,
+                  id,
+                  row: { span: 1, start: 1 },
+                })),
+                {
+                  column: { span: 1, start: 3 },
+                  id: "placeholder",
+                  row: { span: 1, start: 1 },
+                },
+              ],
+              placeholderIds: ["placeholder"],
+            },
+          },
+        },
+      };
+    };
+
+    it("keeps panels mounted when the first edit creates it", async () => {
+      const service = new MemoryService([ASIA]);
+      await render({
+        palette: true,
+        path: "/workspaces/overview",
+        service,
+        systemWorkspaces: [withPanels()],
+      });
+      await vi.waitFor(() => expect(latest.activeWorkspaceId).toBe("overview"));
+      await settle();
+      const panels = qa(".vuuPortalWorkspace-body .vuuGridLayoutItemContent");
+      expect(panels).toHaveLength(2);
+      const contents = panels.map((panel) => panel.firstElementChild);
+      expect(latest.workspaces[0]).toMatchObject({ isPersonalCopy: false });
+
+      await click(buttonByText("Add panel"));
+      await vi.waitFor(() => expect(q(".vuuPanelsPalette")).not.toBeNull());
+      await click(q('.vuuPanelsPalette button[aria-label="Add Blotter"]'));
+      await vi.waitFor(() =>
+        expect(service.definitions.has("overview")).toBe(true),
+      );
+      await vi.waitFor(() =>
+        expect(
+          q('.vuuPortalWorkspaceHeader [data-workspace-tag="personal-copy"]'),
+        ).not.toBeNull(),
+      );
+      await settle();
+      const after = qa(".vuuPortalWorkspace-body .vuuGridLayoutItemContent");
+      expect(after).toHaveLength(3);
+      // The same elements, in the same DOM order: nothing was remounted or
+      // moved (moving a node resets the scroll position of its content).
+      expect(after.slice(0, 2)).toEqual(panels);
+      expect(
+        panels.every(
+          (panel, i) =>
+            panel.isConnected && panel.firstElementChild === contents[i],
+        ),
+      ).toBe(true);
     });
   });
 

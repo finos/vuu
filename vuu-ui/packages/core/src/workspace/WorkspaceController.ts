@@ -21,7 +21,9 @@ export interface WorkspaceControllerOptions {
   /**
    * Invoked with the latest snapshot whenever the user edits the workspace.
    * Changes that leave the workspace identical to its initial snapshot are
-   * not reported until a real edit has occurred.
+   * not reported until a real edit has occurred. Changes to view state alone,
+   * e.g. the selected tab of a stack, are not edits: they are saved with the
+   * workspace instance, but are not reported until a real edit has occurred.
    */
   readonly onEdit?: (snapshot: WorkspaceSnapshotV1) => void;
   readonly renderers: GridComponentRendererRegistry;
@@ -30,6 +32,50 @@ export interface WorkspaceControllerOptions {
   readonly snapshot: WorkspaceSnapshotV1;
   readonly revision?: number;
 }
+
+const byId = <T extends { id: string }>(a: T, b: T) =>
+  a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+
+const stableStringify = (value: unknown): string =>
+  JSON.stringify(value, (_key, v: unknown) =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.entries(v as Record<string, unknown>).sort(([a], [b]) =>
+            a < b ? -1 : a > b ? 1 : 0,
+          ),
+        )
+      : v,
+  );
+
+/**
+ * A canonical form of a workspace snapshot, used to decide whether it has
+ * diverged from the definition it was opened from.
+ * - Ordering of components, items and stacks and the order of object keys is
+ *   not significant, nor are defaults GridLayout fills in when it normalises a
+ *   document (`resizeable: false`).
+ * - The selected tab of a stack, and the content visibility of grid items that
+ *   follows from it, is view state: it is saved, but changing it is not an edit.
+ */
+const editKey = ({ componentState, layout }: WorkspaceSnapshotV1) =>
+  stableStringify({
+    componentState,
+    layout: {
+      ...layout,
+      components: [...layout.components].sort(byId),
+      layout: {
+        ...layout.layout,
+        items: layout.layout.items
+          .map(({ contentVisible: _, resizeable = false, ...item }) => ({
+            ...item,
+            resizeable,
+          }))
+          .sort(byId),
+        stacks: layout.layout.stacks
+          .map(({ id, itemIds }) => ({ id, itemIds }))
+          .sort(byId),
+      },
+    },
+  });
 
 export class WorkspaceController {
   readonly definitionId?: string;
@@ -75,7 +121,7 @@ export class WorkspaceController {
       options.snapshot.layout,
     );
     if (this.#onEdit) {
-      this.#baseline = JSON.stringify(this.snapshot);
+      this.#baseline = editKey(this.snapshot);
     }
     this.#unsubscribe = this.persistentState.subscribe(() => {
       if (!this.#savingStructure) {
@@ -149,7 +195,7 @@ export class WorkspaceController {
       return;
     }
     if (this.#baseline !== undefined) {
-      if (JSON.stringify(snapshot) === this.#baseline) {
+      if (editKey(snapshot) === this.#baseline) {
         return;
       }
       this.#baseline = undefined;

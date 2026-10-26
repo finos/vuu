@@ -4,6 +4,9 @@
   --vuu-grid-gap: 6px;
   --vuu-grid-header-height: 25px;
   display: grid;
+  /* fr tracks must not grow to fit their content. */
+  min-height: 0;
+  min-width: 0;
   padding: var(--vuu-grid-gap);
 
   &.vuuResizing {
@@ -36,6 +39,9 @@
 .vuuGridLayoutStackedItemContent,
 .vuuGridLayoutItemContent {
   flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
   position: relative;
 }
 

@@ -238,7 +238,8 @@ export const PortalModuleComponent = ({
           // A different module starts afresh, at its own path.
           key={descriptor.id}
           initialLocation={location}
-          modulePath={descriptor.path}
+          // A palette-only module has no route of its own.
+          modulePath={descriptor.path ?? "/"}
           onLocationChange={handleLocationChange}
         >
           {renderModule(

@@ -73,7 +73,12 @@ export interface VuuModuleDescriptor {
    * it to a value; the portal does not interpret it.
    */
   navBadge?: string;
-  navLocation: string;
+  /**
+   * Where the module appears in the navigation. Optional for a palette-only
+   * module, i.e. one with `workspace` metadata that is only added to
+   * workspaces from the Panels palette.
+   */
+  navLocation?: string;
   /**
    * Order within the module's navigation section, lowest first. Modules
    * without a value follow those with one, in registration order.
@@ -88,7 +93,11 @@ export interface VuuModuleDescriptor {
   mfScope: string;
   mfUrl: string;
   name: string;
-  path: string;
+  /**
+   * The module's route. Optional for a palette-only module, which has no
+   * route and no navigation entry.
+   */
+  path?: string;
   title: string;
   version: number;
   /** Set to make the module available in the workspace palette. */

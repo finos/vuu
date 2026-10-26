@@ -21,7 +21,10 @@ import {
   useLocation,
 } from "react-router-dom";
 import { partition } from "@vuu-ui/vuu-utils";
-import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import {
+  isRoutedModule,
+  type RemoteModuleDescriptor,
+} from "../RemoteModuleDescriptor";
 import { PortalModuleRegistryProvider } from "../portal-module-registry/PortalModuleRegistry";
 import { PortalLinkProvider } from "../portal-link/PortalLink";
 import { RemoteModule } from "../remote-module/RemoteModule";
@@ -305,25 +308,27 @@ const PortalLayout = () => {
                           }
                         />
                       ) : null}
-                      {remoteModules.map(({ id, path, ...feature }) => {
-                        return (
-                          <Route
-                            key={id}
-                            path={getRemoteRoutePath(path)}
-                            element={
-                              <PortalModuleIdContext.Provider value={id}>
-                                <PortalLinkProvider modulePath={path}>
-                                  <PortalModuleRegistryProvider
-                                    remoteModules={remoteModules}
-                                  >
-                                    <RemoteModule {...feature} />
-                                  </PortalModuleRegistryProvider>
-                                </PortalLinkProvider>
-                              </PortalModuleIdContext.Provider>
-                            }
-                          />
-                        );
-                      })}
+                      {remoteModules
+                        .filter(isRoutedModule)
+                        .map(({ id, path, ...feature }) => {
+                          return (
+                            <Route
+                              key={id}
+                              path={getRemoteRoutePath(path)}
+                              element={
+                                <PortalModuleIdContext.Provider value={id}>
+                                  <PortalLinkProvider modulePath={path}>
+                                    <PortalModuleRegistryProvider
+                                      remoteModules={remoteModules}
+                                    >
+                                      <RemoteModule {...feature} />
+                                    </PortalModuleRegistryProvider>
+                                  </PortalLinkProvider>
+                                </PortalModuleIdContext.Provider>
+                              }
+                            />
+                          );
+                        })}
                     </Routes>
                   </div>
                   <ShellContextPanel className={`${classBase}-context`} />

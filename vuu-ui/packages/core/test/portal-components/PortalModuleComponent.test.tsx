@@ -214,7 +214,10 @@ describe("PortalModuleComponent in a workspace", () => {
     container.remove();
   });
 
-  const renderWorkspace = (settings: PortalModuleComponentSettings) => {
+  const renderWorkspace = (
+    settings: PortalModuleComponentSettings,
+    modules: RemoteModuleDescriptor[] = [descriptor()],
+  ) => {
     const { renderers, settingsCodecs } = createPortalComponentRegistries({
       renderModule: () => <RoutingModule />,
     });
@@ -222,7 +225,7 @@ describe("PortalModuleComponent in a workspace", () => {
       [
         {
           element: (
-            <PortalModuleRegistryProvider remoteModules={[descriptor()]}>
+            <PortalModuleRegistryProvider remoteModules={modules}>
               <GridLayoutProvider
                 componentRenderers={renderers}
                 document={documentFor(settings)}
@@ -277,6 +280,20 @@ describe("PortalModuleComponent in a workspace", () => {
     root = createRoot(container);
     renderWorkspace(saved as PortalModuleComponentSettings);
     expect(moduleLocation()).toBe("/baskets/orders/7");
+  });
+
+  it("renders a palette-only module, which has no location or route", () => {
+    const {
+      navLocation: _navLocation,
+      path: _path,
+      ...paletteOnly
+    } = descriptor({ workspace: { paletteGroup: "Trading" } });
+    const router = renderWorkspace({ moduleId: "3" }, [paletteOnly]);
+    expect(container.querySelector("[data-testid='routing-module']")).not.toBe(
+      null,
+    );
+    expect(moduleLocation()).toBe("/");
+    expect(router.state.location.pathname).toBe("/workspaces/ws-1");
   });
 
   it("identifies the module instance by its workspace item", () => {
