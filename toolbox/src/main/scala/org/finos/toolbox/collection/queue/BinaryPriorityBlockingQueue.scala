@@ -5,7 +5,6 @@ import com.typesafe.scalalogging.StrictLogging
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue, LinkedBlockingQueue}
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
@@ -13,8 +12,8 @@ trait BinaryPriorityBlockingQueue[T] {
   def put(e: T): Unit
   def putHighPriority(e: T): Unit
   def poll(timeout: Duration = Duration.Zero): Option[T]
-  def drainTo(c: util.Collection[_ >: T]): Int
-  def drainTo(c: util.Collection[_ >: T], maxElements: Int): Int
+  def drainTo(c: util.Collection[? >: T]): Int
+  def drainTo(c: util.Collection[? >: T], maxElements: Int): Int
   def shutdown(): Unit
 }
 
@@ -95,7 +94,7 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
     }
   }
 
-  override def drainTo(c: util.Collection[_ >: T]): Int = {
+  override def drainTo(c: util.Collection[? >: T]): Int = {
     lock.lock()
     try {
       var count = 0
@@ -122,7 +121,7 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
     }
   }
 
-  override def drainTo(c: util.Collection[_ >: T], maxElements: Int): Int = {
+  override def drainTo(c: util.Collection[? >: T], maxElements: Int): Int = {
     lock.lock()
     try {
       var count = 0

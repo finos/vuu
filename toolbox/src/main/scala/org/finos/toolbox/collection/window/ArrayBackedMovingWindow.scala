@@ -10,12 +10,12 @@ object ArrayBackedMovingWindow {
 
 class ArrayBackedMovingWindow[DATA <: AnyRef] private (
                                                         initialState: State[DATA]
-                                                      )(implicit m: ClassTag[DATA]) extends MovingWindow[DATA] {
+                                                      )(using c: ClassTag[DATA]) extends MovingWindow[DATA] {
 
   @volatile private var state = initialState
 
-  def this(initialSize: Int)(implicit m: ClassTag[DATA]) = {
-    this(State(new WindowRange(0, initialSize), new Array[DATA](initialSize)))
+  def this(initialSize: Int)(using c: ClassTag[DATA]) = {
+    this(State(WindowRange(0, initialSize), new Array[DATA](initialSize)))
   }
 
   override def setAtIndex(index: Int, data: DATA): Unit = {

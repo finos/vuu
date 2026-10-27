@@ -2,7 +2,7 @@ package org.finos.toolbox.logging
 
 import org.finos.toolbox.time.Clock
 
-class LogAtFrequency(millis: Long)(implicit val clock: Clock) {
+class LogAtFrequency(millis: Long)(using clock: Clock) {
 
   @volatile private var lastLog: Long = -1
 

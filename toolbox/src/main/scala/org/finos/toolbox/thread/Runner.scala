@@ -7,7 +7,7 @@ import org.finos.toolbox.time.Clock
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.util.control.NonFatal
 
-class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce: Boolean = false)(implicit clock: Clock) extends StrictLogging {
+class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce: Boolean = false)(using clock: Clock) extends StrictLogging {
 
   private val thread = new NamedThreadFactory(name).newThread(getRunnable())
 

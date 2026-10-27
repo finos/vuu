@@ -8,16 +8,16 @@ import org.finos.toolbox.time.Clock
 
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{BlockingQueue, Callable, FutureTask, RunnableFuture, ThreadPoolExecutor}
+import java.util.concurrent.{BlockingQueue, Callable, FutureTask, ThreadPoolExecutor}
 import scala.concurrent.duration.TimeUnit
 
 /**
  * This is a java executor implementation, which will automatically resubmit the existing job into the queue
- * when its complete.
+ * when it's complete.
  *
  */
 abstract class ResubmitExecutor[T](name: String, corePoolSize: Int, maxPoolSize: Int, keepAliveTime: Long, timeUnit: TimeUnit,
-                       workQueue: BlockingQueue[Runnable])(implicit clock: Clock) extends ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, workQueue, new NamedThreadFactory(name)) with StrictLogging {
+                       workQueue: BlockingQueue[Runnable])(using clock: Clock) extends ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, workQueue, new NamedThreadFactory(name)) with StrictLogging {
 
   private val logEvery = new LogAtFrequency(5_000)
   private val shuttingDown = new AtomicBoolean(false)
@@ -47,7 +47,7 @@ abstract class ResubmitExecutor[T](name: String, corePoolSize: Int, maxPoolSize:
     }
   }
 
-  def retry(runnable: FutureTask[T], t: Throwable): Unit ={
+  private def retry(runnable: FutureTask[T], t: Throwable): Unit ={
     this.submit(newCallable(runnable, t))
   }
 

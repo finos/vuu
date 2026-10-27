@@ -8,5 +8,5 @@ sdk install maven 3.10.0
 sdk default maven 3.10.0
 
 # matches vuu.scala.version in the root pom.xml
-sdk install scala 3.3.8
+sdk install scala 3.9.0
 sudo chmod a+x /usr/local/sdkman/candidates/scala/current/bin/scala
