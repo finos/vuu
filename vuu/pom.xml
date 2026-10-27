@@ -216,6 +216,7 @@
                     <testSourceDir>src/test/scala</testSourceDir>
                     <args>
                         <arg>-deprecation</arg>
+                        <arg>-feature</arg>
                     </args>
                     <jvmArgs>
                         <jvmArg>-Xms64m</jvmArg>

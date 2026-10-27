@@ -20,7 +20,7 @@ object JsonMapperFactory {
     .allowIfBaseType("org.finos.vuu.")
     .build()
 
-  private val mapper: JsonMapper with ClassTagExtensions = {
+  private val mapper: JsonMapper & ClassTagExtensions = {
     JsonMapper
       .builder(factory)
       .polymorphicTypeValidator(validator)
@@ -31,7 +31,7 @@ object JsonMapperFactory {
       .build() :: ClassTagExtensions
   }
 
-  def build: JsonMapper with ClassTagExtensions = mapper
+  def build: JsonMapper & ClassTagExtensions = mapper
 
 }
 

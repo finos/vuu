@@ -15,9 +15,9 @@ trait Transport {
     new MultiThreadIoEventLoopGroup(threads, ioHandlerFactory)
   }
 
-  def channelClass: Class[_ <: Channel]
+  def channelClass: Class[? <: Channel]
 
-  def serverChannelClass: Class[_ <: ServerChannel]
+  def serverChannelClass: Class[? <: ServerChannel]
 }
 
 object Transport extends StrictLogging {
@@ -41,18 +41,18 @@ object Transport extends StrictLogging {
 
 object EpollNativeTransport extends Transport {
   override def ioHandlerFactory: IoHandlerFactory = EpollIoHandler.newFactory()
-  override def channelClass: Class[_ <: Channel] = classOf[EpollSocketChannel]
-  override def serverChannelClass: Class[_ <: ServerChannel] = classOf[EpollServerSocketChannel]
+  override def channelClass: Class[? <: Channel] = classOf[EpollSocketChannel]
+  override def serverChannelClass: Class[? <: ServerChannel] = classOf[EpollServerSocketChannel]
 }
 
 object KQueueNativeTransport extends Transport {
   override def ioHandlerFactory: IoHandlerFactory = KQueueIoHandler.newFactory()
-  override def channelClass: Class[_ <: Channel] = classOf[KQueueSocketChannel]
-  override def serverChannelClass: Class[_ <: ServerChannel] = classOf[KQueueServerSocketChannel]
+  override def channelClass: Class[? <: Channel] = classOf[KQueueSocketChannel]
+  override def serverChannelClass: Class[? <: ServerChannel] = classOf[KQueueServerSocketChannel]
 }
 
 object NioTransport extends Transport {
   override def ioHandlerFactory: IoHandlerFactory = NioIoHandler.newFactory()
-  override def channelClass: Class[_ <: Channel] = classOf[NioSocketChannel]
-  override def serverChannelClass: Class[_ <: ServerChannel] = classOf[NioServerSocketChannel]
+  override def channelClass: Class[? <: Channel] = classOf[NioSocketChannel]
+  override def serverChannelClass: Class[? <: ServerChannel] = classOf[NioServerSocketChannel]
 }

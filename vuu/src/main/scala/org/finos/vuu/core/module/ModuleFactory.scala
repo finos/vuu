@@ -9,6 +9,7 @@ import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.provider.{NullProvider, Provider, ProviderContainer}
 
 import java.nio.file.Path
+import scala.language.implicitConversions
 
 case class TableDefs (realizedTableDefs: List[TableDef],
                       tableDefs: List[(TableDef, (DataTable, AbstractVuuServer) => Provider)],
@@ -148,8 +149,6 @@ case class ModuleFactoryNode (tableDefs: TableDefs,
 }
 
 object ModuleFactory {
-
-  //private val tableDefContainer = new TableDefContainer(Map())
 
   implicit def stringToString(s: String): FieldDefString = new FieldDefString(s)
 

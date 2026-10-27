@@ -40,7 +40,7 @@ object DefaultTypeConverters {
 
   private def withNullSafety[T1, T2 >: Null](v: T1, fn: T1 => T2): T2 = Option(v).map(fn).orNull
 
-  def getAll: List[TypeConverter[_, _]] = List(
+  def getAll: List[TypeConverter[?, ?]] = List(
     stringToDoubleConverter,
     stringToLongConverter,
     stringToIntConverter,

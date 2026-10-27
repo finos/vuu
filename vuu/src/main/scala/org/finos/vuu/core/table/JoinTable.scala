@@ -51,7 +51,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
   private val joinTableIndices = JoinTableIndices(tableDef, sourceTables)
 
-  override def indexForColumn(column: Column): Option[IndexedField[_]] = {
+  override def indexForColumn(column: Column): Option[IndexedField[?]] = {
     joinTableIndices.indexForColumn(column)
   }
 

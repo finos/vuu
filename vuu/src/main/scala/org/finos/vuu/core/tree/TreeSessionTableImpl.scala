@@ -6,16 +6,16 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.*
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.finos.vuu.viewport.tree.{EmptyTree, Tree, TreeNode}
 
 import java.util.UUID
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 
 
@@ -35,7 +35,7 @@ class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped:
 
 object TreeSessionTable {
   def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock): TreeSessionTableImpl = {
-    new TreeSessionTableImpl(source, session, joinProvider)(metrics, clock)
+    new TreeSessionTableImpl(source, session, joinProvider)(using metrics, clock)
   }
 }
 

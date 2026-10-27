@@ -1,9 +1,9 @@
 package org.finos.vuu.util.types
 
 object TypeUtils {
-  def toWrapperType(t: Class[_]): Class[_] = if (t.isPrimitive) primitiveToWrapperType(t) else t
+  def toWrapperType(t: Class[?]): Class[?] = if (t.isPrimitive) primitiveToWrapperType(t) else t
 
-  private val primitiveToWrapperType: Map[Class[_], Class[_]] = Map(
+  private val primitiveToWrapperType: Map[Class[?], Class[?]] = Map(
     classOf[Boolean] -> classOf[java.lang.Boolean],
     classOf[Char]    -> classOf[java.lang.Character],
     classOf[Byte]    -> classOf[java.lang.Byte],
@@ -14,7 +14,7 @@ object TypeUtils {
     classOf[Double]  -> classOf[java.lang.Double],
   )
 
-  def areTypesEqual(fromClass: Class[_], toClass: Class[_]): Boolean = {
+  def areTypesEqual(fromClass: Class[?], toClass: Class[?]): Boolean = {
     toWrapperType(fromClass).equals(toWrapperType(toClass))
   }
 
