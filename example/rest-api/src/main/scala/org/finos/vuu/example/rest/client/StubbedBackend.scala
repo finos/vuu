@@ -8,7 +8,7 @@ import sttp.model.Method
 
 object StubbedBackend {
   private final val DEFAULT_LIMIT = 10_000
-  private val serializer = JsonSerializer[List[Instrument]]()
+  private val serializer = JsonSerializer[List[Instrument]]
 
   def apply(): SyncBackend = {
     SyncBackendStub

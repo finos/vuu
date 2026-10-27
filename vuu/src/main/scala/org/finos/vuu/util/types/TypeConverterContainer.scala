@@ -6,9 +6,9 @@ trait TypeConverterContainer {
 }
 
 private case class TypeConverterContainerImpl(
-                                               private val converters: List[TypeConverter[_, _]]
+                                               private val converters: List[TypeConverter[?, ?]]
                                              ) extends TypeConverterContainer {
-  private val typeConverterByName: Map[String, TypeConverter[_, _]] = converters.map(tc => (tc.name, tc)).toMap
+  private val typeConverterByName: Map[String, TypeConverter[?, ?]] = converters.map(tc => (tc.name, tc)).toMap
 
   override def convert[From, To](value: From, fromClass: Class[From], toClass: Class[To]): Option[To] = {
     if (TypeUtils.areTypesEqual(fromClass, toClass)) {
@@ -31,7 +31,7 @@ object TypeConverterContainerBuilder {
   def apply(): TypeConverterContainerBuilder = new TypeConverterContainerBuilder(List.empty, withDefaults = true)
 }
 
-case class TypeConverterContainerBuilder (converters: List[TypeConverter[_, _]], withDefaults: Boolean) {
+case class TypeConverterContainerBuilder (converters: List[TypeConverter[?, ?]], withDefaults: Boolean) {
   def withConverter[From, To](t: TypeConverter[From, To]): TypeConverterContainerBuilder = {
     this.copy(converters = converters ++ List(t))
   }

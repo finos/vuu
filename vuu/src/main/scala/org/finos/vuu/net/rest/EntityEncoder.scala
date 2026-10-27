@@ -26,7 +26,7 @@ object StringEncoder extends EntityEncoder[String] {
 
   override def decode(is: InputStream): String = {
     try {
-      Source.fromInputStream(is)(StandardCharsets.UTF_8).mkString
+      Source.fromInputStream(is)(using StandardCharsets.UTF_8).mkString
     } finally {
       if (is != null) is.close()
     }
@@ -47,7 +47,7 @@ object EmptyEncoder extends EntityEncoder[Null] {
 object JsonEntityEncoder {
 
   def apply[T : JavaTypeable](): EntityEncoder[T] = {
-    new JacksonEntityEncoderImpl[T](JsonSerializer[T]())
+    new JacksonEntityEncoderImpl[T](JsonSerializer[T])
   }
 }
 

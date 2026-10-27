@@ -1,7 +1,7 @@
 package org.finos.vuu.util.types
 
-import TypeConverter.buildConverterName
-import TypeUtils.toWrapperType
+import org.finos.vuu.util.types.TypeConverter.buildConverterName
+import org.finos.vuu.util.types.TypeUtils.toWrapperType
 
 trait TypeConverter[From, To] {
   val fromClass: Class[From]
@@ -15,7 +15,7 @@ object TypeConverter {
   def apply[From, To](fromClass: Class[From], toClass: Class[To], converter: From => To): TypeConverter[From, To] =
     new TypeConverterImpl(fromClass, toClass, converter)
 
-  def buildConverterName(fromClass: Class[_], toClass: Class[_]): String = {
+  def buildConverterName(fromClass: Class[?], toClass: Class[?]): String = {
     s"${toWrapperType(fromClass).getTypeName}->${toWrapperType(toClass).getTypeName}"
   }
 }

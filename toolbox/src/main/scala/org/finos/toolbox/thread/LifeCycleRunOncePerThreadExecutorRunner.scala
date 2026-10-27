@@ -1,12 +1,10 @@
 package org.finos.toolbox.thread
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
-import org.finos.toolbox.logging.LogAtFrequency
+import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.executor.ResubmitExecutor
 import org.finos.toolbox.time.Clock
 
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Callable, ConcurrentSkipListSet, FutureTask, LinkedBlockingQueue, TimeUnit}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
@@ -25,7 +23,8 @@ trait WorkItem[T] extends Comparable[WorkItem[T]]{
   }
 }
 
-abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val countOfThreads: Int, val generateWorkFunc: () => List[WorkItem[T]]) (implicit lifecycle: LifecycleContainer, clock: Clock) extends LifeCycleRunner(name, () => ()) with StrictLogging{
+abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val countOfThreads: Int, val generateWorkFunc: () => List[WorkItem[T]])
+                                                         (using lifecycle: LifecycleContainer, clock: Clock) extends LifeCycleRunner(name, () => ()) with StrictLogging{
 
   lifecycle(this)
 

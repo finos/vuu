@@ -8,9 +8,9 @@ object DateTimeScheduler{
                           DayOfWeek.THURSDAY.getValue, DayOfWeek.FRIDAY.getValue, DayOfWeek.SATURDAY.getValue, DayOfWeek.SUNDAY.getValue)
 }
 
-class DateTimeScheduler(days: String, times: List[String], timeZone: String)(implicit time: Clock) {
+class DateTimeScheduler(days: String, times: List[String], timeZone: String)(using time: Clock) {
 
-  import DateTimeScheduler._
+  import DateTimeScheduler.*
 
   private val tz = ZoneId.of(timeZone)
 

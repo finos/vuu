@@ -19,7 +19,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with BeforeAn
   private implicit val clock: Clock = new TestFriendlyClock(10001)
   private final val BASE_URL = "base-url.com"
   private final val KEY_FIELD = "id"
-  val serializer = JsonSerializer[List[Instrument]]()
+  val serializer = JsonSerializer[List[Instrument]]
 
   Feature("doStart") {
     Scenario("can correctly make an external call, parse response and update the table WHEN server responds with 1 instrument") {

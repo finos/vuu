@@ -6,7 +6,7 @@ import org.finos.vuu.core.table.{Column, DataType, RowData}
 
 trait InMemColumnIndices {
 
-  def indexForColumn(column: Column): Option[IndexedField[_]]
+  def indexForColumn(column: Column): Option[IndexedField[?]]
 
   def insert(rowData: RowData): Unit
 
@@ -22,12 +22,12 @@ object InMemColumnIndices {
     val indices = tableDef.options.indices.indices
       .map(index => tableDef.columnForName(index.column))
       .map(c => c -> buildIndexForColumn(c))
-      .toMap[Column, IndexedField[_]]
+      .toMap[Column, IndexedField[?]]
     val updaters = buildUpdaters(indices)
     InMemColumnIndicesImpl(indices, updaters)
   }
 
-  private def buildIndexForColumn(c: Column): IndexedField[_] = {
+  private def buildIndexForColumn(c: Column): IndexedField[?] = {
     c.dataType match {
       case DataType.StringDataType =>
         new HashMapIndexedStringField(c)
@@ -98,7 +98,7 @@ private case class IndexUpdater(column: Column,
 private case class InMemColumnIndicesImpl(indices: Map[Column, IndexedField[?]], 
                                           updaters: Array[IndexUpdater]) extends InMemColumnIndices {
 
-  override def indexForColumn(column: Column): Option[IndexedField[_]] = indices.get(column)
+  override def indexForColumn(column: Column): Option[IndexedField[?]] = indices.get(column)
 
   override def insert(rowData: RowData): Unit = {
     val rowKey = rowData.key

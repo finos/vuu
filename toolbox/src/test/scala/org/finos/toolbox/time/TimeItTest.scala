@@ -9,9 +9,9 @@ class TimeItTest extends AnyFeatureSpec with Matchers {
 
     Scenario("default usage"){
 
-      import TimeIt._
+      import TimeIt.*
 
-      implicit val timeProvider = new TestFriendlyClock(100L)
+      given clock: Clock = new TestFriendlyClock(100L)
 
       def aFunc(i: Int): Int = i * 2
 

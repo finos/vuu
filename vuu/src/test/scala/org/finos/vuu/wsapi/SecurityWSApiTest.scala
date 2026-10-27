@@ -34,7 +34,7 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
   var targetViewPortId: String = _
 
   override def beforeEach(): Unit = {
-    attackingLifeCycle = LifecycleContainer()(new DefaultClock)
+    attackingLifeCycle = LifecycleContainer()
     attackingClient = createAttackingClient()
     val sessionOption = attackingClient.login(attacker)
     assert(sessionOption.isDefined)

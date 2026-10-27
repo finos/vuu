@@ -15,7 +15,7 @@ trait SchemaMapper {
   def externalSchemaField(columnName: String): Option[SchemaField]
   def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any]
   def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any]
-  def toInternalRowMap(externalValues: List[_]): Map[String, Any]
+  def toInternalRowMap(externalValues: List[?]): Map[String, Any]
   def toInternalRowMap(externalDto: Product): Map[String, Any]
 }
 
@@ -33,9 +33,9 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
   override def internalVuuColumn(extFieldName: String): Option[Column] = internalColumnByExtFieldName.get(extFieldName)
   override def externalSchemaField(columnName: String): Option[SchemaField] = externalFieldByColumnName.get(columnName)
 
-  override def toInternalRowMap(externalValues: List[_]): Map[String, Any] = toInternalRowMap(externalValues.toArray)
+  override def toInternalRowMap(externalValues: List[?]): Map[String, Any] = toInternalRowMap(externalValues.toArray)
   override def toInternalRowMap(externalDto: Product): Map[String, Any] = toInternalRowMap(externalDto.productIterator.toArray)
-  private def toInternalRowMap(externalValues: Array[_]): Map[String, Any] = {
+  private def toInternalRowMap(externalValues: Array[?]): Map[String, Any] = {
     externalFieldByColumnName.map({ case (columnName, extField) =>
       val extFieldValue = externalValues(extField.index)
       // @todo remove this get and make this return Optional (need to guard against conversion error if a user sends in a value not matching the schema type)
@@ -66,7 +66,7 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
     Try(typeConverterContainer.convert(value, fromClass, toClass).get).toOption
   }
 
-  private def castToAny(cls: Class[_]): Class[Any] = cls.asInstanceOf[Class[Any]]
+  private def castToAny(cls: Class[?]): Class[Any] = cls.asInstanceOf[Class[Any]]
 
   private def getExternalSchemaFieldsByColumnName =
     externalSchema.fields.flatMap(f =>

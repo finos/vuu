@@ -28,9 +28,9 @@ trait ImmutableArraySet[T] extends Iterable[T] {
 
 object ImmutableArraySet {
 
-  def from[T <: Object](iterable: IterableOnce[T])(implicit c: ClassTag[T]): ImmutableArraySet[T] = {
+  def from[T <: Object](iterable: IterableOnce[T])(using c: ClassTag[T]): ImmutableArraySet[T] = {
     if (iterable.knownSize == 0) {
-      empty()
+      empty[T]
     } else if (iterable.knownSize == 1) {
       of(iterable.iterator.next())
     } else {
@@ -38,19 +38,19 @@ object ImmutableArraySet {
     }
   }
 
-  def from[T <: Object](set: Set[T])(implicit c: ClassTag[T]): ImmutableArraySet[T] = {
+  def from[T <: Object](set: Set[T])(using c: ClassTag[T]): ImmutableArraySet[T] = {
     if (set.isEmpty) {
-      empty()
+      empty[T]
     } else {
       VectorImmutableArraySet.from(set)
     }
   }
   
-  def empty[T <: Object](implicit c: ClassTag[T]): ImmutableArraySet[T] = {
+  def empty[T <: Object](using c: ClassTag[T]): ImmutableArraySet[T] = {
     VectorImmutableArraySet.empty()
   }
 
-  def of[T <: Object](value: T)(implicit c: ClassTag[T]): ImmutableArraySet[T] = {
+  def of[T <: Object](value: T)(using c: ClassTag[T]): ImmutableArraySet[T] = {
     VectorImmutableArraySet.of(value)
   }
 

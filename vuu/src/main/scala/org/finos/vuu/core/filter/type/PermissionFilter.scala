@@ -35,7 +35,7 @@ object DenyAllPermissionFilter extends PermissionFilter {
 
 private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with StrictLogging {
 
-  private val internalFilter = CompoundFilter(filters.toSeq: _*)
+  private val internalFilter = CompoundFilter(filters.toSeq*)
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     internalFilter.doFilter(source, primaryKeys, firstInChain)
