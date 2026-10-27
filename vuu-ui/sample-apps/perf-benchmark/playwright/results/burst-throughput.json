@@ -3,17 +3,17 @@
     "grid": "vuu",
     "rowCount": 10000,
     "totalUpdates": 100000,
-    "durationMs": 828,
-    "updatesPerSecond": 120772.94685990339,
-    "capturedAt": "2026-10-01T07:50:17.893Z"
+    "durationMs": 955,
+    "updatesPerSecond": 104712.04188481676,
+    "capturedAt": "2026-10-27T19:40:16.828Z"
   },
   "vuu-100000rows": {
     "grid": "vuu",
     "rowCount": 100000,
     "totalUpdates": 5000,
-    "durationMs": 35,
-    "updatesPerSecond": 142857.14285714284,
-    "capturedAt": "2026-10-01T07:50:19.966Z"
+    "durationMs": 29,
+    "updatesPerSecond": 172413.79310344826,
+    "capturedAt": "2026-10-27T19:40:18.668Z"
   },
   "ag-grid-client-10000rows": {
     "grid": "ag-grid-client",
@@ -21,9 +21,9 @@
     "type": "burstResult",
     "requestId": 1,
     "totalUpdates": 100000,
-    "durationMs": 442.0084999999963,
-    "updatesPerSecond": 226239.99312230613,
-    "capturedAt": "2026-10-01T07:50:25.288Z"
+    "durationMs": 305.22760000000017,
+    "updatesPerSecond": 327624.36948690074,
+    "capturedAt": "2026-10-27T19:40:22.797Z"
   },
   "ag-grid-client-100000rows": {
     "grid": "ag-grid-client",
@@ -31,9 +31,9 @@
     "type": "burstResult",
     "requestId": 1,
     "totalUpdates": 5000,
-    "durationMs": 18.34210000000894,
-    "updatesPerSecond": 272596.9218354258,
-    "capturedAt": "2026-10-01T07:50:28.260Z"
+    "durationMs": 35.25989999999911,
+    "updatesPerSecond": 141804.1457860098,
+    "capturedAt": "2026-10-27T19:40:25.703Z"
   },
   "ag-grid-server-10000rows": {
     "grid": "ag-grid-server",
@@ -41,9 +41,9 @@
     "type": "burstResult",
     "requestId": 1,
     "totalUpdates": 100000,
-    "durationMs": 403.08190000010654,
-    "updatesPerSecond": 248088.53982273472,
-    "capturedAt": "2026-10-01T07:50:31.690Z"
+    "durationMs": 280.15639999999985,
+    "updatesPerSecond": 356943.47871403274,
+    "capturedAt": "2026-10-27T19:40:28.272Z"
   },
   "ag-grid-server-100000rows": {
     "grid": "ag-grid-server",
@@ -51,24 +51,24 @@
     "type": "burstResult",
     "requestId": 1,
     "totalUpdates": 5000,
-    "durationMs": 29.21820000000298,
-    "updatesPerSecond": 171126.21585174618,
-    "capturedAt": "2026-10-01T07:50:32.898Z"
+    "durationMs": 27.592400000001362,
+    "updatesPerSecond": 181209.318507986,
+    "capturedAt": "2026-10-27T19:40:29.338Z"
   },
   "ag-grid-vuu-10000rows": {
     "grid": "ag-grid-vuu",
     "rowCount": 10000,
     "totalUpdates": 100000,
-    "durationMs": 1012,
-    "updatesPerSecond": 98814.22924901186,
-    "capturedAt": "2026-10-01T07:50:35.242Z"
+    "durationMs": 905,
+    "updatesPerSecond": 110497.23756906077,
+    "capturedAt": "2026-10-27T19:40:31.485Z"
   },
   "ag-grid-vuu-100000rows": {
     "grid": "ag-grid-vuu",
     "rowCount": 100000,
     "totalUpdates": 5000,
-    "durationMs": 36,
-    "updatesPerSecond": 138888.8888888889,
-    "capturedAt": "2026-10-01T07:50:37.350Z"
+    "durationMs": 37,
+    "updatesPerSecond": 135135.13513513515,
+    "capturedAt": "2026-10-27T19:40:33.266Z"
   }
 }

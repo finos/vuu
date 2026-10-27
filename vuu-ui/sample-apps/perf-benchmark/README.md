@@ -133,8 +133,9 @@ need before running anything:
 2. **The Node feed-server** (`npm run feed-server`) - backs `ag-grid-client` and `ag-grid-server`.
 3. **The real VUU server** (`npm run vuu-server` → `scripts/start-vuu-server.ps1`) - backs `vuu` and
    `ag-grid-vuu`. This is the one with the most moving parts, so it's worth explaining what the script does:
-   - Uses `mvn` from `PATH` if present, otherwise downloads a private copy of Apache Maven into
-     `scripts/.tools/` (gitignored) - nothing is installed system-wide.
+   - Uses the repo's own Maven Wrapper (`mvnw.cmd` at the `vuu-repo/` root) rather than managing a private
+     Maven install - the wrapper bootstraps the correct Maven version itself on first use, so the only
+     prerequisite is a JVM on `PATH`.
    - Runs `mvn install` on the `price` and `main` Scala modules in the parent `vuu-repo/` checkout, then
      starts `BenchmarkMain` (a minimal server entry point - see
      [Why a separate BenchmarkMain](#why-a-separate-benchmarkmain) - not the full `SimulMain` demo server).

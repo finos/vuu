@@ -2,65 +2,65 @@
   "vuu-10000rows": {
     "grid": "vuu",
     "rowCount": 10000,
-    "heapAtRestBytes": 9856688,
-    "heapAfterChurnBytes": 10104964,
-    "heapGrowthBytes": 248276,
-    "capturedAt": "2026-10-01T07:51:10.335Z"
+    "heapAtRestBytes": 9896996,
+    "heapAfterChurnBytes": 10145220,
+    "heapGrowthBytes": 248224,
+    "capturedAt": "2026-10-27T19:41:03.887Z"
   },
   "vuu-100000rows": {
     "grid": "vuu",
     "rowCount": 100000,
-    "heapAtRestBytes": 9853532,
-    "heapAfterChurnBytes": 9892684,
-    "heapGrowthBytes": 39152,
-    "capturedAt": "2026-10-01T07:51:18.186Z"
+    "heapAtRestBytes": 9896592,
+    "heapAfterChurnBytes": 9935656,
+    "heapGrowthBytes": 39064,
+    "capturedAt": "2026-10-27T19:41:11.552Z"
   },
   "ag-grid-client-10000rows": {
     "grid": "ag-grid-client",
     "rowCount": 10000,
-    "heapAtRestBytes": 16628688,
-    "heapAfterChurnBytes": 17802664,
-    "heapGrowthBytes": 1173976,
-    "capturedAt": "2026-10-01T07:51:25.568Z"
+    "heapAtRestBytes": 16667788,
+    "heapAfterChurnBytes": 17843664,
+    "heapGrowthBytes": 1175876,
+    "capturedAt": "2026-10-27T19:41:18.738Z"
   },
   "ag-grid-client-100000rows": {
     "grid": "ag-grid-client",
     "rowCount": 100000,
-    "heapAtRestBytes": 58966884,
-    "heapAfterChurnBytes": 60359596,
-    "heapGrowthBytes": 1392712,
-    "capturedAt": "2026-10-01T07:51:34.659Z"
+    "heapAtRestBytes": 59012060,
+    "heapAfterChurnBytes": 60369596,
+    "heapGrowthBytes": 1357536,
+    "capturedAt": "2026-10-27T19:41:27.346Z"
   },
   "ag-grid-server-10000rows": {
     "grid": "ag-grid-server",
     "rowCount": 10000,
-    "heapAtRestBytes": 12333680,
-    "heapAfterChurnBytes": 12775148,
-    "heapGrowthBytes": 441468,
-    "capturedAt": "2026-10-01T07:51:42.186Z"
+    "heapAtRestBytes": 12376500,
+    "heapAfterChurnBytes": 12816420,
+    "heapGrowthBytes": 439920,
+    "capturedAt": "2026-10-27T19:41:34.456Z"
   },
   "ag-grid-server-100000rows": {
     "grid": "ag-grid-server",
     "rowCount": 100000,
-    "heapAtRestBytes": 12331704,
-    "heapAfterChurnBytes": 12615996,
-    "heapGrowthBytes": 284292,
-    "capturedAt": "2026-10-01T07:51:49.779Z"
+    "heapAtRestBytes": 12375940,
+    "heapAfterChurnBytes": 12660704,
+    "heapGrowthBytes": 284764,
+    "capturedAt": "2026-10-27T19:41:41.543Z"
   },
   "ag-grid-vuu-10000rows": {
     "grid": "ag-grid-vuu",
     "rowCount": 10000,
-    "heapAtRestBytes": 13073284,
-    "heapAfterChurnBytes": 13152928,
-    "heapGrowthBytes": 79644,
-    "capturedAt": "2026-10-01T07:51:57.275Z"
+    "heapAtRestBytes": 13130896,
+    "heapAfterChurnBytes": 13206108,
+    "heapGrowthBytes": 75212,
+    "capturedAt": "2026-10-27T19:41:48.681Z"
   },
   "ag-grid-vuu-100000rows": {
     "grid": "ag-grid-vuu",
     "rowCount": 100000,
-    "heapAtRestBytes": 13021368,
-    "heapAfterChurnBytes": 13124408,
-    "heapGrowthBytes": 103040,
-    "capturedAt": "2026-10-01T07:52:05.734Z"
+    "heapAtRestBytes": 13079424,
+    "heapAfterChurnBytes": 13182648,
+    "heapGrowthBytes": 103224,
+    "capturedAt": "2026-10-27T19:41:56.647Z"
   }
 }

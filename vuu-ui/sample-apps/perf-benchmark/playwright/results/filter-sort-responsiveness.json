@@ -2,81 +2,81 @@
   "vuu-10000rows": {
     "grid": "vuu",
     "rowCount": 10000,
-    "sortMs": 161,
-    "filterMs": 141,
+    "sortMs": 115,
+    "filterMs": 439,
     "longTaskCount": 0,
     "totalBlockingTimeMs": 0,
     "maxTaskDurationMs": 0,
-    "capturedAt": "2026-10-01T07:50:39.224Z"
+    "capturedAt": "2026-10-27T19:40:35.536Z"
   },
   "vuu-100000rows": {
     "grid": "vuu",
     "rowCount": 100000,
-    "sortMs": 89,
-    "filterMs": 297,
+    "sortMs": 156,
+    "filterMs": 403,
     "longTaskCount": 0,
     "totalBlockingTimeMs": 0,
     "maxTaskDurationMs": 0,
-    "capturedAt": "2026-10-01T07:50:41.788Z"
+    "capturedAt": "2026-10-27T19:40:38.380Z"
   },
   "ag-grid-server-10000rows": {
     "grid": "ag-grid-server",
     "rowCount": 10000,
-    "sortMs": 186,
-    "filterMs": 616,
-    "longTaskCount": 1,
-    "totalBlockingTimeMs": 8,
-    "maxTaskDurationMs": 58,
-    "capturedAt": "2026-10-01T07:50:55.644Z"
+    "sortMs": 119,
+    "filterMs": 520,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-27T19:40:50.278Z"
   },
   "ag-grid-client-10000rows": {
     "grid": "ag-grid-client",
     "rowCount": 10000,
-    "sortMs": 303,
-    "filterMs": 679,
-    "longTaskCount": 4,
-    "totalBlockingTimeMs": 36,
-    "maxTaskDurationMs": 71,
-    "capturedAt": "2026-10-01T07:50:44.482Z"
+    "sortMs": 180,
+    "filterMs": 555,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-27T19:40:40.576Z"
   },
   "ag-grid-client-100000rows": {
     "grid": "ag-grid-client",
     "rowCount": 100000,
-    "sortMs": 1905,
-    "filterMs": 2278,
+    "sortMs": 2011,
+    "filterMs": 1898,
     "longTaskCount": 15,
-    "totalBlockingTimeMs": 3208,
-    "maxTaskDurationMs": 481,
-    "capturedAt": "2026-10-01T07:50:53.475Z"
+    "totalBlockingTimeMs": 2789,
+    "maxTaskDurationMs": 488,
+    "capturedAt": "2026-10-27T19:40:48.472Z"
   },
   "ag-grid-server-100000rows": {
     "grid": "ag-grid-server",
     "rowCount": 100000,
-    "sortMs": 159,
-    "filterMs": 414,
+    "sortMs": 130,
+    "filterMs": 341,
     "longTaskCount": 0,
     "totalBlockingTimeMs": 0,
     "maxTaskDurationMs": 0,
-    "capturedAt": "2026-10-01T07:50:57.959Z"
+    "capturedAt": "2026-10-27T19:40:52.199Z"
   },
   "ag-grid-vuu-10000rows": {
     "grid": "ag-grid-vuu",
     "rowCount": 10000,
-    "sortMs": 85,
-    "filterMs": 286,
+    "sortMs": 52,
+    "filterMs": 229,
     "longTaskCount": 1,
-    "totalBlockingTimeMs": 39,
-    "maxTaskDurationMs": 89,
-    "capturedAt": "2026-10-01T07:51:00.189Z"
+    "totalBlockingTimeMs": 5,
+    "maxTaskDurationMs": 55,
+    "capturedAt": "2026-10-27T19:40:54.080Z"
   },
   "ag-grid-vuu-100000rows": {
     "grid": "ag-grid-vuu",
     "rowCount": 100000,
-    "sortMs": 50,
-    "filterMs": 331,
-    "longTaskCount": 0,
-    "totalBlockingTimeMs": 0,
-    "maxTaskDurationMs": 0,
-    "capturedAt": "2026-10-01T07:51:02.847Z"
+    "sortMs": 51,
+    "filterMs": 434,
+    "longTaskCount": 1,
+    "totalBlockingTimeMs": 5,
+    "maxTaskDurationMs": 55,
+    "capturedAt": "2026-10-27T19:40:56.616Z"
   }
 }
