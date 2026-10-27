@@ -193,7 +193,7 @@
                             <arg>-feature</arg>
                             <arg>-deprecation</arg>
                             <arg>-unchecked</arg>
-                            <arg>-Wunused:all</arg>
+                            <arg>-Wunused:imports</arg>
                         </args>
                         <jvmArgs>
                             <jvmArg>-Xms64m</jvmArg>
