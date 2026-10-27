@@ -566,3 +566,122 @@ export const AllColumnTypesWithScaledDecimalFilter = () => (
     showOperatorPicker
   />
 );
+
+const instrumentsExtendedSchema = getSchema("instrumentsExtended");
+
+/**
+ * A Table of instrumentsExtended with a FilterContainer to the left, offering
+ * filters on columns of different data types.
+ */
+export const FilterContainerWithTable = () => {
+  const { VuuDataSource } = useData();
+
+  const [columns, [currency, exchange, side, supported, lotSize, price]] =
+    useMemo<[ColumnDescriptor[], ColumnDescriptor[]]>(() => {
+      const filterColumns: ColumnDescriptor[] = [
+        { name: "currency", serverDataType: "string" },
+        { name: "exchange", serverDataType: "string" },
+        { name: "side", serverDataType: "char" },
+        { name: "supported", serverDataType: "boolean" },
+        { name: "lotSize", serverDataType: "int" },
+        { name: "price", serverDataType: "double" },
+      ];
+      const tableColumns: ColumnDescriptor[] = [
+        { name: "bbg", serverDataType: "string" },
+        { name: "description", serverDataType: "string", width: 200 },
+        ...filterColumns,
+      ];
+      return [tableColumns, filterColumns];
+    }, []);
+
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: instrumentsExtendedSchema.columns.map(toColumnName),
+        table: instrumentsExtendedSchema.table,
+      }),
+    [VuuDataSource],
+  );
+
+  const table = instrumentsExtendedSchema.table;
+
+  const config = useMemo(() => ({ columns }), [columns]);
+
+  const onFilterApplied = useCallback<
+    FilterAppliedHandler<FilterContainerFilter>
+  >(
+    (filter) => {
+      dataSource.setFilter?.(filter);
+    },
+    [dataSource],
+  );
+
+  const onFilterCleared = useCallback(() => {
+    dataSource.clearFilter?.();
+  }, [dataSource]);
+
+  return (
+    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+      <DataSourceProvider dataSource={dataSource}>
+        <FilterContainer
+          onFilterApplied={onFilterApplied}
+          onFilterCleared={onFilterCleared}
+          style={{
+            display: "flex",
+            flex: "0 0 280px",
+            flexDirection: "column",
+            gap: 12,
+            justifyContent: "flex-start",
+            padding: 12,
+          }}
+        >
+          <FormField data-testid="filter-currency">
+            <FormFieldLabel>Currency</FormFieldLabel>
+            <FilterContainerColumnFilter
+              TypeaheadProps={typeaheadPropsZero}
+              column={currency}
+              table={table}
+            />
+          </FormField>
+          <FormField data-testid="filter-exchange">
+            <FormFieldLabel>Exchange</FormFieldLabel>
+            <FilterContainerColumnFilter
+              TypeaheadProps={typeaheadPropsZero}
+              column={exchange}
+              table={table}
+            />
+          </FormField>
+          <FormField data-testid="filter-side">
+            <FormFieldLabel>Side</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={side}
+              table={table}
+              values={["B", "S"]}
+              variant="toggle"
+            />
+          </FormField>
+          <FormField data-testid="filter-supported">
+            <FormFieldLabel>Supported</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={supported}
+              table={table}
+              variant="toggle"
+            />
+          </FormField>
+          <FormField data-testid="filter-lotSize">
+            <FormFieldLabel>Lot Size</FormFieldLabel>
+            <FilterContainerColumnFilter column={lotSize} />
+          </FormField>
+          <FormField data-testid="filter-price">
+            <FormFieldLabel>Price</FormFieldLabel>
+            <FilterContainerColumnFilter column={price} operator=">" />
+          </FormField>
+          <DataSourceStats dataSource={dataSource} />
+        </FilterContainer>
+      </DataSourceProvider>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Table config={config} dataSource={dataSource} height="100%" />
+      </div>
+    </div>
+  );
+};

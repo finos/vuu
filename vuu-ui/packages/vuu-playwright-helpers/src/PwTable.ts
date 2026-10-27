@@ -157,6 +157,60 @@ export class PwTable extends PwComponent {
   }
 
   /**
+   * Wait until the table has loaded data, i.e. rowCount is greater than zero.
+   *
+   * @example
+   * test("table loads", async ({ mount, page }) => {
+   *   await mount("Filters/FilterContainer/FilterContainerWithTable");
+   *   const table = new PwTable(page);
+   *   await table.dataLoaded;
+   * });
+   */
+  get dataLoaded(): Promise<void> {
+    return expect.poll(() => this.rowCount()).toBeGreaterThan(0);
+  }
+
+  /**
+   * The text content of the data cells in a column, exactly as formatted in
+   * the table, in row order. These are the cells in data rows with the same
+   * aria-colindex as the column header. The table is virtualised, so only
+   * rendered rows are included.
+   *
+   * @example
+   * test("filter on currency", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await expect
+   *     .poll(async () => new Set(await table.columnValues("currency")))
+   *     .toEqual(new Set(["GBP"]));
+   * });
+   */
+  async columnValues(columnName: string): Promise<string[]> {
+    const headerCell = this.locator
+      .locator(
+        `xpath=.//*[@role='columnheader' and @data-column-name=${xpathStringLiteral(columnName)}]`,
+      )
+      .first();
+    const ariaColIndex = await headerCell.getAttribute("aria-colindex");
+    if (ariaColIndex === null) {
+      throw Error(
+        `PwTable, columnValues, column "${columnName}" does not have an aria-colindex`,
+      );
+    }
+    const cells = this.locator.locator(
+      `[role="row"] > [role="cell"][aria-colindex="${ariaColIndex}"]`,
+    );
+    const values = await cells.evaluateAll((elements) =>
+      elements.map((cell) => ({
+        rowIndex: Number(cell.parentElement?.getAttribute("aria-rowindex")),
+        text: cell.textContent ?? "",
+      })),
+    );
+    return values
+      .sort((v1, v2) => v1.rowIndex - v2.rowIndex)
+      .map(({ text }) => text);
+  }
+
+  /**
    * Locate the icon with the given data-icon name within a cell.
    *
    * @example
