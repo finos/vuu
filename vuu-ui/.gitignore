@@ -5,4 +5,4 @@ node_modules/
 **/blob-report/
 **/playwright/.cache/
 *.tsbuildinfo
-sample-apps/perf-benchmark/scripts/.tools/
+sample-apps/perf-benchmark/scripts/main-classpath.txt

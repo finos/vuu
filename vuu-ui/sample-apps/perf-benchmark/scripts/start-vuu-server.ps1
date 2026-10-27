@@ -1,53 +1,27 @@
 # Builds (if needed) and launches the real VUU server (BenchmarkMain) that
-# backs the "vuu" and "ag-grid-vuu" benchmark variants. Self-contained: no
-# manual Maven install, no certificate/trust-store setup required from
-# whoever runs this.
-#
-# Two portability notes, both confirmed working (not assumed) on this
-# machine's network path, and both generic (not tied to any specific
-# antivirus/proxy product):
-#   - Maven is downloaded via Invoke-WebRequest with TLS 1.2 forced.
-#     PowerShell 5.1 doesn't always negotiate TLS 1.2 by default against
-#     modern endpoints, which can otherwise hang rather than fail cleanly.
-#   - The JVM is pointed at the Windows certificate store directly
-#     (-Djavax.net.ssl.trustStoreType=Windows-ROOT) for the Maven build
-#     step, so it trusts whatever Windows already trusts - the same store
-#     the browser and npm use - instead of the JVM's own separate bundled
-#     trust store. No certificate export/import of any kind.
+# backs the "vuu" and "ag-grid-vuu" benchmark variants. Uses the repo's own
+# Maven Wrapper (mvnw.cmd at the repo root) rather than managing a private
+# Maven install - the wrapper bootstraps the correct Maven version itself,
+# so the only prerequisite is a JVM on PATH.
 
 $ErrorActionPreference = "Stop"
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $scriptDir = $PSScriptRoot
 $repoRoot = Resolve-Path (Join-Path $scriptDir "..\..\..\..")          # vuu-repo/
 $serverModuleDir = Join-Path $repoRoot "example\main"
-$toolsDir = Join-Path $scriptDir ".tools"
-$mavenVersion = "3.9.12"
-$mavenHome = Join-Path $toolsDir "apache-maven-$mavenVersion"
-$mavenBin = Join-Path $mavenHome "bin\mvn.cmd"
-$classpathFile = Join-Path $toolsDir "main-classpath.txt"
+$mvn = Join-Path $repoRoot "mvnw.cmd"
+$classpathFile = Join-Path $scriptDir "main-classpath.txt"
 
-function Get-Maven {
-    $onPath = Get-Command mvn -ErrorAction SilentlyContinue
-    if ($onPath) {
-        Write-Host "[start-vuu-server] using mvn already on PATH: $($onPath.Source)"
-        return $onPath.Source
-    }
-    if (Test-Path $mavenBin) {
-        Write-Host "[start-vuu-server] using cached Maven at $mavenBin"
-        return $mavenBin
-    }
-    Write-Host "[start-vuu-server] downloading Apache Maven $mavenVersion..."
-    New-Item -ItemType Directory -Force -Path $toolsDir | Out-Null
-    $zipPath = Join-Path $toolsDir "apache-maven-$mavenVersion-bin.zip"
-    $url = "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$mavenVersion/apache-maven-$mavenVersion-bin.zip"
-    Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing
-    Expand-Archive -Path $zipPath -DestinationPath $toolsDir -Force
-    Remove-Item $zipPath
-    return $mavenBin
-}
-
-$mvn = Get-Maven
+# -Djavax.net.ssl.trustStoreType=Windows-ROOT: on a machine where HTTPS
+# traffic is intercepted for inspection (a corporate proxy or antivirus doing
+# TLS inspection, common on managed Windows machines), the JVM's own bundled
+# trust store won't trust the intercepting certificate even though Windows
+# itself does - which is why a browser or npm works fine but a plain mvn
+# call can fail TLS validation when downloading dependencies. Pointing the
+# JVM at the Windows certificate store directly (the same store the browser
+# and npm already trust) fixes this generically, with no certificate
+# export/import and no change to anyone's antivirus/proxy configuration
+# required.
 $env:MAVEN_OPTS = "-Djavax.net.ssl.trustStoreType=Windows-ROOT"
 
 Push-Location $repoRoot
