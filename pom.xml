@@ -188,6 +188,18 @@
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
                     <version>4.9.8</version>
+                    <configuration>
+                        <args>
+                            <arg>-feature</arg>
+                            <arg>-deprecation</arg>
+                            <arg>-unchecked</arg>
+                            <arg>-Wunused:all</arg>
+                        </args>
+                        <jvmArgs>
+                            <jvmArg>-Xms64m</jvmArg>
+                            <jvmArg>-Xmx1024m</jvmArg>
+                        </jvmArgs>
+                    </configuration>
                 </plugin>
 
                 <plugin>
