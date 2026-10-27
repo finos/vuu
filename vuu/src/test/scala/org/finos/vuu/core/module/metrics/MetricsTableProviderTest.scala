@@ -18,9 +18,9 @@ class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with Mockito
 
   Feature("runOnce") {
 
+    given clock: Clock = new TestFriendlyClock(10001)
     given lifecycleContainer: LifecycleContainer = new LifecycleContainer()
     given metricsProvider: MetricsProvider = new MetricsProviderImpl()
-    given clock: Clock = new TestFriendlyClock(10001)
 
     Scenario("can get and update expected list of tables") {
       val joinProvider = new TestFriendlyJoinTableProvider()

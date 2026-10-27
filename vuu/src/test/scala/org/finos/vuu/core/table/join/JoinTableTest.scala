@@ -350,10 +350,10 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
     }
 
     Scenario("check created timestamp and last updated timestamp are populated correctly for LeftOuterJoin") {
-      val testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()(testFriendlyClock)
+      given testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
-      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(LeftOuterJoin)(lifecycle, testFriendlyClock, metrics)
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(LeftOuterJoin)(using lifecycle, testFriendlyClock, metrics)
 
       joinProvider.start()
 
@@ -401,10 +401,10 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
     }
 
     Scenario("Test hitting indices in LeftOuterJoin") {
-      val testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()(testFriendlyClock)
+      given testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
-      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(LeftOuterJoin)(lifecycle, testFriendlyClock, metrics)
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(LeftOuterJoin)(using lifecycle, testFriendlyClock, metrics)
 
       joinProvider.start()
 
