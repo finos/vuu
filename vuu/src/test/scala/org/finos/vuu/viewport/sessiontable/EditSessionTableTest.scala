@@ -233,7 +233,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
       Given("We define a viewport callback on process with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(process.getTableDef.name, createViewPortDefFunc(tableContainer,
-        new StopProcessDialogueService()(tableContainer), clock))
+        new StopProcessDialogueService()(using tableContainer), clock))
       val stopProcessService = new StopProcessService
       viewPortContainer.addViewPortDefinition(stopProcess.getTableDef.name, createViewPortDefFunc(tableContainer,
         stopProcessService, clock))

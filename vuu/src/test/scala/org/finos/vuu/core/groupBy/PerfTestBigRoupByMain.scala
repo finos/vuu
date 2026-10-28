@@ -51,7 +51,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   val client = ClientSessionId("A", "C")
 
-  val groupByTable = TreeSessionTable(table, client, joinProvider)(metrics, clock)
+  val groupByTable = TreeSessionTable(table, client, joinProvider)(using metrics, clock)
 
   val exchange = table.getTableDef.columnForName("exchange")
 

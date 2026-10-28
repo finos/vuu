@@ -30,7 +30,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(fooBar = 109, \"Yay\", \"Boo\")"))
 
-      createNOrderRowsNoSleep(ordersProvider, 10)(clock)
+      createNOrderRowsNoSleep(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
@@ -67,7 +67,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(quantity = 109, \"Yay\", \"Boo\")"))
 
-      createNOrderRowsNoSleep(ordersProvider, 10)(clock)
+      createNOrderRowsNoSleep(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
@@ -101,7 +101,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "quantityTimes100:Long:=quantity*100"))
 
-      createNOrderRowsNoSleep(ordersProvider, 10)(clock)
+      createNOrderRowsNoSleep(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
@@ -161,7 +161,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      createNOrderRowsNoSleep(ordersProvider, 10)(clock)
+      createNOrderRowsNoSleep(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 

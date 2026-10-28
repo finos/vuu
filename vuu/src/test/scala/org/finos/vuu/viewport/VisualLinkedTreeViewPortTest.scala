@@ -29,9 +29,9 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       createPricesRow(pricesProvider, "BT.L", 200, 201, 200.5, 199.5, "NYSE")
       createPricesRow(pricesProvider, "BP.L", 300, 301, 300.5, 299.5, "XAMS")
 
-      createNOrderRows(ordersProvider, 3)(clock)
-      createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(clock)
-      createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(clock)
+      createNOrderRows(ordersProvider, 3)(using clock)
+      createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(using clock)
+      createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(using clock)
 
       val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
       val viewPortPricesGroupBy = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices, groupBy = GroupBy(List(vpcolumnsPrices.getColumnForName("exchange").get), List()))

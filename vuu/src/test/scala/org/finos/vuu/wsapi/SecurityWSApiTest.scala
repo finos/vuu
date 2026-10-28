@@ -306,8 +306,8 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       .withSslDisabled()
       .withCompression(vuuServerConfig.wsOptions.compressionEnabled)
       .withNativeTransport(vuuServerConfig.wsOptions.nativeTransportEnabled)
-    val attackingWebSocketClient = new WebSocketClient(options)(attackingLifeCycle)
-    val attackingViewServerClient = new WebSocketViewServerClient(attackingWebSocketClient)(attackingLifeCycle)
+    val attackingWebSocketClient = new WebSocketClient(options)(using attackingLifeCycle)
+    val attackingViewServerClient = new WebSocketViewServerClient(attackingWebSocketClient)(using attackingLifeCycle)
     val attackingVuuClient: TestVuuClient = new TestVuuClient(attackingViewServerClient, vuuServerConfig.security.loginTokenService)
     attackingLifeCycle.start()
     eventually(timeout(Span(2, Seconds))) {

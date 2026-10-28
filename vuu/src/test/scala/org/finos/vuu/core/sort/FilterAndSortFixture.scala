@@ -140,7 +140,7 @@ object FilterAndSortFixture {
       )
     )
 
-    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, clock)
+    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(using new MetricsProviderImpl, clock)
     rows.foreach(row => table.processUpdate(row.key, row))
     table
   }

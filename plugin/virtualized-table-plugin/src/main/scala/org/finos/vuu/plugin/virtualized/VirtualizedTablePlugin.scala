@@ -16,7 +16,7 @@ object VirtualizedTablePlugin extends DefaultPlugin {
   final val callableFactory = new VirtualizedViewPortCallableFactory
 
   override def tableFactory(implicit metrics: MetricsProvider): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
-    val table = new InMemDataTable(tableDef, joinTableProvider)(metrics, tableContainer.timeProvider)
+    val table = new InMemDataTable(tableDef, joinTableProvider)(using metrics, tableContainer.timeProvider)
     tableContainer.addTable(table)
     table
   }

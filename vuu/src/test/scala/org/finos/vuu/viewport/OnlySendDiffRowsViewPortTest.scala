@@ -27,7 +27,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))//.map(orders.getTableDef.columnForName(_)).toList
 
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 4), vpcolumns)
 
