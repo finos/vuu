@@ -28,10 +28,10 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
   private val tableName = "accounts"
   private val moduleName = "SecurityWSApiTest"
   private val attacker = VuuUser("31337 H4X0R")
-  var attackingLifeCycle: LifecycleContainer = _
-  var attackingClient: TestVuuClient = _
-  var attackingSessionId: String = _
-  var targetViewPortId: String = _
+  var attackingLifeCycle: LifecycleContainer = scala.compiletime.uninitialized
+  var attackingClient: TestVuuClient = scala.compiletime.uninitialized
+  var attackingSessionId: String = scala.compiletime.uninitialized
+  var targetViewPortId: String = scala.compiletime.uninitialized
 
   override def beforeEach(): Unit = {
     attackingLifeCycle = LifecycleContainer()

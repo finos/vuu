@@ -32,7 +32,7 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
 
   override def incrementUpdateCounter(): Unit = ???
 
-  override def indexForColumn(column: Column): Option[IndexedField[_]] = ???
+  override def indexForColumn(column: Column): Option[IndexedField[?]] = ???
 
   override def getColumnValueProvider: ColumnValueProvider = ???
 

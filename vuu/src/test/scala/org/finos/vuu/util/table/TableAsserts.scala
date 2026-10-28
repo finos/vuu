@@ -63,7 +63,7 @@ object TableAsserts {
     assert(!diff.hasDiff, "check we have no diffs")
   }
 
-  def generic6AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor6[_, _, _, _, _, _]): Unit = {
+  def generic6AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor6[?, ?, ?, ?, ?, ?]): Unit = {
 
     val addVpuMeta = (vpu: ViewPortUpdate) => {
       val isSel = if (vpu.vp.getSelection.contains(vpu.key.key)) 1 else 0
@@ -83,7 +83,7 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic5AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor5[_, _, _, _, _]): Unit = {
+  def generic5AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor5[?, ?, ?, ?, ?]): Unit = {
 
     val addVpuMeta = (vpu: ViewPortUpdate) => {
       val isSel = if (vpu.vp.getSelection.contains(vpu.key.key)) 1 else 0
@@ -103,7 +103,7 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic13AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
+  def generic13AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor13[?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?]): Unit = {
 
     val addVpuMeta = (vpu: ViewPortUpdate) => {
       val isSel = if (vpu.vp.getSelection.contains(vpu.key.key)) 1 else 0

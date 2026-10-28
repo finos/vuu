@@ -18,7 +18,7 @@ import org.scalatestplus.mockito.MockitoSugar
 class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach {
   implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl()
   implicit val clock: Clock = new TestFriendlyClock(10001)
-  private var tableContainer: TableContainer = _
+  private var tableContainer: TableContainer = scala.compiletime.uninitialized
 
   private final val sessionTableBlueprint = createMockTable(tableName = "blueprint", tableDefName = "blueprint-def", sessionDef = true)
   private final val sessionId = ClientSessionId("123", "456")

@@ -263,12 +263,12 @@ private object SchemaMapperTest {
 
   private def givenExternalSchema(fields: SchemaField*): ExternalEntitySchema = TestEntitySchema(fields.toList)
 
-  private def schemaField(name: String, dataType: Class[_] = classOf[Any], index: Int = -1): SchemaField =
+  private def schemaField(name: String, dataType: Class[?] = classOf[Any], index: Int = -1): SchemaField =
     SchemaField(name, dataType, index)
 
   private def givenColumns(columns: Column*): Array[Column] = columns.toArray
 
-  private def column(name: String, dataType: Class[_] = classOf[Any], index: Int = -1): Column =
+  private def column(name: String, dataType: Class[?] = classOf[Any], index: Int = -1): Column =
     SimpleColumn(name, index, dataType)
 
   private val externalFields: List[SchemaField] = List(
@@ -279,7 +279,7 @@ private object SchemaMapperTest {
     schemaField("side", classOf[java.lang.Character], 4),
   )
 
-  private val externalSchema: ExternalEntitySchema = givenExternalSchema(externalFields: _*)
+  private val externalSchema: ExternalEntitySchema = givenExternalSchema(externalFields*)
 
   private val internalColumns: Array[Column] = givenColumns(
     column("id", classOf[Int], 0),

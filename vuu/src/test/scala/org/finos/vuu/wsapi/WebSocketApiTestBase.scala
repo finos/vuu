@@ -19,13 +19,13 @@ import scala.reflect.ClassTag
 abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with BeforeAndAfterEach
   with GivenWhenThen with Matchers with LazyLogging {
 
-  implicit var timeProvider: Clock = _
-  implicit var lifecycle: LifecycleContainer = _
-  implicit var tableDefContainer: TableDefContainer = _
-  var vuuServerConfig: VuuServerConfig = _
-  var viewServerClient: ViewServerClient = _
-  var vuuClient: TestVuuClient = _
-  var sessionId: String = _
+  implicit var timeProvider: Clock = scala.compiletime.uninitialized
+  implicit var lifecycle: LifecycleContainer = scala.compiletime.uninitialized
+  implicit var tableDefContainer: TableDefContainer = scala.compiletime.uninitialized
+  var vuuServerConfig: VuuServerConfig = scala.compiletime.uninitialized
+  var viewServerClient: ViewServerClient = scala.compiletime.uninitialized
+  var vuuClient: TestVuuClient = scala.compiletime.uninitialized
+  var sessionId: String = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     timeProvider = new DefaultClock

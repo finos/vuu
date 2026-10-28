@@ -31,7 +31,7 @@ object CalculatedColumnFixture extends StrictLogging {
   }
 
   def parseColumn(columns: Iterable[Column], calcDef: String): Column = {
-    val name :: dataType :: calcdsl :: _ = calcDef.split(":").toList
+    val name :: dataType :: calcdsl :: _ = calcDef.split(":").toList: @unchecked
     val dt = DataType.fromString(dataType)
     val input = CharStreams.fromString(calcdsl)
     val lexer = new CalculatedColumnLexer(input)
@@ -103,7 +103,7 @@ object CalculatedColumnFixture extends StrictLogging {
     rows
   }
 
-  def generic12Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor12[_, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
+  def generic12Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor12[?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?]): Unit = {
 
     val arraysOfMaps = rows.map(rowToMap(_, columns)).toArray
 
@@ -116,7 +116,7 @@ object CalculatedColumnFixture extends StrictLogging {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic11Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor11[_, _, _, _, _, _, _, _, _, _, _]): Unit = {
+  def generic11Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor11[?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?]): Unit = {
 
     val arraysOfMaps = rows.map(rowToMap(_, columns)).toArray
 
@@ -129,7 +129,7 @@ object CalculatedColumnFixture extends StrictLogging {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic13Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
+  def generic13Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor13[?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?]): Unit = {
 
     val arraysOfMaps = rows.map(rowToMap(_, columns)).toArray
 

@@ -179,7 +179,7 @@ object CalculatedColumnClauseTest extends Matchers {
     }
   }
 
-  def givenColumn(name: String, t: Class[_] = classOf[Any]): Column = SimpleColumn(name, -1, t)
+  def givenColumn(name: String, t: Class[?] = classOf[Any]): Column = SimpleColumn(name, -1, t)
 
   def givenRow(key: String = "key", m: Map[String, Any] = Map.empty): RowData = RowWithData(key, m)
 

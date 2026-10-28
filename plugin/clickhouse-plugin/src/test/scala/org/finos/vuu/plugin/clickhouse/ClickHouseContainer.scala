@@ -38,7 +38,7 @@ object ClickHouseContainer {
   private val clientCertificateKeyPath = "certs/client.key"
   private val rootCertificatePath = "certs/ca.crt"
 
-  private def createContainer(tag: String): JavaGenericContainer[_] = {
+  private def createContainer(tag: String): JavaGenericContainer[?] = {
     val c = new JavaGenericContainer(DockerImageName.parse(s"$imageName:$tag"))
     c.withExposedPorts(port, securePort)
     c.withEnv("CLICKHOUSE_USERNAME", username)

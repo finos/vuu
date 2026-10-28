@@ -20,7 +20,7 @@ object VirtualizedSessionTableColumn {
 
 }
 
-case class VirtualizedSessionTableColumn(name: String, index: Int, dataType: Class[_], remoteName: String) extends Column {
+case class VirtualizedSessionTableColumn(name: String, index: Int, dataType: Class[?], remoteName: String) extends Column {
 
   override def getData(data: RowData): Any = {
     data.get(name)
