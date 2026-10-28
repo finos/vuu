@@ -1,12 +1,19 @@
 import { Button } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
+import { Table, useTableConfig } from "@vuu-ui/vuu-table";
 import {
   ColumnModel,
   ColumnPicker,
+  ColumnPickerAction,
   type ColumnPickerProps,
+  DataSourceStats,
+  TableFooter,
+  TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { MouseEventHandler, useCallback, useMemo } from "react";
+import { DemoTableContainer } from "../Table/DemoTableContainer";
 
 const ColumnPickerTemplate = ({
   columnModel,
@@ -131,3 +138,65 @@ export const CalculatedColumnPickerAlongsideAddButton = () => {
     </>
   );
 };
+
+const instrumentsSchema = getSchema("instruments");
+
+const TableWithColumnPickerTemplate = () => {
+  const { VuuDataSource } = useData();
+
+  const initialConfig = useMemo<TableConfig>(
+    () => ({
+      columns: instrumentsSchema.columns.filter(({ name }) =>
+        ["bbg", "currency", "description", "exchange"].includes(name),
+      ),
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [],
+  );
+
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: initialConfig.columns.map(toColumnName),
+        table: instrumentsSchema.table,
+      }),
+    [VuuDataSource, initialConfig],
+  );
+
+  const { columnModel, onTableConfigChange, tableConfig } = useTableConfig({
+    availableColumns: instrumentsSchema.columns,
+    config: initialConfig,
+    dataSource,
+  });
+
+  return (
+    <>
+      <div style={{ flex: "1 1 auto" }}>
+        <Table
+          config={tableConfig}
+          dataSource={dataSource}
+          onConfigChange={onTableConfigChange}
+        />
+      </div>
+      <TableFooter>
+        <DataSourceStats dataSource={dataSource} />
+        <TableFooterTray>
+          <ColumnPickerAction columnModel={columnModel} />
+        </TableFooterTray>
+      </TableFooter>
+    </>
+  );
+};
+
+/**
+ * A Table with a TableFooter. The footer action opens a ColumnPicker in the
+ * ContextPanel. Columns added or removed in the picker are added to or removed
+ * from the Table, columns removed with the Table column menu are removed from
+ * the picker.
+ */
+export const TableWithColumnPicker = () => (
+  <DemoTableContainer>
+    <TableWithColumnPickerTemplate />
+  </DemoTableContainer>
+);
