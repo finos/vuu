@@ -7,6 +7,27 @@ import { byDataIcon, cssAttributeValue } from "./selector-utils";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
+/**
+ * How far to scroll: 'start' or 'end' scroll to that end of the axis, a number
+ * scrolls by that many pixels in the direction of the method.
+ */
+export type ScrollDistance = "start" | "end" | number;
+/**
+ * As ScrollDistance, plus 'page' to scroll vertically by the height of the
+ * viewport (as the PageUp and PageDown keys do).
+ */
+export type VerticalScrollDistance = ScrollDistance | "page";
+
+type ScrollAxis = "horizontal" | "vertical";
+
+export interface ScrollPosition {
+  scrollLeft: number;
+  scrollTop: number;
+}
+
+// scroll positions are rounded by the browser
+const SCROLL_TOLERANCE = 1;
+
 const byAriaRowIndex = (ariaRowIndex: number) =>
   `[aria-rowindex="${ariaRowIndex}"]:scope`;
 
@@ -60,6 +81,168 @@ export class PwTable extends PwComponent {
    */
   get scrollbarContainer() {
     return this.locator.locator(".vuuTable-scrollbarContainer");
+  }
+
+  /**
+   * The scroll position of the scrollbar container.
+   *
+   * @example
+   * test("scrolled to top", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   expect((await table.scrollPosition()).scrollTop).toBe(0);
+   * });
+   */
+  scrollPosition(): Promise<ScrollPosition> {
+    return this.scrollbarContainer.evaluate(({ scrollLeft, scrollTop }) => ({
+      scrollLeft,
+      scrollTop,
+    }));
+  }
+
+  /**
+   * Scroll up, by a number of pixels, a page (the height of the viewport), or
+   * to the 'start' (top) or 'end' (bottom). Scrolls the scrollbar container,
+   * as a user dragging the scrollbar would, and resolves once the content
+   * container has been scrolled to match.
+   *
+   * @example
+   * test("scroll back to top", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.scrollDown("page");
+   *   await table.scrollUp("start");
+   *   await expect(table.row(2)).toBeInViewport();
+   * });
+   */
+  scrollUp(distance: VerticalScrollDistance): Promise<void> {
+    return this.scroll("vertical", -1, distance);
+  }
+
+  /**
+   * Scroll down, by a number of pixels, a page (the height of the viewport),
+   * or to the 'start' (top) or 'end' (bottom). Scrolls the scrollbar
+   * container, as a user dragging the scrollbar would, and resolves once the
+   * content container has been scrolled to match.
+   *
+   * @example
+   * test("scroll to last row", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.scrollDown("end");
+   *   await expect(table.row(1001)).toBeInViewport();
+   * });
+   */
+  scrollDown(distance: VerticalScrollDistance): Promise<void> {
+    return this.scroll("vertical", 1, distance);
+  }
+
+  /**
+   * Scroll left, by a number of pixels, or to the 'start' (leftmost) or 'end'
+   * (rightmost). Scrolls the scrollbar container, as a user dragging the
+   * scrollbar would, and resolves once the content container has been
+   * scrolled to match.
+   *
+   * @example
+   * test("scroll back to first column", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.scrollRight("end");
+   *   await table.scrollLeft("start");
+   *   await expect(table.locateCell(2, 1)).toBeInViewport();
+   * });
+   */
+  scrollLeft(distance: ScrollDistance): Promise<void> {
+    return this.scroll("horizontal", -1, distance);
+  }
+
+  /**
+   * Scroll right, by a number of pixels, or to the 'start' (leftmost) or
+   * 'end' (rightmost). Scrolls the scrollbar container, as a user dragging the
+   * scrollbar would, and resolves once the content container has been
+   * scrolled to match.
+   *
+   * @example
+   * test("scroll right by 200px", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.scrollRight(200);
+   *   expect((await table.scrollPosition()).scrollLeft).toBe(200);
+   * });
+   */
+  scrollRight(distance: ScrollDistance): Promise<void> {
+    return this.scroll("horizontal", 1, distance);
+  }
+
+  private async scroll(
+    axis: ScrollAxis,
+    direction: 1 | -1,
+    distance: VerticalScrollDistance,
+  ): Promise<void> {
+    if (typeof distance === "number" && distance < 0) {
+      throw Error(
+        "PwTable, scroll, distance must not be negative, use the opposite direction",
+      );
+    }
+    await this.scrollbarContainer.evaluate(
+      (el, { axis, direction, distance }) => {
+        const vertical = axis === "vertical";
+        const current = vertical ? el.scrollTop : el.scrollLeft;
+        const max = vertical
+          ? el.scrollHeight - el.clientHeight
+          : el.scrollWidth - el.clientWidth;
+        const pos =
+          distance === "start"
+            ? 0
+            : distance === "end"
+              ? max
+              : current +
+                direction * (distance === "page" ? el.clientHeight : distance);
+        el.scrollTo({
+          [vertical ? "top" : "left"]: Math.min(max, Math.max(0, pos)),
+          behavior: "instant",
+        });
+      },
+      { axis, direction, distance },
+    );
+    await expect
+      .poll(() => this.isContentScrollSynced(), {
+        message: "PwTable, content container scroll position not synced",
+      })
+      .toBe(true);
+  }
+
+  /**
+   * The table keeps the content container at the same proportional scroll
+   * position as the scrollbar container.
+   */
+  private isContentScrollSynced(): Promise<boolean> {
+    return this.locator.evaluate((table, tolerance) => {
+      const scrollbar = table.querySelector(".vuuTable-scrollbarContainer");
+      const content = table.querySelector(".vuuTable-contentContainer");
+      if (!scrollbar || !content) {
+        return false;
+      }
+      const isSynced = (
+        sourcePos: number,
+        sourceMax: number,
+        targetPos: number,
+        targetMax: number,
+      ) => {
+        const expected =
+          sourceMax > 0 ? (sourcePos / sourceMax) * targetMax : 0;
+        return Math.abs(targetPos - expected) <= tolerance;
+      };
+      return (
+        isSynced(
+          scrollbar.scrollTop,
+          scrollbar.scrollHeight - scrollbar.clientHeight,
+          content.scrollTop,
+          content.scrollHeight - content.clientHeight,
+        ) &&
+        isSynced(
+          scrollbar.scrollLeft,
+          scrollbar.scrollWidth - scrollbar.clientWidth,
+          content.scrollLeft,
+          content.scrollWidth - content.clientWidth,
+        )
+      );
+    }, SCROLL_TOLERANCE);
   }
 
   /**

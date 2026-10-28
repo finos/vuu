@@ -5,6 +5,11 @@ export { PwColumnPicker } from "./PwColumnPicker";
 export { PwComponent, type PwComponentTarget } from "./PwComponent";
 export { PwContextMenu } from "./PwContextMenu";
 export { PwMenuItem } from "./PwMenuItem";
-export { PwTable } from "./PwTable";
+export {
+  PwTable,
+  type ScrollDistance,
+  type ScrollPosition,
+  type VerticalScrollDistance,
+} from "./PwTable";
 export { PwTableFooter } from "./PwTableFooter";
 export { PwTableHeaderCell } from "./PwTableHeaderCell";
