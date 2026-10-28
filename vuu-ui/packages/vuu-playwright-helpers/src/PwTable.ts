@@ -137,6 +137,40 @@ export class PwTable extends PwComponent {
   }
 
   /**
+   * The names (not labels) of the columns in the table, from the
+   * data-column-name of the header cells, in rendered order.
+   *
+   * @example
+   * test("renders expected columns", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   expect(await table.headerColumnNames()).toEqual(["ccy", "exchange"]);
+   * });
+   */
+  headerColumnNames(): Promise<string[]> {
+    return this.locator
+      .locator(".vuuTableHeaderCell[data-column-name]")
+      .evaluateAll((elements) =>
+        elements.map(
+          (element) => element.getAttribute("data-column-name") ?? "",
+        ),
+      );
+  }
+
+  /**
+   * Assert the names (not labels) of the columns in the table, in order,
+   * retrying until the expect timeout.
+   *
+   * @example
+   * test("column added", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.assertColumns(["ccy", "exchange", "lotSize"]);
+   * });
+   */
+  async assertColumns(columnNames: string[]): Promise<void> {
+    await expect.poll(() => this.headerColumnNames()).toEqual(columnNames);
+  }
+
+  /**
    * The total row count, read from aria-rowcount on the element with role="table".
    * This is the dataSource size, not the number of rendered rows.
    *

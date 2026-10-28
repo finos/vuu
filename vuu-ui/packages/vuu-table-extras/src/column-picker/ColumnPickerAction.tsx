@@ -8,6 +8,7 @@ export interface ColumnPickerActionProps
     ColumnPickerHookProps {}
 
 export const ColumnPickerAction = ({
+  "aria-label": ariaLabel = "Show column picker",
   appearance = "transparent",
   columnModel,
   icon = "settings",
@@ -23,6 +24,7 @@ export const ColumnPickerAction = ({
   return (
     <IconButton
       {...IconButtonProps}
+      aria-label={ariaLabel}
       appearance={appearance}
       data-action="table-settings"
       icon={icon}

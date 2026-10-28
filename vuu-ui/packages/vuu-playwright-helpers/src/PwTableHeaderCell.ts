@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { PwComponent, type PwComponentTarget } from "./PwComponent";
+import { PwContextMenu } from "./PwContextMenu";
 
 /**
  * A Table column header cell. Usually obtained from PwTable.headerCell.
@@ -50,5 +51,27 @@ export class PwTableHeaderCell extends PwComponent {
    */
   async assertSelected(): Promise<void> {
     await expect(this.locator).toContainClass("vuuTableHeaderCell-selected");
+  }
+
+  /**
+   * Click the column menu button in the header cell. Resolves with the column
+   * menu once it is visible.
+   *
+   * @example
+   * test("remove column from column menu", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   const menu = await table.headerCell("exchange").showColumnMenu();
+   *   await menu.menuItem("Remove exchange column").click();
+   *   await table.assertColumns(["bbg", "currency"]);
+   * });
+   */
+  async showColumnMenu(): Promise<PwContextMenu> {
+    await this.locator
+      .getByRole("button", { name: "Open Column Menu", exact: true })
+      .click();
+    return new PwContextMenu(
+      this.page,
+      this.page.locator(".saltMenuPanel[role='menu']"),
+    ).isReady();
   }
 }
