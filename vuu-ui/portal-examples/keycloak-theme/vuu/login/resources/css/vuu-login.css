@@ -1,0 +1,327 @@
+/*
+ * Vuu login theme for Keycloak (parent: keycloak.v2, PatternFly 5).
+ * Restyles the stock templates to match the Vuu LoginPanel design:
+ * a purple branding panel on the left, the form on the right.
+ */
+
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("../fonts/NunitoSansv15Latin.woff2") format("woff2");
+}
+
+:root {
+  --vuu-login-deep-purple: rgb(42, 1, 95);
+  --vuu-login-purple: rgb(109, 24, 189);
+  --vuu-login-purple-hover: rgb(88, 15, 156);
+  --vuu-login-page-bg: rgb(242, 242, 244);
+  --vuu-login-text: rgb(21, 23, 27);
+  --vuu-login-label: rgb(97, 101, 110);
+  --vuu-login-border: rgb(196, 198, 204);
+  --vuu-login-width: 856px;
+  --vuu-login-height: 550px;
+  --vuu-login-branding-width: 368px;
+  --vuu-login-radius: 16px;
+  --vuu-login-control-height: 36px;
+  --vuu-login-control-radius: 6px;
+  --vuu-login-gap: 24px;
+
+  /* PatternFly globals picked up by every component */
+  --pf-v5-global--FontFamily--text: "Nunito Sans", sans-serif;
+  --pf-v5-global--FontFamily--heading: "Nunito Sans", sans-serif;
+  --pf-v5-global--primary-color--100: var(--vuu-login-purple);
+  --pf-v5-global--primary-color--200: var(--vuu-login-purple-hover);
+  --pf-v5-global--link--Color: var(--vuu-login-purple);
+  --pf-v5-global--link--Color--hover: var(--vuu-login-purple-hover);
+  --pf-v5-global--Color--100: var(--vuu-login-text);
+}
+
+/* Page */
+
+html.login-pf body,
+#keycloak-bg {
+  background: var(--vuu-login-page-bg);
+  color: var(--vuu-login-text);
+  font-family: var(--pf-v5-global--FontFamily--text);
+}
+
+.pf-v5-c-login {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+/* Card: branding column + form column */
+
+.pf-v5-c-login__container {
+  border-radius: var(--vuu-login-radius);
+  box-shadow: 0 24px 44px 0 rgba(0, 0, 0, 0.25);
+  column-gap: 0;
+  display: grid;
+  grid-template-areas: "header main";
+  grid-template-columns: var(--vuu-login-branding-width) minmax(0, 1fr);
+  margin: 0;
+  max-width: none;
+  min-height: var(--vuu-login-height);
+  padding: 0;
+  row-gap: 0;
+  width: min(var(--vuu-login-width), 100%);
+}
+
+/* Branding panel: logo, then the realm display name */
+
+.pf-v5-c-login__header {
+  align-items: center;
+  background-color: var(--vuu-login-deep-purple);
+  border-radius: var(--vuu-login-radius) 0 0 var(--vuu-login-radius);
+  display: flex;
+  flex-direction: column;
+  grid-area: header;
+  justify-content: center;
+  margin: 0;
+  padding: 40px;
+}
+
+#kc-header-wrapper {
+  color: white !important;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.2;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+#kc-header-wrapper::before {
+  background: url("../img/vuu-logo.svg") no-repeat center / contain;
+  content: "";
+  display: block;
+  height: 90px;
+  margin: 0 auto 40px;
+  width: 184px;
+}
+
+/* Form panel */
+
+.pf-v5-c-login__main {
+  align-self: stretch;
+  background-color: white;
+  border-radius: 0 var(--vuu-login-radius) var(--vuu-login-radius) 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  grid-area: main;
+  justify-content: center;
+  margin: 0;
+  padding: 40px;
+}
+
+.pf-v5-c-login__main-header {
+  border-top: none;
+  display: block;
+  padding: 0;
+  margin-bottom: 32px;
+}
+
+#kc-page-title {
+  font-family: var(--pf-v5-global--FontFamily--heading);
+  font-size: 28px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.pf-v5-c-login__main-body,
+.pf-v5-c-login__main-footer {
+  padding-inline: 0;
+}
+
+.pf-v5-c-login__main-body {
+  padding-bottom: 0;
+}
+
+/* Fields */
+
+.pf-v5-c-form {
+  --pf-v5-c-form--GridGap: var(--vuu-login-gap);
+}
+
+.pf-v5-c-form__label-text {
+  color: var(--vuu-login-label);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.pf-v5-c-form-control {
+  --vuu-login-control-border: var(--vuu-login-border);
+  border-radius: var(--vuu-login-control-radius);
+  min-height: var(--vuu-login-control-height);
+}
+
+.pf-v5-c-form-control::before {
+  border: 1px solid var(--vuu-login-control-border);
+  border-radius: var(--vuu-login-control-radius);
+}
+
+.pf-v5-c-form-control::after {
+  border: none;
+}
+
+.pf-v5-c-form-control:hover {
+  --vuu-login-control-border: var(--vuu-login-label);
+}
+
+.pf-v5-c-form-control:focus-within {
+  --vuu-login-control-border: var(--vuu-login-purple);
+}
+
+.pf-v5-c-form-control:focus-within::before {
+  border-width: 2px;
+}
+
+.pf-v5-c-form-control.pf-m-error {
+  --vuu-login-control-border: var(--pf-v5-global--danger-color--100);
+}
+
+.pf-v5-c-form-control > input {
+  font-size: 14px;
+}
+
+/* Password: show/hide toggle sits inside the field */
+
+.pf-v5-c-input-group:has([data-password-toggle]) {
+  position: relative;
+}
+
+.pf-v5-c-input-group:has([data-password-toggle]) .pf-v5-c-form-control > input {
+  padding-right: var(--vuu-login-control-height);
+}
+
+.pf-v5-c-input-group__item:has(> [data-password-toggle]) {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+[data-password-toggle].pf-v5-c-button.pf-m-control {
+  --pf-v5-c-button--m-control--BackgroundColor: transparent;
+  --pf-v5-c-button--m-control--hover--BackgroundColor: transparent;
+  --pf-v5-c-button--m-control--focus--BackgroundColor: transparent;
+  --pf-v5-c-button--m-control--active--BackgroundColor: transparent;
+  --pf-v5-c-button--m-control--Color: var(--vuu-login-label);
+  --pf-v5-c-button--m-control--hover--Color: var(--vuu-login-text);
+  height: 100%;
+}
+
+[data-password-toggle].pf-v5-c-button.pf-m-control::after {
+  border: none;
+}
+
+/* Buttons */
+
+.pf-v5-c-button.pf-m-primary,
+.pf-v5-c-button.pf-m-secondary {
+  --pf-v5-c-button--BorderRadius: var(--vuu-login-control-radius);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  min-height: var(--vuu-login-control-height);
+  text-transform: uppercase;
+}
+
+.pf-v5-c-form__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.pf-v5-c-form__actions > * {
+  margin: 0;
+}
+
+/* Links */
+
+.pf-v5-c-login a:not(.pf-v5-c-button) {
+  text-decoration: underline;
+}
+
+/*
+ * Login page: "Forgot your password" goes below the button.
+ * The link lives inside the password field group, so that group and its
+ * helper-text wrappers are flattened (display: contents) to make the link
+ * a flex item of the form, then moved to the end with `order`.
+ * Spacing uses margins because the flattened parts would otherwise pick up
+ * the form's row gap.
+ */
+
+[data-page-id="login-login"] #kc-form-login {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0;
+}
+
+[data-page-id="login-login"] #kc-form-login .pf-v5-c-form__group:has(#password),
+[data-page-id="login-login"]
+  #kc-form-login
+  .pf-v5-c-form__group:has(#password)
+  > .pf-v5-c-form__helper-text,
+[data-page-id="login-login"]
+  #kc-form-login
+  .pf-v5-c-form__group:has(#password)
+  > .pf-v5-c-form__helper-text
+  > .pf-v5-c-helper-text {
+  display: contents !important;
+}
+
+[data-page-id="login-login"] #kc-form-login .pf-v5-c-form__group:has(#username) {
+  margin-bottom: var(--vuu-login-gap);
+}
+
+[data-page-id="login-login"] #kc-form-login .pf-v5-c-form__group:has(#kc-login) {
+  margin-top: var(--vuu-login-gap);
+}
+
+[data-page-id="login-login"] #kc-form-login .pf-v5-c-helper-text__item {
+  margin-top: 8px;
+}
+
+[data-page-id="login-login"]
+  #kc-form-login
+  .pf-v5-c-helper-text__item:has(a[href*="reset-credentials"]) {
+  align-self: center;
+  font-size: 13px;
+  margin-top: var(--vuu-login-gap);
+  order: 1;
+}
+
+/* Narrow screens: stack the branding panel above the form */
+
+@media (max-width: 767px) {
+  .pf-v5-c-login__container {
+    grid-template-areas: "header" "main";
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .pf-v5-c-login__header {
+    border-radius: var(--vuu-login-radius) var(--vuu-login-radius) 0 0;
+    padding: 32px 24px;
+  }
+
+  #kc-header-wrapper::before {
+    height: 60px;
+    margin-bottom: 20px;
+    width: 123px;
+  }
+
+  .pf-v5-c-login__main {
+    border-radius: 0 0 var(--vuu-login-radius) var(--vuu-login-radius);
+    padding: 32px 24px;
+  }
+}
