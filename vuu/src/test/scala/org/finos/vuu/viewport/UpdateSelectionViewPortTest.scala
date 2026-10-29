@@ -30,7 +30,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select a row and preserve existing selection") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -85,7 +85,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select a row without preserving existing selection") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -161,7 +161,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Deselect a row and preserve existing selection") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -214,7 +214,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Deselect a row without preserving existing selection") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -257,7 +257,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Change row index after rows are selected") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -307,7 +307,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select a row that doesn't exist") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -325,7 +325,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select a range of rows and preserve existing selection") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -383,7 +383,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select a range of rows without preserving existing selection") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -440,7 +440,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select a range of rows with reverse order") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -476,7 +476,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Change row index after a range of rows are selected") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -531,7 +531,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select a range of rows that do not exist") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -554,7 +554,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Select all rows") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 3), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -595,7 +595,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("Deselect all rows") {
       Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 6)(clock)
+      createNOrderRows(ordersProvider, 6)(using clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))

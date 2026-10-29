@@ -15,7 +15,7 @@ import java.time.{Instant, ZoneId, ZonedDateTime}
 class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockitoSugar with GivenWhenThen {
   behavior of "ClickHouseRowDataMapper (per-type tests)"
 
-  private def col(name: String, dataType: Class[_]): VirtualizedSessionTableColumn =
+  private def col(name: String, dataType: Class[?]): VirtualizedSessionTableColumn =
     VirtualizedSessionTableColumn(name, 0, dataType, name)
 
   it should "map non-empty String and omit empty String" in {

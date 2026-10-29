@@ -25,7 +25,7 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 20), vpcolumns)
 
@@ -113,7 +113,7 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
         )
       }
 
-      createNOrderRows(ordersProvider, 12)(clock)
+      createNOrderRows(ordersProvider, 12)(using clock)
 
       viewPortContainer.shouldCalculateKeys(viewPort2, viewPort2.getStructuralHashCode(), viewPort2.getTableUpdateCount()) should be(true)
 

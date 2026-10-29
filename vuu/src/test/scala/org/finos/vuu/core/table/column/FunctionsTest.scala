@@ -71,25 +71,25 @@ class FunctionsTest extends AnyFeatureSpec with Matchers {
 
   Feature("IfFunction") {
     Scenario("evaluates and returns `then` clause when condition clause evaluates to true") {
-      val condition :: thenClause :: elseClause :: _ = List(givenClause(true), givenClause("then"), givenClause("else"))
+      val condition :: thenClause :: elseClause :: _ = List(givenClause(true), givenClause("then"), givenClause("else")): @unchecked
       val res = IfFunction(condition, thenClause, elseClause).calculate(givenRow())
       areEqual(res, "then")
     }
 
     Scenario("evaluates and returns `else` clause when condition clause evaluates to false") {
-      val condition :: thenClause :: elseClause :: _ = List(givenClause(false), givenClause("then"), givenClause("else"))
+      val condition :: thenClause :: elseClause :: _ = List(givenClause(false), givenClause("then"), givenClause("else")): @unchecked
       val res = IfFunction(condition, thenClause, elseClause).calculate(givenRow())
       areEqual(res, "else")
     }
 
     Scenario("evaluates and returns `else` clause when condition clause evaluates to not true") {
-      val condition :: thenClause :: elseClause :: _ = List(givenClause(15.5), givenClause("then"), givenClause("else"))
+      val condition :: thenClause :: elseClause :: _ = List(givenClause(15.5), givenClause("then"), givenClause("else")): @unchecked
       val res = IfFunction(condition, thenClause, elseClause).calculate(givenRow())
       areEqual(res, "else")
     }
 
     Scenario("returns error when condition clause evaluation errors") {
-      val condition :: thenClause :: elseClause :: _ = List(DivisionClause(List(givenClause("string"))), givenClause("then"), givenClause("else"))
+      val condition :: thenClause :: elseClause :: _ = List(DivisionClause(List(givenClause("string"))), givenClause("then"), givenClause("else")): @unchecked
       val res = IfFunction(condition, thenClause, elseClause).calculate(givenRow())
       containErrorMsg(res, "unable to apply")
     }

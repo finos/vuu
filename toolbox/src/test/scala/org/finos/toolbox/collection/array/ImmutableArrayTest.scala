@@ -128,7 +128,7 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
   test("check removal of all rows by index and that compaction doesn't break things") {
     val count = 20_000
     val numbers = (0 until count).map(_.toString)
-    var array = arr(numbers: _*)
+    var array = arr(numbers*)
 
     var index = 0
     while (index < count) {
@@ -151,7 +151,7 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
   test("check removal of all rows by last element and that compaction doesn't break things") {
     val count = 20_000
     val numbers = (0 until count).map(_.toString)
-    var array = arr(numbers: _*)
+    var array = arr(numbers*)
 
     var index = 0
     while (index < count) {
@@ -173,9 +173,9 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
 
     val numbers = (0 to 100000).map(_.toString)
 
-    val array1 = arr(numbers: _*)
-    val array2 = arr(numbers: _*)
-    val array3 = arr(numbers.slice(0, 100): _*)
+    val array1 = arr(numbers*)
+    val array2 = arr(numbers*)
+    val array3 = arr(numbers.slice(0, 100)*)
 
     array1 shouldEqual array1
 

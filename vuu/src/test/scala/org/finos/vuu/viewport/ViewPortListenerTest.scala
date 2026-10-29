@@ -23,7 +23,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      createNOrderRows(ordersProvider, 30)(clock)
+      createNOrderRows(ordersProvider, 30)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
 

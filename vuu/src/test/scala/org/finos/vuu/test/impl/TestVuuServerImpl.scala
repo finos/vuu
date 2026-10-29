@@ -92,7 +92,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
       override def serializationMixin: AnyRef = module.serializationMixin
       override def restServicesUnrealized: List[AbstractVuuServer => RestService] = module.restServicesUnrealized
       override def getProviderForTable(table: DataTable, viewserver: AbstractVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
-        module.getProviderForTable(table, viewserver)(time, life)
+        module.getProviderForTable(table, viewserver)(using time, life)
       }
 
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()

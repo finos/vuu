@@ -16,7 +16,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 
 class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with GivenWhenThen {
-  var coreServerApi: CoreServerApiHandler = _
+  var coreServerApi: CoreServerApiHandler = scala.compiletime.uninitialized
   override def beforeEach(): Unit = {
     implicit val clock: TestFriendlyClock = new TestFriendlyClock(1311544800L)
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer

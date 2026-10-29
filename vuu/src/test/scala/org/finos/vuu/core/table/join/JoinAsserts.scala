@@ -42,7 +42,7 @@ object JoinAsserts {
     }
   }
 
-  def generic5Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor5[_, _, _, _, _]) = {
+  def generic5Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor5[?, ?, ?, ?, ?]) = {
 
     val arraysOfMaps = output.filter( jtu => jtu.joinTable.name == tableName).map( jtu => jtu.rowUpdate.data ).toArray
 
@@ -55,7 +55,7 @@ object JoinAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic6Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor6[_, _, _, _, _, _]) = {
+  def generic6Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor6[?, ?, ?, ?, ?, ?]) = {
 
     val arraysOfMaps = output.filter( jtu => jtu.joinTable.name == tableName).map( jtu => jtu.rowUpdate.data ).toArray
 
@@ -68,7 +68,7 @@ object JoinAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic4Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor4[_, _, _, _]) = {
+  def generic4Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor4[?, ?, ?, ?]) = {
 
     val arraysOfMaps = output.filter( jtu => jtu.joinTable.name == tableName).map( jtu => jtu.rowUpdate.data ).toArray
 
@@ -81,7 +81,7 @@ object JoinAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic3Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor3[_, _, _]) = {
+  def generic3Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor3[?, ?, ?]) = {
 
     val arraysOfMaps = output.filter( jtu => jtu.joinTable.name == tableName).map( jtu => jtu.rowUpdate.data ).toArray
 
@@ -94,7 +94,7 @@ object JoinAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic7Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor7[_, _, _, _, _, _, _]) = {
+  def generic7Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor7[?, ?, ?, ?, ?, ?, ?]) = {
 
     val arraysOfMaps = output.filter( jtu => jtu.joinTable.name == tableName).map( jtu => jtu.rowUpdate.data ).toArray
 
@@ -107,7 +107,7 @@ object JoinAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic8Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor8[_, _, _, _, _, _, _, _]) = {
+  def generic8Assert(tableName: String, output: Array[JoinTableUpdateRow])(expectation: TableFor8[?, ?, ?, ?, ?, ?, ?, ?]) = {
 
     val arraysOfMaps = output.filter( jtu => jtu.joinTable.name == tableName).map( jtu => jtu.rowUpdate.data ).toArray
 

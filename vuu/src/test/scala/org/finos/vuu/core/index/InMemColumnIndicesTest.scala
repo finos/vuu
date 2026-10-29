@@ -9,7 +9,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 
 class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDrivenPropertyChecks {
 
-  def createIndices(columnName: String, dataType: Class[_]): (Column, InMemColumnIndices) = {
+  def createIndices(columnName: String, dataType: Class[?]): (Column, InMemColumnIndices) = {
     val column: Column = SimpleColumn(columnName, 0, dataType)
     val tableDef = new TableDef(
       name = "test" + columnName,

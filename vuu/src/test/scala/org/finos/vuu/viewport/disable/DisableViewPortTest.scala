@@ -25,7 +25,7 @@ class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with Gi
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      createNOrderRowsNoSleep(ordersProvider, 10)(clock)
+      createNOrderRowsNoSleep(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 15), viewPortColumns)
 
@@ -76,7 +76,7 @@ class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with Gi
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      createNOrderRowsNoSleep(ordersProvider, 10)(clock)
+      createNOrderRowsNoSleep(ordersProvider, 10)(using clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 15), viewPortColumns)
 
