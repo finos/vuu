@@ -28,6 +28,20 @@
   width: auto;
 }
 
+/*
+ * Expanded, the dot is centred in a slot as wide as the user menu's avatar,
+ * with the same inset, so the two stack on one axis and their labels align.
+ */
+.vuuPortalConnectionStatus-expanded {
+  .vuuPortalConnectionStatus-trigger {
+    padding-inline: var(--salt-spacing-75);
+  }
+
+  .vuuPortalConnectionStatus-dot {
+    margin-inline: calc((var(--salt-size-base) - var(--vuuPortalConnectionStatus-dot-size)) / 2);
+  }
+}
+
 .vuuPortalConnectionStatus-trigger:hover,
 .vuuPortalConnectionStatus-trigger[aria-expanded="true"] {
   background: var(--salt-navigable-background-hover, var(--salt-selectable-background-hover));

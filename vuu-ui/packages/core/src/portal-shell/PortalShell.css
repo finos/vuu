@@ -66,8 +66,23 @@
     width: 0;
     z-index: 2;
 
+    /*
+     * The panel's title lines up with the workspace header title and the
+     * nav brand: same height from the top of the shell, same type.
+     */
     .vuuContextPanel {
+      --vuuContextPanel-header-height: 52px;
       height: 100%;
+    }
+
+    .vuuContextPanel-inner {
+      padding-top: 0;
+    }
+
+    .vuuContextPanel-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
     }
 
     /*

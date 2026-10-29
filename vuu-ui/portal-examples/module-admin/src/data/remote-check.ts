@@ -63,6 +63,9 @@ export interface RemoteCheck {
 export const manifestUrl = (mfUrl: string) =>
   `${mfUrl.replace(/\/+$/, "")}/${MANIFEST_FILE}`;
 
+export const configUrl = (mfUrl: string) =>
+  `${mfUrl.replace(/\/+$/, "")}/${CONFIG_FILE}`;
+
 const stripDotSlash = (name: string) => name.replace(/^\.\//, "");
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
