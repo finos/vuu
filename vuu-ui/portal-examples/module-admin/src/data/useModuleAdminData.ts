@@ -7,15 +7,10 @@ import {
   MODULE_PERMISSIONS_TABLE,
   MODULES_TABLE,
 } from "./module-admin-tables";
-import {
-  createModuleAdminClient,
-  type ModuleAdminClient,
-} from "./module-admin-rpc";
 import { toManagedModules } from "./module-model";
 import { useTableRows } from "./useTableRows";
 
 export interface ModuleAdminData {
-  client: ModuleAdminClient;
   error?: string;
   loading: boolean;
   modules: ManagedModule[];
@@ -47,17 +42,12 @@ export const useModuleAdminData = (): ModuleAdminData => {
     permissionsSource,
     MODULE_PERMISSION_COLUMNS,
   );
-  const client = useMemo(
-    () => createModuleAdminClient(modulesSource),
-    [modulesSource],
-  );
   const managedModules = useMemo(
     () => toManagedModules(modules.rows, permissions.rows),
     [modules.rows, permissions.rows],
   );
 
   return {
-    client,
     error: modules.error ?? permissions.error,
     loading: modules.loading || permissions.loading,
     modules: managedModules,
