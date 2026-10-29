@@ -1,11 +1,13 @@
 # Module Admin
 
-Module Admin is a portal remote module for managing the remote modules that
-module discovery publishes, such as `user-admin` and `basket-trading`.
-Administrators can register new remotes, edit existing ones, enable or disable
-them, and delete them.
+Module Admin is a portal remote module that shows the remote modules module
+discovery publishes, such as `user-admin` and `basket-trading`. It is read
+only: module config is changed where module discovery reads it (the server's
+modules file), not here.
 
-The approved designs are in [`docs/designs`](docs/designs/README.md).
+The approved designs are published at
+https://claude.ai/artifact/UUubF4dewaiHuZj4jTkdRs. The earlier, editable
+designs are in [`docs/designs`](docs/designs/README.md).
 
 ## Data
 
@@ -13,58 +15,48 @@ Module Admin reads two `MODULE_DISCOVERY` tables:
 
 | Table               | Purpose                                                            |
 | ------------------- | ------------------------------------------------------------------ |
-| `modules`           | One row per module: identity, menu location, route, federation details, Vuu connection, `enabled`, `version` and timestamps |
+| `modules`           | One row per module: identity, menu location, route, federation details, `enabled`, `version` and timestamps |
 | `modulePermissions` | Effective access role for each module. Child modules inherit their parent's role. |
 
-Changes go through RPCs on the `modules` table. The request and response shapes
-come from the shared contract `@heswell/module-admin/contracts`:
-
-| RPC                | Params                               | Result               |
-| ------------------ | ------------------------------------ | -------------------- |
-| `createModule`     | `module` (JSON `ModuleConfig`)       | `{ id, version }`    |
-| `updateModule`     | `id`, `changes` (JSON partial config), `expectedVersion` | `{ id, version }` |
-| `setModuleEnabled` | `id`, `enabled`                      | `{ id, version }`    |
-| `deleteModule`     | `id`, `deleteChildren`               | `{ deletedIds }`     |
-
-- `updateModule` uses optimistic concurrency. If `expectedVersion` is stale, the
-  server rejects the call and the UI shows the error.
-- The server checks every RPC with `validateModuleConfig`. It requires unique
-  names and routes, valid URLs, and all three Vuu connection fields once a
-  connection id is set. The UI runs the same validation as the user types.
+It calls no RPCs.
 
 ## UI
 
-Each page has its own URL and scrolls independently. A left nav links to
-Overview, Modules (with a count), Menu structure and Needs attention, and the
-header search finds modules by title, name, scope, route or role.
+A toolbar sits above the content: Modules and Menu tabs, a filter box that
+matches title, name, scope, route, menu location and access role, a status
+toggle (All, Enabled, Disabled, Issues, each with a count). The filter and
+status apply to both views. The toolbar is fixed; each view scrolls inside
+the content area.
 
-- **Overview** (`overview`, the default). Summary cards with counts: registered,
-  enabled, disabled, needs attention, menu sections and dedicated Vuu
-  connections. Each card links to the matching filtered list. A banner
-  highlights modules that need attention.
-- **Modules** (`modules?status=`). One simple card per module, grouped (none,
-  menu section or status) and sorted. A status toggle, filter box and a
-  Cards/List switch sit in a sticky header. Cards show the title, name,
-  version, enabled state, menu location, access role and a one-line issue
-  summary. Hovering darkens the card background and border with a neutral
-  colour; no card is ever shown as selected.
-- **Menu structure** (`menu`). A preview of the portal navigation tree.
-- **Module details** (`modules/:name`). Shows only the selected module: a hero
-  with status and actions, issue banners with fixes, then portal navigation,
-  federation (with the remote check), Vuu connection, access, related modules
-  and history. Breadcrumbs and a previous/next pager move between modules.
-- **Create** (`modules/new`). A full page form. The module name, route, scope and access role
-  are derived from the title until the user edits them. Validation messages
-  appear only after a field has been touched or the user tries to save.
-- **Edit** (`modules/:name/edit`). A full page form with section jump links,
-  changed fields highlighted, a list of changes and a sticky save bar.
-  Leaving with unsaved changes asks for confirmation. Saving bumps the
-  module's version.
-- **Enable/disable.** A confirmation dialog. Disabled modules stay listed but
-  are hidden from users of the portal.
-- **Delete.** A confirmation dialog. If the module has children, the user can
-  delete them too ("Delete N modules"). The server will keep an audit history
-  in a later iteration.
+- **Modules** (`modules`, `modules/:name`). The module list beside the
+  selected module's config.
+  - The list groups modules by menu section, in menu order, with child
+    modules after their parent. Each row shows the icon, title, name, route
+    and a status dot (enabled, disabled or needs attention). The list
+    scrolls and its section headers stick.
+  - The detail pane shows the module named in the route, or the first listed
+    module. A sticky header shows identity, status and issue count, a
+    Fields / YAML switch, Copy config (as YAML) and a link that opens the
+    module in the portal. Fields lists, in one column: portal navigation
+    (with any child modules), module federation with the manifest check,
+    remote config, access (the role, with a link to User Admin) and
+    history. Each section heading names the file its values come from:
+    `modules.yaml` for the module config, `config.json` for remote config.
+    Issues appear above the fields as messages; there is nothing to fix
+    here. YAML shows the module as its entry in the portal's `modules.yaml`,
+    line-numbered, and scrolls on both axes.
+  - Remote config is what the remote publishes in its `config.json`, read
+    by the browser from the remote: the Vuu server's connection id,
+    WebSocket URL and auth (REST) URL, or that the remote uses the portal's
+    Vuu connection. It is not part of the module config.
+- **Menu** (`menu`). The portal navigation as one table: each menu section,
+  its entries and the nested modules each entry opens, with route, module,
+  access role and status. Column headers stick. A row opens that module.
+- **Narrow workspace.** Below 640 px the list and detail stack: `modules`
+  shows the list and `modules/:name` shows the module with a back link. The
+  status toggle is hidden.
+- `overview`, `modules/new` and `modules/:name/edit`, the routes of the
+  earlier editable views, redirect to `modules` or the module.
 
 ## Remote checks
 
@@ -75,9 +67,11 @@ remote URL. The check:
 1. Fetches the remote's federation manifest from `mfUrl` and records the response time.
 2. Parses the module federation manifest.
 3. Compares the manifest with the configured `mfScope` and exposed component.
+4. Fetches the remote's `config.json`, shown as remote config.
 
-The result is shown on the card and on the module details page. A failed check is
-only advisory and never blocks saving.
+Every remote is checked once when the modules load; the detail pane can run
+the check again. A failed check shows as an issue on the module and is only
+advisory.
 
 ## Server (vuu-websocket `vuu-portal`)
 
@@ -89,14 +83,15 @@ only advisory and never blocks saving.
   leaves the tables unchanged.
 - Admin RPCs require the role set by `vuu.portal.moduleAdminRole` (default
   `module-admin-access`). Without this check, any user could register a remote
-  URL that other users' browsers would load.
+  URL that other users' browsers would load. Module Admin no longer calls
+  them.
 
 A more robust store may replace the YAML file later.
 
 ## Local data
 
 `ModuleAdminLocal.ts` registers `moduleAdminModule` from `@vuu-ui/vuu-data-test`.
-It provides the same tables and RPCs in memory, so the UI can run without a
+It provides the same tables in memory, so the UI can run without a
 server, for example in the showcase or standalone with
 `LocalDataSourceProvider`.
 

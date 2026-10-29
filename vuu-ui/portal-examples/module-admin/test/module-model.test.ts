@@ -1,20 +1,17 @@
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { describe, expect, it } from "vitest";
 import {
-  configChanges,
-  groupModules,
-  issueSummary,
-  joinLocation,
+  groupBySection,
+  listModules,
   matchesSearch,
   matchesStatus,
   menuSections,
+  moduleCounts,
   moduleIssues,
-  moduleKpis,
-  sortModules,
+  moduleSource,
+  moduleSourceYaml,
+  sortByMenu,
   splitLocation,
-  suggestName,
-  suggestPath,
-  toConfig,
   toManagedModules,
   toModuleViews,
 } from "../src/data/module-model";
@@ -66,34 +63,79 @@ describe("toManagedModules", () => {
   });
 });
 
-describe("configChanges", () => {
-  it("lists changed fields only and never the name", () => {
-    const original = toConfig(MODULES[0]);
-    const draft = { ...original, name: "renamed", title: "New title" };
-    expect(configChanges(original, draft)).toEqual({ title: "New title" });
-    expect(configChanges(original, original)).toEqual({});
+/** Reads back the flat list entry moduleSourceYaml writes. */
+const readYamlEntry = (yaml: string) =>
+  Object.fromEntries(
+    yaml.split("\n").map((line) => {
+      const [, key, value] = /^[- ] (\w+): (.*)$/.exec(line) ?? [];
+      return [
+        key,
+        value.startsWith('"') || /^(true|false|-?\d+)$/.test(value)
+          ? JSON.parse(value)
+          : value,
+      ];
+    }),
+  );
+
+describe("moduleSource", () => {
+  it("lists the definition in the order of modules.yaml", () => {
+    const source = moduleSource(MODULES[0]);
+    expect(Object.keys(source)).toEqual([
+      "id",
+      "version",
+      "created",
+      "updated",
+      "parentModuleId",
+      "name",
+      "title",
+      "description",
+      "enabled",
+      "location",
+      "path",
+      "mfComponent",
+      "mfScope",
+      "mfUrl",
+      "navIconUrl",
+      "accessRole",
+    ]);
+    expect(source).toMatchObject({
+      accessRole: "basket-trading-access",
+      id: 1,
+      name: "basket-trading",
+    });
   });
 
-  it("toConfig drops the managed fields", () => {
-    expect(toConfig(MODULES[0])).not.toHaveProperty("id");
-    expect(toConfig(MODULES[0])).not.toHaveProperty("version");
+  it("writes the module as one modules.yaml list entry", () => {
+    const yaml = moduleSourceYaml(MODULES[0]);
+    expect(yaml.startsWith("- id: 1\n  version: ")).toBe(true);
+    expect(readYamlEntry(yaml)).toEqual(moduleSource(MODULES[0]));
+  });
+
+  it("quotes only the strings YAML would read differently", () => {
+    const yaml = moduleSourceYaml({
+      ...MODULES[0],
+      accessRole: "",
+      description: "Create modules, update modules",
+      location: "/Admin/Manage Modules",
+      mfUrl: "http://localhost:5002",
+      title: "true",
+    });
+    expect(yaml).toContain('  description: "Create modules, update modules"');
+    expect(yaml).toContain("  location: /Admin/Manage Modules");
+    expect(yaml).toContain("  mfUrl: http://localhost:5002");
+    expect(yaml).toContain('  title: "true"');
+    expect(yaml).toContain('  accessRole: ""');
   });
 });
 
 describe("menu locations", () => {
-  it("splits and joins section and label", () => {
+  it("splits section and label", () => {
     expect(splitLocation("/Trading/Baskets")).toEqual(["Trading", "Baskets"]);
+    expect(splitLocation("/Tools/Tables/Recent")).toEqual([
+      "Tools",
+      "Tables/Recent",
+    ]);
     expect(splitLocation("")).toEqual(["", ""]);
-    expect(joinLocation(" Risk ", "Dashboard")).toBe("/Risk/Dashboard");
-    expect(joinLocation("", "")).toBe("");
-  });
-
-  it("suggests names and routes", () => {
-    expect(suggestName("  Risk Dashboard!  ")).toBe("risk-dashboard");
-    expect(suggestPath("Fixed Income", "Bond Pricer")).toBe(
-      "/fixed-income/bond-pricer",
-    );
-    expect(suggestPath("Trading", "")).toBe("");
   });
 
   it("lists distinct sections of top-level modules", () => {
@@ -145,69 +187,70 @@ describe("toModuleViews", () => {
   });
 
   it("sorts in menu order with children after their parent", () => {
-    expect(sortModules(views, "menu").map(({ id }) => id)).toEqual([
-      2, 3, 1, 4,
-    ]);
-    expect(sortModules(views, "title").map(({ id }) => id)).toEqual([
-      1, 2, 4, 3,
-    ]);
-    expect(sortModules(views, "updated")[0].id).toBe(1);
+    expect(sortByMenu(views).map(({ id }) => id)).toEqual([2, 3, 1, 4]);
   });
 
-  it("groups by section and status", () => {
-    const sections = groupModules(sortModules(views, "menu"), "section");
-    expect(sections.map(({ label }) => label)).toEqual(["Tools", "Trading"]);
-    expect(sections[0].modules.map(({ id }) => id)).toEqual([2, 3]);
+  it("groups by menu section, children with their parent", () => {
+    const groups = groupBySection(views);
+    expect(groups.map(({ section }) => section)).toEqual(["Tools", "Trading"]);
+    expect(groups[0].modules.map(({ id }) => id)).toEqual([2, 3]);
+  });
+
+  it("lists modules matching the filter and status", () => {
     expect(
-      groupModules(views, "status").map(({ label, modules }) => [
-        label,
-        modules.length,
-      ]),
-    ).toEqual([
-      ["Enabled", 3],
-      ["Disabled", 1],
-    ]);
-    expect(groupModules(views, "none")).toHaveLength(1);
+      listModules(views, "", "all").flatMap(({ modules }) =>
+        modules.map(({ id }) => id),
+      ),
+    ).toEqual([2, 3, 1, 4]);
+    expect(
+      listModules(views, "orders", "all").map(({ section }) => section),
+    ).toEqual(["Trading"]);
+    expect(listModules(views, "", "disabled")[0].modules[0].id).toBe(4);
+    expect(listModules(views, "nothing matches", "all")).toEqual([]);
   });
 
-  it("computes the KPIs", () => {
-    expect(moduleKpis(views)).toEqual({
+  it("counts modules by status", () => {
+    expect(moduleCounts(views)).toEqual({
+      attention: 3,
       disabled: 1,
       enabled: 3,
-      issues: 3,
-      modulesWithIssues: 3,
       sections: 2,
       total: 4,
     });
   });
 });
 
-describe("issueSummary", () => {
-  const unreachable = {
-    checkedAt: 1,
-    elapsedMs: 1,
-    exposes: [],
-    items: [],
-    status: "unreachable" as const,
-    summary: "Remote entry could not be loaded",
-  };
-
-  it("is empty when there are no issues", () => {
-    expect(issueSummary({ issues: [] })).toBe("");
+describe("moduleIssues", () => {
+  it("is empty for a module with a role and a passing check", () => {
+    expect(moduleIssues("a-role")).toEqual([]);
   });
 
-  it("uses the message for a single issue", () => {
-    expect(issueSummary({ issues: moduleIssues("") })).toBe(
-      "No access role – no user can open this module",
-    );
-  });
-
-  it("counts and names multiple issues", () => {
-    expect(
-      issueSummary({
-        issues: moduleIssues("", unreachable),
-        remote: unreachable,
-      }),
-    ).toBe("2 issues · remote unreachable, no access role");
+  it("names the failed remote check item", () => {
+    const issues = moduleIssues("", {
+      checkedAt: 1,
+      configItems: [],
+      exposes: [],
+      items: [
+        {
+          detail: "Network or CORS error",
+          label: "Manifest not loaded",
+          ok: false,
+        },
+      ],
+      status: "unreachable",
+      summary: "Remote not reachable from this browser at localhost:5009",
+    });
+    expect(issues).toEqual([
+      {
+        detail: "No user can open this module until it has an access role.",
+        kind: "noAccessRole",
+        message: "No access role",
+      },
+      {
+        detail: "Manifest not loaded: Network or CORS error",
+        kind: "remote",
+        message: "Remote not reachable from this browser at localhost:5009",
+      },
+    ]);
   });
 });

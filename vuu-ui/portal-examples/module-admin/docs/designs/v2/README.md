@@ -1,5 +1,8 @@
 # Module Admin – UI designs v2
 
+> **Superseded:** Module Admin is now a read-only view. Its designs are
+> published at https://claude.ai/artifact/UUubF4dewaiHuZj4jTkdRs.
+
 A redesign of the module-admin screens. It addresses two problems with the
 [v1 designs](../README.md):
 
