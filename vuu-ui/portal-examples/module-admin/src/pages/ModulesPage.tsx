@@ -1,129 +1,89 @@
-import { Banner, BannerContent, Spinner } from "@salt-ds/core";
+import { Button } from "@salt-ds/core";
 import cx from "clsx";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { EmptyState } from "../components/EmptyState";
-import { ModuleGrid } from "../components/ModuleGrid";
-import { ModuleTableView } from "../components/ModuleTableView";
-import { ModuleToolbar } from "../components/ModuleToolbar";
-import { ModuleCommands, PageHeader } from "../components/PageHeader";
-import {
-  type StatusFilter,
-  matchesSearch,
-  matchesStatus,
-} from "../data/module-model";
-import {
-  STATUS_FILTERS,
-  isStatusFilter,
-  listModules,
-  useModuleAdmin,
-} from "../ModuleAdminContext";
+import { useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { ModuleDetail } from "../components/ModuleDetail";
+import { ModuleList } from "../components/ModuleList";
+import { EmptyMessage } from "../components/ui";
+import { listModules, plural } from "../data/module-model";
+import { useModuleAdmin } from "../ModuleAdminContext";
 
-const classBase = "vuuModuleAdmin";
+const classBase = "vuuModulesPage";
 
+/**
+ * The module list beside the selected module's config. Each pane scrolls on
+ * its own. In a narrow workspace only one pane shows: the list, or the
+ * module named in the route.
+ */
 export const ModulesPage = () => {
-  const { error, listPrefs, loading, paths, setListPrefs, views } =
+  const { counts, filter, paths, setFilter, setStatus, status, views } =
     useModuleAdmin();
-  const navigate = useNavigate();
-  const [params, setParams] = useSearchParams();
-  const [scrolled, setScrolled] = useState(false);
-  const param = params.get("status");
-  const status: StatusFilter = isStatusFilter(param) ? param : "all";
-  const prefs = { ...listPrefs, status };
-
-  // Remember the filter, so the details pager and breadcrumb can follow it.
-  useEffect(() => {
-    if (listPrefs.status !== status) setListPrefs({ status });
-  }, [listPrefs.status, setListPrefs, status]);
-
-  const counts = useMemo(
-    () =>
-      Object.fromEntries(
-        STATUS_FILTERS.map((key) => [
-          key,
-          views.filter(
-            (module) =>
-              matchesSearch(module, listPrefs.filter) &&
-              matchesStatus(module, key),
-          ).length,
-        ]),
-      ) as Record<StatusFilter, number>,
-    [listPrefs.filter, views],
-  );
+  const { name } = useParams();
   const groups = useMemo(
-    () => listModules(views, { ...listPrefs, status }),
-    [listPrefs, status, views],
+    () => listModules(views, filter, status),
+    [filter, status, views],
   );
-  const visible = groups.reduce((n, { modules }) => n + modules.length, 0);
-
-  const setStatus = (value: StatusFilter) =>
-    setParams(value === "all" ? {} : { status: value }, { replace: true });
-  const openCreate = () => navigate(paths.newModule());
-
-  const renderBody = () => {
-    if (loading) {
-      return (
-        <div className={`${classBase}-loading`}>
-          <Spinner aria-label="Loading modules" />
-        </div>
-      );
-    }
-    if (visible === 0) {
-      return (
-        <EmptyState
-          filtered={views.length > 0}
-          onClearFilters={() => {
-            setListPrefs({ filter: "" });
-            setStatus("all");
-          }}
-          onCreate={openCreate}
-        />
-      );
-    }
-    if (prefs.view === "table") return <ModuleTableView groups={groups} />;
-    return <ModuleGrid groups={groups} onCreate={openCreate} />;
-  };
+  const listed = groups.flatMap(({ modules }) => modules);
+  const selected = name
+    ? views.find((module) => module.name === name)
+    : listed[0];
+  const filtered = filter.trim() !== "" || status !== "all";
 
   return (
     <div
-      className={cx(`${classBase}-page`, `${classBase}-page-sticky`)}
-      onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 0)}
+      className={cx(classBase, { [`${classBase}-routed`]: name !== undefined })}
     >
-      <div
-        className={cx(`${classBase}-stickyHeader`, {
-          [`${classBase}-stickyHeader-scrolled`]: scrolled,
-        })}
-      >
-        <PageHeader
-          description="Select a module to see and edit its full configuration."
-          title="Modules"
-        >
-          <ModuleCommands />
-        </PageHeader>
-        {error ? (
-          <Banner status="error">
-            <BannerContent>
-              Module discovery is unavailable: {error}
-            </BannerContent>
-          </Banner>
-        ) : null}
-        {views.length > 0 ? (
-          <ModuleToolbar
-            counts={counts}
-            filter={prefs.filter}
-            groupBy={prefs.groupBy}
-            onFilterChange={(filter) => setListPrefs({ filter })}
-            onGroupByChange={(groupBy) => setListPrefs({ groupBy })}
-            onSortByChange={(sortBy) => setListPrefs({ sortBy })}
-            onStatusChange={setStatus}
-            onViewChange={(view) => setListPrefs({ view })}
-            sortBy={prefs.sortBy}
-            status={status}
-            view={prefs.view}
-          />
-        ) : null}
+      <div className={`${classBase}-list`}>
+        <div className={`${classBase}-listScroll`}>
+          {listed.length > 0 ? (
+            <ModuleList groups={groups} selectedName={selected?.name} />
+          ) : (
+            <EmptyMessage
+              action={
+                filtered ? (
+                  <Button
+                    appearance="transparent"
+                    onClick={() => {
+                      setFilter("");
+                      setStatus("all");
+                    }}
+                    sentiment="accented"
+                  >
+                    Clear filter
+                  </Button>
+                ) : undefined
+              }
+              title={
+                filtered
+                  ? filter.trim()
+                    ? `No modules match "${filter.trim()}"`
+                    : "No modules match this status"
+                  : "No modules registered"
+              }
+            >
+              {filtered
+                ? "The filter matches title, name, scope, route, menu location and access role."
+                : "Module discovery has not published any modules."}
+            </EmptyMessage>
+          )}
+        </div>
+        <footer className={`${classBase}-listFooter`}>
+          {listed.length === counts.total
+            ? `${plural(counts.total, "module")} · ${plural(counts.sections, "menu section")}`
+            : `${listed.length} of ${plural(counts.total, "module")}`}
+        </footer>
       </div>
-      <div className={`${classBase}-pageBody`}>{renderBody()}</div>
+      <div className={`${classBase}-detail`}>
+        {selected ? (
+          <ModuleDetail backTo={paths.modules} module={selected} />
+        ) : name ? (
+          <EmptyMessage title={`No module named "${name}"`}>
+            It may have been removed from module discovery.
+          </EmptyMessage>
+        ) : (
+          <EmptyMessage title="No module selected" />
+        )}
+      </div>
     </div>
   );
 };

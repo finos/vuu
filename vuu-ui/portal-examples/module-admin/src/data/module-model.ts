@@ -1,8 +1,5 @@
 import {
   type ManagedModule,
-  type ModuleConfig,
-  type ModuleConfigChanges,
-  EMPTY_MODULE_CONFIG,
   effectiveAccessRole,
   isChildModule,
 } from "@heswell/module-admin/contracts";
@@ -47,8 +44,7 @@ export const toManagedModules = (
         title: text(row.title),
         updated: int(row.vuuUpdatedTimestamp),
         version: int(row.version),
-        // Vuu connections are published by each remote in its config.json,
-        // these legacy contract fields are no longer managed here.
+        // Each remote publishes its Vuu connection in its own config.json.
         vuuConnectionId: "",
         vuuRestUrl: "",
         vuuWebsocketUrl: "",
@@ -57,72 +53,54 @@ export const toManagedModules = (
     .sort((left, right) => left.id - right.id);
 };
 
-export const toConfig = (module: ModuleConfig): ModuleConfig => {
-  const config = { ...EMPTY_MODULE_CONFIG };
-  for (const key of Object.keys(
-    EMPTY_MODULE_CONFIG,
-  ) as (keyof ModuleConfig)[]) {
-    (config as Record<string, unknown>)[key] = module[key];
-  }
-  return config;
-};
+/**
+ * The module's definition as it appears in the portal's `modules.yaml`, with
+ * the same keys in the same order, for the YAML view and for copying.
+ */
+export const moduleSource = (module: ManagedModule) => ({
+  id: module.id,
+  version: module.version,
+  created: module.created,
+  updated: module.updated,
+  parentModuleId: module.parentModuleId,
+  name: module.name,
+  title: module.title,
+  description: module.description,
+  enabled: module.enabled,
+  location: module.location,
+  path: module.path,
+  mfComponent: module.mfComponent,
+  mfScope: module.mfScope,
+  mfUrl: module.mfUrl,
+  navIconUrl: module.navIconUrl,
+  accessRole: module.accessRole,
+});
 
-/** The fields of `draft` that differ from `original`. `name` is never included. */
-export const configChanges = (
-  original: ModuleConfig,
-  draft: ModuleConfig,
-): ModuleConfigChanges => {
-  const changes: Record<string, unknown> = {};
-  for (const key of Object.keys(
-    EMPTY_MODULE_CONFIG,
-  ) as (keyof ModuleConfig)[]) {
-    if (key !== "name" && original[key] !== draft[key]) {
-      changes[key] = draft[key];
-    }
-  }
-  return changes as ModuleConfigChanges;
-};
+const YAML_PLAIN_UNSAFE =
+  /^$|^\s|\s$|^[-?:,[\]{}#&*!|>'"%@`]|: | #|,|^(true|false|null|~|yes|no|on|off)$|^[-+.]?\d/i;
 
-export const FIELD_LABELS: Record<keyof ModuleConfig, string> = {
-  accessRole: "Access role",
-  description: "Description",
-  enabled: "Enabled",
-  location: "Menu location",
-  mfComponent: "Exposed component",
-  mfScope: "Scope",
-  mfUrl: "Remote URL",
-  name: "Name",
-  navIconUrl: "Navigation icon",
-  parentModuleId: "Parent module",
-  path: "Route",
-  title: "Title",
-  vuuConnectionId: "Connection id",
-  vuuRestUrl: "Auth (REST) URL",
-  vuuWebsocketUrl: "WebSocket URL",
-};
+/** A scalar as YAML: plain where that reads back the same, else quoted. */
+const yamlScalar = (value: string | number | boolean) =>
+  typeof value !== "string"
+    ? String(value)
+    : YAML_PLAIN_UNSAFE.test(value)
+      ? JSON.stringify(value)
+      : value;
+
+/** The module as one entry of the `modules:` list in `modules.yaml`. */
+export const moduleSourceYaml = (module: ManagedModule) =>
+  Object.entries(moduleSource(module))
+    .map(
+      ([key, value], index) =>
+        `${index === 0 ? "- " : "  "}${key}: ${yamlScalar(value)}`,
+    )
+    .join("\n");
 
 /** `/Trading/Baskets` => ["Trading", "Baskets"] */
 export const splitLocation = (location: string): [string, string] => {
   const [section = "", ...label] = location.replace(/^\//, "").split("/");
   return [section, label.join("/")];
 };
-
-export const joinLocation = (section: string, label: string) =>
-  section || label ? `/${section.trim()}/${label.trim()}` : "";
-
-const slug = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
-/** Suggested route for a menu location, e.g. `/trading/risk`. */
-export const suggestPath = (section: string, label: string) =>
-  section && label ? `/${slug(section)}/${slug(label)}` : "";
-
-/** Suggested module name for a title, e.g. `risk-dashboard`. */
-export const suggestName = (title: string) => slug(title);
 
 /** `http://localhost:5002/` => `localhost:5002` */
 export const hostOf = (url: string) => {
@@ -147,7 +125,10 @@ export type ModuleIssueKind = "noAccessRole" | "remote";
 
 export interface ModuleIssue {
   kind: ModuleIssueKind;
+  /** One line naming the problem. */
   message: string;
+  /** What the problem means, or what the check reported. */
+  detail: string;
 }
 
 /** A module enriched with what the UI needs to present it. */
@@ -165,39 +146,25 @@ export const moduleIssues = (
   remote?: RemoteCheck,
 ): ModuleIssue[] => {
   const issues: ModuleIssue[] = [];
-  if (remote && remote.status !== "ok" && remote.status !== "checking") {
-    issues.push({ kind: "remote", message: remote.summary });
-  }
   if (!effectiveRole) {
     issues.push({
+      detail: "No user can open this module until it has an access role.",
       kind: "noAccessRole",
-      message: "No access role – no user can open this module",
+      message: "No access role",
+    });
+  }
+  if (remote && remote.status !== "ok" && remote.status !== "checking") {
+    const failed = [...remote.items, ...remote.configItems].find(
+      ({ ok }) => !ok,
+    );
+    issues.push({
+      detail: failed ? `${failed.label}: ${failed.detail}` : "",
+      kind: "remote",
+      message: remote.summary,
     });
   }
   return issues;
 };
-
-/** A short name for an issue, e.g. `remote unreachable`. */
-export const issueLabel = (
-  issue: ModuleIssue,
-  remote?: Pick<RemoteCheck, "status">,
-) =>
-  issue.kind === "noAccessRole"
-    ? "no access role"
-    : remote?.status === "unreachable"
-      ? "remote unreachable"
-      : "remote mismatch";
-
-/** One line describing a module's issues, or "" when there are none. */
-export const issueSummary = ({
-  issues,
-  remote,
-}: Pick<ModuleView, "issues" | "remote">) =>
-  issues.length === 0
-    ? ""
-    : issues.length === 1
-      ? issues[0].message
-      : `${issues.length} issues · ${issues.map((issue) => issueLabel(issue, remote)).join(", ")}`;
 
 export const toModuleViews = (
   modules: readonly ManagedModule[],
@@ -222,8 +189,16 @@ export const toModuleViews = (
   });
 
 export type StatusFilter = "all" | "enabled" | "disabled" | "attention";
-export type GroupBy = "none" | "section" | "status";
-export type SortBy = "menu" | "title" | "updated";
+
+export const STATUS_FILTERS: StatusFilter[] = [
+  "all",
+  "enabled",
+  "disabled",
+  "attention",
+];
+
+export const isStatusFilter = (value: unknown): value is StatusFilter =>
+  STATUS_FILTERS.includes(value as StatusFilter);
 
 export const matchesStatus = (module: ModuleView, filter: StatusFilter) =>
   filter === "all" ||
@@ -248,69 +223,63 @@ export const matchesSearch = (module: ModuleView, search: string) => {
 export const sectionOf = (module: ModuleView) =>
   splitLocation(module.parent?.location ?? module.location)[0];
 
-/**
- * Menu order: by section, then label; a child module follows its parent.
- */
+/** Menu order: by section, then label; a child module follows its parent. */
 const menuKey = (module: ModuleView) => {
   const anchor = module.parent ?? module;
   const [section, label] = splitLocation(anchor.location);
   return `${section}\u0000${label}\u0000${anchor.id}\u0000${module.parent ? module.title : ""}`;
 };
 
-export const sortModules = (modules: readonly ModuleView[], sortBy: SortBy) =>
-  [...modules].sort((left, right) => {
-    switch (sortBy) {
-      case "title":
-        return left.title.localeCompare(right.title);
-      case "updated":
-        return right.updated - left.updated;
-      default:
-        return menuKey(left).localeCompare(menuKey(right));
-    }
-  });
+export const sortByMenu = (modules: readonly ModuleView[]) =>
+  [...modules].sort((left, right) =>
+    menuKey(left).localeCompare(menuKey(right)),
+  );
 
 export interface ModuleGroup {
-  key: string;
-  label: string;
+  /** The menu section, or "" for modules outside the menu. */
+  section: string;
   modules: ModuleView[];
 }
 
-export const groupModules = (
+/** Modules by menu section, in menu order. */
+export const groupBySection = (
   modules: readonly ModuleView[],
-  groupBy: GroupBy,
 ): ModuleGroup[] => {
-  if (groupBy === "none") {
-    return [{ key: "all", label: "", modules: [...modules] }];
-  }
   const groups = new Map<string, ModuleGroup>();
-  for (const module of modules) {
-    const label =
-      groupBy === "status"
-        ? module.enabled
-          ? "Enabled"
-          : "Disabled"
-        : sectionOf(module) || "No menu section";
-    const group = groups.get(label) ?? { key: label, label, modules: [] };
+  for (const module of sortByMenu(modules)) {
+    const section = sectionOf(module);
+    const group = groups.get(section) ?? { modules: [], section };
     group.modules.push(module);
-    groups.set(label, group);
+    groups.set(section, group);
   }
   return [...groups.values()];
 };
 
-export interface ModuleKpis {
+/** Modules matching the filter text and status, grouped in menu order. */
+export const listModules = (
+  views: readonly ModuleView[],
+  filter: string,
+  status: StatusFilter,
+) =>
+  groupBySection(
+    views.filter(
+      (module) =>
+        matchesSearch(module, filter) && matchesStatus(module, status),
+    ),
+  );
+
+export interface ModuleCounts {
   total: number;
   enabled: number;
   disabled: number;
+  attention: number;
   sections: number;
-  issues: number;
-  modulesWithIssues: number;
 }
 
-export const moduleKpis = (modules: readonly ModuleView[]): ModuleKpis => ({
+export const moduleCounts = (modules: readonly ModuleView[]): ModuleCounts => ({
+  attention: modules.filter(({ issues }) => issues.length > 0).length,
   disabled: modules.filter(({ enabled }) => !enabled).length,
   enabled: modules.filter(({ enabled }) => enabled).length,
-  issues: modules.reduce((count, { issues }) => count + issues.length, 0),
-  modulesWithIssues: modules.filter(({ issues }) => issues.length > 0).length,
   sections: menuSections(modules).length,
   total: modules.length,
 });
