@@ -6,14 +6,14 @@
       "enabled": true,
       "id": "local-module-admin",
       "navIconUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdhbGxldC1jYXJkcyBwcmV2aWV3LWljb24iPjxwYXRoIGQ9Ik0zIDExaDMuNzVhMiAyIDAgMCAxIDEuNi44bC40NS42YTQgNCAwIDAgMCA2LjQgMGwuNDUtLjZhMiAyIDAgMCAxIDEuNi0uOEgyMSIvPjxwYXRoIGQ9Ik0zIDdoMTgiLz48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIi8+PC9zdmc+",
-      "navLocation": "/Administration/Modules",
+      "navLocation": "/Administration/Module Config Viewer",
       "accessRole": "module-admin-access",
       "mfComponent": "ModuleAdminLocal",
       "mfScope": "moduleAdmin",
       "mfUrl": "http://localhost:5002",
       "name": "module-admin",
       "path": "/administration/modules",
-      "title": "Module administration",
+      "title": "Module Config Viewer",
       "version": 1,
       "workspace": {
         "paletteGroup": "Administration"

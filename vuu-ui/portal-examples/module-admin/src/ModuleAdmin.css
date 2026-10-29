@@ -1,127 +1,132 @@
+/*
+ * Module Admin: a read-only view of the module config published by module
+ * discovery. A fixed toolbar sits above the content; the content's own panes
+ * scroll. Every flex and grid ancestor of a scrolling pane sets
+ * `min-height: 0` so the pane, not the page, overflows.
+ */
 .vuuModuleAdmin {
-  --module-admin-bg: var(--salt-container-secondary-background, #f5f6f8);
-  --module-admin-surface: var(--salt-container-primary-background, #fff);
-  --module-admin-border: var(--salt-separable-primary-borderColor, #d9dce1);
-  --module-admin-border-weak: var(--salt-separable-tertiary-borderColor, #eceef1);
-  --module-admin-fg: var(--salt-content-primary-foreground, #15171b);
-  --module-admin-fg-secondary: var(--salt-content-secondary-foreground, #61656e);
-  --module-admin-accent: var(--salt-accent-background, #6c2bd9);
-  --module-admin-accent-fg: var(--salt-accent-foreground, #6c2bd9);
-  --module-admin-accent-weak: var(--salt-palette-accent-weakest, var(--salt-palette-categorical-9-weakest, #efe8ff));
-  --module-admin-warning-bg: var(--salt-status-warning-background, #fff1e0);
-  --module-admin-warning-border: var(--salt-status-warning-borderColor, #e38a2e);
-  --module-admin-warning-fg: var(--salt-status-warning-foreground-informative, var(--salt-status-warning-foreground, #8a4b00));
-  --module-admin-error-fg: var(--salt-status-error-foreground-informative, var(--salt-status-error-foreground, #c4232f));
-  --module-admin-success-fg: var(--salt-status-success-foreground-informative, var(--salt-status-success-foreground, #1d7c45));
-  --module-admin-mono: var(--salt-typography-fontFamily-code, "PT Mono", ui-monospace, monospace);
-  --module-admin-radius: var(--salt-palette-corner, 6px);
-  /* Neutral hover (not the blue selectable hover, which reads as selection). */
-  --module-admin-hover-bg: color-mix(in srgb, var(--module-admin-surface), var(--module-admin-fg) 5%);
-  --module-admin-hover-border: color-mix(in srgb, var(--module-admin-border), var(--module-admin-fg) 30%);
+  --module-admin-border: var(--salt-separable-tertiary-borderColor);
+  --module-admin-border-strong: var(--salt-separable-primary-borderColor);
+  --module-admin-fg: var(--salt-content-primary-foreground);
+  --module-admin-dim: var(--salt-content-secondary-foreground);
+  --module-admin-raised: var(--salt-container-secondary-background);
+  --module-admin-surface: var(--salt-container-primary-background);
+  --module-admin-accent: var(--vuu-selected-accent, var(--salt-content-accent-foreground));
+  --module-admin-mono: var(--salt-typography-fontFamily-code);
+  --module-admin-gutter: 12px;
+  --module-admin-radius: 8px;
+  --module-admin-reading-width: 720px;
+  --module-admin-row-height: 28px;
+  --vuu-icon-size: 12px;
 
-  background: var(--module-admin-bg);
+  background: var(--module-admin-surface);
   color: var(--module-admin-fg);
+  container: module-admin / inline-size;
   display: flex;
   flex-direction: column;
-  font-family: var(--salt-text-fontFamily);
   font-size: var(--salt-text-fontSize);
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  min-width: 0;
+
+  code {
+    font-family: var(--module-admin-mono);
+    font-size: 0.95em;
+  }
 }
 
-.vuuModuleAdmin code,
-.vuuModuleAdmin-mono input,
-.vuuModuleForm-mono input,
-.vuuModuleForm-mono .saltDropdown-content {
-  font-family: var(--module-admin-mono);
+/* Icons the Vuu icon set doesn't have. */
+.vuuModuleAdmin [data-icon="module-copy"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-refresh"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-lock"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-signpost"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 6h12l3 3-3 3H5z"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-nested"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v9a3 3 0 0 0 3 3h10"/><path d="m15 12 4 4-4 4"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-power"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg>');
 }
 
-.vuuModuleAdmin-spacer,
-.vuuModuleDetails-spacer,
-.vuuModuleCreate-spacer,
-.vuuModuleDialog-spacer {
-  flex: 1 1 auto;
-}
+/* ───────── Toolbar ───────── */
 
-/* ---------------------------------------------------------------- header */
-
-.vuuModuleAdmin-appHeader {
+/* Same height and type as the portal's workspace header, so titles line up. */
+.vuuModuleAdmin-header {
   align-items: center;
-  background: var(--module-admin-surface);
   border-bottom: 1px solid var(--module-admin-border);
   display: flex;
-  flex: 0 0 auto;
-  gap: var(--salt-spacing-200, 12px);
-  min-height: 56px;
-  padding: 0 var(--salt-spacing-400, 24px);
+  flex: none;
+  height: 52px;
+  padding: 0 16px;
 }
 
-.vuuModuleAdmin-brandIcon {
-  align-items: center;
-  background: var(--module-admin-accent);
-  border-radius: var(--module-admin-radius);
-  color: var(--salt-content-bold-foreground, #fff);
-  display: inline-flex;
-  height: 32px;
-  justify-content: center;
-  width: 32px;
-}
-.vuuModuleAdmin-brandIcon .saltIcon {
-  --saltIcon-color: currentColor;
-}
-
-.vuuModuleAdmin-search {
-  max-width: 420px;
-  width: 36%;
-}
-
-/* ------------------------------------------------------------- workspace */
-
-.vuuModuleAdmin-workspace {
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-.vuuModuleAdmin-nav {
-  background: var(--module-admin-surface);
-  border-right: 1px solid var(--module-admin-border);
-  display: flex;
-  flex: 0 0 240px;
-  flex-direction: column;
-  gap: var(--salt-spacing-100, 8px);
-  min-height: 0;
-  overflow: auto;
-  padding: var(--salt-spacing-200, 12px) 0;
-}
-.vuuModuleAdmin-navBadge {
-  background: var(--module-admin-bg);
-  border-radius: 10px;
-  color: var(--module-admin-fg-secondary);
-  font-size: 11px;
+.vuuModuleAdmin-title {
+  font-size: 15px;
   font-weight: 600;
-  line-height: 18px;
-  margin-left: auto;
-  min-width: 20px;
-  padding: 0 6px;
-  text-align: center;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.vuuModuleAdmin-navBadge-warning {
-  background: var(--module-admin-warning-bg);
-  color: var(--module-admin-warning-fg);
-}
-.vuuModuleAdmin-navDivider {
-  border: 0;
-  border-top: 1px solid var(--module-admin-border-weak);
-  margin: var(--salt-spacing-100, 8px) var(--salt-spacing-200, 12px);
-}
-.vuuModuleAdmin-navFooterLink {
+
+.vuuModuleAdmin-toolbar {
   align-items: center;
-  border-top: 1px solid var(--module-admin-border-weak);
+  border-bottom: 1px solid var(--module-admin-border);
   display: flex;
-  gap: var(--salt-spacing-100, 8px);
-  padding: var(--salt-spacing-200, 12px) var(--salt-spacing-300, 20px) 0;
+  flex: none;
+  gap: var(--salt-spacing-200, 8px);
+  min-height: 36px;
+  min-width: 0;
+  padding: 0 var(--salt-spacing-300, 12px);
+}
+
+/* Wide enough for both tabs, so the tab bar never moves one into overflow. */
+.vuuModuleAdmin-tabs {
+  align-self: stretch;
+  flex: none;
+  min-width: 168px;
+}
+
+.vuuModuleAdmin-count,
+.vuuModuleAdmin-toggleCount {
+  color: var(--module-admin-dim);
+  font-size: var(--salt-text-label-fontSize);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.vuuModuleAdmin-count {
+  background: var(--module-admin-raised);
+  border-radius: 8px;
+  line-height: 15px;
+  margin-left: 4px;
+  padding: 0 5px;
+}
+
+.vuuModuleAdmin-filter {
+  flex: 0 1 220px;
+  min-width: 120px;
+}
+
+.vuuModuleAdmin-status {
+  flex: none;
+
+  [aria-checked="true"] .vuuModuleAdmin-toggleCount,
+  [aria-pressed="true"] .vuuModuleAdmin-toggleCount {
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  .vuuIcon {
+    --vuu-icon-color: var(--salt-status-warning-foreground-decorative);
+  }
 }
 
 .vuuModuleAdmin-content {
@@ -132,67 +137,21 @@
   min-width: 0;
 }
 
-/* Every page scrolls within the content area. */
-.vuuModuleAdmin-page {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--salt-spacing-300, 16px);
-  min-height: 0;
-  overflow: auto;
-  padding: var(--salt-spacing-400, 24px) var(--salt-spacing-500, 32px);
-}
-.vuuModuleAdmin-page-sticky {
-  padding-top: 0;
+.vuuModuleAdmin-message {
+  display: grid;
+  flex: 1;
+  padding: var(--salt-spacing-300, 12px);
+  place-items: start center;
 }
 
-.vuuModuleAdmin-stickyHeader {
-  background: var(--module-admin-bg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-200, 12px);
-  margin: 0 calc(-1 * var(--salt-spacing-500, 32px));
-  padding: var(--salt-spacing-400, 24px) var(--salt-spacing-500, 32px) var(--salt-spacing-200, 12px);
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-.vuuModuleAdmin-stickyHeader-scrolled {
-  border-bottom: 1px solid var(--module-admin-border);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.06);
+/* ───────── Shared pieces ───────── */
+
+.vuuModuleAdmin-muted {
+  color: var(--module-admin-dim);
 }
 
-.vuuModuleAdmin-pageHeader {
-  align-items: flex-start;
-  display: flex;
-  gap: var(--salt-spacing-200, 12px);
-}
-.vuuModuleAdmin-pageTitles {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-.vuuModuleAdmin-pageActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--salt-spacing-100, 8px);
-}
-
-.vuuModuleAdmin-title,
-.vuuModuleCreate-title {
-  font-size: 24px;
-  font-weight: var(--salt-text-h1-fontWeight, 600);
-  line-height: 1.25;
-  margin: 0 0 var(--salt-spacing-50, 4px);
-}
-
-.vuuModuleAdmin-loading {
-  display: flex;
-  justify-content: center;
-  padding: 64px;
-}
-
-.vuuModuleAdmin-srOnly {
-  clip: rect(0 0 0 0);
+.vuuModuleAdmin-visuallyHidden {
+  clip-path: inset(50%);
   height: 1px;
   overflow: hidden;
   position: absolute;
@@ -200,1320 +159,682 @@
   width: 1px;
 }
 
-.vuuModuleAdmin-notFound {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-150, 10px);
-  margin: 48px auto;
-  max-width: 480px;
-  text-align: center;
-}
-
-/* -------------------------------------------------------------- overview */
-
-.vuuModuleAdmin-summaries {
-  display: grid;
-  gap: var(--salt-spacing-300, 16px);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.vuuModuleAdmin-summary {
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-radius: calc(var(--module-admin-radius) + 2px);
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-300, 16px) var(--salt-spacing-300, 20px);
-  text-decoration: none;
-  transition:
-    background 0.1s,
-    border-color 0.1s;
-}
-.vuuModuleAdmin-summary:hover {
-  background: var(--module-admin-hover-bg);
-  border-color: var(--module-admin-hover-border);
-}
-.vuuModuleAdmin-summary:focus-visible {
-  outline: 2px solid var(--salt-focused-outlineColor, var(--module-admin-accent));
-  outline-offset: 2px;
-}
-.vuuModuleAdmin-summary-warning {
-  border-left: 3px solid var(--module-admin-warning-border);
-}
-
-.vuuModuleAdmin-summaryMain {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-200, 12px);
-}
-.vuuModuleAdmin-summaryIcon {
-  align-items: center;
-  background: var(--module-admin-bg);
-  border-radius: var(--module-admin-radius);
-  display: inline-flex;
-  flex: 0 0 auto;
-  height: 40px;
-  justify-content: center;
-  width: 40px;
-}
-.vuuModuleAdmin-summaryIcon .saltIcon {
-  --saltIcon-color: currentColor;
-}
-.vuuModuleAdmin-summary-accent .vuuModuleAdmin-summaryIcon {
-  background: var(--module-admin-accent-weak);
-  color: var(--module-admin-accent);
-}
-.vuuModuleAdmin-summary-success .vuuModuleAdmin-summaryIcon {
-  background: var(--salt-status-success-background, #e6f4ea);
-  color: var(--module-admin-success-fg);
-}
-.vuuModuleAdmin-summary-warning .vuuModuleAdmin-summaryIcon {
-  background: var(--module-admin-warning-bg);
-  color: var(--module-admin-warning-fg);
-}
-.vuuModuleAdmin-summaryText {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-}
-.vuuModuleAdmin-summaryValue {
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 1.15;
-}
-.vuuModuleAdmin-summaryLabel {
-  color: var(--module-admin-fg-secondary);
-}
-.vuuModuleAdmin-summaryAside {
-  color: var(--module-admin-fg-secondary);
-  font-size: var(--salt-text-fontSize);
-  font-weight: normal;
-}
-.vuuModuleAdmin-summaryChevron {
-  --saltIcon-color: var(--module-admin-fg-secondary);
-}
-.vuuModuleAdmin-summaryDetail {
-  border-top: 1px solid var(--module-admin-border-weak);
-  color: var(--module-admin-fg-secondary);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px var(--salt-spacing-200, 12px);
-  padding-top: var(--salt-spacing-150, 10px);
-}
-.vuuModuleAdmin-summaryDetail > span {
-  align-items: center;
-  display: inline-flex;
-  gap: 6px;
-}
-.vuuModuleAdmin-summaryIssue {
-  color: var(--module-admin-warning-fg);
-}
-
-.vuuModuleAdmin-dot {
-  border-radius: 50%;
-  display: inline-block;
-  height: 8px;
-  width: 8px;
-}
-.vuuModuleAdmin-dot-success {
-  background: var(--module-admin-success-fg);
-}
-.vuuModuleAdmin-dot-neutral {
-  background: var(--module-admin-fg-secondary);
-}
-.vuuModuleAdmin-dot-error {
-  background: var(--module-admin-error-fg);
-}
-
-.vuuModuleAdmin-attention {
-  align-items: center;
-  background: var(--module-admin-warning-bg);
-  border: 1px solid var(--module-admin-warning-border);
-  border-radius: var(--module-admin-radius);
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-200, 16px);
-}
-.vuuModuleAdmin-attention > .saltIcon {
-  --saltIcon-color: var(--module-admin-warning-fg);
-}
-.vuuModuleAdmin-bannerLink {
-  align-items: center;
-  display: inline-flex;
-  font-weight: 600;
-  gap: 4px;
-  margin-left: auto;
-  white-space: nowrap;
-}
-
-.vuuModuleAdmin-results {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-150, 10px);
-}
-.vuuModuleAdmin-resultsHeader {
-  align-items: baseline;
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-}
-.vuuModuleAdmin-resultsHeader h2 {
-  font-size: 16px;
-  margin: 0;
-}
-.vuuModuleAdmin-resultsEmpty {
-  background: var(--module-admin-surface);
-  border: 1px dashed var(--module-admin-border);
-  border-radius: var(--module-admin-radius);
-  padding: var(--salt-spacing-300, 20px);
-  text-align: center;
-}
-.vuuModuleAdmin-issueCount {
-  align-items: center;
-  color: var(--module-admin-warning-fg);
-  display: inline-flex;
-  gap: 4px;
-}
-.vuuModuleAdmin-issueCount .saltIcon {
-  --saltIcon-color: currentColor;
-}
-.vuuModuleAdmin-linkButton {
-  background: none;
-  border: 0;
-  color: var(--salt-content-foreground-link, var(--module-admin-accent-fg));
-  cursor: pointer;
-  font: inherit;
-  padding: 0;
-  text-decoration: underline;
-}
-.vuuModuleAdmin-checkedNote {
-  align-items: center;
-  color: var(--module-admin-fg-secondary);
-  display: inline-flex;
-  gap: 6px;
-}
-
-/* --------------------------------------------------------------- toolbar */
-
-.vuuModuleAdmin-toolbar {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--salt-spacing-200, 12px);
-}
-
-.vuuModuleAdmin-toolbarEnd {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-200, 12px);
-  margin-left: auto;
-}
-
-.vuuModuleAdmin-count {
-  color: inherit;
-  margin-left: 4px;
-  opacity: 0.7;
-}
-
-.vuuModuleAdmin-filterInput {
-  flex: 0 1 220px;
-  min-width: 140px;
-  width: auto;
-}
-
-.vuuModuleAdmin-select {
-  align-items: center;
-  display: inline-flex;
-  gap: var(--salt-spacing-100, 8px);
-  white-space: nowrap;
-}
-.vuuModuleAdmin-select .saltDropdown {
-  min-width: 120px;
-}
-
-/* ---------------------------------------------------------- groups/grid */
-
-.vuuModuleAdmin-body {
-  min-height: 0;
-}
-
-.vuuModuleAdmin-groups {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-300, 16px);
-}
-
-.vuuModuleAdmin-groupHeading {
-  align-items: baseline;
-  display: flex;
-  font-size: 15px;
-  font-weight: 600;
-  gap: var(--salt-spacing-100, 8px);
-  margin: 0 0 var(--salt-spacing-150, 10px);
-}
-
-.vuuModuleAdmin-grid {
-  display: grid;
-  gap: var(--salt-spacing-300, 16px);
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-}
-
-/* ------------------------------------------------------------- nav icon */
-
 .vuuModuleAdmin-navIcon {
   align-items: center;
   background: var(--module-category-bg);
-  border-radius: var(--module-admin-radius);
+  border-radius: var(--salt-palette-corner, 4px);
   color: var(--module-category-fg);
   display: inline-flex;
-  flex: 0 0 auto;
+  flex: none;
   justify-content: center;
 }
+
 .vuuModuleAdmin-navIcon-small {
-  height: 24px;
-  width: 24px;
+  height: 18px;
+  width: 18px;
 }
+
 .vuuModuleAdmin-navIcon-medium {
-  height: 40px;
-  width: 40px;
-}
-.vuuModuleAdmin-navIcon-large {
-  height: 56px;
-  width: 56px;
+  height: 28px;
+  width: 28px;
 }
 
 .vuuModuleAdmin-navIconGlyph {
   background-color: currentColor;
-  height: 60%;
+  height: 64%;
   mask: var(--module-icon) center / contain no-repeat;
-  width: 60%;
+  width: 64%;
 }
 
 .vuuModuleAdmin-navIconLetter {
-  font-weight: 600;
+  font-size: 0.85em;
+  font-weight: 700;
 }
 
-/* --------------------------------------------------------- status, tags */
+.vuuModuleAdmin-dot {
+  background: var(--salt-status-success-foreground-decorative);
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+  height: 7px;
+  width: 7px;
+}
 
-.vuuModuleAdmin-status {
+.vuuModuleAdmin-dot-disabled {
+  background: color-mix(in srgb, var(--module-admin-dim) 55%, transparent);
+}
+
+.vuuModuleAdmin-dot-warning {
+  background: var(--salt-status-warning-foreground-decorative);
+}
+
+.vuuModuleAdmin-pill {
   align-items: center;
+  border-radius: 9px;
   display: inline-flex;
-  flex: 0 0 auto;
-  gap: 6px;
+  font-size: var(--salt-text-label-fontSize);
+  font-weight: 600;
+  gap: 4px;
+  height: 18px;
+  padding: 0 7px;
   white-space: nowrap;
-}
-.vuuModuleAdmin-status-disabled {
-  color: var(--module-admin-fg-secondary);
+
+  .vuuIcon {
+    --vuu-icon-color: currentColor;
+    --vuu-icon-size: 10px;
+  }
 }
 
-.vuuModuleAdmin-tag {
+.vuuModuleAdmin-pill-positive {
+  background: color-mix(in srgb, var(--salt-status-success-foreground-decorative) 14%, transparent);
+  color: var(--salt-status-success-foreground-informative);
+}
+
+.vuuModuleAdmin-pill-neutral {
+  background: var(--module-admin-raised);
+  color: var(--module-admin-dim);
+}
+
+.vuuModuleAdmin-pill-warning {
+  background: color-mix(in srgb, var(--salt-status-warning-foreground-decorative) 16%, transparent);
+  color: var(--salt-status-warning-foreground-informative);
+}
+
+.vuuModuleAdmin-role {
   align-items: center;
+  border: 1px solid var(--module-admin-border-strong);
+  border-radius: 3px;
   display: inline-flex;
   gap: 4px;
-}
-.vuuModuleAdmin-tag .saltIcon {
-  --saltIcon-size: 12px;
-}
-.vuuModuleAdmin-tag-warning {
-  background: var(--module-admin-warning-bg);
-  border-color: var(--module-admin-warning-border);
-  color: var(--module-admin-warning-fg);
-}
-
-.vuuModuleAdmin-host {
-  align-items: center;
-  display: inline-flex;
-  gap: 6px;
+  line-height: 16px;
+  padding: 0 5px;
 }
 
 .vuuModuleAdmin-menuLocation {
   align-items: center;
   display: inline-flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: 2px;
 }
 
 .vuuModuleAdmin-chevron {
-  color: var(--module-admin-fg-secondary);
+  --vuu-icon-size: 10px;
 }
 
-.vuuModuleAdmin-issue {
-  align-items: flex-start;
-  background: var(--module-admin-warning-bg);
-  border-left: 3px solid var(--module-admin-warning-border);
-  border-radius: 4px;
-  color: var(--module-admin-warning-fg);
-  display: flex;
-  gap: var(--salt-spacing-100, 8px);
-  padding: var(--salt-spacing-100, 8px) var(--salt-spacing-150, 10px);
-}
-.vuuModuleAdmin-issue .saltIcon {
-  --saltIcon-color: currentColor;
-  flex: 0 0 auto;
-  margin-top: 2px;
-}
+.vuuModuleAdmin-section {
+  padding-top: 0;
 
-.vuuModuleAdmin-facts {
-  display: grid;
-  gap: 6px var(--salt-spacing-200, 12px);
-  align-content: start;
-  grid-template-columns: max-content minmax(0, 1fr);
-  margin: 0;
-}
-.vuuModuleAdmin-fact {
-  display: contents;
-}
-.vuuModuleAdmin-facts dt {
-  color: var(--module-admin-fg-secondary);
-}
-.vuuModuleAdmin-facts-card dt {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  line-height: 20px;
-  text-transform: uppercase;
-}
-.vuuModuleAdmin-facts-panel {
-  grid-template-columns: 180px minmax(0, 1fr);
-}
-.vuuModuleAdmin-facts dd {
-  margin: 0;
-  min-width: 0;
-  overflow-wrap: anywhere;
+  > p {
+    margin: 4px 0;
+  }
 }
 
 .vuuModuleAdmin-sectionHeading {
   align-items: center;
-  color: var(--module-admin-fg-secondary);
+  border-bottom: 1px solid var(--module-admin-border);
+  color: var(--module-admin-dim);
   display: flex;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--salt-text-label-fontSize);
+  font-weight: 700;
   gap: 6px;
   letter-spacing: 0.06em;
-  margin: 0 0 var(--salt-spacing-150, 10px);
+  margin: 0 0 6px;
+  min-height: 26px;
   text-transform: uppercase;
 }
 
-.vuuModuleAdmin-errorCount {
-  align-items: center;
-  border: 1px solid var(--module-admin-error-fg);
-  border-radius: 4px;
-  color: var(--module-admin-error-fg);
-  display: inline-flex;
-  gap: 4px;
-  padding: 2px 6px;
-}
-.vuuModuleAdmin-errorCount .saltIcon {
-  --saltIcon-color: currentColor;
-}
-
-/* ------------------------------------------------------------------ card */
-
-.vuuModuleCard {
-  background: var(--module-admin-surface);
+/* Which file a section's values come from. */
+.vuuModuleAdmin-sourceTag {
+  background: var(--module-admin-raised);
   border: 1px solid var(--module-admin-border);
-  border-radius: calc(var(--module-admin-radius) + 2px);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  outline: none;
-  overflow: hidden;
-  transition:
-    background 0.1s,
-    border-color 0.1s;
-}
-/* A neutral hover: the card is a link to the module's page, not a selection. */
-.vuuModuleCard:hover {
-  background: var(--module-admin-hover-bg);
-  border-color: var(--module-admin-hover-border);
-}
-.vuuModuleCard:focus-visible {
-  outline: 2px solid var(--salt-focused-outlineColor, var(--module-admin-accent));
-  outline-offset: 2px;
-}
-.vuuModuleCard-disabled .vuuModuleCard-header,
-.vuuModuleCard-disabled .vuuModuleCard-description,
-.vuuModuleCard-disabled .vuuModuleCard-menu {
-  opacity: 0.6;
+  border-radius: 3px;
+  color: var(--module-admin-dim);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 16px;
+  padding: 0 5px;
+  text-transform: none;
 }
 
-.vuuModuleCard-body {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-200, 14px) var(--salt-spacing-250, 16px);
+.vuuModuleAdmin-sectionNote {
+  font-weight: 400;
+  letter-spacing: 0;
+  margin-left: auto;
+  text-transform: none;
 }
 
-.vuuModuleCard-header {
-  align-items: flex-start;
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-}
-.vuuModuleCard-titles {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-}
-.vuuModuleCard-title {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.3;
-  margin: 0;
-}
-.vuuModuleCard-name {
-  color: var(--module-admin-fg-secondary);
-}
-
-.vuuModuleCard-description {
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  color: var(--module-admin-fg-secondary);
-  display: -webkit-box;
-  line-clamp: 2;
-  overflow: hidden;
-}
-
-.vuuModuleCard-menu {
-  align-items: center;
-  color: var(--module-admin-fg-secondary);
-  display: flex;
-  gap: 6px;
-  min-width: 0;
-}
-.vuuModuleCard-menu .saltIcon {
-  --saltIcon-color: currentColor;
-  flex: 0 0 auto;
-}
-
-.vuuModuleCard-footer {
-  align-items: center;
-  border-top: 1px solid var(--module-admin-border-weak);
-  display: flex;
-  gap: var(--salt-spacing-100, 8px);
-  justify-content: space-between;
-  padding: var(--salt-spacing-100, 8px) var(--salt-spacing-250, 16px);
-}
-.vuuModuleCard-open {
-  align-items: center;
-  color: var(--module-admin-fg-secondary);
-  display: inline-flex;
-  gap: 2px;
-}
-.vuuModuleCard-open .saltIcon {
-  --saltIcon-color: currentColor;
-}
-.vuuModuleCard:hover .vuuModuleCard-open {
-  color: var(--module-admin-fg);
-}
-
-.vuuModuleCard-new {
-  align-items: center;
-  background: transparent;
-  border: 1px dashed var(--module-admin-border);
-  border-radius: calc(var(--module-admin-radius) + 2px);
-  color: var(--module-admin-fg);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  font: inherit;
-  gap: var(--salt-spacing-100, 8px);
-  justify-content: center;
-  min-height: 200px;
-}
-.vuuModuleCard-new:hover {
-  background: var(--module-admin-surface);
-  border-color: var(--module-admin-accent);
-}
-.vuuModuleCard-newIcon {
-  align-items: center;
-  background: var(--module-admin-accent-weak);
-  border-radius: 50%;
-  display: inline-flex;
-  height: 40px;
-  justify-content: center;
-  width: 40px;
-}
-
-/* ------------------------------------------------------------ tree view */
-
-.vuuModuleTree {
-  align-items: flex-start;
+.vuuModuleAdmin-facts {
   display: grid;
-  gap: var(--salt-spacing-300, 16px);
-  grid-template-columns: minmax(0, 1fr) 280px;
-}
-
-.vuuModuleTree-main {
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-radius: var(--module-admin-radius);
-  padding: var(--salt-spacing-200, 12px);
-}
-
-.vuuModuleTree-note {
-  align-items: center;
-  display: flex;
-  gap: 6px;
-  margin-bottom: var(--salt-spacing-150, 10px);
-}
-
-.vuuModuleTree-sections,
-.vuuModuleTree-sections ul {
-  list-style: none;
+  grid-template-columns: 120px minmax(0, 1fr);
   margin: 0;
-  padding: 0;
+
+  dt {
+    color: var(--module-admin-dim);
+    padding: 3px 8px 3px 0;
+  }
+
+  dd {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding: 3px 0;
+  }
 }
 
-.vuuModuleTree-sectionName {
-  border-bottom: 1px solid var(--module-admin-border-weak);
-  font-weight: 600;
-  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-100, 8px) 6px;
+.vuuModuleAdmin-fact {
+  display: contents;
 }
-
-.vuuModuleTree-row {
-  align-items: center;
-  border-radius: 4px;
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-  padding: 2px var(--salt-spacing-100, 8px) 2px var(--salt-spacing-300, 20px);
-}
-.vuuModuleTree-row-child {
-  padding-left: 52px;
-}
-.vuuModuleTree-row:hover {
-  background: var(--salt-selectable-background-hover, var(--module-admin-bg));
-}
-.vuuModuleTree-row-disabled .vuuModuleTree-select {
-  opacity: 0.6;
-}
-
-.vuuModuleTree-select {
-  align-items: center;
-  background: none;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  display: flex;
-  flex: 1 1 auto;
-  font: inherit;
-  gap: var(--salt-spacing-100, 8px);
-  min-width: 0;
-  padding: 6px 0;
-  text-align: left;
-}
-.vuuModuleTree-label {
-  flex: 0 1 auto;
-  font-weight: 500;
-}
-.vuuModuleTree-path {
-  color: var(--module-admin-fg-secondary);
-  flex: 1 1 auto;
-}
-
-.vuuModuleTree-preview {
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-radius: var(--module-admin-radius);
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-100, 8px);
-  padding: var(--salt-spacing-200, 12px);
-  position: sticky;
-  top: 0;
-}
-.vuuModuleTree-previewSection {
-  font-weight: 600;
-  padding: 6px 0 2px;
-}
-.vuuModuleTree-previewItem {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-100, 8px);
-  padding: 3px 0 3px var(--salt-spacing-150, 10px);
-}
-
-/* ----------------------------------------------------------- table view */
-
-.vuuModuleTable {
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-collapse: separate;
-  border-radius: var(--module-admin-radius);
-  border-spacing: 0;
-  width: 100%;
-}
-.vuuModuleTable th,
-.vuuModuleTable td {
-  border-bottom: 1px solid var(--module-admin-border-weak);
-  padding: 6px var(--salt-spacing-150, 10px);
-  text-align: left;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-.vuuModuleTable thead th {
-  color: var(--module-admin-fg-secondary);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.vuuModuleTable tbody tr {
-  cursor: pointer;
-}
-.vuuModuleTable tbody tr:focus-visible {
-  outline: 2px solid var(--salt-focused-outlineColor, var(--module-admin-accent));
-  outline-offset: -2px;
-}
-.vuuModuleTable tbody tr:hover {
-  background: var(--salt-selectable-background-hover, var(--module-admin-bg));
-}
-.vuuModuleTable-group th {
-  background: var(--module-admin-bg);
-  cursor: default;
-}
-.vuuModuleTable-disabled td {
-  color: var(--module-admin-fg-secondary);
-}
-.vuuModuleTable-module {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-100, 8px);
-}
-.vuuModuleTable-module > span:last-child {
-  display: flex;
-  flex-direction: column;
-}
-.vuuModuleTable-module code {
-  color: var(--module-admin-fg-secondary);
-  font-size: 11px;
-}
-
-/* ------------------------------------------------------------ empty */
 
 .vuuModuleAdmin-empty {
-  align-items: center;
-  background: var(--module-admin-surface);
-  border: 1px dashed var(--module-admin-border);
-  border-radius: var(--module-admin-radius);
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-150, 10px);
-  margin: var(--salt-spacing-400, 24px) auto;
-  max-width: 560px;
-  padding: 48px 32px;
+  align-content: center;
+  color: var(--module-admin-dim);
+  display: grid;
+  gap: 6px;
+  height: 100%;
+  justify-items: center;
+  padding: var(--salt-spacing-400, 16px);
   text-align: center;
-}
-.vuuModuleAdmin-empty h2 {
-  font-size: 18px;
-  margin: 0;
-}
-.vuuModuleAdmin-emptyIcon {
-  align-items: center;
-  background: var(--module-admin-accent-weak);
-  border-radius: 50%;
-  color: var(--module-admin-accent-fg);
-  display: inline-flex;
-  height: 64px;
-  justify-content: center;
-  width: 64px;
-}
-.vuuModuleAdmin-emptySteps {
-  margin: 0;
-  padding-left: 20px;
-  text-align: left;
+
+  strong {
+    color: var(--module-admin-fg);
+  }
 }
 
-/* --------------------------------------------------------- remote check */
+/* ───────── Modules: list beside detail ───────── */
 
-.vuuModuleCheck-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-100, 8px);
-  margin-top: var(--salt-spacing-200, 12px);
+/* The list and the detail are separate panels, with a gutter around them. */
+.vuuModulesPage {
+  background: var(--module-admin-raised);
+  display: grid;
+  flex: 1 1 auto;
+  gap: var(--module-admin-gutter);
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  min-height: 0;
+  padding: var(--module-admin-gutter);
 }
-.vuuModuleCheck {
+
+.vuuModulesPage-list,
+.vuuModulesPage-detail {
+  background: var(--module-admin-surface);
   border: 1px solid var(--module-admin-border);
   border-radius: var(--module-admin-radius);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.vuuModulesPage-list {
   display: flex;
   flex-direction: column;
-  gap: var(--salt-spacing-100, 8px);
-  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-200, 12px);
 }
-.vuuModuleCheck-title {
-  font-weight: var(--salt-text-label-fontWeight-strong, 600);
+
+.vuuModulesPage-listScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 6px;
 }
-.vuuModuleCheck-items {
+
+.vuuModulesPage-listFooter {
+  align-items: center;
+  border-top: 1px solid var(--module-admin-border);
+  color: var(--module-admin-dim);
   display: flex;
-  flex-direction: column;
+  flex: none;
+  font-size: var(--salt-text-label-fontSize);
+  height: 28px;
+  padding: 0 var(--salt-spacing-300, 12px);
+}
+
+.vuuModulesPage-detail {
+  overflow: auto;
+}
+
+.vuuModuleList {
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.vuuModuleList-group {
+  align-items: center;
+  background: var(--module-admin-surface);
+  color: var(--module-admin-dim);
+  display: flex;
+  font-size: var(--salt-text-label-fontSize);
+  font-weight: 700;
   gap: 6px;
-  list-style: none;
+  height: 28px;
+  letter-spacing: 0.06em;
   margin: 0;
-  padding: 0;
-}
-.vuuModuleCheck-items li {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-100, 8px);
-}
-.vuuModuleCheck-ok {
-  --saltIcon-color: var(--module-admin-success-fg);
-}
-.vuuModuleCheck-fail {
-  --saltIcon-color: var(--module-admin-error-fg);
-}
-.vuuModuleCheck-footer {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
+  padding: 6px var(--salt-spacing-300, 12px) 0;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+  z-index: 1;
+
+  .vuuModuleAdmin-count {
+    letter-spacing: 0;
+    margin-left: auto;
+  }
 }
 
-/* -------------------------------------------------------- module details */
-
-.vuuModuleDetails {
-  padding-top: 0;
-}
-.vuuModuleDetails-editing {
-  padding-bottom: 0;
-}
-
-.vuuModuleDetails-breadcrumbs {
+.vuuModuleList-row {
   align-items: center;
-  display: flex;
-  gap: 6px;
-  margin: 0 calc(-1 * var(--salt-spacing-100, 8px));
-  padding-top: var(--salt-spacing-200, 12px);
-}
-.vuuModuleDetails-crumbSep {
-  --saltIcon-color: var(--module-admin-fg-secondary);
-}
-.vuuModuleDetails-crumbCurrent {
-  font-weight: 600;
-}
-.vuuModuleDetails-pager {
-  align-items: center;
-  display: inline-flex;
-  gap: 2px;
+  border-radius: var(--salt-palette-corner, 4px);
+  color: var(--module-admin-fg);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  height: var(--module-admin-row-height);
+  margin: 1px 6px;
+  padding: 0 6px;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--salt-selectable-background-hover);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+    outline-offset: -2px;
+  }
 }
 
-.vuuModuleDetails-compact {
+.vuuModuleList-row-selected {
+  background: var(--salt-selectable-background-selected);
+  box-shadow: inset 2px 0 0 var(--module-admin-accent);
+
+  &:hover {
+    background: var(--salt-selectable-background-selected);
+  }
+}
+
+.vuuModuleList-row-child {
+  padding-left: 26px;
+}
+
+.vuuModuleList-row-disabled .vuuModuleList-title {
+  color: var(--module-admin-dim);
+}
+
+.vuuModuleList-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  code {
+    color: var(--module-admin-dim);
+    margin-left: 6px;
+  }
+}
+
+.vuuModuleList-route {
+  color: var(--module-admin-dim);
+  white-space: nowrap;
+}
+
+/* ───────── Module detail ───────── */
+
+.vuuModuleDetail {
+  container: module-detail / inline-size;
+}
+
+.vuuModuleDetail-header {
   align-items: center;
   background: var(--module-admin-surface);
   border-bottom: 1px solid var(--module-admin-border);
   display: flex;
-  gap: var(--salt-spacing-150, 10px);
-  margin: 0 calc(-1 * var(--salt-spacing-500, 32px));
-  padding: var(--salt-spacing-100, 8px) var(--salt-spacing-500, 32px);
+  gap: 10px;
+  padding: 12px 20px;
   position: sticky;
   top: 0;
-  z-index: 3;
+  z-index: 2;
 }
-/* In view mode the compact header overlays the page once the hero scrolls away. */
-.vuuModuleDetails-compactAnchor {
-  height: 0;
-  margin: 0 calc(-1 * var(--salt-spacing-500, 32px));
-  position: sticky;
-  top: 0;
-  z-index: 3;
+
+.vuuModuleDetail-heading {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+
+  h2 {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 14px;
+    font-weight: 700;
+    gap: 6px;
+    line-height: 18px;
+    margin: 0;
+  }
 }
-.vuuModuleDetails-compactAnchor > .vuuModuleDetails-compact {
-  left: 0;
-  margin: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  transition: opacity 0.15s;
+
+.vuuModuleDetail-identity {
+  color: var(--module-admin-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.vuuModuleDetails-compactAnchor > .vuuModuleDetails-compact-visible {
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.06);
-  opacity: 1;
-  pointer-events: auto;
-}
-.vuuModuleDetails-compactAnchor + .vuuModuleDetails-breadcrumbs {
-  margin-top: calc(-1 * var(--salt-spacing-300, 16px));
-}
-.vuuModuleDetails-compactTitles {
+
+.vuuModuleDetail-actions {
+  align-items: center;
   display: flex;
-  flex-direction: column;
+  flex: none;
+  gap: 4px;
+  margin-left: auto;
 }
-.vuuModuleDetails-jump {
+
+.vuuModuleDetail-back,
+.vuuModuleDetail-open {
+  align-items: center;
+  border-radius: var(--salt-palette-corner, 4px);
+  color: var(--module-admin-dim);
+  display: inline-flex;
+  flex: none;
+  height: var(--salt-size-base, 20px);
+  justify-content: center;
+  width: var(--salt-size-base, 20px);
+
+  &:hover {
+    background: var(--salt-selectable-background-hover);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+/* The back link shows only when the list and detail stack. */
+.vuuModuleDetail-back {
+  display: none;
+}
+
+.vuuModuleDetail-description {
+  color: var(--module-admin-dim);
+  margin: 0;
+  max-width: var(--module-admin-reading-width);
+  padding: 12px 20px 0;
+}
+
+.vuuModuleDetail-issues {
+  display: grid;
+  gap: 4px;
+  max-width: var(--module-admin-reading-width);
+  padding: 12px 20px 0;
+}
+
+.vuuModuleDetail-issueDetail {
+  color: var(--module-admin-dim);
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.vuuModuleDetail-sections {
+  display: grid;
+  gap: 18px;
+  max-width: var(--module-admin-reading-width);
+  padding: 6px 20px 20px;
+}
+
+.vuuModuleDetail-children {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.vuuModuleDetail-remoteConfigMessage,
+.vuuModuleDetail-remoteConfigSource {
+  color: var(--module-admin-dim);
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.vuuModuleDetail-remoteConfigSource {
+  font-size: var(--salt-text-label-fontSize);
+  margin-top: 6px;
+}
+
+/* The access role, the only fact in the Access section, spans the column. */
+.vuuModuleDetail-accessRole {
+  box-sizing: border-box;
+  display: flex;
+  margin: 4px 0 2px;
+  overflow-wrap: anywhere;
+  padding: 2px 6px;
+  width: 100%;
+
+  .vuuIcon {
+    flex: none;
+  }
+}
+
+.vuuModuleDetail-link {
+  align-items: center;
+  color: var(--module-admin-accent);
+  display: inline-flex;
+  font-weight: 600;
+  gap: 4px;
+  margin-top: 2px;
+  text-decoration: none;
+
+  .vuuIcon {
+    --vuu-icon-color: currentColor;
+    --vuu-icon-size: 10px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* YAML source: the caption stays put, the source scrolls on both axes. */
+.vuuModuleDetail-sourceView {
+  max-width: var(--module-admin-reading-width);
+  padding: 12px 20px 20px;
+}
+
+.vuuModuleDetail-sourceCaption {
+  align-items: center;
+  color: var(--module-admin-dim);
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin: 0 0 8px;
 }
-.vuuModuleDetails-jump button {
-  background: var(--module-admin-bg);
+
+.vuuModuleDetail-source {
+  background: var(--module-admin-raised);
   border: 1px solid var(--module-admin-border);
-  border-radius: 12px;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  padding: 2px 10px;
-}
-.vuuModuleDetails-jump button:hover {
-  background: var(--module-admin-hover-bg);
-  border-color: var(--module-admin-hover-border);
+  border-radius: var(--salt-palette-corner, 4px);
+  overflow: auto;
+
+  pre {
+    counter-reset: line;
+    font-family: var(--module-admin-mono);
+    font-size: 0.95em;
+    line-height: 17px;
+    margin: 0;
+    padding: 8px 12px 8px 0;
+    width: max-content;
+  }
 }
 
-.vuuModuleDetails-hero {
-  align-items: flex-start;
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-radius: calc(var(--module-admin-radius) + 2px);
-  display: flex;
-  gap: var(--salt-spacing-300, 20px);
-  padding: var(--salt-spacing-300, 20px) var(--salt-spacing-400, 24px);
-}
-.vuuModuleDetails-heroMain {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--salt-spacing-100, 8px);
-  min-width: 0;
-}
-.vuuModuleDetails-title {
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.2;
-  margin: 0;
-}
-.vuuModuleDetails-subtitle {
-  color: var(--module-admin-fg-secondary);
-}
-.vuuModuleDetails-description {
-  max-width: 72ch;
+.vuuModuleDetail-line {
+  display: block;
+  white-space: pre;
+
+  &::before {
+    color: var(--module-admin-dim);
+    content: counter(line);
+    counter-increment: line;
+    display: inline-block;
+    padding-right: 12px;
+    text-align: right;
+    user-select: none;
+    width: 30px;
+  }
 }
 
-.vuuModuleDetails-pills {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--salt-spacing-100, 8px);
-}
-.vuuModuleDetails-pill {
-  align-items: center;
-  border: 1px solid var(--module-admin-border);
-  border-radius: 12px;
-  color: var(--module-admin-fg-secondary);
-  display: inline-flex;
-  gap: 4px;
-  padding: 1px 8px;
-}
-.vuuModuleDetails-pill .saltIcon {
-  --saltIcon-color: currentColor;
-}
-.vuuModuleDetails-pill-ok {
-  border-color: var(--module-admin-success-fg);
-  color: var(--module-admin-success-fg);
-}
-.vuuModuleDetails-pill-unreachable,
-.vuuModuleDetails-pill-mismatch,
-.vuuModuleDetails-pill-warn {
-  background: var(--module-admin-warning-bg);
-  border-color: var(--module-admin-warning-border);
-  color: var(--module-admin-warning-fg);
+/* ───────── Remote check ───────── */
+
+.vuuModuleCheck {
+  background: var(--module-admin-raised);
+  border-radius: var(--salt-palette-corner, 4px);
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 5px 8px;
 }
 
-.vuuModuleDetails-actions {
-  align-items: center;
-  display: flex;
-  flex: 0 0 auto;
-  gap: var(--salt-spacing-100, 8px);
-}
-
-.vuuModuleDetails-issues {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-100, 8px);
+.vuuModuleCheck-items {
+  display: grid;
+  gap: 2px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.vuuModuleDetails-issue {
-  align-items: center;
-  background: var(--module-admin-warning-bg);
-  border: 1px solid var(--module-admin-warning-border);
-  border-radius: var(--module-admin-radius);
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-100, 8px) var(--salt-spacing-200, 12px);
-}
-.vuuModuleDetails-issue > span {
-  flex: 1 1 auto;
-}
-.vuuModuleDetails-issue > .saltIcon {
-  --saltIcon-color: var(--module-admin-warning-fg);
-}
 
-.vuuModuleDetails-columns {
-  align-items: flex-start;
+.vuuModuleCheck-item {
+  align-items: baseline;
   display: grid;
-  gap: var(--salt-spacing-300, 20px);
-  grid-template-columns: minmax(0, 1fr) 360px;
-}
-.vuuModuleDetails-main,
-.vuuModuleDetails-aside {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-300, 16px);
-  min-width: 0;
-}
-.vuuModuleDetails-editing .vuuModuleDetails-aside {
-  position: sticky;
-  top: 72px;
+  gap: 6px;
+  grid-template-columns: auto auto minmax(0, 1fr);
+
+  .vuuIcon {
+    --vuu-icon-color: var(--salt-status-success-foreground-decorative);
+    align-self: center;
+  }
+
+  code {
+    overflow-wrap: anywhere;
+  }
 }
 
-.vuuModuleDetails-card {
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-radius: calc(var(--module-admin-radius) + 2px);
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-250, 16px) var(--salt-spacing-300, 20px);
-  scroll-margin-top: 72px;
+.vuuModuleCheck-item-failed .vuuIcon {
+  --vuu-icon-color: var(--salt-status-error-foreground-decorative);
 }
-.vuuModuleDetails-cardHeader {
+
+.vuuModuleCheck-label {
+  white-space: nowrap;
+}
+
+.vuuModuleCheck-footer {
   align-items: center;
+  color: var(--module-admin-dim);
   display: flex;
-  gap: var(--salt-spacing-150, 10px);
+  font-size: var(--salt-text-label-fontSize);
+  gap: 8px;
   justify-content: space-between;
 }
-.vuuModuleDetails-related {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.vuuModuleDetails-related ul {
-  margin: 0;
-  padding-left: 18px;
-}
-.vuuModuleDetails-addChild {
-  align-items: center;
-  display: inline-flex;
-  gap: 4px;
-}
 
-.vuuModuleDetails-diff {
-  display: grid;
-  gap: 6px var(--salt-spacing-200, 12px);
-  grid-template-columns: max-content minmax(0, 1fr);
-  margin: 0;
-}
-.vuuModuleDetails-diff > div {
-  display: contents;
-}
-.vuuModuleDetails-diff dt {
-  color: var(--module-admin-fg-secondary);
-}
-.vuuModuleDetails-diff dd {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-.vuuModuleDetails-diff del {
-  color: var(--module-admin-error-fg);
-}
-.vuuModuleDetails-diff ins {
-  color: var(--module-admin-success-fg);
-  text-decoration: none;
-}
+/* ───────── Menu ───────── */
 
-.vuuModuleDetails-saveBar {
-  align-items: center;
-  background: var(--module-admin-surface);
-  border-top: 1px solid var(--module-admin-border);
-  bottom: 0;
-  box-shadow: 0 -2px 6px rgb(0 0 0 / 0.06);
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-  margin: auto calc(-1 * var(--salt-spacing-500, 32px)) 0;
-  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-500, 32px);
-  position: sticky;
-  z-index: 3;
-}
-
-.vuuModuleCreate-footer {
-  align-items: center;
-  background: var(--module-admin-surface);
-  border-top: 1px solid var(--module-admin-border);
-  display: flex;
-  flex: 0 0 auto;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-300, 20px);
-}
-
-/* ----------------------------------------------------------------- form */
-
-.vuuModuleForm-grid {
-  display: grid;
-  gap: var(--salt-spacing-200, 12px) var(--salt-spacing-300, 20px);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.vuuModuleForm-wide {
-  grid-column: 1 / -1;
-}
-
-.vuuModuleForm-label {
-  align-items: center;
-  display: flex;
-  gap: 6px;
-}
-.vuuModuleForm-modified {
-  background: var(--module-admin-warning-border);
-  border-radius: 50%;
-  display: inline-block;
-  height: 7px;
-  width: 7px;
-}
-.vuuModuleForm-srOnly {
-  clip: rect(0 0 0 0);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
-}
-.vuuModuleForm-field-modified .saltInput,
-.vuuModuleForm-field-modified .saltMultilineInput,
-.vuuModuleForm-field-modified .saltDropdown {
-  background: var(--salt-status-warning-background, #fff8e5);
-}
-
-.vuuModuleForm-locked {
-  border-bottom-style: dashed;
-}
-
-.vuuModuleForm-success,
-.vuuModuleForm-remote {
-  align-items: center;
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.vuuModuleForm-success,
-.vuuModuleForm-remote-ok {
-  color: var(--module-admin-success-fg);
-}
-.vuuModuleForm-remote-warning {
-  color: var(--module-admin-warning-fg);
-}
-.vuuModuleForm-remote-error {
-  color: var(--module-admin-error-fg);
-}
-.vuuModuleForm-success .saltIcon,
-.vuuModuleForm-remote .saltIcon {
-  --saltIcon-color: currentColor;
-}
-
-.vuuModuleForm-icons {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.vuuModuleForm-iconChoice {
-  align-items: center;
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-radius: var(--module-admin-radius);
-  cursor: pointer;
-  display: inline-flex;
-  height: 36px;
-  justify-content: center;
-  padding: 0;
-  width: 36px;
-}
-.vuuModuleForm-iconChoice[aria-checked="true"] {
-  border-color: var(--module-admin-accent);
-  box-shadow: 0 0 0 1px var(--module-admin-accent);
-}
-
-/* ---------------------------------------------------------- create page */
-
-.vuuModuleCreate {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.vuuModuleCreate-scroll {
+.vuuMenuPage {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: var(--salt-spacing-300, 20px) var(--salt-spacing-400, 32px) var(--salt-spacing-400, 32px);
 }
 
-.vuuModuleCreate-breadcrumb {
-  align-items: center;
-  display: flex;
-  gap: 6px;
-  margin-bottom: var(--salt-spacing-100, 8px);
-}
+.vuuMenuPage-table {
+  border-collapse: collapse;
+  width: 100%;
 
-.vuuModuleCreate-layout {
-  align-items: flex-start;
-  display: grid;
-  gap: var(--salt-spacing-300, 20px);
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
-  margin-top: var(--salt-spacing-300, 20px);
-}
-
-.vuuModuleCreate-main,
-.vuuModuleCreate-side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-300, 20px);
-}
-.vuuModuleCreate-side {
-  position: sticky;
-  top: 0;
-}
-
-.vuuModuleCreate-card {
-  background: var(--module-admin-surface);
-  border: 1px solid var(--module-admin-border);
-  border-radius: calc(var(--module-admin-radius) + 2px);
-}
-.vuuModuleCreate-cardHeader {
-  align-items: center;
-  border-bottom: 1px solid var(--module-admin-border-weak);
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-200, 12px) var(--salt-spacing-300, 20px);
-}
-.vuuModuleCreate-cardHeader h2 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-}
-.vuuModuleCreate-cardBody {
-  padding: var(--salt-spacing-200, 16px) var(--salt-spacing-300, 20px);
-}
-.vuuModuleCreate-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-200, 12px);
-}
-.vuuModuleCreate-stack .vuuModuleForm-grid {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.vuuModuleCreate-step {
-  align-items: center;
-  background: var(--module-admin-accent);
-  border-radius: 50%;
-  color: var(--salt-content-bold-foreground, #fff);
-  display: inline-flex;
-  font-size: 12px;
-  font-weight: 600;
-  height: 24px;
-  justify-content: center;
-  width: 24px;
-}
-.vuuModuleCreate-step-complete {
-  background: var(--module-admin-success-fg);
-}
-.vuuModuleCreate-step-error {
-  background: var(--module-admin-error-fg);
-}
-.vuuModuleCreate-step .saltIcon {
-  --saltIcon-color: currentColor;
-}
-
-.vuuModuleCreate-preview {
-  border: 1px solid var(--module-admin-border);
-  border-radius: var(--module-admin-radius);
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-150, 10px);
-  padding: var(--salt-spacing-200, 12px);
-}
-.vuuModuleCreate-previewHeader {
-  align-items: flex-start;
-  display: flex;
-  gap: var(--salt-spacing-150, 10px);
-}
-.vuuModuleCreate-previewHeader > div {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-}
-.vuuModuleCreate-previewHeader code {
-  color: var(--module-admin-fg-secondary);
-}
-
-.vuuModuleCreate-menu {
-  border: 1px solid var(--module-admin-border);
-  border-radius: var(--module-admin-radius);
-  margin-top: var(--salt-spacing-200, 12px);
-  padding: var(--salt-spacing-100, 8px) 0;
-}
-.vuuModuleCreate-menuTitle {
-  display: block;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  padding: 0 var(--salt-spacing-150, 10px) 6px;
-  text-transform: uppercase;
-}
-.vuuModuleCreate-menuSection,
-.vuuModuleCreate-menuItem {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-100, 8px);
-  padding: 5px var(--salt-spacing-150, 10px);
-}
-.vuuModuleCreate-menuSection {
-  font-weight: 600;
-}
-.vuuModuleCreate-menuItem {
-  padding-left: 36px;
-}
-.vuuModuleCreate-menuItem .saltTag {
-  margin-left: auto;
-}
-.vuuModuleCreate-menuItem-new {
-  background: var(--module-admin-accent-weak);
-  box-shadow: inset 3px 0 0 var(--module-admin-accent);
-}
-
-/* -------------------------------------------------------------- dialogs */
-
-.vuuModuleDialog-list {
-  margin: var(--salt-spacing-150, 10px) 0;
-  padding-left: 18px;
-}
-.vuuModuleDialog-children {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: var(--salt-spacing-200, 12px);
-}
-.vuuModuleDialog-confirm {
-  margin-top: var(--salt-spacing-150, 10px);
-}
-
-/* ------------------------------------------------------------ responsive */
-
-@media (max-width: 1100px) {
-  .vuuModuleAdmin-summaries {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  th,
+  td {
+    border-bottom: 1px solid var(--module-admin-border);
+    height: var(--module-admin-row-height);
+    padding: 0 10px;
+    text-align: left;
+    white-space: nowrap;
   }
-  .vuuModuleCreate-layout,
-  .vuuModuleDetails-columns,
-  .vuuModuleTree {
+
+  thead th {
+    background: var(--module-admin-raised);
+    border-bottom-color: var(--module-admin-border-strong);
+    color: var(--module-admin-dim);
+    font-size: var(--salt-text-label-fontSize);
+    font-weight: 700;
+    height: 24px;
+    letter-spacing: 0.06em;
+    position: sticky;
+    text-transform: uppercase;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody th {
+    font-weight: 400;
+  }
+
+  td code {
+    color: var(--module-admin-dim);
+  }
+}
+
+.vuuMenuPage-section th {
+  font-weight: 700;
+  padding-left: var(--salt-spacing-300, 12px);
+}
+
+.vuuMenuPage-entry {
+  align-items: center;
+  color: var(--module-admin-fg);
+  display: inline-flex;
+  gap: 6px;
+  padding-left: 16px;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--module-admin-accent);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+.vuuMenuPage-nested .vuuMenuPage-entry {
+  color: var(--module-admin-dim);
+  padding-left: 38px;
+}
+
+.vuuMenuPage-disabled .vuuMenuPage-entry {
+  color: var(--module-admin-dim);
+}
+
+.vuuMenuPage-dim {
+  color: var(--module-admin-dim);
+}
+
+/* ───────── Narrow workspace: the list and detail stack ───────── */
+
+@container module-admin (max-width: 640px) {
+  .vuuModuleAdmin-status {
+    display: none;
+  }
+
+  .vuuModulesPage {
+    --module-admin-gutter: 8px;
     grid-template-columns: minmax(0, 1fr);
   }
-  .vuuModuleCreate-side,
-  .vuuModuleDetails-editing .vuuModuleDetails-aside {
-    position: static;
+
+  .vuuModulesPage-routed .vuuModulesPage-list,
+  .vuuModulesPage:not(.vuuModulesPage-routed) .vuuModulesPage-detail {
+    display: none;
+  }
+
+  /* With only the list showing, no module is open, so none is selected. */
+  .vuuModulesPage:not(.vuuModulesPage-routed) .vuuModuleList-row-selected {
+    background: none;
+    box-shadow: none;
+  }
+
+  .vuuModuleDetail-back {
+    display: inline-flex;
   }
 }

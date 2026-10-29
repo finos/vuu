@@ -5,13 +5,14 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import ModuleAdmin from "./ModuleAdminLocal";
 
-// The portal host provides the theme; load it here for standalone use only.
+// The portal host provides the theme and icons; load them here for
+// standalone use only.
+import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 
 const container = document.getElementById("root");
 if (!container) throw new Error("Root element not found");
 
-// A data router, so Module Admin can guard unsaved edits on navigation.
 const router = createBrowserRouter([
   {
     path: "*",

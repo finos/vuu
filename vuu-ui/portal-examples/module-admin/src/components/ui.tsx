@@ -1,9 +1,8 @@
-import { StatusIndicator, Tag, Text } from "@salt-ds/core";
-import { LockedIcon, WarningIcon } from "@salt-ds/icons";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import type { CSSProperties, ReactNode } from "react";
 import type { ModuleView } from "../data/module-model";
-import { hostOf, splitLocation } from "../data/module-model";
+import { splitLocation } from "../data/module-model";
 
 const classBase = "vuuModuleAdmin";
 
@@ -25,7 +24,7 @@ export const NavIcon = ({
 }: {
   className?: string;
   name: string;
-  size?: "small" | "medium" | "large";
+  size?: "small" | "medium";
   url: string;
 }) => {
   const category = categoryFor(name);
@@ -55,94 +54,88 @@ export const NavIcon = ({
   );
 };
 
-export const EnabledStatus = ({ enabled }: { enabled: boolean }) => (
-  <span
-    className={cx(`${classBase}-status`, {
-      [`${classBase}-status-disabled`]: !enabled,
-    })}
-  >
-    <StatusIndicator status={enabled ? "success" : "info"} />
-    {enabled ? "Enabled" : "Disabled"}
+export type StatusTone = "positive" | "neutral" | "warning" | "negative";
+
+/** A small coloured label, e.g. Enabled or 2 issues. */
+export const StatusPill = ({
+  children,
+  icon,
+  tone,
+}: {
+  children: ReactNode;
+  icon?: string;
+  tone: StatusTone;
+}) => (
+  <span className={cx(`${classBase}-pill`, `${classBase}-pill-${tone}`)}>
+    {icon ? <Icon name={icon} /> : null}
+    {children}
   </span>
 );
+
+/** A dot showing whether a module is enabled or needs attention. */
+export const StatusDot = ({ module }: { module: ModuleView }) => {
+  const issues = module.issues.length;
+  const label =
+    issues > 0
+      ? `${issues} issue${issues > 1 ? "s" : ""}`
+      : module.enabled
+        ? "Enabled"
+        : "Disabled";
+  return (
+    <span
+      aria-label={label}
+      className={cx(`${classBase}-dot`, {
+        [`${classBase}-dot-disabled`]: !module.enabled && issues === 0,
+        [`${classBase}-dot-warning`]: issues > 0,
+      })}
+      role="img"
+      title={label}
+    />
+  );
+};
 
 export const MenuLocation = ({ module }: { module: ModuleView }) => {
   if (module.parent) {
     return (
-      <span className={`${classBase}-menuLocation`}>
-        <Text color="secondary">Opened from</Text>
-        <strong>{module.parent.title}</strong>
+      <span className={`${classBase}-muted`}>
+        None, opened from {module.parent.title}
       </span>
     );
   }
-  if (!module.location) return <span>–</span>;
+  if (!module.location) return <span className={`${classBase}-muted`}>–</span>;
   const [section, label] = splitLocation(module.location);
   return (
     <span className={`${classBase}-menuLocation`}>
       {section}
-      <span aria-hidden className={`${classBase}-chevron`}>
-        ›
-      </span>
+      <Icon className={`${classBase}-chevron`} name="chevron-right" />
       {label}
     </span>
   );
 };
 
-export const RoleTag = ({ module }: { module: ModuleView }) =>
-  module.effectiveAccessRole ? (
-    <Tag bordered className={`${classBase}-tag`} title="Access role">
-      <LockedIcon aria-hidden />
-      {module.accessRoleInherited
-        ? `Inherits ${module.effectiveAccessRole}`
-        : module.effectiveAccessRole}
-    </Tag>
-  ) : (
-    <Tag
-      bordered
-      className={cx(`${classBase}-tag`, `${classBase}-tag-warning`)}
-      title="No access role"
-    >
-      <LockedIcon aria-hidden />
-      No access role
-    </Tag>
-  );
-
-export const HostStatus = ({ module }: { module: ModuleView }) => {
-  const status = module.remote?.status;
-  return (
-    <span className={`${classBase}-host`} title={module.remote?.summary}>
-      <StatusIndicator
-        status={
-          status === "ok"
-            ? "success"
-            : status === "unreachable"
-              ? "error"
-              : status === "mismatch"
-                ? "warning"
-                : "info"
-        }
-      />
-      <code>{hostOf(module.mfUrl) || "–"}</code>
-    </span>
-  );
-};
-
-export const IssueBanner = ({ children }: { children: ReactNode }) => (
-  <div className={`${classBase}-issue`} role="note">
-    <WarningIcon aria-hidden />
-    <span>{children}</span>
-  </div>
+export const RoleTag = ({
+  className,
+  role,
+}: {
+  className?: string;
+  role: string;
+}) => (
+  <code className={cx(`${classBase}-role`, className)}>
+    <Icon name="module-lock" />
+    {role}
+  </code>
 );
 
-/** A label/value list, as used on cards and in the details panel. */
-export const FactList = ({
-  facts,
-  variant = "card",
-}: {
-  facts: [label: string, value: ReactNode][];
-  variant?: "card" | "panel";
-}) => (
-  <dl className={cx(`${classBase}-facts`, `${classBase}-facts-${variant}`)}>
+/** The file a value comes from: modules.yaml or the remote's config.json. */
+export const SourceTag = ({ file }: { file: string }) => (
+  <code className={`${classBase}-sourceTag`}>{file}</code>
+);
+
+export type Fact = [label: string, value: ReactNode];
+
+/** A label/value list. */
+export const FactList = ({ facts }: { facts: Fact[] }) => (
+  <dl className={`${classBase}-facts`}>
     {facts.map(([label, value]) => (
       <div className={`${classBase}-fact`} key={label}>
         <dt>{label}</dt>
@@ -152,15 +145,40 @@ export const FactList = ({
   </dl>
 );
 
-export const SectionHeading = ({
+export const Section = ({
   children,
   icon,
+  note,
+  title,
 }: {
   children: ReactNode;
-  icon?: ReactNode;
+  icon: string;
+  note?: ReactNode;
+  title: string;
 }) => (
-  <h3 className={`${classBase}-sectionHeading`}>
-    {icon}
+  <section aria-label={title} className={`${classBase}-section`}>
+    <h3 className={`${classBase}-sectionHeading`}>
+      <Icon name={icon} />
+      {title}
+      {note ? <span className={`${classBase}-sectionNote`}>{note}</span> : null}
+    </h3>
     {children}
-  </h3>
+  </section>
+);
+
+/** A centred message for an empty list or pane. */
+export const EmptyMessage = ({
+  action,
+  children,
+  title,
+}: {
+  action?: ReactNode;
+  children?: ReactNode;
+  title: string;
+}) => (
+  <div className={`${classBase}-empty`}>
+    <strong>{title}</strong>
+    {children ? <span>{children}</span> : null}
+    {action}
+  </div>
 );
