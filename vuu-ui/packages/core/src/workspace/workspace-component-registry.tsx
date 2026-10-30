@@ -4,7 +4,7 @@ import {
   type GridComponentRenderer,
   type GridComponentSettingsCodec,
   type JsonValue,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 
 export interface WorkspaceComponentRegistration<T> {
   readonly codec: GridComponentSettingsCodec<T>;

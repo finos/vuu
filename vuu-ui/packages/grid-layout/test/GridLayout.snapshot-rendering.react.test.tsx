@@ -36,26 +36,31 @@ const DragHandlerCapture = ({
   return null;
 };
 
+const StackContent = ({
+  capture,
+}: {
+  capture: (controller: GridController) => void;
+}) => {
+  const dispatch = useGridLayoutDispatch();
+  return (
+    <>
+      <ControllerCapture capture={capture} />
+      <button
+        onClick={() => dispatch({ id: "second", type: "close" })}
+        type="button"
+      >
+        Close second
+      </button>
+    </>
+  );
+};
+
 const RemountableStack = ({
   capture,
 }: {
   capture: (controller: GridController) => void;
 }) => {
   const [mounted, setMounted] = useState(true);
-  const StackContent = () => {
-    const dispatch = useGridLayoutDispatch();
-    return (
-      <>
-        <ControllerCapture capture={capture} />
-        <button
-          onClick={() => dispatch({ id: "second", type: "close" })}
-          type="button"
-        >
-          Close second
-        </button>
-      </>
-    );
-  };
   return (
     <GridLayoutProvider>
       <button onClick={() => setMounted((value) => !value)} type="button">
@@ -76,7 +81,7 @@ const RemountableStack = ({
             stackId="persisted-tabs"
             title="First"
           >
-            <StackContent />
+            <StackContent capture={capture} />
           </GridLayoutItem>
           <GridLayoutItem
             contentVisible={false}

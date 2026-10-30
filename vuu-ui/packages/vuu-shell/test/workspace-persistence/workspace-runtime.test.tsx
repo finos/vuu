@@ -1,7 +1,7 @@
 import {
   GridComponentRendererRegistry,
   GridComponentSettingsRegistry,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { ContextPanelProvider } from "@vuu-ui/vuu-ui-controls";
 import { act } from "react";

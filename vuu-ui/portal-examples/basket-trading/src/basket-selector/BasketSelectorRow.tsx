@@ -7,7 +7,6 @@ import "./BasketSelectorRow.css";
 const classBase = "vuuBasketSelectorRow";
 
 export const BasketSelectorRow = ({
-  classNameGenerator: _ignore1,
   virtualColSpan: _ignore2,
   zebraStripes: _ignore3,
   className: classNameProp,

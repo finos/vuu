@@ -1,4 +1,4 @@
-import type { TypedComponentTemplate } from "@vuu-ui/grid-layout";
+import type { TypedComponentTemplate } from "@heswell/grid-layout";
 import type { VuuModuleWorkspaceDescriptor } from "@vuu-ui/vuu-protocol-types";
 import type { PaletteModule } from "../portal-components/palette-modules";
 import { vuuTableTemplate } from "../portal-components/vuu-table-component";

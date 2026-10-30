@@ -123,10 +123,44 @@ const flush = async () => {
   }
 };
 
+let api: PortalNotificationsAPI | undefined;
+
+const Probe = () => {
+  api = usePortalNotifications();
+  const total = useUnreadCount();
+  const m0 = useModuleUnreadCount("m0");
+  const list = useNotificationList();
+  return (
+    <output>
+      {JSON.stringify({ list: list.map(({ key }) => key), m0, total })}
+    </output>
+  );
+};
+
+let showNotification: ReturnType<typeof useNotifications>["showNotification"];
+const Client = () => {
+  ({ showNotification } = useNotifications());
+  return null;
+};
+const ModuleClient = ({ moduleId }: { moduleId: string }) => (
+  <NotificationOriginProvider moduleId={moduleId}>
+    {/* A module's own provider passes notifications to the portal's. */}
+    <NotificationsProvider>
+      <Client />
+    </NotificationsProvider>
+  </NotificationOriginProvider>
+);
+
+let presentation: ReturnType<typeof useNotificationPresentation> | undefined;
+
+const Settings = () => {
+  presentation = useNotificationPresentation();
+  return null;
+};
+
 describe("PortalNotificationsProvider", () => {
   let container: HTMLDivElement;
   let root: Root;
-  let api: PortalNotificationsAPI | undefined;
   let backend: InMemoryPersistenceBackend;
 
   beforeEach(() => {
@@ -150,18 +184,6 @@ describe("PortalNotificationsProvider", () => {
     container.remove();
     vi.restoreAllMocks();
   });
-
-  const Probe = () => {
-    api = usePortalNotifications();
-    const total = useUnreadCount();
-    const m0 = useModuleUnreadCount("m0");
-    const list = useNotificationList();
-    return (
-      <output>
-        {JSON.stringify({ list: list.map(({ key }) => key), m0, total })}
-      </output>
-    );
-  };
 
   const render = async (openModuleId?: string, content?: ReactNode) => {
     await act(async () =>
@@ -276,22 +298,6 @@ describe("PortalNotificationsProvider", () => {
       vi.useFakeTimers({ toFake: ["Date"] });
     });
 
-    let showNotification: ReturnType<
-      typeof useNotifications
-    >["showNotification"];
-    const Client = () => {
-      ({ showNotification } = useNotifications());
-      return null;
-    };
-    const ModuleClient = ({ moduleId }: { moduleId: string }) => (
-      <NotificationOriginProvider moduleId={moduleId}>
-        {/* A module's own provider passes notifications to the portal's. */}
-        <NotificationsProvider>
-          <Client />
-        </NotificationsProvider>
-      </NotificationOriginProvider>
-    );
-
     afterEach(() => {
       vi.useRealTimers();
       document.querySelectorAll(".vuuToastNotification").forEach((toast) => {
@@ -313,11 +319,6 @@ describe("PortalNotificationsProvider", () => {
     });
 
     it("does not toast while do not disturb is on", async () => {
-      let presentation: ReturnType<typeof useNotificationPresentation>;
-      const Settings = () => {
-        presentation = useNotificationPresentation();
-        return null;
-      };
       await render("m0", <Settings />);
       await act(async () => presentation?.setDoNotDisturb(true));
       await afterSnapshot();

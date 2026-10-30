@@ -7,7 +7,7 @@ import {
   GridLayoutItem,
   GridLayoutProvider,
   GridLayoutStackedItem,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { DebugGridItem } from "../html/components/DebugGridItem";
 
 import "./GridLayout.examples.css";

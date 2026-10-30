@@ -29,6 +29,27 @@ const registry = {
   ],
 } satisfies PortalModuleRegistry;
 
+const SessionProbe = () => {
+  const moduleRegistry = useModuleRegistry();
+  const connectionId = useVuuConnectionId();
+  const token = useVuuAccessToken();
+  const authorizations = useVuuAuthorizations();
+  return (
+    <output>
+      {JSON.stringify({
+        authorizations,
+        connectionId,
+        moduleCount: moduleRegistry.modules.length,
+        token,
+      })}
+    </output>
+  );
+};
+
+const ModuleCountProbe = () => (
+  <output>{useModuleRegistry().modules.length}</output>
+);
+
 describe("AuthenticationProvider local mode", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -53,22 +74,6 @@ describe("AuthenticationProvider local mode", () => {
       .mockResolvedValue(new Response("{}"));
     const webSocketConstructor = vi.fn();
     vi.stubGlobal("WebSocket", webSocketConstructor);
-    const Probe = () => {
-      const moduleRegistry = useModuleRegistry();
-      const connectionId = useVuuConnectionId();
-      const token = useVuuAccessToken();
-      const authorizations = useVuuAuthorizations();
-      return (
-        <output>
-          {JSON.stringify({
-            authorizations,
-            connectionId,
-            moduleCount: moduleRegistry.modules.length,
-            token,
-          })}
-        </output>
-      );
-    };
 
     await act(async () => {
       root.render(
@@ -77,7 +82,7 @@ describe("AuthenticationProvider local mode", () => {
           mode="local"
           registry={registry}
         >
-          <Probe />
+          <SessionProbe />
         </AuthenticationProvider>,
       );
     });
@@ -98,12 +103,10 @@ describe("AuthenticationProvider local mode", () => {
   });
 
   it("defaults to an empty registry", async () => {
-    const Probe = () => <output>{useModuleRegistry().modules.length}</output>;
-
     await act(async () => {
       root.render(
         <AuthenticationProvider mode="local">
-          <Probe />
+          <ModuleCountProbe />
         </AuthenticationProvider>,
       );
     });

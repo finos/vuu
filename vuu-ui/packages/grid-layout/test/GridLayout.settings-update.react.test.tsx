@@ -41,6 +41,11 @@ const Label = ({ id, label }: LabelSettings & { id: string }) => {
   return <span data-component-id={id}>{label}</span>;
 };
 
+const UpdaterProbe = () => {
+  updater = useGridComponentSettingsUpdater();
+  return null;
+};
+
 const renderers = new GridComponentRendererRegistry();
 renderers.register("label", isLabelSettings, ({ label }, id) => (
   <Label id={id} label={label} />
@@ -181,11 +186,7 @@ describe("useGridComponentSettingsUpdater", () => {
   });
 
   it("is a no-op outside a GridLayoutProvider", () => {
-    const Probe = () => {
-      updater = useGridComponentSettingsUpdater();
-      return null;
-    };
-    act(() => root.render(<Probe />));
+    act(() => root.render(<UpdaterProbe />));
     expect(updater?.("component-a", { label: "x" })).toBe(false);
   });
 });

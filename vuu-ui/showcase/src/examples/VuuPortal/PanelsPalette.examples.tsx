@@ -20,7 +20,7 @@ import {
   createLocalVuuServer,
   simulModule,
 } from "@vuu-ui/vuu-data-test";
-import type { GridLayoutDocument } from "@vuu-ui/grid-layout";
+import type { GridLayoutDocument } from "@heswell/grid-layout";
 import { chartIcon, ordersIcon, watchlistIcon } from "./portal-nav-icons";
 
 const SERVER_ID = "local";

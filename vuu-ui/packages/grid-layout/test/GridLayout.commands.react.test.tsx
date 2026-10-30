@@ -122,15 +122,23 @@ const labels = (container: HTMLElement) =>
     element.getAttribute("data-label"),
   );
 
+const Capture = ({
+  onCommands,
+}: {
+  onCommands: (commands: GridLayoutCommands | undefined) => void;
+}) => {
+  onCommands(useGridLayoutCommands());
+  return null;
+};
+
 describe("useGridLayoutCommands", () => {
   let container: HTMLDivElement;
   let root: Root;
   let commands: GridLayoutCommands | undefined;
   let documents: GridLayoutDocument[];
 
-  const Capture = () => {
-    commands = useGridLayoutCommands();
-    return null;
+  const captureCommands = (value: GridLayoutCommands | undefined) => {
+    commands = value;
   };
 
   const renderGrid = (document: GridLayoutDocument) => {
@@ -143,7 +151,7 @@ describe("useGridLayoutCommands", () => {
           settingsCodecs={codecs}
         >
           <GridLayout id="commands-grid" />
-          <Capture />
+          <Capture onCommands={captureCommands} />
         </GridLayoutProvider>,
       ),
     );
@@ -186,7 +194,7 @@ describe("useGridLayoutCommands", () => {
   });
 
   it("is undefined outside a GridLayoutProvider", () => {
-    act(() => root.render(<Capture />));
+    act(() => root.render(<Capture onCommands={captureCommands} />));
     expect(commands).toBeUndefined();
   });
 

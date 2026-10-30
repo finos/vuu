@@ -7,7 +7,7 @@ import {
   type GridComponentSettingsRegistry,
   type GridLayoutDocument,
   type JsonValue,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import type { LayoutJSON } from "@vuu-ui/vuu-utils";
 import {
@@ -36,7 +36,7 @@ import {
   type WorkspaceSnapshotV1,
 } from "./workspace-schemas";
 
-// Literals, not the grid-layout constants: @vuu-ui/grid-layout imports
+// Literals, not the grid-layout constants: @heswell/grid-layout imports
 // @vuu-ui/core indirectly, so its bindings may not be initialised when this
 // module is evaluated.
 const emptyLayout: GridLayoutDocument = {
