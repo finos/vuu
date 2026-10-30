@@ -4534,7 +4534,7 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck);
       serverProxy.handleMessageFromServer(tableMetaResponse);
       // allow the promises pending for the subscription and metadata to resolve
-      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       expect(serverProxy["queuedRequests"].length).toEqual(0);
       expect(connection.send).toHaveBeenCalledTimes(3);
       expect(connection.send).toHaveBeenNthCalledWith(1, {

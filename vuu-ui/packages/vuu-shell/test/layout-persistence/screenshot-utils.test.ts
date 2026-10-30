@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { expectPromiseRejectsWithError } from "./utils";
 import htmlToImage from "html-to-image";
 
-const node = document.createElement("div");
+// toPng is mocked, so the node is never read.
+const node = {} as HTMLElement;
 
 describe("takeScreenshot", () => {
   it("returns a string when toPng() promise is resolved", async () => {
