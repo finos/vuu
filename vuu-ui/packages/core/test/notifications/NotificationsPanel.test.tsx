@@ -38,18 +38,18 @@ const notification = (
   ...rest,
 });
 
+let api: PortalNotificationsAPI | undefined;
+let presentation: PortalNotificationsPresentation | undefined;
+
+const Probe = () => {
+  api = usePortalNotifications();
+  presentation = useNotificationPresentation();
+  return null;
+};
+
 describe("NotificationsPanel", () => {
   let container: HTMLDivElement;
   let root: Root;
-  let api: PortalNotificationsAPI | undefined;
-  let presentation: PortalNotificationsPresentation | undefined;
-
-  const Probe = () => {
-    api = usePortalNotifications();
-    presentation = useNotificationPresentation();
-    return null;
-  };
-
   beforeEach(async () => {
     // @ts-expect-error React test flag
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;

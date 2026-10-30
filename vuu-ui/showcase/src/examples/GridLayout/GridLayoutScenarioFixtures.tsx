@@ -5,8 +5,8 @@ import {
   GridLayoutItem,
   GridLayoutProvider,
   type TrackSize,
-} from "@vuu-ui/grid-layout";
-import type { GridLayoutItemProps } from "@vuu-ui/grid-layout/src/GridLayoutItem";
+} from "@heswell/grid-layout";
+import type { GridLayoutItemProps } from "@heswell/grid-layout/src/GridLayoutItem";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 
 export type ScenarioItem = {

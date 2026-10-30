@@ -94,7 +94,6 @@
     "@lezer/generator": "^1.2.2",
     "@playwright/test": "1.64.1",
     "@module-federation/enhanced": "2.8.0",
-    "@playwright/test": "1.62.1",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "15.3.1",

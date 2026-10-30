@@ -22,21 +22,21 @@
   ],
   "main": "index.ts",
   "devDependencies": {
-    "@vuu-ui/portal-build": "^0.3.0",
-    "@vuu-ui/vuu-data-types": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-icons": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-table-types": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-theme": "4.0.0-alpha.31"
+    "@vuu-ui/portal-build": "0.4.0",
+    "@vuu-ui/vuu-data-types": "4.0.1",
+    "@vuu-ui/vuu-icons": "4.0.1",
+    "@vuu-ui/vuu-table-types": "4.0.1",
+    "@vuu-ui/vuu-theme": "4.0.1"
   },
   "dependencies": {
     "@heswell/module-admin": "1.1.0",
     "@salt-ds/core": "1.72.0",
     "@vuu-ui/core": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-data-test": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-notifications": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-protocol-types": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-ui-controls": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-utils": "4.0.0-alpha.31",
+    "@vuu-ui/vuu-data-test": "4.0.1",
+    "@vuu-ui/vuu-notifications": "4.0.1",
+    "@vuu-ui/vuu-protocol-types": "4.0.1",
+    "@vuu-ui/vuu-ui-controls": "4.0.1",
+    "@vuu-ui/vuu-utils": "4.0.1",
     "react-router-dom": "7.18.3"
   },
   "peerDependencies": {

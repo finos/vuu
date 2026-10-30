@@ -2,7 +2,7 @@ import type {
   GridComponentSettingsCodec,
   GridLayoutDocument,
   JsonValue,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import {
   createWorkspaceComponentRegistries,
   shellWorkspaceComponentRegistrations,

@@ -211,6 +211,18 @@ const modules = [
   },
 ] satisfies RemoteModuleDescriptor[];
 
+const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
+  <div data-provider="local">{children}</div>
+);
+
+const ManagedNav = ({ width }: { width?: string }) => {
+  const shellNav = usePortalShellNav();
+  useEffect(() => {
+    shellNav?.setNavWidth(width);
+  }, [shellNav, width]);
+  return null;
+};
+
 describe("Portal and window shells", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -229,85 +241,91 @@ describe("Portal and window shells", () => {
     window.history.replaceState(null, "", "/");
   });
 
-  it.each([
-    BrowserRouter,
-    MemoryRouter,
-  ])("rejects an external $name instead of nesting routers", async (OuterRouter) => {
-    const render = async () => {
-      await act(async () => {
-        root.render(
-          <OuterRouter>
-            <PortalShell remoteModules={modules} title="Portal" />
-          </OuterRouter>,
-        );
-      });
-    };
-    await expect(render()).rejects.toThrow(
-      "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.",
-    );
-  });
+  it.each([BrowserRouter, MemoryRouter])(
+    "rejects an external $name instead of nesting routers",
+    async (OuterRouter) => {
+      const render = async () => {
+        await act(async () => {
+          root.render(
+            <OuterRouter>
+              <PortalShell remoteModules={modules} title="Portal" />
+            </OuterRouter>,
+          );
+        });
+      };
+      await expect(render()).rejects.toThrow(
+        "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.",
+      );
+    },
+  );
 
   it.each([
     ["/users/admin", "UserAdmin"],
     ["/orders", "Orders"],
-  ])("provides the complete registry at %s without an external router", async (path, module) => {
-    window.history.replaceState(null, "", path);
-    await act(async () => {
-      root.render(<PortalShell remoteModules={modules} title="Portal" />);
-    });
+  ])(
+    "provides the complete registry at %s without an external router",
+    async (path, module) => {
+      window.history.replaceState(null, "", path);
+      await act(async () => {
+        root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      });
 
-    expect(
-      [...container.querySelectorAll("output")].map((element) => [
-        element.dataset.module,
-        element.textContent,
-      ]),
-    ).toEqual([[module, "2"]]);
-    expect(container.querySelector("[data-portal-nav]")).toBeNull();
-    expect(container.querySelector("[data-portal-header]")).toBeNull();
-    expect(container.querySelector("h3")).toBeNull();
-    expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(1);
-    expect(container.querySelector(".vuuWindowShell")).toBeNull();
-    expect(container.querySelectorAll('[data-provider="remote"]')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-provider="modal"]')).toHaveLength(
-      1,
-    );
-    expect(
-      container.querySelector('[data-accent] [data-provider="modal"]'),
-    ).not.toBeNull();
-    expect(container.querySelector("[data-accent]")).toMatchObject({
-      dataset: {
-        accent: "purple",
-        corner: "rounded",
-        density: "medium",
-        mode: "light",
-        theme: "vuu-theme",
-      },
-    });
-  });
+      expect(
+        [...container.querySelectorAll("output")].map((element) => [
+          element.dataset.module,
+          element.textContent,
+        ]),
+      ).toEqual([[module, "2"]]);
+      expect(container.querySelector("[data-portal-nav]")).toBeNull();
+      expect(container.querySelector("[data-portal-header]")).toBeNull();
+      expect(container.querySelector("h3")).toBeNull();
+      expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(1);
+      expect(container.querySelector(".vuuWindowShell")).toBeNull();
+      expect(
+        container.querySelectorAll('[data-provider="remote"]'),
+      ).toHaveLength(1);
+      expect(
+        container.querySelectorAll('[data-provider="modal"]'),
+      ).toHaveLength(1);
+      expect(
+        container.querySelector('[data-accent] [data-provider="modal"]'),
+      ).not.toBeNull();
+      expect(container.querySelector("[data-accent]")).toMatchObject({
+        dataset: {
+          accent: "purple",
+          corner: "rounded",
+          density: "medium",
+          mode: "light",
+          theme: "vuu-theme",
+        },
+      });
+    },
+  );
 
   it.each([
     [true, 1],
     [false, 0],
-  ])("routes /workspaces/:id to the workspace when workspaces is set (%s)", async (enabled, count) => {
-    window.history.replaceState(null, "", "/workspaces/trader");
-    await act(async () => {
-      root.render(
-        <PortalShell
-          remoteModules={modules}
-          title="Portal"
-          workspaces={enabled ? {} : undefined}
-        />,
-      );
-    });
-    expect(
-      container.querySelectorAll('[data-testid="portal-workspace"]'),
-    ).toHaveLength(count);
-    expect(
-      container.querySelectorAll('[data-provider="workspaces"]'),
-    ).toHaveLength(count);
-  });
+  ])(
+    "routes /workspaces/:id to the workspace when workspaces is set (%s)",
+    async (enabled, count) => {
+      window.history.replaceState(null, "", "/workspaces/trader");
+      await act(async () => {
+        root.render(
+          <PortalShell
+            remoteModules={modules}
+            title="Portal"
+            workspaces={enabled ? {} : undefined}
+          />,
+        );
+      });
+      expect(
+        container.querySelectorAll('[data-testid="portal-workspace"]'),
+      ).toHaveLength(count);
+      expect(
+        container.querySelectorAll('[data-provider="workspaces"]'),
+      ).toHaveLength(count);
+    },
+  );
 
   it("passes workspaces.palette to the workspace's Panels palette", async () => {
     window.history.replaceState(null, "", "/workspaces/markets");
@@ -432,10 +450,6 @@ describe("Portal and window shells", () => {
   });
 
   it("uses an injected data source provider instead of the remote default", async () => {
-    const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
-      <div data-provider="local">{children}</div>
-    );
-
     await act(async () => {
       root.render(
         <PortalShell
@@ -512,9 +526,6 @@ describe("Portal and window shells", () => {
   });
 
   it("supports independent WindowShell theme and data-source configuration", async () => {
-    const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
-      <div data-provider="local">{children}</div>
-    );
     await act(async () => {
       root.render(
         <WindowShell
@@ -622,26 +633,23 @@ describe("Portal and window shells", () => {
     ).toBe("dark");
   });
 
-  it.each([
-    "/users/admin",
-    "/users/admin/*",
-  ])("supports a fresh portal deep link with module path %s", async (path) => {
-    window.history.replaceState(null, "", "/users/admin/details");
-    await act(async () => {
-      root.render(
-        <PortalShell
-          remoteModules={[{ ...modules[0], path }]}
-          title="Portal"
-        />,
-      );
-    });
-    expect(container.textContent).toContain("Module details");
-  });
+  it.each(["/users/admin", "/users/admin/*"])(
+    "supports a fresh portal deep link with module path %s",
+    async (path) => {
+      window.history.replaceState(null, "", "/users/admin/details");
+      await act(async () => {
+        root.render(
+          <PortalShell
+            remoteModules={[{ ...modules[0], path }]}
+            title="Portal"
+          />,
+        );
+      });
+      expect(container.textContent).toContain("Module details");
+    },
+  );
 
   it("forwards shared shell configuration to window routes without portal chrome", async () => {
-    const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
-      <div data-provider="local">{children}</div>
-    );
     await renderWindow("/window/1");
     await act(async () => {
       root.render(
@@ -711,15 +719,14 @@ describe("Portal and window shells", () => {
     );
   });
 
-  it.each([
-    "missing",
-    "01",
-    "https%3A%2F%2Funtrusted.example",
-  ])("does not load a remote for an unregistered module ID %s", async (id) => {
-    await renderWindow(`/window/${id}`);
-    expect(container.querySelector("output")).toBeNull();
-    expect(container.querySelector('[role="alert"]')).not.toBeNull();
-  });
+  it.each(["missing", "01", "https%3A%2F%2Funtrusted.example"])(
+    "does not load a remote for an unregistered module ID %s",
+    async (id) => {
+      await renderWindow(`/window/${id}`);
+      expect(container.querySelector("output")).toBeNull();
+      expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    },
+  );
 
   it("preserves module-relative links in a window", async () => {
     await renderWindow("/window/1");
@@ -893,14 +900,6 @@ describe("Portal and window shells", () => {
         expected,
       );
     });
-
-    const ManagedNav = ({ width }: { width?: string }) => {
-      const shellNav = usePortalShellNav();
-      useEffect(() => {
-        shellNav?.setNavWidth(width);
-      }, [shellNav, width]);
-      return null;
-    };
 
     it("lets a nav child size and animate the column", async () => {
       await act(async () => {

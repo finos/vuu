@@ -1,4 +1,4 @@
-import type { GridSettingsCodecResult, JsonValue } from "@vuu-ui/grid-layout";
+import type { GridSettingsCodecResult, JsonValue } from "@heswell/grid-layout";
 import { jsonValueWorkspaceComponentCodec } from "../workspace/workspace-component-registry";
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>

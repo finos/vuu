@@ -4,7 +4,7 @@ import {
   type TypedComponentTemplate,
   useDraggable,
   useOptionalDragContext,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
   type DragEvent,
@@ -74,7 +74,7 @@ export interface PortalDragSourceOptions {
  *
  * Must be used under `PortalDragSourceScope` (or within a GridLayout), under
  * the workspace's `GridLayoutProvider`. Remote modules that use it must share
- * `@vuu-ui/grid-layout` with the host as a Module Federation singleton.
+ * `@heswell/grid-layout` with the host as a Module Federation singleton.
  */
 export const usePortalDragSource = (
   template: TypedComponentTemplate,

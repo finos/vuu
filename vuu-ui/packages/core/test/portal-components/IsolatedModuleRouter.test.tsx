@@ -56,6 +56,21 @@ const AdminModule = () => {
   );
 };
 
+const BlockingModule = () => {
+  const blocker = useBlocker(true);
+  const navigate = useNavigate();
+  return (
+    <>
+      <span data-testid="blocker-state">{blocker.state}</span>
+      <button
+        data-testid="navigate-away"
+        onClick={() => navigate("/admin/users")}
+        type="button"
+      />
+    </>
+  );
+};
+
 describe("IsolatedModuleRouter", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -169,20 +184,6 @@ describe("IsolatedModuleRouter", () => {
   });
 
   it("supports data router APIs such as useBlocker", () => {
-    const BlockingModule = () => {
-      const blocker = useBlocker(true);
-      const navigate = useNavigate();
-      return (
-        <>
-          <span data-testid="blocker-state">{blocker.state}</span>
-          <button
-            data-testid="navigate-away"
-            onClick={() => navigate("/admin/users")}
-            type="button"
-          />
-        </>
-      );
-    };
     const router = createMemoryRouter(
       [
         {

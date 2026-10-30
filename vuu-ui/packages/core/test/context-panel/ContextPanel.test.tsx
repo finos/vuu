@@ -27,6 +27,49 @@ const Consumer = () => {
   return null;
 };
 
+let slot: ContextPanelSlot | undefined;
+
+const SlotProbe = () => {
+  slot = useContextPanelSlot();
+  return null;
+};
+
+const OwnerContext = createContext("shell");
+const OwnerValue = () => <p data-content>{useContext(OwnerContext)}</p>;
+
+const showers: Record<string, ShowContextPanel> = {};
+const hiders: Record<string, (() => void) | undefined> = {};
+const Owner = ({ name }: { name: string }) => {
+  showers[name] = useContextPanel();
+  hiders[name] = useHideContextPanel();
+  return null;
+};
+
+let setShowModuleB: (show: boolean) => void = () => undefined;
+const Shell = ({ placementB }: { placementB?: "module" }) => {
+  const [showModuleB, setShow] = useState(true);
+  setShowModuleB = setShow;
+  return (
+    <ShellContextPanelProvider>
+      <OwnerContext.Provider value="module-a">
+        <SlotContextPanelProvider>
+          <Owner name="a" />
+        </SlotContextPanelProvider>
+      </OwnerContext.Provider>
+      {showModuleB ? (
+        <div data-module-b>
+          <OwnerContext.Provider value="module-b">
+            <ModuleContextPanel placement={placementB}>
+              <Owner name="b" />
+            </ModuleContextPanel>
+          </OwnerContext.Provider>
+        </div>
+      ) : null}
+      <ShellContextPanel />
+    </ShellContextPanelProvider>
+  );
+};
+
 describe("ContextPanelProvider", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -183,11 +226,6 @@ describe("ShellContextPanelProvider", () => {
   });
 
   describe("navigation", () => {
-    let slot: ContextPanelSlot | undefined;
-    const SlotProbe = () => {
-      slot = useContextPanelSlot();
-      return null;
-    };
     const renderSlot = () =>
       act(() =>
         root.render(
@@ -246,11 +284,6 @@ describe("ShellContextPanelProvider", () => {
   });
 
   describe("placement", () => {
-    let slot: ContextPanelSlot | undefined;
-    const SlotProbe = () => {
-      slot = useContextPanelSlot();
-      return null;
-    };
     const renderSlot = (defaultPlacement?: "overlay" | "inline") =>
       act(() =>
         root.render(
@@ -329,42 +362,6 @@ describe("ShellContextPanelProvider", () => {
   });
 
   describe("content owners", () => {
-    const OwnerContext = createContext("shell");
-    const OwnerValue = () => <p data-content>{useContext(OwnerContext)}</p>;
-
-    const showers: Record<string, ShowContextPanel> = {};
-    const hiders: Record<string, (() => void) | undefined> = {};
-    const Owner = ({ name }: { name: string }) => {
-      showers[name] = useContextPanel();
-      hiders[name] = useHideContextPanel();
-      return null;
-    };
-
-    let setShowModuleB: (show: boolean) => void = () => undefined;
-    const Shell = ({ placementB }: { placementB?: "module" }) => {
-      const [showModuleB, setShow] = useState(true);
-      setShowModuleB = setShow;
-      return (
-        <ShellContextPanelProvider>
-          <OwnerContext.Provider value="module-a">
-            <SlotContextPanelProvider>
-              <Owner name="a" />
-            </SlotContextPanelProvider>
-          </OwnerContext.Provider>
-          {showModuleB ? (
-            <div data-module-b>
-              <OwnerContext.Provider value="module-b">
-                <ModuleContextPanel placement={placementB}>
-                  <Owner name="b" />
-                </ModuleContextPanel>
-              </OwnerContext.Provider>
-            </div>
-          ) : null}
-          <ShellContextPanel />
-        </ShellContextPanelProvider>
-      );
-    };
-
     const shellContent = () =>
       container.querySelector("#vuu-shell-context [data-content]");
 

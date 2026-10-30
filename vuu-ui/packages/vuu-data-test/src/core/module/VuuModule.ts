@@ -610,7 +610,7 @@ export abstract class VuuModule<T extends string = string>
         const action = sessionRow[sessionTable.map.vuuAction];
         if (action === "addRow") {
           sessionTable.delete(key);
-          return { type: "SUCCESS_RESULT", data: undefined };
+          return { type: "SUCCESS_RESULT", data: { wasInsertedRow: true } };
         }
         if (action === "deleteRow" || action === "editCell") {
           const sourceRow = sourceTable.findByKey(key);
