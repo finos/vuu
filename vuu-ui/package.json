@@ -88,7 +88,7 @@
     "@testing-library/dom": "^9.0.0",
     "@types/jsdom": "^21.1.2",
     "@types/serve-handler": "^6.1.4",
-    "@vitejs/plugin-react": "4.3.4",
+    "@vitejs/plugin-react": "4.7.0",
     "babel-plugin-istanbul": "^8.0.0",
     "chalk": "^5.2.0",
     "esbuild": "0.27.2",
