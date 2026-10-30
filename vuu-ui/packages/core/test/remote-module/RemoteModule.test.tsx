@@ -31,9 +31,13 @@ const ConnectionProbe = () => (
   <div>connection:{useOptionalVuuConnectionId() ?? "none"}</div>
 );
 
+const PassThroughDataSourceProvider: LocalVuuServer["DataSourceProvider"] = ({
+  children,
+}) => children;
+
 const localServer = (connectionId: string): LocalVuuServer => ({
   connectionId,
-  DataSourceProvider: ({ children }) => children,
+  DataSourceProvider: PassThroughDataSourceProvider,
 });
 
 const RemoteModuleRoute = () => {
@@ -51,6 +55,45 @@ const RemoteModuleRoute = () => {
         />
       </Suspense>
     </>
+  );
+};
+
+const StatefulRemote = () => {
+  const [mountedAt] = useState(() => Math.random());
+  return <div data-mounted-at={mountedAt}>Stateful remote</div>;
+};
+
+const StatefulRoute = () => {
+  const navigate = useNavigate();
+  return (
+    <>
+      <button onClick={() => navigate("/other")} type="button">
+        Navigate
+      </button>
+      <Suspense fallback="Loading">
+        <RemoteModule
+          mfComponent="Stateful"
+          mfScope="stateful"
+          mfUrl="http://localhost:5009"
+        />
+      </Suspense>
+    </>
+  );
+};
+
+const FirstExport = () => <div>First example</div>;
+const SecondExport = () => <div>Second example</div>;
+
+const ContextPanelRemote = () => {
+  const showContextPanel = useContextPanel();
+  return (
+    <button
+      data-show-context-panel
+      onClick={() => showContextPanel(<ConnectionProbe />, "Settings")}
+      type="button"
+    >
+      Settings
+    </button>
   );
 };
 
@@ -233,29 +276,7 @@ describe("RemoteModule", () => {
   });
 
   it("keeps a working module mounted when the location changes", async () => {
-    const StatefulRemote = () => {
-      const [mountedAt] = useState(() => Math.random());
-      return <div data-mounted-at={mountedAt}>Stateful remote</div>;
-    };
     vi.mocked(loadRemote).mockResolvedValue({ default: StatefulRemote });
-
-    const StatefulRoute = () => {
-      const navigate = useNavigate();
-      return (
-        <>
-          <button onClick={() => navigate("/other")} type="button">
-            Navigate
-          </button>
-          <Suspense fallback="Loading">
-            <RemoteModule
-              mfComponent="Stateful"
-              mfScope="stateful"
-              mfUrl="http://localhost:5009"
-            />
-          </Suspense>
-        </>
-      );
-    };
 
     await act(async () => {
       root.render(
@@ -281,8 +302,8 @@ describe("RemoteModule", () => {
   describe("mfExport", () => {
     beforeEach(() => {
       vi.mocked(loadRemote).mockResolvedValue({
-        First: () => <div>First example</div>,
-        Second: () => <div>Second example</div>,
+        First: FirstExport,
+        Second: SecondExport,
       });
     });
 
@@ -334,19 +355,6 @@ describe("RemoteModule", () => {
   });
 
   describe("context panel", () => {
-    const ContextPanelRemote = () => {
-      const showContextPanel = useContextPanel();
-      return (
-        <button
-          data-show-context-panel
-          onClick={() => showContextPanel(<ConnectionProbe />, "Settings")}
-          type="button"
-        >
-          Settings
-        </button>
-      );
-    };
-
     const renderInShell = async (
       mfUrl: string,
       props: Partial<Parameters<typeof RemoteModule>[0]> = {},

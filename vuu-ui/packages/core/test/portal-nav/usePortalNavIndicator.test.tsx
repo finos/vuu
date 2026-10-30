@@ -29,16 +29,17 @@ const notification = (
   title: id,
 });
 
+let result: PortalNavIndicator | undefined;
+
+const Probe = ({ moduleIds }: { moduleIds: string[] }) => {
+  result = usePortalNavIndicator(moduleIds);
+  return null;
+};
+
 describe("usePortalNavIndicator", () => {
   let container: HTMLDivElement;
   let root: Root;
   let store: NotificationStore;
-  let result: PortalNavIndicator | undefined;
-
-  const Probe = ({ moduleIds }: { moduleIds: string[] }) => {
-    result = usePortalNavIndicator(moduleIds);
-    return null;
-  };
 
   const render = (moduleIds: string[], withStore = true) =>
     act(async () =>

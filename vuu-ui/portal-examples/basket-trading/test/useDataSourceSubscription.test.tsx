@@ -158,12 +158,16 @@ describe("useDataSourceSubscription", () => {
   });
 });
 
+const ScopeProbe = ({ onScope }: { onScope: (scope: string) => void }) => {
+  onScope(useBasketSessionScope());
+  return null;
+};
+
 describe("useBasketSessionScope", () => {
   it("scopes session data sources to the portal module instance", () => {
     const scopes: string[] = [];
-    const Probe = () => {
-      scopes.push(useBasketSessionScope());
-      return null;
+    const onScope = (scope: string) => {
+      scopes.push(scope);
     };
     const container = document.createElement("div");
     const root = createRoot(container);
@@ -171,10 +175,10 @@ describe("useBasketSessionScope", () => {
       root.render(
         <>
           <PortalModuleInstanceContext.Provider value="item-1">
-            <Probe />
+            <ScopeProbe onScope={onScope} />
           </PortalModuleInstanceContext.Provider>
           <PortalModuleInstanceContext.Provider value="item-2">
-            <Probe />
+            <ScopeProbe onScope={onScope} />
           </PortalModuleInstanceContext.Provider>
         </>,
       );

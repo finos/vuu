@@ -53,20 +53,21 @@ const schema: TableSchema = {
   ],
 };
 
+let resource: AdminTableResource;
+const Harness = ({
+  search = "",
+  name = "users",
+}: {
+  search?: string;
+  name?: AdminTableName;
+}) => {
+  resource = useAdminTable(name, { search });
+  return <p>{resource.error ?? (resource.loading ? "Loading" : "Ready")}</p>;
+};
+
 describe("admin data source lifecycle", () => {
   let root: Root;
   let container: HTMLDivElement;
-  let resource: AdminTableResource;
-  const Harness = ({
-    search = "",
-    name = "users",
-  }: {
-    search?: string;
-    name?: AdminTableName;
-  }) => {
-    resource = useAdminTable(name, { search });
-    return <p>{resource.error ?? (resource.loading ? "Loading" : "Ready")}</p>;
-  };
   beforeEach(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     mocks.getTableSchema.mockReset().mockResolvedValue(schema);
@@ -121,13 +122,13 @@ describe("admin data source lifecycle", () => {
     await act(async () => root.render(<Harness name="group_roles" />));
     expect(mocks.sources[0].props.baseFilterSpec).toBeUndefined();
   });
-  it.each([
-    "clients",
-    "roles",
-  ] as const)("makes every %s available without client-prefix filtering", async (name) => {
-    await act(async () => root.render(<Harness name={name} />));
-    expect(mocks.sources[0].props.baseFilterSpec).toBeUndefined();
-  });
+  it.each(["clients", "roles"] as const)(
+    "makes every %s available without client-prefix filtering",
+    async (name) => {
+      await act(async () => root.render(<Harness name={name} />));
+      expect(mocks.sources[0].props.baseFilterSpec).toBeUndefined();
+    },
+  );
   it("reports missing client scope metadata rather than creating an unfiltered relationship source", async () => {
     await act(async () => root.render(<Harness name="user_group_roles" />));
     expect(mocks.sources).toHaveLength(0);

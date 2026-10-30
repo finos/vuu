@@ -18,7 +18,7 @@ import {
   type GridLayoutDocument,
   GridLayoutProvider,
   type TypedComponentTemplate,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { useMemo, useState } from "react";
 import { ordersIcon, positionsIcon } from "./portal-icons";
 

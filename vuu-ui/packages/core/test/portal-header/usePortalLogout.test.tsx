@@ -15,6 +15,15 @@ import {
 } from "../../src/persistence";
 import { usePortalLogout } from "../../src/portal-header/usePortalLogout";
 
+const LogoutProbe = ({
+  onLogout,
+}: {
+  onLogout: (logout: () => Promise<void>) => void;
+}) => {
+  onLogout(usePortalLogout());
+  return null;
+};
+
 describe("usePortalLogout", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -50,14 +59,14 @@ describe("usePortalLogout", () => {
     });
 
     let doLogout: () => Promise<void> = async () => undefined;
-    const Probe = () => {
-      doLogout = usePortalLogout();
-      return null;
-    };
     await act(async () => {
       root.render(
         <PortalPersistenceProvider service={service}>
-          <Probe />
+          <LogoutProbe
+            onLogout={(logout) => {
+              doLogout = logout;
+            }}
+          />
         </PortalPersistenceProvider>,
       );
     });

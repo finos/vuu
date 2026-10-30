@@ -26,14 +26,22 @@ const notification = (id: string, moduleId: string): PortalNotification => ({
   title: `title ${id}`,
 });
 
+const Probe = ({
+  onApi,
+}: {
+  onApi: (api: PortalNotificationsAPI | undefined) => void;
+}) => {
+  onApi(usePortalNotifications());
+  return null;
+};
+
 describe("WindowShell notifications", () => {
   let container: HTMLDivElement;
   let root: Root;
   let api: PortalNotificationsAPI | undefined;
 
-  const Probe = () => {
-    api = usePortalNotifications();
-    return null;
+  const captureApi = (value: PortalNotificationsAPI | undefined) => {
+    api = value;
   };
 
   beforeEach(() => {
@@ -66,7 +74,7 @@ describe("WindowShell notifications", () => {
       root.render(
         <AuthenticationProvider mode="local" registry={{ modules }}>
           <WindowShell openModuleId="m0" persistence={false}>
-            <Probe />
+            <Probe onApi={captureApi} />
           </WindowShell>
         </AuthenticationProvider>,
       ),
@@ -86,7 +94,7 @@ describe("WindowShell notifications", () => {
       root.render(
         <AuthenticationProvider mode="local" registry={{ modules }}>
           <WindowShell notifications={false} persistence={false}>
-            <Probe />
+            <Probe onApi={captureApi} />
           </WindowShell>
         </AuthenticationProvider>,
       ),

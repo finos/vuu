@@ -2,7 +2,7 @@ import {
   GridLayout,
   type GridLayoutDocument,
   GridLayoutProvider,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import {
   panelComponent,
   showcaseDocument,

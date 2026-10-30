@@ -1,7 +1,7 @@
 import type {
   GridComponentSettingsCodec,
   JsonValue,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { featureFromJson, type DynamicFeatureProps } from "@vuu-ui/vuu-utils";
 import { Feature } from "../feature";
 import type { WorkspaceComponentRegistration } from "@vuu-ui/core";

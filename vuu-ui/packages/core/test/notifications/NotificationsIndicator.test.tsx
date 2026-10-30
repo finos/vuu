@@ -41,18 +41,18 @@ const notification = (
 // the runner. The test of hiding advances fake timers instead.
 const TICKER_MS = 60_000;
 
+let api: PortalNotificationsAPI | undefined;
+let presentation: PortalNotificationsPresentation | undefined;
+
+const Probe = () => {
+  api = usePortalNotifications();
+  presentation = useNotificationPresentation();
+  return null;
+};
+
 describe("NotificationsIndicator", () => {
   let container: HTMLDivElement;
   let root: Root;
-  let api: PortalNotificationsAPI | undefined;
-  let presentation: PortalNotificationsPresentation | undefined;
-
-  const Probe = () => {
-    api = usePortalNotifications();
-    presentation = useNotificationPresentation();
-    return null;
-  };
-
   const render = (
     content = <NotificationsIndicator tickerDurationMs={TICKER_MS} />,
   ) =>

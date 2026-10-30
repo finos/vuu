@@ -280,6 +280,19 @@ describe("RemoteModule saved state", () => {
   });
 });
 
+let captured: PortalPersistenceService | undefined;
+const Probe = () => {
+  captured = useOptionalPortalPersistence();
+  const store = useOptionalApplicationState();
+  const { load, save } = usePersistedState();
+  const value = load<string[]>("nav/expanded") ?? [];
+  return (
+    <button type="button" onClick={() => save(["/Orders"], "nav/expanded")}>
+      {store?.applicationKey}:{value.join(",")}
+    </button>
+  );
+};
+
 describe("PortalPersistenceRoot", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -298,19 +311,6 @@ describe("PortalPersistenceRoot", () => {
     vi.restoreAllMocks();
     vi.useRealTimers();
   });
-
-  let captured: PortalPersistenceService | undefined;
-  const Probe = () => {
-    captured = useOptionalPortalPersistence();
-    const store = useOptionalApplicationState();
-    const { load, save } = usePersistedState();
-    const value = load<string[]>("nav/expanded") ?? [];
-    return (
-      <button type="button" onClick={() => save(["/Orders"], "nav/expanded")}>
-        {store?.applicationKey}:{value.join(",")}
-      </button>
-    );
-  };
 
   it("provides a service and the portal's own store, defaulting to localStorage", async () => {
     const storage = new MemoryStorage();
