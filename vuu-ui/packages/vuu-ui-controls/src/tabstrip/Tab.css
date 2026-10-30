@@ -120,7 +120,6 @@
 }
 
 .vuuTab:before {
-  content: var(--tab-before-content, none);
   content: "";
   background: var(--tab-before-background);
   height: var(--tab-before-height);
