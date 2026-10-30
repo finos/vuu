@@ -67,7 +67,7 @@
       "settings": {},
       "extensions": [
         "Orta.vscode-jest",
-        "dbaeumer.vscode-eslint",
+        "biomejs.biome",
         "ms-azuretools.vscode-docker",
         "ms-python.python",
         "vscjava.vscode-java-pack"
