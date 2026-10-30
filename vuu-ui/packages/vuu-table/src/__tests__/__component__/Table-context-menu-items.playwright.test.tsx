@@ -113,7 +113,7 @@ test.describe("WHEN context menu with nested menus is invoked from table cell", 
   });
 
   test.describe("WHEN menu is navigated with keyboard", () => {
-    test("THEN arrow keys move focus between items, skipping disabled items", async ({
+    test("THEN arrow keys move focus between items, including disabled items, which cannot be activated", async ({
       mount,
       page,
     }) => {
@@ -126,11 +126,14 @@ test.describe("WHEN context menu with nested menus is invoked from table cell", 
       await menu.assertFocusedMenuItem("Filter");
       await menu.press("ArrowDown");
       await menu.assertFocusedMenuItem("Sort");
-      // Delete row is disabled, so focus remains on Sort
+      // Delete row is disabled, but can still be focused so it can be discovered
       await menu.press("ArrowDown");
-      await menu.assertFocusedMenuItem("Sort");
+      await menu.assertFocusedMenuItem("Delete row");
+      await menu.press("Enter");
+      await menu.assertFocusedMenuItem("Delete row");
+      await expect(page.getByTestId("menu-action")).toHaveText("");
       await menu.press("ArrowUp");
-      await menu.assertFocusedMenuItem("Filter");
+      await menu.assertFocusedMenuItem("Sort");
     });
 
     test("THEN ArrowRight opens sub menu, ArrowLeft closes it", async ({

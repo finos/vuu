@@ -6,7 +6,7 @@
 }
 
 .vuuBasketSpreadCell-track {
-    background-color: var(--vuu-color-gray-05);
+    background-color: var(--salt-color-gray-100);
     border-radius: 4px;
     display: flex;
     height: 4px;
@@ -17,13 +17,13 @@
 
 .vuuBasketSpreadCell-track-end,
 .vuuBasketSpreadCell-track-start {
-    background-color: var(--vuu-color-gray-42);
+    background-color: var(--salt-color-gray-400);
     border-radius: 4px;
     width: 4px;
 }
 
 .vuuBasketSpreadCell-pointer {
-  border-top: 6px solid var(--vuu-color-green-60);
+  border-top: 6px solid var(--salt-color-green-600);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   height: 0; 

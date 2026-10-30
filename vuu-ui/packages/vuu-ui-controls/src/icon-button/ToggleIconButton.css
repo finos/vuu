@@ -31,7 +31,7 @@
 .vuuTableGroupCell:hover {
   .vuuToggleIconButton {
     .vuuIcon:after {
-      --vuu-icon-color: var(--salt-palette-interact-cta-background-hover);
+      --vuu-icon-color: var(--salt-sentiment-accent-background);
     }
   }
 }

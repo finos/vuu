@@ -117,7 +117,7 @@
 
     .vuuToastNotification-header {
         font-size: var(--vuuToast-header-fontSize, var(--salt-text-h3-fontSize));
-        font-weight: var(--salt-text-display1-fontWeight-strong);
+        font-weight: var(--salt-text-display-fontWeight-bolder);
         grid-area: toast-header;
         justify-self: start;
         line-height: var(--salt-text-h3-lineHeight);

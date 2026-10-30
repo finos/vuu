@@ -3,6 +3,40 @@ import { test, expect } from "../../../../../playwright/fixtures";
 
 
 test.describe("Given two TabbedFilterContainers with different values for filterProvider", () => {
+  test("Salt core tabs support keyboard navigation without changing another container", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/TabbedFilterContainer/MultipleTabbedFilterContainers");
+
+    const firstContainer = page.getByTestId("tc-1");
+    const secondContainer = page.locator(".vuuTabbedFilterContainer").nth(1);
+    const adHocTab = firstContainer.getByRole("tab", { name: "Ad hoc" });
+    const savedTab = firstContainer.getByRole("tab", { name: "Saved" });
+
+    await expect(adHocTab).toHaveAttribute("aria-selected", "true");
+    await adHocTab.focus();
+    await adHocTab.press("ArrowRight");
+    await expect(savedTab).toBeFocused();
+    await savedTab.press("Enter");
+
+    await expect(savedTab).toHaveAttribute("aria-selected", "true");
+    await expect(
+      firstContainer.getByRole("tabpanel", { name: "Saved" }),
+    ).toBeVisible();
+    await expect(
+      secondContainer.getByRole("tab", { name: "Ad hoc" }),
+    ).toHaveAttribute("aria-selected", "true");
+
+    await savedTab.press("ArrowLeft");
+    await expect(adHocTab).toBeFocused();
+    await adHocTab.press("Enter");
+    await expect(adHocTab).toHaveAttribute("aria-selected", "true");
+    await expect(
+      firstContainer.getByRole("tabpanel", { name: "Ad hoc" }),
+    ).toBeVisible();
+  });
+
   test(`When a filter value is entered 
       Then the local clear and save buttons are enabled
       Then when clear is pressed
@@ -51,8 +85,9 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     await option.click();
     await expect(combobox).toHaveValue("CAD");
 
-    const tab = page.getByTestId("tc-1").getByRole("tab").nth(1);
+    const tab = page.getByTestId("tc-1").getByRole("tab", { name: "Saved" });
     await tab.click();
+    await expect(tab).toHaveAttribute("aria-selected", "true");
     await expect(
       page.getByTestId("tc-1").locator(".vuuFilterPillNext"),
     ).toHaveCount(0);

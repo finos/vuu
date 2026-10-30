@@ -16,7 +16,7 @@
 
 
 .vuuSessionEditingForm-fieldValue.vuuReadOnly {
-    font-weight: var(--salt-text-label-fontWeight-strong);
+    font-weight: var(--salt-text-label-fontWeight-bolder);
 }
 
 .vuuSessionEditingForm-buttonbar {

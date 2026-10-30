@@ -13,7 +13,7 @@
 .vuuTableCell.docs-key-column,
 .vuuTableHeaderCell.docs-key-column {
   background-color: var(--salt-container-secondary-background);
-  font-weight: var(--salt-text-fontWeight-strong);
+  font-weight: var(--salt-text-fontWeight-bolder);
 }
 
 .docs-custom-table {

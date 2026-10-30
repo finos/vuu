@@ -1,10 +1,11 @@
 import {
-  TabListNext,
-  TabNext,
-  TabNextPanel,
-  TabNextTrigger,
-  TabsNext,
-} from "@salt-ds/lab";
+  TabBar,
+  TabList,
+  Tab,
+  TabPanel,
+  TabTrigger,
+  Tabs,
+} from "@salt-ds/core";
 import cx from "clsx";
 import type { HTMLAttributes, ReactNode } from "react";
 import { FilterContainerProps } from "../filter-container/FilterContainer";
@@ -46,16 +47,18 @@ export const TabbedFilterContainer = ({
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
-      <TabsNext defaultValue="ad-hoc-filter">
-        <TabListNext appearance="transparent">
-          <TabNext value="ad-hoc-filter" key="ad-hoc-filter">
-            <TabNextTrigger>{filterTabLabel}</TabNextTrigger>
-          </TabNext>
-          <TabNext value="saved-filters" key="saved-filters">
-            <TabNextTrigger>{savedFilterLabel}</TabNextTrigger>
-          </TabNext>
-        </TabListNext>
-        <TabNextPanel value="ad-hoc-filter" key="ad-hoc-filter">
+      <Tabs defaultValue="ad-hoc-filter">
+        <TabBar>
+          <TabList appearance="transparent">
+            <Tab value="ad-hoc-filter" key="ad-hoc-filter">
+              <TabTrigger>{filterTabLabel}</TabTrigger>
+            </Tab>
+            <Tab value="saved-filters" key="saved-filters">
+              <TabTrigger>{savedFilterLabel}</TabTrigger>
+            </Tab>
+          </TabList>
+        </TabBar>
+        <TabPanel value="ad-hoc-filter" key="ad-hoc-filter">
           <FilterPanel
             filter={filter}
             filterProviderKey={filterProviderKey}
@@ -64,14 +67,14 @@ export const TabbedFilterContainer = ({
           >
             {children}
           </FilterPanel>
-        </TabNextPanel>
-        <TabNextPanel value="saved-filters" key="saved-filters">
+        </TabPanel>
+        <TabPanel value="saved-filters" key="saved-filters">
           <SavedFilterPanel
             {...SavedFilterPanelProps}
             filterProviderKey={filterProviderKey}
           />
-        </TabNextPanel>
-      </TabsNext>
+        </TabPanel>
+      </Tabs>
     </div>
   );
 };

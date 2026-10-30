@@ -3,8 +3,8 @@
 }
 
 .vuuBasketProgressCell-progressBar {
-    background-color: var(--vuu-color-green-60-fade-30);
-    border-right: solid 2px var(--vuu-color-green-60);
+    background-color: var(--salt-color-green-600-40a);
+    border-right: solid 2px var(--salt-color-green-600);
     display: inline-block;
     height: 20px;
     left: 0;
