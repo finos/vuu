@@ -12,11 +12,11 @@ import {
 import { Button } from "@salt-ds/core";
 import {
   FocusEventHandler,
-  SyntheticEvent,
   useCallback,
   useMemo,
   useRef,
   useState,
+  type ChangeEvent,
 } from "react";
 import { UnsavedChangesReport } from "./UnsavedChangesReport";
 import {
@@ -273,7 +273,7 @@ export const useEditForm = ({
   );
 
   const handleFieldChange = useCallback(
-    (evt: SyntheticEvent<HTMLInputElement>) => {
+    (evt: ChangeEvent<HTMLInputElement>) => {
       const { current: fieldName } = focusedFieldRef;
       if (fieldName) {
         const input = queryClosest<HTMLInputElement>(evt.target, "input", true);

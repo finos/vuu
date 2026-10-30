@@ -1,5 +1,5 @@
 import { Prompt, type PromptProps } from "@vuu-ui/vuu-ui-controls";
-import { CSSProperties, FormEvent, ReactNode, useMemo, useRef } from "react";
+import { CSSProperties, ReactNode, useMemo, useRef, type ChangeEvent } from "react";
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 
 const PromptTemplate = ({
@@ -164,10 +164,10 @@ export const UserInputCapture = () => {
   const firstName = useRef("");
   const lastName = useRef("");
 
-  const onChangeFirstName = (e: FormEvent<HTMLInputElement>) => {
+  const onChangeFirstName = (e: ChangeEvent<HTMLInputElement>) => {
     firstName.current = (e.target as HTMLInputElement).value;
   };
-  const onChangeLastName = (e: FormEvent<HTMLInputElement>) => {
+  const onChangeLastName = (e: ChangeEvent<HTMLInputElement>) => {
     lastName.current = (e.target as HTMLInputElement).value;
   };
 

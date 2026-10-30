@@ -9,11 +9,11 @@ import { CommitHandler, getTypedValue, queryClosest } from "@vuu-ui/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 import {
   FocusEventHandler,
-  SyntheticEvent,
   useCallback,
   useMemo,
   useRef,
   useState,
+  type ChangeEvent,
 } from "react";
 import { useEditableCell } from "../useEditableCell";
 
@@ -132,7 +132,7 @@ export const useBulkEditRow = ({
   }, []);
 
   const handleChange = useCallback(
-    (evt: SyntheticEvent<HTMLInputElement>) => {
+    (evt: ChangeEvent<HTMLInputElement>) => {
       const { current: fieldName } = focusedFieldRef;
       if (fieldName) {
         const input = queryClosest<HTMLInputElement>(evt.target, "input", true);

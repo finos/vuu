@@ -8,7 +8,7 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { CommitHandler, getValueFormatter } from "@vuu-ui/vuu-utils";
-import { FormEventHandler, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ChangeEventHandler } from "react";
 import { dataRowFactory } from "@vuu-ui/vuu-table/src/data-row/DataRow";
 
 const timestamp = 0;
@@ -54,7 +54,7 @@ const TableCellTemplate = ({
   // prettier-ignore
   const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, 100.00]));
 
-  const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
     [],
   );
