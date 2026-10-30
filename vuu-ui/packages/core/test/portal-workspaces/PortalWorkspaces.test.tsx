@@ -1,4 +1,4 @@
-import type { GridLayoutDocument } from "@vuu-ui/grid-layout";
+import type { GridLayoutDocument } from "@heswell/grid-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";

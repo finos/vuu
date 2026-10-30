@@ -2,7 +2,7 @@ import {
   GridLayout,
   type GridLayoutDocument,
   GridLayoutProvider,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -195,19 +195,19 @@ const dispatchDrag = (
   act(() => element.dispatchEvent(event));
 };
 
+let openPanelApi: ReturnType<typeof useOpenPanel>;
+
+const CaptureOpenPanel = () => {
+  openPanelApi = useOpenPanel();
+  return null;
+};
+
 describe("PanelsPalette", () => {
   let container: HTMLDivElement;
   let root: Root;
   let persistence: PortalPersistenceService;
   let appState: ApplicationStateStore;
   let documents: GridLayoutDocument[];
-  let openPanelApi: ReturnType<typeof useOpenPanel>;
-
-  const CaptureOpenPanel = () => {
-    openPanelApi = useOpenPanel();
-    return null;
-  };
-
   const render = async ({
     defaultOpen = true,
     defaultPinned,

@@ -55,23 +55,23 @@ const notification = (id: string, moduleId: string): PortalNotification => ({
   title: `title ${id}`,
 });
 
+let api: PortalNotificationsAPI | undefined;
+let presentation: PortalNotificationsPresentation | undefined;
+let handlers: NavContextMenuHandlers;
+
+const Probe = () => {
+  api = usePortalNotifications();
+  presentation = useNotificationPresentation();
+  handlers = useNavContextMenu({
+    item: { moduleId: "m0", path: "/m0", title: "M0" },
+    targetWindow: window,
+  });
+  return null;
+};
+
 describe("useNavContextMenu notifications", () => {
   let container: HTMLDivElement;
   let root: Root;
-  let api: PortalNotificationsAPI | undefined;
-  let presentation: PortalNotificationsPresentation | undefined;
-  let handlers: NavContextMenuHandlers;
-
-  const Probe = () => {
-    api = usePortalNotifications();
-    presentation = useNotificationPresentation();
-    handlers = useNavContextMenu({
-      item: { moduleId: "m0", path: "/m0", title: "M0" },
-      targetWindow: window,
-    });
-    return null;
-  };
-
   const render = (withNotifications: boolean) =>
     act(async () =>
       root.render(

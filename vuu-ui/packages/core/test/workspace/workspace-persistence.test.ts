@@ -1,4 +1,4 @@
-import type { GridLayoutDocument } from "@vuu-ui/grid-layout";
+import type { GridLayoutDocument } from "@heswell/grid-layout";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   LocalWorkspacePersistenceService,

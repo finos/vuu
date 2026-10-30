@@ -1,4 +1,4 @@
-import { GridLayout, GridLayoutItem } from "@vuu-ui/grid-layout";
+import { GridLayout, GridLayoutItem } from "@heswell/grid-layout";
 import { ApplicationSettingsContextPanel } from "../context-panel";
 import type { ShellLayoutTemplateHook } from "../useShellLayout";
 

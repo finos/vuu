@@ -5,7 +5,7 @@ import {
   TrackSize,
   useGridLayoutDispatch,
   useGridSnapshot,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
   CSSProperties,

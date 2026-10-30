@@ -5,7 +5,7 @@ import {
   toJsonValue,
   type GridLayoutDocument,
   type JsonValue,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 
 export const WORKSPACE_SNAPSHOT_VERSION = 1;
 export const APPLICATION_SESSION_VERSION = 1;
