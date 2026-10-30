@@ -9,7 +9,6 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { Option, useForkRef } from "@salt-ds/core";
 import {
-  FormEvent,
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
@@ -20,6 +19,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ChangeEvent,
 } from "react";
 import { ExpandoCombobox } from "../ExpandoCombobox";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
@@ -125,7 +125,7 @@ export const FilterClauseValueEditorText = forwardRef(
     }, [table, column, valueInputValue, getSuggestions, isMultiValue]);
 
     const handleInputChange = useCallback(
-      (evt: FormEvent<HTMLInputElement>) => {
+      (evt: ChangeEvent<HTMLInputElement>) => {
         const { value } = evt.target as HTMLInputElement;
         setValueInputValue(value);
         // we want to set the filterclause status to valid, but not trigger focus change
