@@ -1,8 +1,8 @@
 diff --git a/node_modules/@dnd-kit/dom/utilities.js b/node_modules/@dnd-kit/dom/utilities.js
-index 107b71f..34b3c79 100644
+index 88411f0..08028b0 100644
 --- a/node_modules/@dnd-kit/dom/utilities.js
 +++ b/node_modules/@dnd-kit/dom/utilities.js
-@@ -760,7 +760,7 @@ function computeStyles(element) {
+@@ -866,7 +866,7 @@ function computeStyles(element) {
  
  // src/utilities/scroll/isFixed.ts
  function isFixed(node, computedStyle = getComputedStyles(node, true)) {
