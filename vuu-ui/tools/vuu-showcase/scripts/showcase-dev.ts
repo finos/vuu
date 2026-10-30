@@ -107,7 +107,7 @@ const server = await createServer({
     target: "esnext",
   },
   optimizeDeps: {
-    include: ["@salt-ds/core", "@salt-ds/lab", "@salt-ds/icons"],
+    include: ["@salt-ds/core", "@salt-ds/icons"],
   },
   root: __dirname,
   plugins: [cssInline(), mdx(mdxOptions)],

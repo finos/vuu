@@ -31,8 +31,7 @@ The UI scripts all run from the vuu/vuu-ui directory.
 The UI uses TypeScript 7 and Salt Design System packages pinned in the workspace
 manifests. Shared TypeScript configurations use bundler module resolution.
 Use the stable tab components (`Tabs`, `TabBar`, `TabList`, `Tab`, `TabTrigger`,
-`TabPanel`, and `TabAction`) from `@salt-ds/core`; `@salt-ds/lab` is needed only
-for showcase examples of components that remain experimental.
+`TabPanel`, and `TabAction`) from `@salt-ds/core`.
 The Salt core install patch keeps rendered tab order synchronized after
 drag-and-drop reordering.
 
