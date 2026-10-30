@@ -1,7 +1,7 @@
 import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { useCallback } from "react";
-import { ECElementEvent } from "echarts";
+import type { ECElementEvent } from "echarts/core";
 import { DataSourceValue } from "./ChartSeries";
 import { ColumnMap } from "@vuu-ui/vuu-utils";
 

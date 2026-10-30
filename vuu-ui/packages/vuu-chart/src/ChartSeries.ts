@@ -51,6 +51,8 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
   #columnMap: ColumnMap = {};
   #config: ChartConfig;
   #dataExclusions: DataExclusionOptions | undefined;
+  #dataSource: DataSource;
+  #subscribed = false;
   #dataWindow = new MovingDataRowWindow(Range(0, 1000));
 
   #dates: string[] = [];
@@ -59,6 +61,9 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
   #seriesColumns: string[] = [];
 
   handleData: DataSourceSubscribeCallback = (message) => {
+    if (!this.#subscribed) {
+      return;
+    }
     if (message.type === "subscribed") {
       this.#columnMap = buildColumnMap(message.tableSchema.columns);
     } else if (message.type === "viewport-update") {
@@ -95,7 +100,36 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
     this.#config = config;
     this.#dataExclusions = dataExclusions;
     this.#palette = palette;
-    dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);
+    this.#dataSource = dataSource;
+    this.subscribe();
+  }
+
+  /**
+   * Subscribes to the DataSource. Invoked by the constructor, only needs to
+   * be invoked again after dispose.
+   */
+  subscribe() {
+    if (!this.#subscribed) {
+      this.#subscribed = true;
+      this.#dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);
+    }
+  }
+
+  /**
+   * Stops processing data from the DataSource, without unsubscribing it.
+   * Used when the DataSource is replaced, the caller may still be using
+   * the previous DataSource (e.g. as the source of an edit session).
+   */
+  detach() {
+    this.#subscribed = false;
+  }
+
+  /**
+   * Stops processing data and unsubscribes from the DataSource.
+   */
+  dispose() {
+    this.#subscribed = false;
+    this.#dataSource.unsubscribe();
   }
 
   get palette() {
