@@ -5,7 +5,7 @@ import {
   portalModuleTemplate,
   useRegisteredModules,
 } from "./portal-module-component";
-import type { TypedComponentTemplate } from "@vuu-ui/grid-layout";
+import type { TypedComponentTemplate } from "@heswell/grid-layout";
 
 export interface PaletteModule {
   /** `workspace.defaultSize` of the module, if any. */

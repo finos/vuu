@@ -2,7 +2,7 @@ import {
   GridComponentRendererRegistry,
   GridComponentSettingsRegistry,
   type GridLayoutDocument,
-} from "@vuu-ui/grid-layout";
+} from "@heswell/grid-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";

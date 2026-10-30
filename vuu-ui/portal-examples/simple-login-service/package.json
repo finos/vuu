@@ -13,13 +13,13 @@
   ],
   "type": "module",
   "devDependencies": {
-    "@vuu-ui/portal-build": "^0.3.0",
+    "@vuu-ui/portal-build": "0.4.0",
     "rsbuild-plugin-inline-css": "1.0.0"
   },
   "dependencies": {
     "@vuu-ui/core": "4.0.0-alpha.31",
     "@fontsource/open-sans": "^4.5.13",
-    "@vuu-ui/vuu-shell": "4.0.0-alpha.31",
+    "@vuu-ui/vuu-shell": "4.0.1",
     "@salt-ds/core": "1.72.0",
     "clsx": "^2.0.0",
     "react": "^19.2.3",

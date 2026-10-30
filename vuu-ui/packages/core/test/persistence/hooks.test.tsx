@@ -15,6 +15,37 @@ import {
   usePortalPersistence,
 } from "../../src/persistence";
 
+let api: PersistedStateAPI;
+let renders = 0;
+const Probe = () => {
+  renders += 1;
+  api = usePersistedState();
+  return null;
+};
+
+const OptionalStateProbe = ({
+  onState,
+}: {
+  onState: (state: ApplicationStateStore | undefined) => void;
+}) => {
+  onState(useOptionalApplicationState());
+  return null;
+};
+
+const RequiredStateProbe = () => {
+  useApplicationState();
+  return null;
+};
+
+const PersistenceProbe = ({
+  onService,
+}: {
+  onService: (service: PortalPersistenceService) => void;
+}) => {
+  onService(usePortalPersistence());
+  return null;
+};
+
 describe("persistence hooks", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -42,14 +73,6 @@ describe("persistence hooks", () => {
     service.dispose();
     vi.restoreAllMocks();
   });
-
-  let api: PersistedStateAPI;
-  let renders = 0;
-  const Probe = () => {
-    renders += 1;
-    api = usePersistedState();
-    return null;
-  };
 
   it("loads and saves through the application's store", async () => {
     store.set("count", 3);
@@ -145,32 +168,32 @@ describe("persistence hooks", () => {
   it("useApplicationState throws outside a portal; the optional variant doesn't", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     let optional: ApplicationStateStore | undefined | "unset" = "unset";
-    const Optional = () => {
-      optional = useOptionalApplicationState();
-      return null;
-    };
-    act(() => root.render(<Optional />));
+    act(() =>
+      root.render(
+        <OptionalStateProbe
+          onState={(state) => {
+            optional = state;
+          }}
+        />,
+      ),
+    );
     expect(optional).toBeUndefined();
 
-    const Required = () => {
-      useApplicationState();
-      return null;
-    };
-    expect(() => act(() => root.render(<Required />))).toThrow(
+    expect(() => act(() => root.render(<RequiredStateProbe />))).toThrow(
       /useApplicationState/,
     );
   });
 
   it("usePortalPersistence returns the service", () => {
     let found: PortalPersistenceService | undefined;
-    const Probe = () => {
-      found = usePortalPersistence();
-      return null;
-    };
     act(() =>
       root.render(
         <PortalPersistenceProvider service={service}>
-          <Probe />
+          <PersistenceProbe
+            onService={(s) => {
+              found = s;
+            }}
+          />
         </PortalPersistenceProvider>,
       ),
     );

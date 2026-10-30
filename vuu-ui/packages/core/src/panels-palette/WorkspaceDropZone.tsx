@@ -1,5 +1,5 @@
 import { AddIcon } from "@salt-ds/icons";
-import { useTemplateDragState } from "@vuu-ui/grid-layout";
+import { useTemplateDragState } from "@heswell/grid-layout";
 import type { ReactNode } from "react";
 
 /** Actions available to a `WorkspaceEmptyContent` render function. */

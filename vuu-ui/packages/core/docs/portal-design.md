@@ -479,7 +479,7 @@ const result = await openPanel(vuuTableTemplate({ module, serverId, table }));
 ```
 
 `OpenPanelProvider` takes the `gridId` of its GridLayout and uses
-`useGridLayoutCommands(gridId)` from `@vuu-ui/grid-layout`. These commands
+`useGridLayoutCommands(gridId)` from `@heswell/grid-layout`. These commands
 let code outside the grid read its items and `insertTemplate(template,
 placement)`, where placement replaces, splits or stacks with a target item.
 

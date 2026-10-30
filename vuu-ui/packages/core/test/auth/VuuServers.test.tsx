@@ -70,15 +70,44 @@ const moduleDescriptor = (
   };
 };
 
-const localServer = (
-  connectionId: string,
-  marker = connectionId,
-): LocalVuuServer => ({
+/** Marks its subtree with the connectionId of the local server it belongs to. */
+const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
+  <div data-local-server={useVuuConnectionId()}>{children}</div>
+);
+
+const localServer = (connectionId: string): LocalVuuServer => ({
   connectionId,
-  DataSourceProvider: ({ children }) => (
-    <div data-local-server={marker}>{children}</div>
-  ),
+  DataSourceProvider: LocalDataSourceProvider,
 });
+
+let servers: VuuServerDescriptor[] | undefined;
+
+const ServersProbe = () => {
+  servers = useVuuServers();
+  return null;
+};
+
+const ConnectionIdProbe = () => <output>{useVuuConnectionId()}</output>;
+
+const ModuleServerStatusProbe = () => {
+  const connectionId = useVuuConnectionId();
+  const status = useModuleServerStatus("module-admin");
+  const ordersStatus = useModuleServerStatus("orders");
+  return (
+    <>
+      <output>{`${connectionId}:${status.presence}`}</output>
+      <span data-orders-status={ordersStatus.presence}>
+        {ordersStatus.detail?.reason}
+      </span>
+    </>
+  );
+};
+
+const ShellProbe = ({ onRender }: { onRender: () => void }) => {
+  const user = useAuthenticatedUser();
+  onRender();
+  return <header>{user.userName}</header>;
+};
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -102,12 +131,6 @@ class ErrorBoundary extends Component<
 describe("Vuu servers", () => {
   let container: HTMLDivElement;
   let root: Root;
-  let servers: VuuServerDescriptor[] | undefined;
-
-  const ServersProbe = () => {
-    servers = useVuuServers();
-    return null;
-  };
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -136,11 +159,6 @@ describe("Vuu servers", () => {
     it("scopes a vuu-connection to the matching local server without a websocket", async () => {
       const webSocketConstructor = vi.fn();
       vi.stubGlobal("WebSocket", webSocketConstructor);
-      const Probe = () => {
-        const connectionId = useVuuConnectionId();
-        return <output>{connectionId}</output>;
-      };
-
       await act(async () => {
         root.render(
           <AuthenticationProvider
@@ -151,7 +169,7 @@ describe("Vuu servers", () => {
               connection={{ connectionId: "basket" }}
               mode="vuu-connection"
             >
-              <Probe />
+              <ConnectionIdProbe />
             </AuthenticationProvider>
           </AuthenticationProvider>,
         );
@@ -375,25 +393,7 @@ describe("Vuu servers", () => {
         connectionClient,
         exchangeToken,
       });
-      const Probe = () => {
-        const connectionId = useVuuConnectionId();
-        const status = useModuleServerStatus("module-admin");
-        const ordersStatus = useModuleServerStatus("orders");
-        return (
-          <>
-            <output>{`${connectionId}:${status.presence}`}</output>
-            <span data-orders-status={ordersStatus.presence}>
-              {ordersStatus.detail?.reason}
-            </span>
-          </>
-        );
-      };
       const shellRender = vi.fn();
-      const ShellProbe = () => {
-        const user = useAuthenticatedUser();
-        shellRender();
-        return <header>{user.userName}</header>;
-      };
       const render = () => (
         <AuthenticationProvider
           authConfig={authConfig}
@@ -401,7 +401,7 @@ describe("Vuu servers", () => {
           mode="identity"
           registry={registry}
         >
-          <ShellProbe />
+          <ShellProbe onRender={shellRender} />
           <VuuServerMonitorProvider
             options={{ probeIntervalMs: 10, staggerMs: 0 }}
           >
@@ -410,7 +410,7 @@ describe("Vuu servers", () => {
               connection={connection}
               mode="vuu-connection"
             >
-              <Probe />
+              <ModuleServerStatusProbe />
             </AuthenticationProvider>
           </VuuServerMonitorProvider>
         </AuthenticationProvider>

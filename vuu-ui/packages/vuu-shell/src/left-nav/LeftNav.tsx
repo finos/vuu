@@ -1,5 +1,5 @@
 import { VuuLogo } from "@vuu-ui/vuu-icons";
-import { GridLayout, GridLayoutItem } from "@vuu-ui/grid-layout";
+import { GridLayout, GridLayoutItem } from "@heswell/grid-layout";
 import { IconButton, Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
 import {
   type DynamicFeatureProps,

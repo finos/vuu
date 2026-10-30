@@ -7,14 +7,22 @@ import {
   WorkspacePersistentStateStore,
 } from "../../src";
 
+const Probe = ({
+  onResult,
+}: {
+  onResult: (store: WorkspacePersistentStateStore | undefined) => void;
+}) => {
+  onResult(useOptionalWorkspacePersistentStateStore());
+  return null;
+};
+
 describe("useOptionalWorkspacePersistentStateStore", () => {
   let container: HTMLDivElement;
   let root: Root;
   let result: WorkspacePersistentStateStore | undefined | null;
 
-  const Probe = () => {
-    result = useOptionalWorkspacePersistentStateStore();
-    return null;
+  const captureResult = (value: WorkspacePersistentStateStore | undefined) => {
+    result = value;
   };
 
   beforeEach(() => {
@@ -31,7 +39,7 @@ describe("useOptionalWorkspacePersistentStateStore", () => {
   });
 
   it("returns undefined outside a WorkspacePersistentStateProvider", () => {
-    act(() => root.render(<Probe />));
+    act(() => root.render(<Probe onResult={captureResult} />));
     expect(result).toBeUndefined();
   });
 
@@ -40,7 +48,7 @@ describe("useOptionalWorkspacePersistentStateStore", () => {
     act(() =>
       root.render(
         <WorkspacePersistentStateProvider store={store}>
-          <Probe />
+          <Probe onResult={captureResult} />
         </WorkspacePersistentStateProvider>,
       ),
     );
