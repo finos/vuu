@@ -15,7 +15,7 @@
     "@vuu-ui/vuu-data-local": "3.5.23"
   },
   "dependencies": {
-    "@salt-ds/styles": "0.4.1",
+    "@salt-ds/styles": "0.4.2",
     "@salt-ds/window": "0.1.2",
     "@vuu-ui/vuu-context-menu": "3.5.23",
     "@vuu-ui/vuu-ui-controls": "3.5.23",

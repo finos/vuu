@@ -177,7 +177,7 @@ body {
     }
 
     .vuuAdmonition-title {
-      font-weight: var(--salt-text-fontWeight-strong, 600);
+      font-weight: var(--salt-text-fontWeight-bolder, 600);
     }
 
     .vuuAdmonition-tip {
