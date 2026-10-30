@@ -1,4 +1,4 @@
-import { ContentStatus } from "@salt-ds/lab";
+import { H3, StackLayout, StatusIndicator, Text } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { FilterTable } from "@vuu-ui/vuu-datatable";
@@ -91,11 +91,11 @@ export const FilterTableInstruments = () => {
 };
 
 const EmptyStatus = () => (
-  <ContentStatus
-    message="there are no instruments to display"
-    status="info"
-    title="No data available"
-  />
+  <StackLayout align="center" gap={1} style={{ padding: 24 }}>
+    <StatusIndicator status="info" />
+    <H3>No data available</H3>
+    <Text>there are no instruments to display</Text>
+  </StackLayout>
 );
 
 /** tags=data-consumer */
