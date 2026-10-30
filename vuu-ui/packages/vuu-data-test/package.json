@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-data-local": "4.2.1",
-    "@vuu-ui/vuu-utils": "4.2.1"
+    "@vuu-ui/vuu-utils": "4.2.1",
+    "@heswell/module-admin": "1.1.0",
+    "@heswell/user-admin": "1.0.1",
+    "@vuu-ui/vuu-data-editing": "4.2.1"
   },
   "devDependencies": {
     "@vuu-ui/vuu-protocol-types": "4.2.1",
