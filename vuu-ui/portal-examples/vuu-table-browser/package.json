@@ -22,7 +22,7 @@
     "@salt-ds/core": "1.72.0",
     "@salt-ds/icons": "1.18.3",
     "@vuu-ui/core": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-notifications": "4.0.1",
+    "@vuu-ui/vuu-notifications": "4.1.0",
     "react-router-dom": "7.18.3"
   },
   "peerDependencies": {
