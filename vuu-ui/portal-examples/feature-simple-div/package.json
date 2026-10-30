@@ -22,7 +22,7 @@
   },
   "peerDependencies": {
     "@vuu-ui/core": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-shell": "4.0.1",
+    "@vuu-ui/vuu-shell": "4.1.0",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"

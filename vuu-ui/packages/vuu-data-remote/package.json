@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-filter-parser": "4.1.0",
-    "@vuu-ui/vuu-utils": "4.1.0"
+    "@vuu-ui/vuu-utils": "4.1.0",
+    "@vuu-ui/vuu-data-editing": "4.1.0"
   }
 }

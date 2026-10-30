@@ -28,7 +28,10 @@
     "@vuu-ui/vuu-table": "4.1.0",
     "@vuu-ui/vuu-ui-controls": "4.1.0",
     "@vuu-ui/vuu-utils": "4.1.0",
-    "html-to-image": "^1.11.11"
+    "html-to-image": "^1.11.11",
+    "@heswell/grid-layout": "4.1.0",
+    "@module-federation/enhanced": "2.8.0",
+    "@vuu-ui/core": "4.0.0-alpha.31"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
