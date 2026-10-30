@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "chrome-launcher": "^0.15.2",
-    "chrome-remote-interface": "^0.32.2",
+    "chrome-remote-interface": "^0.34.0",
     "devtools-protocol": "^0.0.1729950"
   }
 }
