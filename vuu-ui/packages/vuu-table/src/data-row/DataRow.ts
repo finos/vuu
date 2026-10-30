@@ -278,9 +278,9 @@ export const dataRowFactory = (
     columnMap = createColumnMap(columns, schemaColumns);
   };
 
-  const DataRow = (data: DataSourceRow) => DataRowImpl(data, columnMap);
+  const createDataRow = (data: DataSourceRow) => DataRowImpl(data, columnMap);
 
-  return [DataRow, setColumns];
+  return [createDataRow, setColumns];
 };
 
 if (process.env.NODE_ENV !== "production") {

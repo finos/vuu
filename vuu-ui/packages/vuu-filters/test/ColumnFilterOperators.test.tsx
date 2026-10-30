@@ -16,16 +16,14 @@ import {
 const price: ColumnDescriptor = { name: "price", serverDataType: "double" };
 
 describe("ColumnFilter operator options", () => {
-  it.each([
-    "int",
-    "long",
-    "double",
-    "scaleddecimal6",
-  ] as const)("defaults %s columns to comparisons", (serverDataType) => {
-    expect(getColumnFilterOperators({ name: "value", serverDataType })).toEqual(
-      ["=", "!=", ">", ">=", "<", "<="],
-    );
-  });
+  it.each(["int", "long", "double", "scaleddecimal6"] as const)(
+    "defaults %s columns to comparisons",
+    (serverDataType) => {
+      expect(
+        getColumnFilterOperators({ name: "value", serverDataType }),
+      ).toEqual(["=", "!=", ">", ">=", "<", "<="]);
+    },
+  );
 
   it("uses comparison operators for temporal columns", () => {
     expect(
@@ -120,16 +118,29 @@ afterAll(() => vi.unstubAllGlobals());
 let cleanup: (() => void) | undefined;
 afterEach(() => cleanup?.());
 
+type ColumnFilterHookResult = ReturnType<typeof useColumnFilter>;
+
+const ColumnFilterHookProbe = ({
+  onResult,
+  ...props
+}: ColumnFilterHookProps & {
+  onResult: (result: ColumnFilterHookResult) => void;
+}) => {
+  onResult(useColumnFilter(props));
+  return null;
+};
+
 const renderHook = (props: ColumnFilterHookProps) => {
   const container = document.createElement("div");
   const root = createRoot(container);
-  let result: ReturnType<typeof useColumnFilter>;
-  const Component = (props: ColumnFilterHookProps) => {
-    result = useColumnFilter(props);
-    return null;
+  let result: ColumnFilterHookResult;
+  const onResult = (hookResult: ColumnFilterHookResult) => {
+    result = hookResult;
   };
   const render = (props: ColumnFilterHookProps) => {
-    act(() => root.render(createElement(Component, props)));
+    act(() =>
+      root.render(createElement(ColumnFilterHookProbe, { ...props, onResult })),
+    );
   };
   render(props);
   cleanup = () => act(() => root.unmount());

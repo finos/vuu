@@ -9,7 +9,6 @@
   cursor: default;
   /* ensure header row sits atop everything else when scrolling down */
 
-  --vuuColumnHeaderPill-margin: 0;
   --vuuColumnHeaderPill-flex: 0 0 24px;
 
   align-items: center;

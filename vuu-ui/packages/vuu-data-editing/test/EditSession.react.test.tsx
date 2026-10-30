@@ -1,5 +1,5 @@
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import { act, useState } from "react";
+import { act, type ComponentProps, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
   afterAll,
@@ -81,6 +81,28 @@ afterAll(() => {
     }
   ).IS_REACT_ACT_ENVIRONMENT = false;
 });
+
+const ToggleableEditButtons = ({
+  editSession,
+  onSave,
+}: Pick<ComponentProps<typeof EditButtons>, "editSession" | "onSave">) => {
+  const [mounted, setMounted] = useState(true);
+  return (
+    <>
+      <button onClick={() => setMounted((value) => !value)} type="button">
+        toggle
+      </button>
+      {mounted && (
+        <EditButtons
+          canCancel
+          canSave
+          editSession={editSession}
+          onSave={onSave}
+        />
+      )}
+    </>
+  );
+};
 
 describe("EditSession React consumers", () => {
   let container: HTMLDivElement;
@@ -187,25 +209,11 @@ describe("EditSession React consumers", () => {
     await editSession.commit("row-1", "price", 100, 101, true);
     await expect(editSession.end(true)).rejects.toBe(staleError);
 
-    const Fixture = () => {
-      const [mounted, setMounted] = useState(true);
-      return (
-        <>
-          <button onClick={() => setMounted((value) => !value)} type="button">
-            toggle
-          </button>
-          {mounted && (
-            <EditButtons
-              canCancel
-              canSave
-              editSession={editSession}
-              onSave={onSave}
-            />
-          )}
-        </>
-      );
-    };
-    await act(async () => root.render(<Fixture />));
+    await act(async () =>
+      root.render(
+        <ToggleableEditButtons editSession={editSession} onSave={onSave} />,
+      ),
+    );
     expect(container.textContent).toContain("Save (force)");
 
     await act(async () => {

@@ -7,7 +7,13 @@
     "defaultBranch": "main"
   },
   "files": {
-    "includes": ["packages/**/*", "sample-apps/**/*", "benchmarks/**/*", "!benchmarks/results", "!benchmarks/dist"]
+    "includes": [
+      "packages/**/*",
+      "sample-apps/**/*",
+      "benchmarks/**/*",
+      "!benchmarks/results",
+      "!benchmarks/dist"
+    ]
   },
   "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "formatter": {
@@ -17,7 +23,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "style": {
         "noNonNullAssertion": "warn",
         "useAsConstAssertion": "error",
