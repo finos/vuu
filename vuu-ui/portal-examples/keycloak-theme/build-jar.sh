@@ -34,13 +34,15 @@ mkdir -p "$staging/META-INF" "$staging/theme"
 theme_entries=()
 for theme_dir in "$here"/*/; do
   name="$(basename "$theme_dir")"
-  types=()
+  types=""
   for type_dir in "$theme_dir"*/; do
-    [[ -f "$type_dir/theme.properties" ]] && types+=("\"$(basename "$type_dir")\"")
+    if [[ -f "$type_dir/theme.properties" ]]; then
+      types+="${types:+, }\"$(basename "$type_dir")\""
+    fi
   done
-  [[ ${#types[@]} -eq 0 ]] && continue
+  [[ -z "$types" ]] && continue
   cp -R "$theme_dir" "$staging/theme/$name"
-  theme_entries+=("    { \"name\": \"$name\", \"types\": [$(IFS=,; echo "${types[*]}" | sed 's/,/, /g')] }")
+  theme_entries+=("    { \"name\": \"$name\", \"types\": [$types] }")
 done
 
 if [[ ${#theme_entries[@]} -eq 0 ]]; then
