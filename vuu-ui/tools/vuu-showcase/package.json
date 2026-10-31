@@ -9,6 +9,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
+    "@heswell/vuu-data-engine-local": "1.0.0",
     "@mdx-js/loader": "3.1.1",
     "@mdx-js/rollup": "3.1.1",
     "@shikijs/rehype": "^4.5.0",
@@ -20,6 +21,7 @@
     "remark-gfm": "^4.0.1"
   },
   "dependencies": {
+    "@vuu-ui/core": "4.0.0-alpha.31",
     "@fontsource/open-sans": "^4.5.13",
     "@salt-ds/core": "1.74.0",
     "@salt-ds/theme": "1.48.0",
@@ -38,7 +40,7 @@
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "7.18.3"
   },
   "sideEffects": false,
   "type": "module"

@@ -37,7 +37,7 @@ const showcaseRoot = path.resolve(import.meta.dirname, "../src/root.ts");
 // Components in these packages inject their own css, using salt
 // useComponentCssInjection. Their css must be imported as a string.
 const inlineCssPackages =
-  /[\\/]packages[\\/](grid-layout|vuu-chart|vuu-context-menu|vuu-datatable|vuu-data-react|vuu-filters|vuu-layout|vuu-notifications|vuu-popups|vuu-shell|vuu-table|vuu-table-extras|vuu-ui-controls)[\\/]/;
+  /[\\/]packages[\\/](core|grid-layout|vuu-chart|vuu-context-menu|vuu-datatable|vuu-data-react|vuu-filters|vuu-layout|vuu-notifications|vuu-popups|vuu-shell|vuu-table|vuu-table-extras|vuu-ui-controls)[\\/]/;
 
 /** Paths of the examples modules, the source shown by the Source tab */
 const collectExamplePaths = (
