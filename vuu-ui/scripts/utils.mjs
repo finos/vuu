@@ -84,14 +84,3 @@ export const getCommandLineArg = (argName, expectValue, defaultValue) => {
     return matchedArg;
   }
 };
-
-const args = process.argv.slice(2);
-
-export const withArgs = (...argNames) => {
-  const commandLineArgs = argNames
-    .map((arg) =>
-      args.includes(arg) || args.includes("--" + arg) ? ` --${arg}` : "",
-    )
-    .join("");
-  return commandLineArgs ? ` -- ${commandLineArgs}` : "";
-};

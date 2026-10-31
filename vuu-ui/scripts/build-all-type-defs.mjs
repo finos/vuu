@@ -1,9 +1,9 @@
-import { execWait, withArgs } from "./utils.mjs";
+import { execWait } from "./utils.mjs";
 
 function buildPackage(packageName) {
   console.log(`build TypeScript typedefs for ${packageName}`);
   execWait(
-    `npm run --silent type-defs${withArgs("debug")}`,
+    "npm run --silent type-defs",
     `packages/${packageName}`,
   ).catch(() => {
     console.error(`Error processing ${packageName}`);
