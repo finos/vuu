@@ -7,6 +7,7 @@ import type { VuuRow } from "@vuu-ui/vuu-protocol-types";
 import { Viewport } from "../../src/server-proxy/viewport";
 import { createSubscription, testSchema } from "../test-utils";
 import { DEFAULT_CLIENT_VP } from "./builders";
+import { freezeClock } from "./clock";
 
 export interface ViewportHarnessOptions {
   /** omitted: Viewport's own default (50) */
@@ -153,5 +154,7 @@ export class ViewportHarness {
   }
 }
 
-export const viewportHarness = (options?: ViewportHarnessOptions) =>
-  new ViewportHarness(options);
+export const viewportHarness = (options?: ViewportHarnessOptions) => {
+  freezeClock();
+  return new ViewportHarness(options);
+};

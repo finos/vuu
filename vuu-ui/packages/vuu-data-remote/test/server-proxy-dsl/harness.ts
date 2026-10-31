@@ -14,6 +14,7 @@ import {
   subscribe,
 } from "../test-utils";
 import { DEFAULT_CLIENT_VP, DEFAULT_SERVER_VP } from "./builders";
+import { freezeClock } from "./clock";
 
 export interface SubscriptionOptions {
   bufferSize?: number;
@@ -366,6 +367,7 @@ export const serverProxyHarness = async ({
   ...subscription
 }: HarnessOptions = {}) => {
   TEST_setRequestId(1);
+  freezeClock();
   const t = new ServerProxyHarness();
   if (subscribe) {
     await t.subscribe(subscription);
