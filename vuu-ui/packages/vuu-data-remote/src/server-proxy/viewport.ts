@@ -165,7 +165,7 @@ export class Viewport {
   })[] = [];
   private postMessageToClient: (message: DataSourceCallbackMessage) => void;
   private rowCountChanged = false;
-  private lastUpdateStatus: LastUpdateStatus = NO_UPDATE_STATUS;
+  private lastUpdateStatus: LastUpdateStatus = { ...NO_UPDATE_STATUS };
   private updateThrottleTimer: number | undefined = undefined;
 
   private rangeMonitor = new RangeMonitor("ViewPort");
