@@ -1,384 +1,185 @@
-import { ServerProxySubscribeMessage } from "@vuu-ui/vuu-data-types";
-import { describe, expect, it } from "vitest";
-import { Viewport } from "../src/server-proxy/viewport";
 import "./global-mocks";
+import { describe, expect, it } from "vitest";
 import {
-  createSubscription,
-  createTableRows,
-  sizeRow,
-  testSchema,
-} from "./test-utils";
-import { VuuViewportCreateResponse } from "@vuu-ui/vuu-protocol-types";
-
-const config_options = {
-  aggregations: [],
-  columns: ["col1"],
-  filterSpec: { filter: "" },
-  groupBy: [],
-  sort: { sortDefs: [] },
-};
-
-const vuu_config_options = {
-  aggregations: [],
-  columns: ["col1"],
-  filterSpec: { filter: "" },
-  groupBy: [],
-  sort: { sortDefs: [] },
-};
-
-const noop = () => undefined;
-
-const vuu_table = { module: "TEST", table: "test-table" };
-
-const constructor_options = {
-  ...config_options,
-  range: { from: 0, to: 0 },
-  table: vuu_table,
-  viewport: "vp1",
-} as ServerProxySubscribeMessage;
+  changeRangeBody,
+  createVpBody,
+  rows,
+  size,
+  subscribedMessage,
+  viewportHarness,
+} from "./server-proxy-dsl";
 
 describe("Viewport", () => {
   describe("constructor", () => {
     it("initial status is empty", () => {
-      const vp = new Viewport(constructor_options, noop);
-      expect(vp.status).toEqual("");
+      expect(viewportHarness().status).toEqual("");
     });
   });
 
   describe("subscribe", () => {
     it("uses constructor params to construct subscribe message", () => {
-      const vp = new Viewport(constructor_options, noop);
-      const message = vp.subscribe();
-      const {
-        filterSpec: { filter },
-        viewport,
-        range,
-        ...rest
-      } = constructor_options;
-
       // default bufferSize is 50
-      expect(message).toEqual({
-        type: "CREATE_VP",
-        ...rest,
-        filterSpec: { filter },
-        range: { from: 0, to: 0 },
-      });
+      const v = viewportHarness({ range: [0, 0] });
+      expect(v.subscribe()).toEqual(createVpBody({ range: [0, 0] }));
     });
+
     it("sets status to subscribing", () => {
-      const vp = new Viewport(constructor_options, noop);
-      vp.subscribe();
-      expect(vp.status).toEqual("subscribing");
+      const v = viewportHarness();
+      v.subscribe();
+      expect(v.status).toEqual("subscribing");
     });
 
     it("uses bufferSize when constructing range", () => {
-      const vp = new Viewport(
-        {
-          bufferSize: 100,
-          ...constructor_options,
-        },
-        noop,
-      );
-      const message = vp.subscribe();
-      const {
-        filterSpec: { filter },
-        viewport,
-        range,
-        ...rest
-      } = constructor_options;
-
-      // default bufferSize is 50
-      expect(message).toEqual({
-        type: "CREATE_VP",
-        ...rest,
-        filterSpec: { filter },
-        range: { from: 0, to: 0 },
-      });
+      const v = viewportHarness({ bufferSize: 100, range: [0, 0] });
+      expect(v.subscribe()).toEqual(createVpBody({ range: [0, 0] }));
     });
+
     it("applies bufferSize to existing range", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 100,
-          range: { from: 0, to: 100 },
-        },
-        noop,
-      );
-      const message = vp.subscribe();
-      const {
-        filterSpec: { filter },
-        viewport,
-        range,
-        ...rest
-      } = constructor_options;
-
-      expect(message).toEqual({
-        type: "CREATE_VP",
-        ...rest,
-        filterSpec: { filter },
-        range: { from: 0, to: 200 },
-      });
+      const v = viewportHarness({ bufferSize: 100, range: [0, 100] });
+      expect(v.subscribe()).toEqual(createVpBody({ range: [0, 200] }));
     });
-    it("splits bufferSize around existing range", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 100,
-          range: { from: 100, to: 200 },
-        },
-        noop,
-      );
-      const message = vp.subscribe();
-      const {
-        filterSpec: { filter },
-        viewport,
-        range,
-        ...rest
-      } = constructor_options;
 
-      expect(message).toEqual({
-        type: "CREATE_VP",
-        ...rest,
-        filterSpec: { filter },
-        range: { from: 0, to: 300 },
-      });
+    it("splits bufferSize around existing range", () => {
+      const v = viewportHarness({ bufferSize: 100, range: [100, 200] });
+      expect(v.subscribe()).toEqual(createVpBody({ range: [0, 300] }));
     });
   });
 
   describe("subscribed", () => {
     it("sets status to subscribed", () => {
-      const vp = new Viewport(constructor_options, noop);
-      const vuuMessageBody: VuuViewportCreateResponse = {
-        ...vuu_config_options,
-        range: { from: 0, to: 50 },
-        type: "CREATE_VP_SUCCESS",
-        table: vuu_table.table,
-        viewPortId: "server-vp1",
-      };
-      vp.handleSubscribed(vuuMessageBody, testSchema);
-      expect(vp.status).toEqual("subscribed");
+      const v = viewportHarness();
+      v.subscribed({ ackRange: [0, 50] });
+      expect(v.status).toEqual("subscribed");
     });
 
     it("echos back subscription details, enriching values sent by server", () => {
-      const vp = new Viewport(constructor_options, noop);
-      const vuuMessageBody: VuuViewportCreateResponse = {
-        ...vuu_config_options,
-        range: { from: 0, to: 50 },
-        type: "CREATE_VP_SUCCESS",
-        table: vuu_table.table,
-        viewPortId: "server-vp1",
-      };
-      const message = vp.handleSubscribed(vuuMessageBody, testSchema);
-
-      expect(message).toEqual({
-        ...config_options,
-        clientViewportId: constructor_options.viewport,
-        range: { from: 0, to: 50 },
-        tableSchema: testSchema,
-        type: "subscribed",
-      });
+      const v = viewportHarness();
+      expect(v.subscribed({ ackRange: [0, 50] })).toEqual(
+        subscribedMessage({ range: [0, 50] }),
+      );
     });
   });
 
   describe("pending range requests", () => {
     it("holds requests in pending queue, marking them when acked, until first rows received", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 10,
-          range: { from: 0, to: 10 },
-        },
-        noop,
-      );
-      const [, serverSubscription] = createSubscription();
+      const v = viewportHarness({ bufferSize: 10 });
+      v.subscribed();
+      v.receives(size(), rows(0, 20));
 
-      vp.handleSubscribed(serverSubscription.body, testSchema);
+      v.setRange(50, 60);
+      expect(v.state().pendingRanges).toEqual([
+        { from: 40, to: 70, acked: undefined },
+      ]);
 
-      vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
+      v.acksRange(50, 60);
+      expect(v.state().pendingRanges).toEqual([
+        { from: 40, to: 70, acked: true },
+      ]);
 
-      vp.rangeRequest("1", { from: 50, to: 60 });
-      const pendingRangeRequests = vp["pendingRangeRequests"];
-
-      expect(pendingRangeRequests).toHaveLength(1);
-      expect(pendingRangeRequests[0].acked).toBeUndefined();
-
-      vp.completeOperation("1", 50, 60);
-      expect(pendingRangeRequests).toHaveLength(1);
-      expect(pendingRangeRequests[0].acked).toEqual(true);
-
-      vp.updateRows(createTableRows("server-vp-1", 50, 60));
-
-      expect(pendingRangeRequests).toHaveLength(0);
+      v.receives(rows(50, 60));
+      expect(v.state().pendingRanges).toEqual([]);
     });
   });
 
   describe("maxRangeEnd", () => {
     it("caps CHANGE_VP_RANGE to maxRangeEnd from tableSchema", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 10,
-          range: { from: 0, to: 10 },
-        },
-        noop,
-      );
-      const [, serverSubscription] = createSubscription({ bufferSize: 10 });
+      const v = viewportHarness({ bufferSize: 10 });
+      v.subscribed({ ackRange: [0, 20], maxRangeEnd: 60 });
 
-      vp.handleSubscribed(serverSubscription.body, {
-        ...testSchema,
-        rangeLimits: {
-          ...testSchema.rangeLimits,
-          maxRangeEnd: 60,
-        },
-      });
-
-      const [serverRequest] = vp.rangeRequest("1", { from: 55, to: 65 });
-
-      expect(serverRequest).toEqual({
-        type: "CHANGE_VP_RANGE",
-        viewPortId: "server-vp-1",
-        from: 45,
-        to: 60,
-      });
+      expect(v.setRange(55, 65).serverRequest).toEqual(changeRangeBody(45, 60));
     });
 
     it("applies maxRangeEnd even when rowCount is not yet known", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 10,
-          range: { from: 0, to: 10 },
-        },
-        noop,
-      );
-      const [, serverSubscription] = createSubscription({ bufferSize: 10 });
+      const v = viewportHarness({ bufferSize: 10 });
+      v.subscribed({ ackRange: [0, 20], maxRangeEnd: 80 });
 
-      vp.handleSubscribed(serverSubscription.body, {
-        ...testSchema,
-        rangeLimits: {
-          ...testSchema.rangeLimits,
-          maxRangeEnd: 80,
-        },
-      });
-
-      const [serverRequest] = vp.rangeRequest("1", { from: 75, to: 85 });
-
-      expect(serverRequest).toEqual({
-        type: "CHANGE_VP_RANGE",
-        viewPortId: "server-vp-1",
-        from: 65,
-        to: 80,
-      });
+      expect(v.setRange(75, 85).serverRequest).toEqual(changeRangeBody(65, 80));
     });
   });
 
   describe("rangeRequestAlreadyPending", () => {
     it("tests range requests against last pending server request", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 10,
-          range: { from: 0, to: 10 },
-        },
-        noop,
-      );
-      const [, serverSubscription] = createSubscription();
-      vp.handleSubscribed(serverSubscription.body, testSchema);
+      const v = viewportHarness({ bufferSize: 10 });
+      v.subscribed();
+      v.receives(size(), rows(0, 20));
+      // bufferSize 10 expands 50..60 to 40..70
+      v.setRange(50, 60);
 
-      vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
-      // bufferSize = 10, so range will be expanded +/-5 => [45-65]
-      vp.rangeRequest("1", { from: 50, to: 60 });
-      // vp.completeOperation("1", 50, 60);
+      expect(
+        v.alreadyPending(
+          [0, 10],
+          [0, 50],
+          [50, 60],
+          [52, 62],
+          [52, 63],
+          [60, 70],
+        ),
+      ).toEqual({
+        "0:10": false,
+        "0:50": false,
+        "50:60": true,
+        "52:62": true,
+        "52:63": true,
+        "60:70": false,
+      });
+    });
 
-      expect(vp["rangeRequestAlreadyPending"]({ from: 0, to: 10 })).toEqual(
-        false,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 0, to: 50 })).toEqual(
-        false,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 60 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 62 })).toEqual(
-        true,
-      );
-      // this one breaches the bufferSize 25% threshold
-      expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 63 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 60, to: 70 })).toEqual(
-        false,
-      );
+    it("treats a range as pending only if the pending request extends at least bufferSize / 4 beyond it", () => {
+      const v = viewportHarness({ bufferSize: 20 });
+      v.subscribed();
+      v.receives(size(), rows(0, 20));
+      v.setRange(50, 60);
+      expect(v.state().pendingRanges).toEqual([
+        { from: 30, to: 80, acked: undefined },
+      ]);
+
+      // margin is 5: 75 + 5 reaches the end of the pending range, 76 + 5 does not
+      expect(v.alreadyPending([65, 75], [66, 76])).toEqual({
+        "65:75": true,
+        "66:76": false,
+      });
     });
 
     it("tests range requests against multiple pending server requests", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 10,
-          range: { from: 0, to: 10 },
-        },
-        noop,
-      );
-      const [, serverSubscription] = createSubscription();
-      vp.handleSubscribed(serverSubscription.body, testSchema);
+      const v = viewportHarness({ bufferSize: 10 });
+      v.subscribed();
+      v.receives(size(), rows(0, 20));
+      v.setRange(50, 60);
+      v.acksRange(50, 60);
+      v.setRange(60, 70);
+      v.acksRange(60, 70);
 
-      vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
-      // bufferSize = 10, so range will be expanded +/-5 => [45-65]
-      vp.rangeRequest("1", { from: 50, to: 60 });
-      vp.completeOperation("1", 50, 60);
-      vp.rangeRequest("2", { from: 60, to: 70 });
-      vp.completeOperation("2", 60, 70);
-
-      expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 60 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 62 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 63 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 70 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 72 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 73 })).toEqual(
-        true,
-      );
-      expect(vp["rangeRequestAlreadyPending"]({ from: 70, to: 80 })).toEqual(
-        false,
-      );
+      expect(
+        v.alreadyPending(
+          [50, 60],
+          [52, 62],
+          [52, 63],
+          [50, 70],
+          [50, 72],
+          [50, 73],
+          [70, 80],
+        ),
+      ).toEqual({
+        "50:60": true,
+        "52:62": true,
+        "52:63": true,
+        "50:70": true,
+        "50:72": true,
+        "50:73": true,
+        "70:80": false,
+      });
     });
   });
 
   describe("groupBy", () => {
     it("clears dataWindow when a config request with groupBy is received on a non grouped viewport", () => {
-      const vp = new Viewport(
-        {
-          ...constructor_options,
-          bufferSize: 10,
-          range: { from: 0, to: 10 },
-        },
-        noop,
-      );
-      const [, serverSubscription] = createSubscription();
+      const v = viewportHarness({ bufferSize: 10 });
+      v.subscribed();
+      v.receives(size(), rows(0, 20));
 
-      vp.handleSubscribed(serverSubscription.body, testSchema);
+      v.config({ groupBy: ["col-4"] });
 
-      vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
-
-      vp.setConfig("1", {
-        aggregations: [],
-        columns: ["col-1", "col-2", "col-3", "col-4"],
-        filterSpec: { filter: "" },
-        groupBy: ["col-4"],
-        sort: { sortDefs: [] },
-      });
-
-      expect(vp["dataWindow"]?.rowCount).toEqual(0);
-      expect(vp["dataWindow"]?.["internalData"].length).toEqual(0);
+      expect(v.state()).toMatchObject({ rowCount: 0, cachedRowCount: 0 });
     });
   });
 });
