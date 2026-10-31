@@ -119,6 +119,24 @@ describe("Viewport edge cases", () => {
       vi.advanceTimersByTime(100);
       t.expectClient();
     });
+
+    it("counts size-only updates per viewport", async () => {
+      const t = await serverProxyHarness();
+      await t.subscribe({ key: "2" });
+      t.discard();
+
+      vi.useFakeTimers();
+      for (let i = 1; i <= 3; i++) {
+        vi.advanceTimersByTime(1);
+        t.server.sends(size(i));
+      }
+      t.expectClient(sizeOnly(1), sizeOnly(2), sizeOnly(3));
+
+      // the first size-only update for client-vp-2 is not throttled
+      vi.advanceTimersByTime(1);
+      t.server.sends(size(1, "server-vp-2"));
+      t.expectClient(sizeOnly(1, "client-vp-2"));
+    });
   });
 
   describe("handleSubscribed", () => {
