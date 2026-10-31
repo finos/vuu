@@ -103,6 +103,42 @@ body {
   }
 }
 
+/* an example open in a tab, other than the active tab */
+.ShowcaseShell-nav
+  .vuuTableRow:not([aria-selected="true"]):has(.ShowcaseNavRowAdornment-inTab)
+  .vuuTableGroupCell.vuuTableCell::after {
+  background: var(--sc-border-strong);
+  border-radius: 0 2px 2px 0;
+  bottom: 9px;
+  content: "";
+  left: calc(-1 * var(--treeNavPanel-padding));
+  position: absolute;
+  top: 9px;
+  width: 3px;
+}
+
+/* nested leaves are marked on their indent guide, matching the selection bar */
+.ShowcaseShell-nav
+  .vuuTreeNavPanel-indentGuides
+  .vuuTableRow:not([aria-selected="true"]):not([aria-expanded]):not(
+    [aria-level="1"]
+  ):has(.ShowcaseNavRowAdornment-inTab)
+  .vuuTableGroupCell.vuuTableCell::after {
+  left: calc(
+    4px + var(--treeNavPanel-spacerWidth) - 2 * var(--treeNavPanel-guideWidth) +
+      5.5px
+  );
+}
+
+.ShowcaseShell-nav
+  .vuuTreeNavPanel-indentGuides.vuuTreeNavPanel-headings
+  .vuuTableRow:not([aria-selected="true"])[aria-level="2"]:not([aria-expanded]):has(
+    .ShowcaseNavRowAdornment-inTab
+  )
+  .vuuTableGroupCell.vuuTableCell::after {
+  left: calc(-1 * var(--treeNavPanel-padding));
+}
+
 .ShowcaseNavRowAdornment-grip {
   align-items: center;
   color: var(--sc-text-4);

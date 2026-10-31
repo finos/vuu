@@ -4,6 +4,10 @@ import { type KeyboardEvent, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChromeIcon } from "../chrome/ChromeIcon";
 import { ChromeMenuPanel } from "../chrome/ChromeMenu";
+import { MenuShortcut } from "../chrome/ContextMenu";
+import { openInNewTab } from "../doc-tabs/doc-tabs-actions";
+import { docTabHref } from "../doc-tabs/doc-tabs-model";
+import { useDocTabs } from "../doc-tabs/doc-tabs-store";
 import {
   copyWorkspaceLink,
   createEmptyWorkspace,
@@ -64,18 +68,39 @@ const WorkspaceRow = ({
   const navigate = useNavigate();
   const [renaming, setRenaming] = useState(false);
   const { id, name, panels } = workspace;
-  const open = () => navigate(workspaceRoute(id));
+  const route = workspaceRoute(id);
+  const { activeId, tabs } = useDocTabs();
+  const tab = tabs.find((t) => t.path === route);
+  const inTab = tabs.length > 1 && tab !== undefined && tab.id !== activeId;
+  // a workspace already open in a tab is shown in that tab
+  const open = () => navigate(tab ? docTabHref(tab) : route);
+  const openNewTab = () => openInNewTab(route, navigate);
   return (
     <li className={`${classBase}-item`}>
       <div
         aria-current={selected ? "page" : undefined}
         className={cx(`${classBase}-row`, {
           [`${classBase}-row-selected`]: selected,
+          [`${classBase}-row-inTab`]: inTab,
         })}
-        onClick={open}
+        onAuxClick={(evt) => {
+          if (evt.button === 1) {
+            evt.preventDefault();
+            openNewTab();
+          }
+        }}
+        onClick={(evt) => {
+          if (evt.metaKey || evt.ctrlKey) openNewTab();
+          else open();
+        }}
+        onMouseDown={(evt) => {
+          // no auto scroll, middle-click opens a tab
+          if (evt.button === 1) evt.preventDefault();
+        }}
         onKeyDown={(evt) => {
           if (evt.target !== evt.currentTarget) return;
-          if (evt.key === "Enter") open();
+          if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) openNewTab();
+          else if (evt.key === "Enter") open();
           else if (evt.key === "F2") setRenaming(true);
           else if (evt.key === "Delete" || evt.key === "Backspace")
             deleteWorkspace(id, selected ? navigate : undefined);
@@ -133,6 +158,12 @@ const WorkspaceRow = ({
               <MenuItem onClick={open}>
                 <ChromeIcon name="layout" size={14} />
                 Open
+                <MenuShortcut>↵</MenuShortcut>
+              </MenuItem>
+              <MenuItem onClick={openNewTab}>
+                <ChromeIcon name="tabs" size={14} />
+                Open in new tab
+                <MenuShortcut>⌘↵</MenuShortcut>
               </MenuItem>
               <MenuItem onClick={() => setRenaming(true)}>
                 <ChromeIcon name="pencil" size={14} />

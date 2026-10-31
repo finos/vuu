@@ -1,7 +1,15 @@
 import type { TreeNodeFilterProps } from "@vuu-ui/vuu-data-local";
 import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavFilter } from "./NavFilter";
 import {
@@ -20,7 +28,14 @@ import {
   type ShowcaseSection,
 } from "./nav-tree";
 import { createNavRowAdornmentRenderer } from "./NavRowAdornment";
+import {
+  TreeItemContextMenu,
+  type TreeItemMenuState,
+} from "./TreeItemContextMenu";
 import { TreeNavPanel } from "./TreeNavPanel";
+import { openInNewTab } from "../doc-tabs/doc-tabs-actions";
+import { docTabHref } from "../doc-tabs/doc-tabs-model";
+import { docTabsStore } from "../doc-tabs/doc-tabs-store";
 import { WorkspacesNav } from "../workspace/WorkspacesNav";
 
 export const NAV_FILTER_INPUT_SELECTOR = ".ShowcaseNavFilter-input";
@@ -32,6 +47,18 @@ export const focusNavFilter = () => {
   );
   input?.focus();
   input?.select();
+};
+
+/** The example a tree row represents, from the marker in its adornment */
+const exampleFromEvent = (evt: SyntheticEvent) => {
+  const row = (evt.target as HTMLElement).closest("[role='row']");
+  const marker = row?.querySelector<HTMLElement>("[data-nav-path]");
+  if (marker?.dataset.navPath) {
+    return {
+      label: marker.dataset.navLabel ?? marker.dataset.navPath,
+      path: marker.dataset.navPath,
+    };
+  }
 };
 
 type NavSection = Exclude<ShowcaseSection, "theme">;
@@ -158,11 +185,83 @@ export const ShowcaseNav = ({
           onSelectExample?.(dataRow.nodeData as NavNodeData | undefined);
           // the nav already reflects this route
           setNavState((state) => ({ ...state, key: dataRow.key, route: path }));
-          navigate(path);
+          // an example already open in a tab is shown in that tab
+          const tab = docTabsStore.findByPath(path);
+          navigate(tab ? docTabHref(tab) : path);
         }
       }
     },
     [navIndex, navState.key, navigate, onSelectExample, route],
+  );
+
+  // Opened from a menu or modified click, the row has not been selected by
+  // the tree, the route change re-mounts the tree to select it.
+  const openExample = useCallback(
+    (path: string, newTab = false) => {
+      if (newTab) {
+        openInNewTab(path, navigate);
+      } else {
+        const tab = docTabsStore.findByPath(path);
+        navigate(tab ? docTabHref(tab) : path);
+      }
+    },
+    [navigate],
+  );
+
+  const [menu, setMenu] = useState<TreeItemMenuState>();
+
+  const handleContextMenu = useCallback((evt: MouseEvent) => {
+    const example = exampleFromEvent(evt);
+    if (example) {
+      // captured, the table would otherwise show its own context menu
+      evt.preventDefault();
+      evt.stopPropagation();
+      setMenu({ ...example, position: { x: evt.clientX, y: evt.clientY } });
+    }
+  }, []);
+
+  // ⌘-click (ctrl-click) and middle-click open an example in a new tab
+  const handleClickCapture = useCallback(
+    (evt: MouseEvent) => {
+      if (evt.metaKey || evt.ctrlKey) {
+        const example = exampleFromEvent(evt);
+        if (example) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          openExample(example.path, true);
+        }
+      }
+    },
+    [openExample],
+  );
+  const handleAuxClick = useCallback(
+    (evt: MouseEvent) => {
+      const example = evt.button === 1 ? exampleFromEvent(evt) : undefined;
+      if (example) {
+        evt.preventDefault();
+        openExample(example.path, true);
+      }
+    },
+    [openExample],
+  );
+  const handleMouseDown = useCallback((evt: MouseEvent) => {
+    // no auto scroll, middle-click opens a tab
+    if (evt.button === 1 && exampleFromEvent(evt)) {
+      evt.preventDefault();
+    }
+  }, []);
+  const handleKeyDownCapture = useCallback(
+    (evt: KeyboardEvent) => {
+      if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) {
+        const example = exampleFromEvent(evt);
+        if (example) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          openExample(example.path, true);
+        }
+      }
+    },
+    [openExample],
   );
 
   if (sectionNav === undefined) {
@@ -170,30 +269,49 @@ export const ShowcaseNav = ({
   }
 
   return (
-    <TreeNavPanel
-      autoSelectRowKey={navState.key}
-      className="ShowcaseNav"
-      filterPredicate={filterPredicate}
-      footer={section === "examples" ? <WorkspacesNav /> : undefined}
-      key={navState.generation}
-      indentGuides
-      header={
-        <NavFilter
-          filter={navFilter}
-          onChange={handleNavFilterChange}
-          placeholder={
-            section === "examples"
-              ? `Filter ${exampleCount} examples`
-              : "Filter docs"
-          }
-          showChips={section === "examples"}
-        />
-      }
-      onSelect={handleSelect}
-      renderNodeAdornment={sectionNav.renderAdornment}
-      searchPattern={navFilter.query.trim()}
-      source={sectionNav.tree}
-      topLevelHeadings={section === "examples"}
-    />
+    // biome-ignore lint/a11y/noStaticElementInteractions: delegates events from tree rows
+    <div
+      className="ShowcaseNav-events"
+      onAuxClick={handleAuxClick}
+      onClickCapture={handleClickCapture}
+      onContextMenuCapture={handleContextMenu}
+      onKeyDownCapture={handleKeyDownCapture}
+      onMouseDown={handleMouseDown}
+    >
+      <TreeNavPanel
+        autoSelectRowKey={navState.key}
+        className="ShowcaseNav"
+        filterPredicate={filterPredicate}
+        footer={section === "examples" ? <WorkspacesNav /> : undefined}
+        key={navState.generation}
+        indentGuides
+        header={
+          <NavFilter
+            filter={navFilter}
+            onChange={handleNavFilterChange}
+            placeholder={
+              section === "examples"
+                ? `Filter ${exampleCount} examples`
+                : "Filter docs"
+            }
+            showChips={section === "examples"}
+          />
+        }
+        onSelect={handleSelect}
+        renderNodeAdornment={sectionNav.renderAdornment}
+        searchPattern={navFilter.query.trim()}
+        source={sectionNav.tree}
+        topLevelHeadings={section === "examples"}
+      />
+      <TreeItemContextMenu
+        menu={menu}
+        onClose={() => setMenu(undefined)}
+        onOpen={(path) => {
+          setMenu(undefined);
+          openExample(path);
+        }}
+        treeSource={treeSource as TreeSourceNode<NavNodeData>[]}
+      />
+    </div>
   );
 };

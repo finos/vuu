@@ -5,6 +5,7 @@ import { Fragment, useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ChromeIcon } from "../chrome/ChromeIcon";
 import { RouteLink } from "../chrome/RouteLink";
+import { useTabbedDocuments } from "../doc-tabs/doc-tabs-store";
 import { useShowcaseContext } from "../ShowcaseProvider";
 import { favouritesStore, useFavourites } from "../tree-nav/nav-store";
 import { getNavFromForPath, type NavNodeData } from "../tree-nav/nav-tree";
@@ -88,6 +89,8 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
   const isFavourite = favourites.includes(route);
   const [copied, copyLink] = useCopyLink();
   const navigate = useNavigate();
+  // once documents open in tabs, the tab names the example
+  const compact = useTabbedDocuments();
 
   const crumbs = useMemo(
     () => getBreadcrumbs(pathname, treeSource, navFrom),
@@ -101,7 +104,7 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
   const isLive = nodeData.live || nodeData.tags?.includes("data-consumer");
 
   return (
-    <header className={classBase}>
+    <header className={cx(classBase, { [`${classBase}-compact`]: compact })}>
       <div className={`${classBase}-main`}>
         <nav aria-label="Breadcrumb" className={`${classBase}-breadcrumb`}>
           {crumbs.map(({ label, path }, i) => (
@@ -130,10 +133,10 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
             </span>
           ) : null}
         </div>
-        {nodeData.description ? (
+        {nodeData.description && !compact ? (
           <p className={`${classBase}-description`}>{nodeData.description}</p>
         ) : null}
-        {nodeData.fixtureFor?.length ? (
+        {nodeData.fixtureFor?.length && !compact ? (
           <FixtureNotice testFiles={nodeData.fixtureFor} />
         ) : null}
       </div>

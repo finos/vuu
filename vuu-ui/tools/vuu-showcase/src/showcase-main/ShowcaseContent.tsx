@@ -7,6 +7,7 @@ import {
   isIndexNode,
 } from "../shared-utils";
 import { ThemeBrowser } from "../theme-browser";
+import { DocTabStrip, useDocTabsRouting, useTabbedDocuments } from "./doc-tabs";
 import { DocsPage } from "./docs";
 import { ExamplePage } from "./example";
 import { FolderIndex } from "./folder-index";
@@ -30,7 +31,7 @@ export const ShowcaseContent = ({
   onSearch,
   treeSource,
 }: ShowcaseContentProps) => {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const [searchParams] = useSearchParams();
   const path = pathname.replace(/\/$/, "");
   const isHomeRoute = path === "";
@@ -43,8 +44,17 @@ export const ShowcaseContent = ({
         : findTreeNode(pathname, treeSource as TreeSourceNode<NavNodeData>[]),
     [isHomeRoute, isWorkspaceRoute, pathname, treeSource],
   );
+  const isDocument = useDocTabsRouting({
+    path,
+    search,
+    treeSource: treeSource as TreeSourceNode<NavNodeData>[],
+  });
+  const tabbed = useTabbedDocuments();
   return (
     <div className="ShowcaseContent">
+      {isDocument && tabbed ? (
+        <DocTabStrip treeSource={treeSource as TreeSourceNode<NavNodeData>[]} />
+      ) : null}
       {isHomeRoute ? (
         <HomePage onSearch={onSearch} treeSource={treeSource} />
       ) : isWorkspaceRoute ? (
