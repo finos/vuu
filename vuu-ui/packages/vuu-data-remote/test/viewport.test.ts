@@ -124,6 +124,22 @@ describe("Viewport", () => {
       });
     });
 
+    it("treats a range as pending only if the pending request extends at least bufferSize / 4 beyond it", () => {
+      const v = viewportHarness({ bufferSize: 20 });
+      v.subscribed();
+      v.receives(size(), rows(0, 20));
+      v.setRange(50, 60);
+      expect(v.state().pendingRanges).toEqual([
+        { from: 30, to: 80, acked: undefined },
+      ]);
+
+      // margin is 5: 75 + 5 reaches the end of the pending range, 76 + 5 does not
+      expect(v.alreadyPending([65, 75], [66, 76])).toEqual({
+        "65:75": true,
+        "66:76": false,
+      });
+    });
+
     it("tests range requests against multiple pending server requests", () => {
       const v = viewportHarness({ bufferSize: 10 });
       v.subscribed();
