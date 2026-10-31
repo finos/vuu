@@ -48,11 +48,14 @@ export class ServerProxyHarness {
   #toClient: unknown[] = [];
   #toServer: ServerRequest[] = [];
   #serverHistory: ServerRequest[] = [];
+  #connectionListeners = new Map<string, (...args: unknown[]) => void>();
 
   constructor() {
     const connection = {
       connectionTimeout: 0,
-      on: () => undefined,
+      on: (event: string, listener: (...args: unknown[]) => void) => {
+        this.#connectionListeners.set(event, listener);
+      },
       requiresLogin: true,
       send: (msg: ServerRequest) => {
         this.#toServer.push(msg);
@@ -101,6 +104,27 @@ export class ServerProxyHarness {
     };
   }
 
+  /** Events from the websocket connection. */
+  readonly connection = {
+    /** Fires the connection-status event the proxy listens for. */
+    status: (status: "disconnected" | "reconnected" | string) => {
+      const listener = this.#connectionListeners.get("connection-status");
+      if (!listener)
+        throw Error("proxy is not listening for connection-status");
+      listener(status);
+    },
+  };
+
+  /** Lets pending promises (subscriptions, awaited responses) settle. */
+  async flush() {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  /** Request id of the most recent `type` request, optionally for one viewport. */
+  requestIdOf(type: string, vp?: string) {
+    return this.#lastRequest(type, vp).requestId;
+  }
+
   /** Actions arriving from the server over the websocket. */
   readonly server = {
     /** TABLE_ROW message; accepts single rows and arrays of rows. */
@@ -128,6 +152,14 @@ export class ServerProxyHarness {
         { ...body, ...overrides, type: `${type}_SUCCESS` },
         requestId,
       );
+    },
+    /**
+     * Server message answering the most recent `type` request, using that
+     * request's id. For requests without a viewport id (GET_TABLE_LIST,
+     * GET_TABLE_META, LOGIN, ...) or when any viewport will do.
+     */
+    replies: (type: string, body: object, vp?: string) => {
+      this.server.receives(body, this.#lastRequest(type, vp).requestId);
     },
     /** Any other server message body. */
     receives: (body: object, requestId = "") => {
@@ -204,6 +236,37 @@ export class ServerProxyHarness {
         childColumnName: childColumn,
         childVpId: child,
       }),
+    openTreeNode: (
+      node: { key?: string; index?: number },
+      vp = DEFAULT_CLIENT_VP,
+    ) => this.client.send({ type: "openTreeNode", viewport: vp, ...node }),
+    closeTreeNode: (
+      node: { key?: string; index?: number },
+      vp = DEFAULT_CLIENT_VP,
+    ) => this.client.send({ type: "closeTreeNode", viewport: vp, ...node }),
+    freeze: (vp = DEFAULT_CLIENT_VP) =>
+      this.client.send({ type: "FREEZE_VP", viewport: vp }),
+    unfreeze: (vp = DEFAULT_CLIENT_VP) =>
+      this.client.send({ type: "UNFREEZE_VP", viewport: vp }),
+    removeLink: ({ child = "client-vp-2", requestId = "req2" } = {}) =>
+      this.client.send({
+        type: "REMOVE_VISUAL_LINK",
+        childVpId: child,
+        requestId,
+      }),
+    setTitle: (title: string, vp = DEFAULT_CLIENT_VP) =>
+      this.client.send({ type: "setTitle", title, viewport: vp }),
+    disconnect: () => this.client.send({ type: "disconnect" }),
+    disableAllActive: () => this.client.send({ type: "disable-all-active" }),
+    enableAllActive: () => this.client.send({ type: "enable-all-active" }),
+    getTableList: (requestId = "client-request-1") =>
+      this.client.send({ type: "GET_TABLE_LIST", requestId }),
+    getTableMeta: (
+      table = { module: "TEST", table: "test-table" },
+      requestId = "client-request-1",
+    ) => this.client.send({ type: "GET_TABLE_META", table, requestId }),
+    /** Not a message: the proxy's public unsubscribe method. */
+    unsubscribe: (vp = DEFAULT_CLIENT_VP) => this.proxy.unsubscribe(vp),
     /** Any other client message. */
     send: (message: object) => {
       this.proxy.handleMessageFromClient(
@@ -231,6 +294,13 @@ export class ServerProxyHarness {
     this.#toServer = [];
   }
 
+  /** Returns the pending client messages and clears them, for checks toEqual can't make. */
+  takeClient() {
+    const messages = this.#toClient;
+    this.#toClient = [];
+    return messages;
+  }
+
   /** Read-only view of a viewport's internal state. */
   viewportState(vp = DEFAULT_SERVER_VP) {
     const viewport = this.#viewport(vp);
@@ -242,6 +312,9 @@ export class ServerProxyHarness {
       isTree: viewport.isTree,
       disabled: viewport.disabled,
       suspended: viewport.suspended,
+      frozen: viewport.frozen,
+      title: viewport.title,
+      links: viewport.links,
       cachedRowCount: dataWindow?.["internalData"].length,
       clientRange: dataWindow?.clientRange,
       pendingRangeCount: viewport["pendingRangeRequests"].length,
@@ -270,14 +343,15 @@ export class ServerProxyHarness {
     return viewport;
   }
 
-  #lastRequest(type: string, vp: string) {
+  #lastRequest(type: string, vp?: string) {
     for (let i = this.#serverHistory.length - 1; i >= 0; i--) {
       const { body } = this.#serverHistory[i];
-      if (body.type === type && body.viewPortId === vp) {
+      const bodyVp = body.viewPortId ?? body.vpId;
+      if (body.type === type && (vp === undefined || bodyVp === vp)) {
         return this.#serverHistory[i];
       }
     }
-    throw Error(`no ${type} request has been sent for ${vp}`);
+    throw Error(`no ${type} request has been sent${vp ? ` for ${vp}` : ""}`);
   }
 }
 
