@@ -6,7 +6,6 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ../../scripts/build-worker.ts && node ../../scripts/run-build-rslib.ts",
-    "build:dev": "node ../../scripts/build-worker.ts &&  node ../../scripts/run-build.mjs -- --dev",
     "build:worker": "node ../../scripts/build-worker.ts",
     "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
