@@ -1,6 +1,6 @@
 import { type TemplateSource, useDragContext } from "@heswell/grid-layout";
 import { type DragEvent, useCallback, useSyncExternalStore } from "react";
-import { WORKSPACE_PANEL_TYPE } from "./workspace-model";
+import { workspacePanelTemplate } from "./workspace-grid";
 
 /** An example being dragged from the nav tree, to be added to a workspace */
 export interface ExampleDrag {
@@ -46,14 +46,6 @@ export const useExampleDrag = () =>
 
 export const NAV_LAYOUT_ID = "showcase-nav";
 
-/** The GridLayout template that creates a workspace panel for an example */
-export const exampleTemplateJson = ({ path, title }: ExampleDrag) =>
-  JSON.stringify({
-    label: title,
-    props: { examplePath: path, title },
-    type: WORKSPACE_PANEL_TYPE,
-  });
-
 const createDragImage = ({ path, title }: ExampleDrag) => {
   const chip = document.createElement("div");
   chip.className = "ShowcaseDragChip";
@@ -81,9 +73,11 @@ export const useExampleDragSource = (drag: ExampleDrag) => {
     (evt: DragEvent<HTMLElement>) => {
       evt.stopPropagation();
       const source: TemplateSource = {
-        componentJson: exampleTemplateJson(drag),
+        ...workspacePanelTemplate({
+          examplePath: drag.path,
+          title: drag.title,
+        }),
         element: evt.currentTarget,
-        label: drag.title,
         layoutId: NAV_LAYOUT_ID,
         type: "template",
       };

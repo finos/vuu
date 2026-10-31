@@ -7,7 +7,7 @@ import { ChromeIcon } from "../chrome/ChromeIcon";
 import { SourceView } from "../example/SourceView";
 import { toastStore } from "../toast";
 import type { NavNodeData } from "../tree-nav/nav-tree";
-import { toSerializedLayout } from "./workspace-grid";
+import { toGridLayoutDocument } from "./workspace-grid";
 import type { Workspace } from "./workspace-model";
 import {
   type ExampleSourceInfo,
@@ -53,7 +53,7 @@ const LayoutSource = ({
   const fileName = `${componentName}.${format}`;
   const text = useMemo(() => {
     if (format === "json") {
-      return JSON.stringify(toSerializedLayout(workspace), null, 2);
+      return JSON.stringify(toGridLayoutDocument(workspace), null, 2);
     }
     return workspaceLayoutSource(workspace, (route) => {
       const nodeData = nodeDataOf(route, treeSource);

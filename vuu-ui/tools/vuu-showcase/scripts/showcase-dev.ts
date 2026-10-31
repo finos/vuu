@@ -47,6 +47,7 @@ const __dirname = path.join(cwd, ".showcase/dev");
 function cssInline(): PluginOption {
   const exclude = ["**/**.stories.tsx"];
   const include = [
+    "**/packages/core/**/*.{tsx,jsx}",
     "**/packages/grid-layout/**/*.{tsx,jsx}",
     "**/packages/vuu-chart/**/*.{tsx,jsx}",
     "**/packages/vuu-context-menu/**/*.{tsx,jsx}",
@@ -152,6 +153,17 @@ await writeFile(INDEX_HTML, "./.showcase/dev/index.html");
  * - index-standalone.ts runs exhibit code in IFrame
  */
 
+/**
+ * VUU_DATA_ENGINE=local runs the showcase against @heswell/vuu-data-engine-local
+ * (published from heswell/vuu-websocket), the @heswell/vuu-viewport engine backed
+ * replacement for @vuu-ui/vuu-data-test. Both packages expose the same API, so
+ * examples are unchanged.
+ */
+const useDataEngineLocal = process.env.VUU_DATA_ENGINE === "local";
+if (useDataEngineLocal) {
+  console.log("[showcase] using @heswell/vuu-data-engine-local");
+}
+
 const server = await createServer({
   build: {
     minify: false,
@@ -171,6 +183,16 @@ const server = await createServer({
   optimizeDeps: {
     include: ["@salt-ds/core", "@salt-ds/icons"],
   },
+  resolve: useDataEngineLocal
+    ? {
+        alias: [
+          {
+            find: /^@vuu-ui\/vuu-data-test$/,
+            replacement: "@heswell/vuu-data-engine-local",
+          },
+        ],
+      }
+    : undefined,
   root: __dirname,
   plugins: [cssInline(), docsSearchIndex(), exampleSource(), mdx(mdxOptions)],
   server: {

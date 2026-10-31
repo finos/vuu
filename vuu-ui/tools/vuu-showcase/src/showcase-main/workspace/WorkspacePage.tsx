@@ -2,7 +2,7 @@ import { Button, Input } from "@salt-ds/core";
 import {
   GridLayout,
   GridLayoutProvider,
-  type SerializedGridLayoutChangeHandler,
+  type GridLayoutDocumentChangeHandler,
 } from "@heswell/grid-layout";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
@@ -28,6 +28,7 @@ import { useTabbedDocuments } from "../doc-tabs/doc-tabs-store";
 import { useRecent } from "../tree-nav/nav-store";
 import type { NavNodeData } from "../tree-nav/nav-tree";
 import { ExamplePicker } from "./ExamplePicker";
+import { workspaceComponentRenderers } from "./WorkspacePanel";
 import {
   copyWorkspaceLink,
   deleteWorkspace,
@@ -39,8 +40,9 @@ import {
   type WorkspaceExample,
 } from "./workspace-examples";
 import {
-  fromSerializedLayout,
-  toSerializedLayout,
+  fromGridLayoutDocument,
+  toGridLayoutDocument,
+  workspaceSettingsCodecs,
   workspaceGridId,
 } from "./workspace-grid";
 import {
@@ -52,7 +54,6 @@ import { useWorkspace, workspaceStore } from "./workspace-store";
 import { WorkspacePageContext } from "./WorkspacePageContext";
 import { LAYOUT_SOURCE, WorkspaceSource } from "./WorkspaceSource";
 // registers the panel component, before GridLayout restores a layout
-import "./WorkspacePanel";
 
 import "../example/ExamplePage.css";
 import "./WorkspacePage.css";
@@ -363,15 +364,15 @@ const WorkspaceView = ({
 
   // The grid is re-created only when the layout is replaced (revision),
   // changes made within the grid are already reflected by it.
-  const serializedLayout = useMemo(
-    () => toSerializedLayout(workspaceRef.current),
+  const gridLayoutDocument = useMemo(
+    () => toGridLayoutDocument(workspaceRef.current),
     [id, revision],
   );
 
-  const handleGridChange = useCallback<SerializedGridLayoutChangeHandler>(
-    (serialized) => {
+  const handleGridChange = useCallback<GridLayoutDocumentChangeHandler>(
+    (document) => {
       const current = workspaceStore.get(id);
-      const result = fromSerializedLayout(serialized, current?.panels);
+      const result = fromGridLayoutDocument(document, current?.panels);
       if (result) {
         workspaceStore.syncFromGrid(id, result.panels, result.layout);
       }
@@ -469,9 +470,11 @@ const WorkspaceView = ({
                 })}
               >
                 <GridLayoutProvider
-                  onChange={handleGridChange}
+                  componentRenderers={workspaceComponentRenderers}
+                  document={gridLayoutDocument}
+                  onDocumentChange={handleGridChange}
                   options={GRID_OPTIONS}
-                  serializedLayout={serializedLayout}
+                  settingsCodecs={workspaceSettingsCodecs}
                 >
                   <GridLayout
                     className={`${classBase}-grid`}

@@ -1,6 +1,6 @@
 import "./Showcase.css";
 
-import React, { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ShowcaseShell } from "./showcase-main/ShowcaseShell";
 import { THEME_ID } from "./showcase-main/tree-nav/nav-tree";
 import { WORKSPACES_PATH } from "./showcase-main/workspace/workspace-model";
