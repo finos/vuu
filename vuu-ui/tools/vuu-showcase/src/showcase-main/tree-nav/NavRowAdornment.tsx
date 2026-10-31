@@ -2,6 +2,8 @@ import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { ToggleButton } from "@salt-ds/core";
 import type { MouseEvent } from "react";
 import { ChromeIcon } from "../chrome/ChromeIcon";
+import { useExampleDragSource } from "../workspace/workspace-drag";
+import { isWorkspaceExample } from "../workspace/workspace-model";
 import { favouritesStore, useFavourites } from "./nav-store";
 import type { NavIndex, NavNodeData } from "./nav-tree";
 
@@ -40,6 +42,22 @@ const FavouriteToggle = ({ label, path }: { label: string; path: string }) => {
   );
 };
 
+/** Drag handle, an example can be dropped onto another to make a workspace */
+const DragGrip = ({ label, path }: { label: string; path: string }) => {
+  const dragProps = useExampleDragSource({ path, title: label });
+  return (
+    <span
+      {...dragProps}
+      aria-hidden
+      className={`${classBase}-grip`}
+      onClick={(evt) => evt.stopPropagation()}
+      title="Drag onto the example, or a workspace, to combine"
+    >
+      <ChromeIcon name="grip" size={14} />
+    </span>
+  );
+};
+
 export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
   const nodeData = (dataRow.nodeData ?? {}) as NavNodeData;
   const isFolder = dataRow.childCount > 0;
@@ -57,8 +75,13 @@ export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
     );
   }
   const label = dataRow[`Level ${dataRow.depth}`];
+  const title = typeof label === "string" ? label : "example";
   return (
     <>
+      {path && isWorkspaceExample(nodeData) ? (
+        // positioned before the label by css
+        <DragGrip label={title} path={path} />
+      ) : null}
       {nodeData.fixtureFor?.length ? (
         <span
           className={`${classBase}-fixture`}
@@ -70,12 +93,7 @@ export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
       {nodeData.live ? (
         <span className="ShowcaseLiveDot" title="Uses live data" />
       ) : null}
-      {path ? (
-        <FavouriteToggle
-          label={typeof label === "string" ? label : "example"}
-          path={path}
-        />
-      ) : null}
+      {path ? <FavouriteToggle label={title} path={path} /> : null}
     </>
   );
 };

@@ -128,6 +128,42 @@ const paths = {
       <path d="M9 7v3M9 12.25v.01" />
     </>
   ),
+  plus: <path d="M9 3.5v11M3.5 9h11" />,
+  trash: (
+    <>
+      <path d="M3 5h12M7.5 5V3.5h3V5M4.5 5l.75 9.5a1.5 1.5 0 0 0 1.5 1.5h4.5a1.5 1.5 0 0 0 1.5-1.5L13.5 5" />
+      <path d="M7.5 8v5M10.5 8v5" />
+    </>
+  ),
+  pencil: (
+    <path d="M11.5 3.5 14.5 6.5 6.5 14.5H3.5V11.5zM10 5l3 3" />
+  ),
+  more: (
+    <>
+      <circle cx="4.5" cy="9" r=".9" fill="currentColor" />
+      <circle cx="9" cy="9" r=".9" fill="currentColor" />
+      <circle cx="13.5" cy="9" r=".9" fill="currentColor" />
+    </>
+  ),
+  grip: (
+    <>
+      <circle cx="6.75" cy="4.5" r=".9" fill="currentColor" stroke="none" />
+      <circle cx="11.25" cy="4.5" r=".9" fill="currentColor" stroke="none" />
+      <circle cx="6.75" cy="9" r=".9" fill="currentColor" stroke="none" />
+      <circle cx="11.25" cy="9" r=".9" fill="currentColor" stroke="none" />
+      <circle cx="6.75" cy="13.5" r=".9" fill="currentColor" stroke="none" />
+      <circle cx="11.25" cy="13.5" r=".9" fill="currentColor" stroke="none" />
+    </>
+  ),
+  maximise: <path d="M10.5 3H15v4.5M7.5 15H3v-4.5M15 3l-5 5M3 15l5-5" />,
+  minimise: <path d="M14.5 7.5H10.5V3.5M3.5 10.5h4v4M10.5 7.5l5-5M7.5 10.5l-5 5" />,
+  download: <path d="M9 3v8.5M5.5 8.5 9 12l3.5-3.5M3.5 15h11" />,
+  layout: (
+    <>
+      <rect x="2.5" y="3" width="13" height="12" rx="1.5" />
+      <path d="M8 3v12M8 9h7.5" />
+    </>
+  ),
 } as const;
 
 export type ChromeIconName = keyof typeof paths;

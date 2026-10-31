@@ -33,6 +33,8 @@
   --sc-ok: #1f9d6b;
   --sc-ok-halo: rgba(31, 157, 107, 0.15);
   --sc-warn: #d38a12;
+  --sc-danger: #d1344b;
+  --sc-danger-soft: rgba(209, 52, 75, 0.1);
   --sc-focus: #6c4bd8;
 
   --sc-radius-sm: 6px;
@@ -80,6 +82,8 @@
   --sc-text-4: #5f5f70;
 
   --sc-focus: #9b82ff;
+  --sc-danger: #f0677c;
+  --sc-danger-soft: rgba(240, 103, 124, 0.14);
 
   --sc-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --sc-shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4);

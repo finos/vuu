@@ -21,6 +21,7 @@ import {
 } from "./nav-tree";
 import { createNavRowAdornmentRenderer } from "./NavRowAdornment";
 import { TreeNavPanel } from "./TreeNavPanel";
+import { WorkspacesNav } from "../workspace/WorkspacesNav";
 
 export const NAV_FILTER_INPUT_SELECTOR = ".ShowcaseNavFilter-input";
 
@@ -173,6 +174,7 @@ export const ShowcaseNav = ({
       autoSelectRowKey={navState.key}
       className="ShowcaseNav"
       filterPredicate={filterPredicate}
+      footer={section === "examples" ? <WorkspacesNav /> : undefined}
       key={navState.generation}
       indentGuides
       header={

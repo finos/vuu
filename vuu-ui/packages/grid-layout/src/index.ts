@@ -4,6 +4,7 @@ export { GridLayoutStackedItem } from "./GridLayoutStackedtem";
 export {
   GridLayoutProvider,
   type SerializedGridLayout,
+  type SerializedGridLayoutChangeHandler,
 } from "./GridLayoutProvider";
 export type {
   GridLayoutChangeHandler,
@@ -20,7 +21,10 @@ export {
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
 export { useDraggable } from "./useDraggable";
-export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
+export {
+  DragDropProviderNext,
+  useDragContext,
+} from "./drag-drop-next/DragDropProviderNext";
 export type {
   DragSources,
   DropHandler,
