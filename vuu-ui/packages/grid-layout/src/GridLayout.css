@@ -4,28 +4,19 @@
   --vuu-grid-gap: 6px;
   --vuu-grid-header-height: 25px;
   display: grid;
+  /* fr tracks must not grow to fit their content. */
+  min-height: 0;
+  min-width: 0;
   padding: var(--vuu-grid-gap);
 
-  &.vuuDragging {
-    /* 
-      While we are dragging, do not let drag events fire on anything 
-      more granular than GridLayoutItem. Exception for vuuDraggableItem
-      is for Tabs 
-    */
-    [data-drop-target] > :not(.vuuDraggableItem) {
-      pointer-events: none;
-    }
-  }
-
   &.vuuResizing {
-    transition: .3s;
+    transition: 0.3s;
   }
 
   &.vuuFullPage {
     height: 100vh;
     width: 100vw;
   }
-  
 }
 
 .vuu-detached {
@@ -36,7 +27,7 @@
   &.has-h-splitter {
     margin-top: calc(var(--vuu-layout-tabs-height) + 7px);
   }
-  &:not(.has-h-splitter){
+  &:not(.has-h-splitter) {
     margin-top: var(--vuu-layout-tabs-height);
   }
 }
@@ -48,6 +39,9 @@
 .vuuGridLayoutStackedItemContent,
 .vuuGridLayoutItemContent {
   flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
   position: relative;
 }
 
@@ -56,7 +50,6 @@
   position: absolute;
   inset: 0;
 }
-
 
 .vuuDropTarget-east {
   --grid-dropzone-top: 0px;
@@ -104,8 +97,8 @@
 }
 
 .vuuDropTarget-centre:after,
-.vuuDropTarget-north:after, 
-.vuuDropTarget-east:after, 
+.vuuDropTarget-north:after,
+.vuuDropTarget-east:after,
 .vuuDropTarget-south:after,
 .vuuDropTarget-west:after {
   background-color: cornflowerblue;
@@ -134,4 +127,3 @@
   transition-timing-function: ease-in-out;
   z-index: 100;
 }
-

@@ -1,38 +1,41 @@
-import { LayoutContainer, Flexbox } from "@vuu-ui/vuu-layout";
-import { VuuShellLocation } from "@vuu-ui/vuu-utils";
-import { ContextPanel } from "../context-panel";
+import { GridLayout, GridLayoutItem } from "@heswell/grid-layout";
+import { ApplicationSettingsContextPanel } from "../context-panel";
 import { SidePanel } from "../side-panel";
-import { ShellLayoutTemplateHook } from "../useShellLayout";
-import { useMemo } from "react";
+import type { ShellLayoutTemplateHook } from "../useShellLayout";
 
 export const useFullHeightLeftPanel: ShellLayoutTemplateHook = ({
   appHeader,
-  SidePanelProps: LeftSidePanelProps,
+  SidePanelProps,
   htmlAttributes,
-}) =>
-  useMemo(
-    () => (
-      <Flexbox
-        {...htmlAttributes}
-        style={{
-          ...htmlAttributes?.style,
-          flexDirection: "row",
-        }}
+  workspaceHost,
+}) => {
+  const { onChange: _onChange, ...gridAttributes } = htmlAttributes ?? {};
+  return (
+    <GridLayout
+      {...gridAttributes}
+      className={`${htmlAttributes?.className ?? ""} vuuShell-staticGrid`}
+      colsAndRows={{
+        cols: [`${SidePanelProps?.sizeOpen ?? 200}px`, "1fr", "0px"],
+        rows: ["40px", "1fr"],
+      }}
+      id="vuu-shell-grid"
+    >
+      <GridLayoutItem id="vuu-shell-left-nav" style={{ gridArea: "1/1/3/2" }}>
+        <SidePanel {...SidePanelProps} id="vuu-side-panel" />
+      </GridLayoutItem>
+      <GridLayoutItem id="vuu-shell-header" style={{ gridArea: "1/2/2/3" }}>
+        {appHeader}
+      </GridLayoutItem>
+      <GridLayoutItem
+        className="vuuShell-content"
+        id="vuu-shell-workspace-host"
+        style={{ gridArea: "2/2/3/3" }}
       >
-        <SidePanel {...LeftSidePanelProps} id={VuuShellLocation.SidePanel} />
-        <Flexbox
-          className="vuuShell-content"
-          style={{ flex: 1, flexDirection: "column" }}
-        >
-          {appHeader}
-          <LayoutContainer
-            id={VuuShellLocation.WorkspaceContainer}
-            key="main-content"
-            style={{ flex: 1 }}
-          />
-        </Flexbox>
-        <ContextPanel id={VuuShellLocation.ContextPanel} overlay></ContextPanel>
-      </Flexbox>
-    ),
-    [LeftSidePanelProps, appHeader, htmlAttributes],
+        {workspaceHost}
+      </GridLayoutItem>
+      <GridLayoutItem id="vuu-shell-context" style={{ gridArea: "1/3/3/4" }}>
+        <ApplicationSettingsContextPanel />
+      </GridLayoutItem>
+    </GridLayout>
   );
+};

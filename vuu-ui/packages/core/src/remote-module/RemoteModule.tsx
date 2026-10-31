@@ -1,0 +1,420 @@
+import {
+  AuthenticationProvider,
+  type RemoteModuleConnection,
+} from "@vuu-ui/core";
+import {
+  loadRemote,
+  registerRemotes,
+} from "@module-federation/enhanced/runtime";
+import { NotificationOriginProvider } from "@vuu-ui/vuu-notifications";
+import React, {
+  Suspense,
+  lazy,
+  use,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { ModuleContextPanel } from "../context-panel/ModuleContextPanel";
+import type { ContextPanelPlacement } from "../context-panel/ContextPanelSlot";
+import {
+  normalizeVuuAuthTarget,
+  useOptionalIdentityContext,
+} from "../auth/AuthenticationProvider";
+import {
+  ApplicationStateProvider,
+  useOptionalPortalPersistence,
+} from "../persistence/PersistenceContext";
+import type { StateMigration } from "../persistence/StateMigrations";
+import { useStoreReady } from "../persistence/useStoreReady";
+import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
+import { useRegisterNotificationHost } from "../notifications/PortalNotificationsProvider";
+import { useOptionalSavedState } from "../saved-state/SavedStateContext";
+import { useInRouterContext, useLocation } from "react-router-dom";
+import {
+  ConnectionLostOverlay,
+  useLostConnectionStatus,
+} from "./ConnectionLostOverlay";
+import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
+import {
+  forgetRemoteModuleConfig,
+  loadRemoteModuleConfig,
+} from "./remote-module-config";
+
+export interface RemoteModuleProps {
+  ViewProps?: {
+    allowRename?: boolean;
+    closeable?: boolean;
+    header?: boolean;
+  };
+  /** With `version`, identifies the module's saved state, unless `persistenceKey` is set. */
+  clientIdentifier?: string;
+  /**
+   * Where content the module shows in the context panel is displayed: the
+   * shell's panel (the default) or a panel within the module's frame, the
+   * module's nearest positioned ancestor.
+   */
+  contextPanelPlacement?: ContextPanelPlacement;
+  css?: string;
+  height?: number;
+  mfComponent: string;
+  /**
+   * The export of the `mfComponent` module to render. Defaults to
+   * `"default"`; set it when a module exposes several components as named
+   * exports.
+   */
+  mfExport?: string;
+  mfScope: string;
+  mfUrl: string;
+  onError?: (error: Error) => void;
+  /** Overrides `clientIdentifier` as the key for the module's saved state. */
+  persistenceKey?: string;
+  title?: string;
+  /** The module's version; saved state is kept per version. */
+  version?: number;
+  /**
+   * The Vuu server the module connects to. Normally omitted: the connection
+   * is read from the `config.json` the remote publishes at `mfUrl`. Set it to
+   * point a generic module, such as a table viewer, at a specific server.
+   */
+  vuu?: RemoteModuleConnection;
+  width?: number;
+}
+
+type RemoteComponent = React.ComponentType<Record<string, unknown>>;
+
+type RemoteExports = Record<string, unknown> & {
+  stateMigrations?: readonly StateMigration[];
+};
+
+const DEFAULT_EXPORT = "default";
+
+const getRemoteComponentKey = (
+  mfUrl: string,
+  mfScope: string,
+  mfComponent: string,
+) => `${mfUrl}|${mfScope}/${mfComponent}`;
+
+const remoteExports = new Map<string, Promise<RemoteExports>>();
+const components = new Map<string, ReturnType<typeof lazy>>();
+/**
+ * Pending and failed config promises read with `use`, keyed by `mfUrl`.
+ * `loadRemoteModuleConfig` evicts a failed load at once, so React's retry
+ * render would suspend on a new promise forever. A failed load is kept here
+ * until the error boundary forgets it; a successful one is left to the
+ * shared cache.
+ */
+const remoteConfigs = new Map<
+  string,
+  ReturnType<typeof loadRemoteModuleConfig>
+>();
+
+const getRemoteConfig = (mfUrl: string) => {
+  let config = remoteConfigs.get(mfUrl);
+  if (config === undefined) {
+    const pending = loadRemoteModuleConfig(mfUrl);
+    remoteConfigs.set(mfUrl, pending);
+    pending.then(
+      () => {
+        if (remoteConfigs.get(mfUrl) === pending) {
+          remoteConfigs.delete(mfUrl);
+        }
+      },
+      () => undefined,
+    );
+    config = pending;
+  }
+  return config;
+};
+
+/**
+ * Loads the exposed module once, so that the component and its
+ * `stateMigrations` export share one request.
+ */
+const loadRemoteExports = (
+  mfUrl: string,
+  mfScope: string,
+  mfComponent: string,
+) => {
+  const key = getRemoteComponentKey(mfUrl, mfScope, mfComponent);
+  let exports = remoteExports.get(key);
+  if (exports === undefined) {
+    registerRemotes([
+      {
+        name: mfScope,
+        entry: `${mfUrl}/mf-manifest.json`,
+      },
+    ]);
+    exports = loadRemote<RemoteExports>(`${mfScope}/${mfComponent}`, {
+      from: "runtime",
+    }).then((remote) => {
+      if (remote === null || remote === undefined) {
+        throw Error(
+          `Unable to load remote component ${mfScope}/${mfComponent}`,
+        );
+      }
+      return remote;
+    });
+    exports.catch(() => {
+      if (remoteExports.get(key) === exports) {
+        remoteExports.delete(key);
+      }
+    });
+    remoteExports.set(key, exports);
+  }
+  return exports;
+};
+
+const isComponentExport = (value: unknown): value is RemoteComponent =>
+  typeof value === "function" ||
+  (typeof value === "object" && value !== null && "$$typeof" in value);
+
+const getRemoteComponent = (
+  mfUrl: string,
+  mfScope: string,
+  mfComponent: string,
+  mfExport = DEFAULT_EXPORT,
+) => {
+  const componentKey = `${getRemoteComponentKey(mfUrl, mfScope, mfComponent)}#${mfExport}`;
+  let component = components.get(componentKey);
+
+  if (component === undefined) {
+    // Start loading now, alongside the module's config.json, rather than
+    // when the component first renders. Capturing the request means a
+    // failure is reported, not silently retried, on the next render.
+    const exports = loadRemoteExports(mfUrl, mfScope, mfComponent).then(
+      (remote) => {
+        const Component = remote[mfExport];
+        if (!isComponentExport(Component)) {
+          throw Error(
+            `Remote module ${mfScope}/${mfComponent} has no component export '${mfExport}'`,
+          );
+        }
+        return { default: Component };
+      },
+    );
+    exports.catch(() => undefined);
+    component = lazy(() => exports);
+    components.set(componentKey, component);
+  }
+
+  return component;
+};
+
+const forgetRemote = (
+  mfUrl: string,
+  mfScope: string,
+  mfComponent: string,
+  mfExport = DEFAULT_EXPORT,
+) => {
+  const key = getRemoteComponentKey(mfUrl, mfScope, mfComponent);
+  components.delete(`${key}#${mfExport}`);
+  remoteExports.delete(key);
+  remoteConfigs.delete(mfUrl);
+  forgetRemoteModuleConfig(mfUrl);
+};
+
+const toStateMigrations = (exports: RemoteExports) =>
+  Array.isArray(exports.stateMigrations) ? exports.stateMigrations : [];
+
+/**
+ * Resolves the module's ApplicationStateStore (FR-2). The document is loaded
+ * in parallel with the remote code; migrations wait for the code (§6.2).
+ */
+const useRemoteModuleState = ({
+  clientIdentifier,
+  mfComponent,
+  mfScope,
+  mfUrl,
+  persistenceKey,
+  title,
+  version,
+}: Pick<
+  RemoteModuleProps,
+  | "clientIdentifier"
+  | "mfComponent"
+  | "mfScope"
+  | "mfUrl"
+  | "persistenceKey"
+  | "title"
+  | "version"
+>) => {
+  const service = useOptionalPortalPersistence();
+  const applicationKey = persistenceKey ?? clientIdentifier;
+  const hasKey =
+    applicationKey !== undefined &&
+    applicationKey !== "" &&
+    Number.isInteger(version);
+
+  const store = useMemo(() => {
+    if (!service || !hasKey || service.isDisposed()) return undefined;
+    return service.getStore(applicationKey as string, version as number, {
+      title,
+      migrations: loadRemoteExports(mfUrl, mfScope, mfComponent).then(
+        toStateMigrations,
+      ),
+    });
+  }, [
+    applicationKey,
+    hasKey,
+    mfComponent,
+    mfScope,
+    mfUrl,
+    service,
+    title,
+    version,
+  ]);
+
+  useEffect(() => {
+    if (service && store) {
+      return service.markOpen(store.applicationKey, store.applicationVersion);
+    }
+  }, [service, store]);
+
+  // Once the module renders, say what wasn't carried forward (§5.4.7).
+  const reportCarryForward = useOptionalSavedState()?.reportCarryForward;
+  useEffect(() => {
+    if (service && store && reportCarryForward && store.status !== "loading") {
+      const report = service.consumeCarryForwardReport(
+        store.applicationKey,
+        store.applicationVersion,
+      );
+      if (report) reportCarryForward(report);
+    }
+  }, [reportCarryForward, service, store]);
+
+  useStoreReady(store);
+  return store;
+};
+
+function RemoteModuleContent(props: RemoteModuleProps) {
+  const {
+    contextPanelPlacement,
+    css: _css,
+    mfComponent,
+    mfExport,
+    mfScope,
+    mfUrl,
+    persistenceKey: _persistenceKey,
+    vuu,
+    ...remoteProps
+  } = props;
+  const store = useRemoteModuleState(props);
+  const { localServers, portalTarget } = useOptionalIdentityContext() ?? {};
+  const moduleId = useContext(PortalModuleIdContext);
+  const RemoteComponent = getRemoteComponent(
+    mfUrl,
+    mfScope,
+    mfComponent,
+    mfExport,
+  );
+  const configuredConnection = vuu ?? use(getRemoteConfig(mfUrl)).vuu;
+  const connection = useMemo(
+    () =>
+      configuredConnection && portalTarget && !localServers
+        ? normalizeVuuAuthTarget(configuredConnection, portalTarget)
+        : configuredConnection,
+    [configuredConnection, localServers, portalTarget],
+  );
+  useRegisterNotificationHost(connection?.connectionId);
+  const lostStatus = useLostConnectionStatus(connection?.connectionId);
+  const remoteComponent = (
+    <ModuleContextPanel placement={contextPanelPlacement}>
+      <RemoteComponent {...remoteProps} />
+    </ModuleContextPanel>
+  );
+
+  // Always provide a value, so the portal's own store is never visible to
+  // the module (FR-3).
+  return (
+    <ApplicationStateProvider store={store}>
+      <NotificationOriginProvider
+        connectionId={connection?.connectionId}
+        moduleId={moduleId}
+      >
+        {/* Kept mounted while the connection is lost, but unusable. */}
+        <div
+          className="vuuRemoteModule"
+          inert={lostStatus !== undefined}
+          style={{ display: "contents" }}
+        >
+          {connection ? (
+            <AuthenticationProvider
+              mode="vuu-connection"
+              connection={connection}
+            >
+              {remoteComponent}
+            </AuthenticationProvider>
+          ) : (
+            remoteComponent
+          )}
+        </div>
+        {lostStatus ? (
+          <ConnectionLostOverlay status={lostStatus} title={props.title} />
+        ) : null}
+      </NotificationOriginProvider>
+    </ApplicationStateProvider>
+  );
+}
+
+function RawRemoteModule(props: RemoteModuleProps) {
+  const { mfComponent, mfExport, mfScope, mfUrl, onError } = props;
+
+  return (
+    <RemoteModuleErrorBoundary
+      mfComponent={mfComponent}
+      mfScope={mfScope}
+      mfUrl={mfUrl}
+      onError={(error) => {
+        forgetRemote(mfUrl, mfScope, mfComponent, mfExport);
+        onError?.(error);
+      }}
+    >
+      {/* Suspend here, not at the root, so the shell (and its persistence
+          service) commits while the code and saved state load. */}
+      <Suspense fallback={null}>
+        <RemoteModuleContent {...props} />
+      </Suspense>
+    </RemoteModuleErrorBoundary>
+  );
+}
+
+type RoutedRemoteModuleProps = RemoteModuleProps;
+
+/**
+ * A module that failed to load is retried after the next navigation. A
+ * working module stays mounted while the location changes, so routes within
+ * it keep its state.
+ */
+const RoutedRemoteModule = ({ onError, ...props }: RoutedRemoteModuleProps) => {
+  const { key: locationKey } = useLocation();
+  const [attempt, setAttempt] = useState(0);
+  const failed = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on navigation
+  useEffect(() => {
+    if (failed.current) {
+      failed.current = false;
+      setAttempt((count) => count + 1);
+    }
+  }, [locationKey]);
+  const handleError = useCallback(
+    (error: Error) => {
+      failed.current = true;
+      onError?.(error);
+    },
+    [onError],
+  );
+  return <RawRemoteModule key={attempt} {...props} onError={handleError} />;
+};
+
+export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) =>
+  useInRouterContext() ? (
+    <RoutedRemoteModule {...props} />
+  ) : (
+    <RawRemoteModule {...props} />
+  ),
+);
+RemoteModule.displayName = "RemoteModule";

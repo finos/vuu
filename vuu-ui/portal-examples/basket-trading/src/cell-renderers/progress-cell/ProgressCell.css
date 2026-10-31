@@ -1,0 +1,20 @@
+.vuuBasketProgressCell {
+    position: relative;
+}
+
+.vuuBasketProgressCell-progressBar {
+    background-color: var(--vuu-color-green-60-fade-30);
+    border-right: solid 2px var(--vuu-color-green-60);
+    display: inline-block;
+    height: 20px;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    width: var(--progress-bar-pct, 0);
+}
+
+
+.vuuBasketProgressCell-text {
+    text-align: right;
+    z-index: 1;
+}

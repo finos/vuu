@@ -154,13 +154,13 @@ function getVendorImportPath(
   const targetPath = subpath
     ? path.join(packagePath, `${subpath}.js`)
     : path.join(
-        packagePath,
-        packageName === "@dnd-kit/geometry" ||
-          packageName === "@dnd-kit/collision" ||
-          packageName === "@dnd-kit/state"
-          ? "dist/index.js"
-          : "index.js",
-      );
+      packagePath,
+      packageName === "@dnd-kit/geometry" ||
+        packageName === "@dnd-kit/collision" ||
+        packageName === "@dnd-kit/state"
+        ? "dist/index.js"
+        : "index.js",
+    );
   return relativeImport(importingFile, targetPath);
 }
 
@@ -197,6 +197,7 @@ export default async function main() {
                 "index.ts",
                 "src/**/*.ts?(x)",
                 "src/**/*.js",
+                "src/**/*.json",
                 "src/**/*.css",
                 "!src/__tests__/**/*",
               ],

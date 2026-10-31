@@ -1,7 +1,7 @@
-import { ReactElement } from "react";
-import { boxContainsPoint, isContainer, LayoutModel } from "@vuu-ui/vuu-utils";
+import type { ReactElement } from "react";
+import { boxContainsPoint, isContainer, type LayoutModel } from "@vuu-ui/vuu-utils";
 import { getProps, typeOf } from "../utils";
-import { DragDropRect, DropPos, RelativePosition } from "./dragDropTypes";
+import type { DragDropRect, DropPos, RelativePosition } from "./dragDropTypes";
 
 export const positionValues = {
   north: 1,
@@ -200,9 +200,8 @@ function getPositionWithinBox(
   if (boxContainsPoint(centerBox, x, y)) {
     return CENTRE;
   } else {
-    const quadrant = `${pctY < 0.5 ? "north" : "south"}${
-      pctX < 0.5 ? "west" : "east"
-    }`;
+    const quadrant = `${pctY < 0.5 ? "north" : "south"}${pctX < 0.5 ? "west" : "east"
+      }`;
 
     switch (quadrant) {
       case "northwest":

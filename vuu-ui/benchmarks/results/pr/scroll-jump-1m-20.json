@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "scenario": {
+    "id": "scroll-jump-1m-20",
+    "description": "20 scrollbar jumps to random positions in 1M rows",
+    "dataset": {
+      "rows": 1000000,
+      "cols": 20,
+      "cellType": "formatted",
+      "seed": 20261020
+    },
+    "run": {
+      "kind": "scroll-jump",
+      "jumps": 20
+    }
+  },
+  "env": {
+    "gitSha": "49f6f39f2b6490f4e42bedbba46b2a6c0ee73786-dirty",
+    "target": "pr",
+    "buildMode": "production",
+    "browser": "chromium",
+    "browserVersion": "151.0.7922.34",
+    "headless": true,
+    "gpu": "on",
+    "cpuThrottle": 4,
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 8,
+    "platform": "darwin arm64"
+  },
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-jump-1m-20",
+      "pass": "timing",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:43:57.266Z",
+      "mount": {
+        "dataGenMs": 1094,
+        "dataSourceMs": 1529,
+        "firstRowsMs": 207,
+        "firstPaintMs": 259
+      },
+      "result": {
+        "blankRowMs": {
+          "count": 20,
+          "mean": 77.75,
+          "p50": 80.6,
+          "p95": 86.2,
+          "p99": 97.8,
+          "max": 97.8
+        },
+        "durationMs": 2017,
+        "frames": {
+          "count": 99,
+          "mean": 20.21,
+          "p50": 16.7,
+          "p95": 34.2,
+          "p99": 51,
+          "max": 51,
+          "jankyFrames": 18,
+          "jankyPct": 18.18
+        },
+        "longFrames": {
+          "count": 1,
+          "blockingMs": 2
+        }
+      },
+      "cdp": {
+        "layoutCount": 20,
+        "layoutMs": 149,
+        "recalcStyleCount": 20,
+        "recalcStyleMs": 4,
+        "scriptMs": 622,
+        "taskMs": 1251,
+        "jsHeapUsedMB": 480.1,
+        "domNodes": 1989,
+        "jsEventListeners": 344
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-jump-1m-20",
+      "pass": "timing",
+      "iteration": 1,
+      "startedAt": "2026-10-20T07:44:05.141Z",
+      "mount": {
+        "dataGenMs": 1152,
+        "dataSourceMs": 1732,
+        "firstRowsMs": 218,
+        "firstPaintMs": 267
+      },
+      "result": {
+        "blankRowMs": {
+          "count": 20,
+          "mean": 83.53,
+          "p50": 86.4,
+          "p95": 89.7,
+          "p99": 92.1,
+          "max": 92.1
+        },
+        "durationMs": 2234,
+        "frames": {
+          "count": 99,
+          "mean": 22.39,
+          "p50": 16.8,
+          "p95": 50,
+          "p99": 50.8,
+          "max": 50.8,
+          "jankyFrames": 21,
+          "jankyPct": 21.21
+        },
+        "longFrames": {
+          "count": 0,
+          "blockingMs": 0
+        }
+      },
+      "cdp": {
+        "layoutCount": 20,
+        "layoutMs": 166,
+        "recalcStyleCount": 20,
+        "recalcStyleMs": 7,
+        "scriptMs": 670,
+        "taskMs": 1398,
+        "jsHeapUsedMB": 480.1,
+        "domNodes": 1989,
+        "jsEventListeners": 344
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-jump-1m-20",
+      "pass": "timing",
+      "iteration": 2,
+      "startedAt": "2026-10-20T07:44:32.901Z",
+      "mount": {
+        "dataGenMs": 1068,
+        "dataSourceMs": 1765,
+        "firstRowsMs": 162,
+        "firstPaintMs": 212
+      },
+      "result": {
+        "blankRowMs": {
+          "count": 20,
+          "mean": 86.21,
+          "p50": 91.9,
+          "p95": 97.4,
+          "p99": 106.5,
+          "max": 106.5
+        },
+        "durationMs": 2201,
+        "frames": {
+          "count": 99,
+          "mean": 22.05,
+          "p50": 16.7,
+          "p95": 50.6,
+          "p99": 66.7,
+          "max": 66.7,
+          "jankyFrames": 18,
+          "jankyPct": 18.18
+        },
+        "longFrames": {
+          "count": 5,
+          "blockingMs": 12
+        }
+      },
+      "cdp": {
+        "layoutCount": 20,
+        "layoutMs": 175,
+        "recalcStyleCount": 20,
+        "recalcStyleMs": 6,
+        "scriptMs": 697,
+        "taskMs": 1455,
+        "jsHeapUsedMB": 480.1,
+        "domNodes": 1989,
+        "jsEventListeners": 344
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-jump-1m-20",
+      "pass": "timing",
+      "iteration": 3,
+      "startedAt": "2026-10-20T07:44:42.252Z",
+      "mount": {
+        "dataGenMs": 1080,
+        "dataSourceMs": 2609,
+        "firstRowsMs": 239,
+        "firstPaintMs": 291
+      },
+      "result": {
+        "blankRowMs": {
+          "count": 20,
+          "mean": 89.64,
+          "p50": 93.1,
+          "p95": 103.3,
+          "p99": 104.5,
+          "max": 104.5
+        },
+        "durationMs": 2320,
+        "frames": {
+          "count": 99,
+          "mean": 23.23,
+          "p50": 16.7,
+          "p95": 50.9,
+          "p99": 67.7,
+          "max": 67.7,
+          "jankyFrames": 21,
+          "jankyPct": 21.21
+        },
+        "longFrames": {
+          "count": 15,
+          "blockingMs": 51
+        }
+      },
+      "cdp": {
+        "layoutCount": 20,
+        "layoutMs": 177,
+        "recalcStyleCount": 20,
+        "recalcStyleMs": 10,
+        "scriptMs": 758,
+        "taskMs": 1529,
+        "jsHeapUsedMB": 480.1,
+        "domNodes": 1989,
+        "jsEventListeners": 345
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-jump-1m-20",
+      "pass": "instrumented",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:45:13.116Z",
+      "mount": {
+        "dataGenMs": 965,
+        "dataSourceMs": 1524,
+        "firstRowsMs": 216,
+        "firstPaintMs": 254
+      },
+      "result": {
+        "blankRowMs": {
+          "count": 20,
+          "mean": 77.98,
+          "p50": 83.1,
+          "p95": 106.7,
+          "p99": 112,
+          "max": 112
+        },
+        "durationMs": 2115,
+        "frames": {
+          "count": 99,
+          "mean": 21.22,
+          "p50": 16.7,
+          "p95": 50.2,
+          "p99": 67.4,
+          "max": 67.4,
+          "jankyFrames": 14,
+          "jankyPct": 14.14
+        },
+        "longFrames": {
+          "count": 6,
+          "blockingMs": 33
+        },
+        "dom": {
+          "rowMounts": 0,
+          "rowMoves": 0,
+          "elementsInserted": 0,
+          "elementsRemoved": 0,
+          "textChanges": 13789,
+          "attributeChanges": 1760,
+          "rowUnmounts": 0,
+          "tableNodes": 1126
+        }
+      },
+      "cdp": {
+        "layoutCount": 20,
+        "layoutMs": 154,
+        "recalcStyleCount": 20,
+        "recalcStyleMs": 5,
+        "scriptMs": 590,
+        "taskMs": 1251,
+        "jsHeapUsedMB": 480.1,
+        "domNodes": 1989,
+        "jsEventListeners": 345
+      }
+    }
+  ],
+  "summary": {
+    "mount.dataGenMs": 1087,
+    "mount.dataSourceMs": 1748.5,
+    "mount.firstRowsMs": 212.5,
+    "mount.firstPaintMs": 263,
+    "cdp.layoutCount": 20,
+    "cdp.layoutMs": 170.5,
+    "cdp.recalcStyleCount": 20,
+    "cdp.recalcStyleMs": 6.5,
+    "cdp.scriptMs": 683.5,
+    "cdp.taskMs": 1426.5,
+    "cdp.jsHeapUsedMB": 480.1,
+    "cdp.domNodes": 1989,
+    "cdp.jsEventListeners": 344,
+    "frames.count": 99,
+    "frames.mean": 22.22,
+    "frames.p50": 16.7,
+    "frames.p95": 50.3,
+    "frames.p99": 58.85,
+    "frames.max": 58.85,
+    "frames.jankyFrames": 19.5,
+    "frames.jankyPct": 19.7,
+    "longFrames.count": 3,
+    "longFrames.blockingMs": 7,
+    "blankRowMs.count": 20,
+    "blankRowMs.mean": 84.87,
+    "blankRowMs.p50": 89.15,
+    "blankRowMs.p95": 93.55,
+    "blankRowMs.p99": 101.15,
+    "blankRowMs.max": 101.15,
+    "durationMs": 2217.5,
+    "dom.rowMounts": 0,
+    "dom.rowMoves": 0,
+    "dom.elementsInserted": 0,
+    "dom.elementsRemoved": 0,
+    "dom.textChanges": 13789,
+    "dom.attributeChanges": 1760,
+    "dom.rowUnmounts": 0,
+    "dom.tableNodes": 1126,
+    "perUnit.layoutsPerFrame": 0.202
+  }
+}

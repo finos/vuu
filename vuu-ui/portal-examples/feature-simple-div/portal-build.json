@@ -1,0 +1,31 @@
+{
+  "extends": "../portal-build.remote.json",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "output": "../../dist_portal/feature-simple-div",
+    "publicPath": "http://localhost:5007/"
+  },
+  "html": {
+    "title": "simpleDiv (standalone)"
+  },
+  "server": {
+    "corsOrigins": [
+      "http://localhost:5001"
+    ]
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "connectionId": "simul",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8090/websocket"
+    }
+  },
+  "moduleFederation": {
+    "name": "simpleDiv",
+    "exposes": {
+      "./SimpleDiv": "./src/SimpleDiv",
+      "./SimpleDivLocal": "./src/SimpleDivLocal"
+    }
+  }
+}

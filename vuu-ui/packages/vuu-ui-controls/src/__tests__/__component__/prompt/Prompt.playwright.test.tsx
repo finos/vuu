@@ -23,8 +23,10 @@ test.describe("WHEN configured to show confirm button only, with custom label", 
     // Floating UI focus guards have role="button" in Safari/WebKit.
     const buttons = dialog.getByRole("button");
     await expect(buttons).toHaveCount(1);
+    await expect(dialog.locator(".vuuPromptCloseButton")).toHaveCount(0);
+    await expect(dialog.locator(".vuuPromptCancelButton")).toHaveCount(0);
 
-    const okButton = page.getByRole("button", { name: "OK" });
+    const okButton = dialog.getByRole("button", { name: "OK" });
     await expect(okButton).toBeVisible();
     await expect(okButton).toBeFocused();
   });
@@ -41,7 +43,7 @@ test.describe("WHEN configured to focus on confirm", () => {
     const buttons = dialog.getByRole("button");
     await expect(buttons).toHaveCount(3);
 
-    const confirmButton = page.getByRole("button", { name: "Confirm" });
+    const confirmButton = dialog.getByRole("button", { name: "Confirm" });
     await expect(confirmButton).toBeFocused();
   });
 });

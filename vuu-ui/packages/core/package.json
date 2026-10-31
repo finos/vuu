@@ -1,0 +1,51 @@
+{
+  "name": "@vuu-ui/core",
+  "version": "4.0.0-alpha.31",
+  "description": "Core VUU authentication, data context, portal, and Module Federation APIs",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./portal": "./src/portal.ts"
+  },
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "node ../../scripts/run-build-rslib.ts",
+    "test": "cd ../.. && vitest run packages/core/test",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "dependencies": {
+    "@module-federation/enhanced": "2.8.0",
+    "@salt-ds/core": "1.72.0",
+    "@salt-ds/icons": "1.18.3",
+    "@salt-ds/styles": "0.4.1",
+    "@salt-ds/window": "0.1.2",
+    "@heswell/grid-layout": "4.1.0",
+    "@vuu-ui/vuu-context-menu": "4.1.0",
+    "@vuu-ui/vuu-data-react": "4.1.0",
+    "@vuu-ui/vuu-data-remote": "4.1.0",
+    "@vuu-ui/vuu-data-types": "4.1.0",
+    "@vuu-ui/vuu-datatable": "4.1.0",
+    "@vuu-ui/vuu-filter-types": "4.1.0",
+    "@vuu-ui/vuu-filters": "4.1.0",
+    "@vuu-ui/vuu-icons": "4.1.0",
+    "@vuu-ui/vuu-notifications": "4.1.0",
+    "@vuu-ui/vuu-protocol-types": "4.1.0",
+    "@vuu-ui/vuu-table": "4.1.0",
+    "@vuu-ui/vuu-table-extras": "4.1.0",
+    "@vuu-ui/vuu-table-types": "4.1.0",
+    "@vuu-ui/vuu-ui-controls": "4.1.0",
+    "@vuu-ui/vuu-utils": "4.1.0",
+    "keycloak-js": "26.2.4",
+    "react-router-dom": "7.18.3"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
+}

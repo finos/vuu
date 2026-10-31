@@ -1,0 +1,65 @@
+.vuuConnectionLostOverlay {
+  align-items: center;
+  animation: vuuConnectionLostOverlay-in 240ms ease-out;
+  backdrop-filter: blur(6px) grayscale(0.8) contrast(0.85);
+  background: color-mix(
+    in srgb,
+    var(--salt-container-primary-background) 40%,
+    transparent
+  );
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 10;
+}
+
+.vuuConnectionLostOverlay-dialog {
+  background: var(--salt-container-primary-background);
+  border: var(--salt-size-border) var(--salt-container-borderStyle)
+    var(--salt-separable-primary-borderColor);
+  border-radius: var(--salt-palette-corner-weak, 0);
+  box-shadow: var(--salt-overlayable-shadow-modal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  max-width: min(440px, calc(100% - 2 * var(--salt-spacing-300)));
+  padding: var(--salt-spacing-300);
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+.vuuConnectionLostOverlay-headline {
+  align-items: center;
+  display: flex;
+  font-size: var(--salt-text-h3-fontSize);
+  font-weight: var(--salt-text-h3-fontWeight);
+  gap: var(--salt-spacing-100);
+  line-height: var(--salt-text-h3-lineHeight);
+}
+
+.vuuConnectionLostOverlay-since,
+.vuuConnectionLostOverlay-retry {
+  color: var(--salt-content-secondary-foreground);
+}
+
+.vuuConnectionLostOverlay-actions {
+  display: flex;
+  gap: var(--salt-spacing-100);
+  margin-top: var(--salt-spacing-100);
+}
+
+@keyframes vuuConnectionLostOverlay-in {
+  from {
+    backdrop-filter: blur(0) grayscale(0) contrast(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vuuConnectionLostOverlay {
+    animation: none;
+  }
+}

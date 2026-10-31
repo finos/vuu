@@ -1,0 +1,31 @@
+{
+  "extends": "../portal-build.remote.json",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "output": "../../dist_portal/user-admin",
+    "publicPath": "http://localhost:5003/"
+  },
+  "html": {
+    "title": "userAdmin (standalone)"
+  },
+  "server": {
+    "corsOrigins": [
+      "http://localhost:5001"
+    ]
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "connectionId": "user-admin",
+      "restUrl": "https://localhost:8444/api/authn",
+      "websocketUrl": "wss://localhost:8092/websocket-user-admin"
+    }
+  },
+  "moduleFederation": {
+    "name": "userAdmin",
+    "exposes": {
+      "./UserAdmin": "./src/UserAdmin",
+      "./UserAdminLocal": "./src/UserAdminLocal"
+    }
+  }
+}

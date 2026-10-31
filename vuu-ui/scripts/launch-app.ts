@@ -21,7 +21,7 @@ import handler from "serve-handler";
 const { values: args } = parseArgs({
   options: {
     authurl: { type: "string", default: "https://localhost:8443/api" },
-    wsurl: { type: "string", default: "wss://localhost:8090/websocket" },
+    wsurl: { type: "string", default: "wss://localhost:8091/websocket" },
     port: { type: "string", default: "3010" },
   },
 });

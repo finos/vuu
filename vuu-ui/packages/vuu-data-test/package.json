@@ -2,6 +2,7 @@
   "name": "@vuu-ui/vuu-data-test",
   "version": "4.1.0",
   "main": "src/index.ts",
+  "type": "module",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
@@ -10,7 +11,10 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-data-local": "4.1.0",
-    "@vuu-ui/vuu-utils": "4.1.0"
+    "@vuu-ui/vuu-utils": "4.1.0",
+    "@heswell/module-admin": "1.1.0",
+    "@heswell/user-admin": "1.0.1",
+    "@vuu-ui/vuu-data-editing": "4.1.0"
   },
   "devDependencies": {
     "@vuu-ui/vuu-protocol-types": "4.1.0",

@@ -1,7 +1,4 @@
-import type {
-  ColumnDescriptorsByName,
-  Filter,
-} from "@vuu-ui/vuu-filter-types";
+import type { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 
 export interface SetFilterOptions {
   columnsByName?: ColumnDescriptorsByName;
@@ -493,6 +490,7 @@ export interface DataSourceConstructorProps
    */
   autosubscribeColumns?: string[];
   bufferSize?: number;
+  connectionId?: string;
   /**
    * For datasources that support edit sessions, some services support an additional
    * column on session tables that will be used to return status information for a row
@@ -512,7 +510,22 @@ export interface DataSourceConstructorProps
   viewport?: string;
 }
 
+/**
+ * The Vuu server a remote module connects to. Published by the remote in its
+ * `config.json`, not by the module registry.
+ */
+/**
+ * How the portal gets a Vuu token for a server:
+ * - `token-exchange`: exchanges the portal's identity token (e.g. Keycloak)
+ *   at `restUrl`.
+ * - `vuu-login`: posts a username and password to `restUrl`, the Vuu
+ *   server's own login endpoint (e.g. `/api/authn` of the Scala server).
+ */
+export type VuuServerAuthMode = "token-exchange" | "vuu-login";
+
 export interface RemoteModuleConnection {
+  /** Default `token-exchange`. */
+  auth?: VuuServerAuthMode;
   connectionId: string;
   restUrl?: string;
   websocketUrl?: string;
@@ -874,7 +887,7 @@ export interface ServerProxySubscribeMessage extends WithFullConfig {
 // };
 
 export declare type VuuUIMessageInConnected = {
-  sessionId: string;
+  loginResponse: VuuLoginSuccessResponse & { sessionId: string };
   type: "connected";
 };
 

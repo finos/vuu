@@ -1,4 +1,4 @@
-import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import { useData } from "@vuu-ui/core";
 import { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   VuuColumnDataType,
@@ -104,7 +104,10 @@ const Status = {
   invalid: 3,
 };
 
+type DataSourceConstructor = ReturnType<typeof useData>["VuuDataSource"];
+
 const getDataSource = (
+  VuuDataSource: DataSourceConstructor,
   dataSource?: DataSource,
   schema?: TableSchema,
 ): DataSource => {
@@ -150,8 +153,9 @@ export const SessionEditingForm = ({
   const initialDataRef = useRef<FormValues>(undefined);
   const dataStatusRef = useRef(Status.uninitialised);
 
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    const ds = getDataSource(dataSourceProp, schema);
+    const ds = getDataSource(VuuDataSource, dataSourceProp, schema);
     const { columns } = ds;
     const columnMap = buildColumnMap(ds.columns);
 
@@ -179,7 +183,7 @@ export const SessionEditingForm = ({
       }
     });
     return ds;
-  }, [dataSourceProp, schema]);
+  }, [VuuDataSource, dataSourceProp, schema]);
 
   const id = useIdMemo(idProp);
 

@@ -1,8 +1,8 @@
-import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { buildDataColumnMapFromSchema, Table } from "../../Table";
-import { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { ColumnMap } from "@vuu-ui/vuu-utils";
-import { UpdateGenerator } from "../../rowUpdates";
+import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { ColumnMap } from "@vuu-ui/vuu-utils";
+import type { UpdateGenerator } from "../../rowUpdates";
 
 const DEFAULT_RANGE_LIMITS = {
   maxRangeEnd: 1_000_000,
@@ -26,8 +26,8 @@ class TableContainer {
 
   createTable = (
     schema: TableSchema,
-    data: Array<Array<VuuRowDataItemType | bigint>>,
-    dataMap: ColumnMap,
+    data: Array<Array<VuuRowDataItemType | bigint>> = [],
+    dataMap: ColumnMap = buildDataColumnMapFromSchema(schema),
     updateGenerator?: UpdateGenerator,
   ) => {
     const table = new Table(schema, data, dataMap, updateGenerator);
@@ -40,12 +40,14 @@ class TableContainer {
   // Make this independent of base table creation order
   createJoinTable(
     joinTable: VuuTable,
-    { table: t1 }: VuuTable,
-    { table: t2 }: VuuTable,
+    source1: VuuTable | Table,
+    source2: VuuTable | Table,
     joinColumn: string,
   ) {
-    const table1 = this.getTable(t1);
-    const table2 = this.getTable(t2);
+    const table1 =
+      source1 instanceof Table ? source1 : this.getTable(source1.table);
+    const table2 =
+      source2 instanceof Table ? source2 : this.getTable(source2.table);
 
     // Just copies source tables, then registers update listeners.
     // Not terribly efficient, but good enough for showcase
@@ -60,7 +62,7 @@ class TableContainer {
     );
 
     const combinedSchema: TableSchema = {
-      key: joinColumn,
+      key: schema1.key,
       table: joinTable,
       rangeLimits: DEFAULT_RANGE_LIMITS,
       columns: Array.from(combinedColumns).map<SchemaColumn>((columnName) => ({
@@ -91,6 +93,18 @@ class TableContainer {
     // console.log(`took ${end - start} ms to create join table ${joinTable.table}`);
 
     const newTable = new Table(combinedSchema, data, combinedColumnMap);
+    const joinedKeys = new Map<string, Set<string>>();
+    const indexJoinedRow = (row: Array<bigint | VuuRowDataItemType>) => {
+      const value = String(row[combinedColumnMap[joinColumn]]);
+      const key = String(row[combinedColumnMap[schema1.key]]);
+      let keys = joinedKeys.get(value);
+      if (!keys) {
+        keys = new Set();
+        joinedKeys.set(value, keys);
+      }
+      keys.add(key);
+    };
+    data.forEach(indexJoinedRow);
 
     table1.on("insert", (row) => {
       const row2 = table2.findByKey(String(row[k1]));
@@ -104,16 +118,48 @@ class TableContainer {
           const value = row2[m2[column.name]];
           out[combinedColumnMap[column.name]] = value;
         }
+        indexJoinedRow(out);
         newTable.insert(out);
       }
     });
 
-    table2.on("update", (row) => {
-      const keyValue = row[k2] as string;
-      const targetRow = newTable.findByKey(keyValue);
+    table1.on("update", (row) => {
+      const key = String(row[m1[schema1.key]]);
+      const targetRow = newTable.findByKey(key);
       if (targetRow) {
         const updatedRow = targetRow.slice();
+        for (const { name } of schema1.columns) {
+          updatedRow[combinedColumnMap[name]] = row[m1[name]];
+        }
+        newTable.updateRow(updatedRow);
+      }
+    });
+
+    table1.on("delete", (key) => {
+      const row = newTable.findByKey(key);
+      if (row) {
+        const value = String(row[combinedColumnMap[joinColumn]]);
+        const keys = joinedKeys.get(value);
+        keys?.delete(key);
+        if (keys?.size === 0) {
+          joinedKeys.delete(value);
+        }
+        newTable.delete(key);
+      }
+    });
+
+    table2.on("update", (row) => {
+      const keyValue = String(row[k2]);
+      for (const key of joinedKeys.get(keyValue) ?? []) {
+        const targetRow = newTable.findByKey(key);
+        if (!targetRow) {
+          continue;
+        }
+        const updatedRow = targetRow.slice();
         for (const { name } of table2.schema.columns) {
+          if (name in m1) {
+            continue;
+          }
           if (row[m2[name]] !== updatedRow[combinedColumnMap[name]]) {
             updatedRow[combinedColumnMap[name]] = row[m2[name]];
           }
@@ -121,6 +167,27 @@ class TableContainer {
         newTable.updateRow(updatedRow);
       }
     });
+
+    newTable.update = (key, columnName, value) => {
+      const row = newTable.findByKey(key);
+      if (!row) {
+        throw Error(`[TableContainer] join row ${key} not found`);
+      }
+      if (columnName === schema1.key || columnName === joinColumn) {
+        throw Error(`[TableContainer] cannot edit join key ${columnName}`);
+      }
+      if (columnName in m1) {
+        table1.update(key, columnName, value);
+      } else if (columnName in m2) {
+        table2.update(
+          String(row[combinedColumnMap[schema2.key]]),
+          columnName,
+          value,
+        );
+      } else {
+        throw Error(`[TableContainer] unknown join column ${columnName}`);
+      }
+    };
 
     this.addTable(newTable);
 

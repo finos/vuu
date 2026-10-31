@@ -2,6 +2,7 @@
   "name": "@vuu-ui/vuu-datatable",
   "version": "4.1.0",
   "author": "heswell",
+  "type": "module",
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "scripts": {

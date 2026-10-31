@@ -219,6 +219,7 @@
 
 .vuuDraggable-vuuTable {
   --cell-borderColor: transparent;
+  --table-background: var(--vuuTable-background, var(--salt-container-primary-background));
   --vuu-table-col-header-row-height: var(--vuuTableHeaderCell-height, 25px);
   --vuuTableHeaderCell-background: var(--salt-container-secondary-background);
 }
@@ -330,6 +331,11 @@
 .vuuDraggable .vuuTableRow {
   --cell-borderColor: transparent;
   --vuu-selection-decorator-bg: transparent;
+  background: var(--salt-selectable-background-selected);
+  color: inherit;
+  font: inherit;
+  height: 100%;
+  top: 0 !important;
   transform: none !important;
   z-index: 1;
 }

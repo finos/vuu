@@ -1,8 +1,8 @@
-import {
+import type {
   DataSource,
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 import { Range } from "@vuu-ui/vuu-utils";
@@ -22,7 +22,7 @@ export const useDataSource = ({
   const dataWindow = useMemo(
     () => new MovingWindow({ from: 0, to: count }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [count],
   );
 
   const setData = useCallback(
@@ -52,7 +52,6 @@ export const useDataSource = ({
   );
 
   useEffect(() => {
-    console.log("subscribe to dataSource");
     dataSource?.subscribe({ range: Range(0, count) }, datasourceMessageHandler);
   }, [dataSource, datasourceMessageHandler, count]);
 

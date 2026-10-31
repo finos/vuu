@@ -1,6 +1,5 @@
-import { expect, test, type Page } from "../../../../../playwright/fixtures";
-
-
+import type { Page } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 
 const assertComboboxReady = async (page: Page) => {
   await expect(page.getByRole("combobox")).toBeFocused();
