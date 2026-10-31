@@ -75,7 +75,11 @@ export const writeHighlightedSources = async (
   for (const examplePath of examplePaths) {
     const filePath = resolveWithin(showcaseDir, examplePath);
     const code = fs.readFileSync(filePath, "utf8");
-    const target = resolveWithin(outDir, sourceUrl(examplePath));
+    // the url is root-relative, strip the leading / so it resolves under outDir
+    const target = resolveWithin(
+      outDir,
+      sourceUrl(examplePath).replace(/^\/+/, ""),
+    );
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, JSON.stringify(await highlightSource(code)));
     count += 1;
