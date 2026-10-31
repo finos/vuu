@@ -69,7 +69,21 @@ Then open the app with `?vuuServer=http%3A%2F%2F127.0.0.1%3A8091%2F` and mount a
 - `array-data-source.bench.ts`: ArrayDataSource (vuu-data-local) construction, sort on a numeric and a text column, filter, groupBy, and range changes (100 small scroll steps, 100 jumps), on a subscribed data source
 - `update-row.bench.ts`: 100 row updates to the first, middle or last row, through ArrayDataSource.updateRow and the vuu-data-test Table.updateRow. Both find the row with a linear `findIndex` over the data, so the cost of an update grows with the row's position: an update to the last of 1M rows scans all 1M rows
 
-The micro-benchmarks have their own vitest config (`benchmarks/micro/vitest.config.ts`) and are not part of `npm run test:vite`. They report tinybench's table (ops/s, mean, percentiles) and write no results file.
+- `server-proxy.bench.ts`: the vuu-data-remote ServerProxy and Viewport, the layer between the Vuu websocket and the UI, driven in process with no websocket or worker. `server-proxy-driver.ts` answers the proxy's server requests at once, playing a minimal Vuu server over a 10,000-row, 20-column table. Viewports show 50 rows with a buffer of 100. It covers:
+  - row updates from the server: visible rows, buffered rows, and one 150-row message in order and in reverse order
+  - updates spread across 10 viewports
+  - scrolling one row at a time, and jumps to rows that aren't cached
+
+The micro-benchmarks have their own vitest config (`benchmarks/micro/vitest.config.ts`) and are not part of `npm run test:vite`. They report tinybench's table (ops/s, mean, percentiles) and write no results file unless asked.
+
+To compare before and after a change, save a run as a baseline, then compare a later run with it:
+
+```bash
+npm run bench:micro -- server-proxy --outputJson server-proxy-baseline.json
+npm run bench:micro -- server-proxy --compare server-proxy-baseline.json
+```
+
+Each benchmark in the comparison shows the change as a ratio, e.g. `[1.25x] ⇑`. On one machine, two runs of the same code differ by up to about 7%, so only treat larger changes as real.
 
 ## Demo mode: comparing by eye
 
