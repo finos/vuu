@@ -235,6 +235,8 @@ export const WithSimpleFilter = () => (
     filter={{ column: "currency", op: "=", value: "GBP" }}
   />
 );
+
+/** @title With multi clause filter */
 export const WithMultiCLauseFilter = () => (
   <SimpleFilterContainerTemplate
     filter={{

@@ -1,33 +1,71 @@
-import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
-import { TreeNavPanelProps } from "./TreeNavPanel";
-import { TreeDataSource } from "@vuu-ui/vuu-data-local";
+import {
+  TreeDataSource,
+  type TreeNodeFilterPredicate,
+} from "@vuu-ui/vuu-data-local";
+import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
+import {
+  type ChangeEvent,
+  createElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-export type TreeNavPanelHookProps = Pick<TreeNavPanelProps, "source">;
+export interface TreeNavPanelHookProps {
+  filterPredicate?: TreeNodeFilterPredicate;
+  searchPattern?: string;
+  source: TreeSourceNode[];
+  useDefaultFilter: boolean;
+}
 
-export const useTreeNavPanel = ({ source }: TreeNavPanelHookProps) => {
+export const useTreeNavPanel = ({
+  filterPredicate: filterPredicateProp,
+  searchPattern: searchPatternProp,
+  source,
+  useDefaultFilter,
+}: TreeNavPanelHookProps) => {
   const dataSource = useMemo(
     () => new TreeDataSource({ data: source }),
     [source],
   );
-  const [searchPattern, setSearchPattern] = useState<string>("");
+  const [defaultQuery, setDefaultQuery] = useState("");
 
-  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (evt) => {
-      const value = evt.target.value.trim();
-      setSearchPattern(value);
+  const handleChange = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
+    setDefaultQuery(evt.target.value);
+  }, []);
 
-      if (value === "") {
-        dataSource.filter = { filter: "" };
-      } else {
-        dataSource.filter = { filter: `label contains "${value}"` };
-      }
-    },
-    [dataSource],
-  );
+  const defaultPredicate = useMemo<TreeNodeFilterPredicate | undefined>(() => {
+    const text = defaultQuery.trim().toLowerCase();
+    return text === ""
+      ? undefined
+      : ({ label }) => label.toLowerCase().includes(text);
+  }, [defaultQuery]);
+
+  const filterPredicate = useDefaultFilter
+    ? defaultPredicate
+    : filterPredicateProp;
+
+  useEffect(() => {
+    dataSource.filterNodes(filterPredicate);
+  }, [dataSource, filterPredicate]);
+
+  const defaultFilter = useDefaultFilter
+    ? createElement("input", {
+        "aria-label": "Filter",
+        className: "vuuTreeNavPanel-filterInput",
+        onChange: handleChange,
+        placeholder: "Filter",
+        type: "search",
+        value: defaultQuery,
+      })
+    : null;
 
   return {
     dataSource,
-    onChange: handleChange,
-    searchPattern,
+    defaultFilter,
+    searchPattern: useDefaultFilter
+      ? defaultQuery.trim()
+      : (searchPatternProp ?? ""),
   };
 };

@@ -1,5 +1,6 @@
 import type { Paragraph, PhrasingContent, Root, RootContent } from "mdast";
 import type { ContainerDirective } from "mdast-util-directive";
+import type { MdxJsxFlowElement } from "mdast-util-mdx-jsx";
 // registers the hName/hProperties data fields
 import type {} from "mdast-util-to-hast";
 
@@ -10,7 +11,9 @@ import type {} from "mdast-util-to-hast";
  *   Some content
  *   :::
  *
- * Requires remark-directive, which parses the directive syntax.
+ * Requires remark-directive, which parses the directive syntax. Each is
+ * rendered as a `<Callout type="warning">`, the first child is the title. The
+ * Callout component is supplied to MDX documents.
  */
 const admonitionTypes = ["note", "tip", "info", "warning", "danger"];
 
@@ -21,7 +24,7 @@ const isParent = (node: RootContent | Root): node is RootContent & Parent =>
 
 const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1);
 
-const toAdmonition = (node: ContainerDirective) => {
+const toCallout = (node: ContainerDirective): MdxJsxFlowElement => {
   const [first, ...rest] = node.children;
   const hasLabel = first?.type === "paragraph" && first.data?.directiveLabel;
   const titleContent: PhrasingContent[] = hasLabel
@@ -30,12 +33,16 @@ const toAdmonition = (node: ContainerDirective) => {
   const title: Paragraph = {
     type: "paragraph",
     children: titleContent,
-    data: { hName: "div", hProperties: { className: ["vuuAdmonition-title"] } },
+    data: {
+      hName: "div",
+      hProperties: { className: ["ShowcaseCallout-title"] },
+    },
   };
-  node.children = [title, ...(hasLabel ? rest : node.children)];
-  node.data = {
-    hName: "div",
-    hProperties: { className: ["vuuAdmonition", `vuuAdmonition-${node.name}`] },
+  return {
+    type: "mdxJsxFlowElement",
+    name: "Callout",
+    attributes: [{ type: "mdxJsxAttribute", name: "type", value: node.name }],
+    children: [title, ...(hasLabel ? rest : node.children)],
   };
 };
 
@@ -66,19 +73,17 @@ const restoreDirective = (node: RootContent): RootContent[] | undefined => {
 
 const transform = (parent: Parent) => {
   parent.children = parent.children.flatMap((child) => {
-    if (
+    const replaced =
       child.type === "containerDirective" &&
       admonitionTypes.includes(child.name)
-    ) {
-      toAdmonition(child);
-    }
-    const restored = restoreDirective(child) ?? [child];
-    restored.forEach((node) => {
+        ? [toCallout(child)]
+        : (restoreDirective(child) ?? [child]);
+    replaced.forEach((node) => {
       if (isParent(node)) {
         transform(node);
       }
     });
-    return restored;
+    return replaced as RootContent[];
   });
 };
 

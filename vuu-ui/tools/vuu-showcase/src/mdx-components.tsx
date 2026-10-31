@@ -1,25 +1,35 @@
 import {
-  Children,
-  isValidElement,
-  useEffect,
   type AnchorHTMLAttributes,
+  Children,
   type HTMLAttributes,
+  isValidElement,
+  type MouseEvent,
   type ReactNode,
+  type TableHTMLAttributes,
 } from "react";
 import { Mermaid } from "./Mermaid";
+import { ComponentAnatomy } from "./showcase-main/docs/anatomy/ComponentAnatomy";
+import { Callout } from "./showcase-main/docs/Callout";
+import { useDocsContext } from "./showcase-main/docs/DocsContext";
+import { isIndexDocument } from "./showcase-main/docs/docs-model";
+import { EmbeddedExample } from "./showcase-main/docs/EmbeddedExample";
+import { LivePreview } from "./showcase-main/docs/LivePreview";
+import { slugify } from "./slugify";
+
+export { slugify };
 
 const isExternalLink = (href = "") => /^[a-z]+:/i.test(href);
 
 /**
  * Links between mdx documents are authored as relative file links, e.g
- * `./03-Formatting.mdx`, (the form expected by Docusaurus). In the Showcase,
- * mdx documents are rendered within an iframe, so we translate these to
- * Showcase routes and load them into the top level window.
+ * `./03-Formatting.mdx`, (the form expected by Docusaurus). In the Showcase
+ * these are translated to Showcase routes.
  *
  * @param href the link as authored
  * @param baseUrl url of the folder containing the current document
+ * @returns the route and target heading, undefined if not a document link
  */
-export const toShowcaseHref = (href: string, baseUrl: string) => {
+export const resolveDocumentLink = (href: string, baseUrl: string) => {
   const [path, hash] = href.split("#");
   if (path.endsWith(".mdx")) {
     // Numeric ordering prefixes (e.g "02-") are not part of Showcase routes
@@ -28,12 +38,27 @@ export const toShowcaseHref = (href: string, baseUrl: string) => {
       .replace(/(^|\/)[Ii]ndex$/, "$1")
       .replace(/(^|\/)\d+-/g, "$1");
     const { pathname } = new URL(route || ".", baseUrl);
-    // The url hash is used by the Showcase for theme settings, so
-    // the target heading is passed as a query parameter instead.
-    return `${pathname.replace(/\/$/, "")}${hash ? `?anchor=${hash}` : ""}`;
+    return { anchor: hash || undefined, route: pathname.replace(/\/$/, "") };
   }
-  return href;
 };
+
+/**
+ * The Showcase url for a link authored in a document. The url hash is used
+ * by the Showcase for preview settings, so the target heading is passed as a
+ * query parameter instead.
+ */
+export const toShowcaseHref = (href: string, baseUrl: string) => {
+  const link = resolveDocumentLink(href, baseUrl);
+  return link
+    ? `${link.route}${link.anchor ? `?anchor=${link.anchor}` : ""}`
+    : href;
+};
+
+/** url of the folder containing a document, relative links resolve from here */
+export const documentBaseUrl = (docRoute: string, documentPath?: string) =>
+  `${window.location.origin}${
+    isIndexDocument(documentPath) ? docRoute.replace(/\/?$/, "/") : docRoute
+  }`;
 
 const textContent = (children: ReactNode): string =>
   Children.toArray(children)
@@ -46,75 +71,90 @@ const textContent = (children: ReactNode): string =>
     )
     .join("");
 
-/**
- * Generates a GitHub/Docusaurus compatible heading id
- */
-export const slugify = (text: string) =>
-  text
-    .trim()
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-");
+export const scrollToHeading = (
+  id: string,
+  behavior: ScrollBehavior = "auto",
+) => document.getElementById(id)?.scrollIntoView({ behavior, block: "start" });
 
-const scrollToHeading = (id: string) =>
-  document.getElementById(id)?.scrollIntoView({ block: "start" });
+const isUnmodifiedClick = (e: MouseEvent) =>
+  !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && e.button === 0;
 
 const createHeading = (Tag: "h2" | "h3") => {
-  const Heading = ({ children, ...props }: HTMLAttributes<HTMLElement>) => {
-    const id = slugify(textContent(children));
-    useEffect(() => {
-      if (new URLSearchParams(location.search).get("anchor") === id) {
-        // allow live examples to render before scrolling
-        setTimeout(() => scrollToHeading(id), 200);
-      }
-    }, [id]);
-    return (
-      <Tag {...props} id={id}>
-        {children}
-      </Tag>
-    );
-  };
+  const Heading = ({ children, ...props }: HTMLAttributes<HTMLElement>) => (
+    <Tag {...props} id={slugify(textContent(children))}>
+      {children}
+    </Tag>
+  );
   return Heading;
 };
 
-/**
- * @param documentPath path of the mdx document being rendered
- */
-export const createMdxComponents = (documentPath: string) => {
-  const { origin, pathname } = window.location;
-  // An index document is rendered at the url of its containing folder
-  const baseUrl = /(^|\/)[Ii]ndex\.mdx$/.test(documentPath)
-    ? `${origin}${pathname.replace(/\/?$/, "/")}`
-    : `${origin}${pathname}`;
-
-  const MdxLink = ({
-    href = "",
-    ...props
-  }: AnchorHTMLAttributes<HTMLAnchorElement>) => {
-    if (href.startsWith("#")) {
-      return (
-        <a
-          {...props}
-          href={href}
-          onClick={(e) => {
+const MdxLink = ({
+  href = "",
+  ...props
+}: AnchorHTMLAttributes<HTMLAnchorElement>) => {
+  const { docRoute, documentPath, hrefForRoute, navigateTo } = useDocsContext();
+  if (href.startsWith("#")) {
+    return (
+      <a
+        {...props}
+        href={href}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToHeading(href.slice(1), "smooth");
+        }}
+      />
+    );
+  } else if (isExternalLink(href)) {
+    return <a {...props} href={href} rel="noreferrer" target="_blank" />;
+  }
+  const link = resolveDocumentLink(
+    href,
+    documentBaseUrl(docRoute, documentPath),
+  );
+  if (link) {
+    return (
+      <a
+        {...props}
+        href={hrefForRoute(link.route, link.anchor)}
+        onClick={(e) => {
+          if (isUnmodifiedClick(e)) {
             e.preventDefault();
-            scrollToHeading(href.slice(1));
-          }}
-        />
-      );
-    } else if (isExternalLink(href)) {
-      return <a {...props} href={href} rel="noreferrer" target="_blank" />;
-    } else {
-      return (
-        <a {...props} href={toShowcaseHref(href, baseUrl)} target="_top" />
-      );
-    }
-  };
+            navigateTo(link.route, link.anchor);
+          }
+        }}
+      />
+    );
+  }
+  return <a {...props} href={href} />;
+};
 
-  return {
-    a: MdxLink,
-    h2: createHeading("h2"),
-    h3: createHeading("h3"),
-    Mermaid,
-  };
+const Blockquote = ({ children }: HTMLAttributes<HTMLElement>) => (
+  <Callout type="info">{children}</Callout>
+);
+
+/** wide tables scroll horizontally, within the reading column */
+const Table = (props: TableHTMLAttributes<HTMLTableElement>) => (
+  <div className="ShowcaseDocs-table">
+    <table {...props} />
+  </div>
+);
+
+/**
+ * Components supplied to every mdx document. Example usages are converted to
+ * EmbeddedExample at build time, LivePreview, Callout and Mermaid are also
+ * generated by remark plugins, see scripts/mdx-options.ts. Components read
+ * the document they belong to from the DocsContext. ComponentAnatomy renders
+ * a model generated by `npm run showcase:anatomy`.
+ */
+export const mdxComponents = {
+  a: MdxLink,
+  blockquote: Blockquote,
+  Callout,
+  ComponentAnatomy,
+  EmbeddedExample,
+  h2: createHeading("h2"),
+  h3: createHeading("h3"),
+  LivePreview,
+  Mermaid,
+  table: Table,
 };

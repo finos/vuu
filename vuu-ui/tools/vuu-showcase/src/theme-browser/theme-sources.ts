@@ -1,3 +1,4 @@
+import type { ComponentModel } from "@vuu-ui/vuu-theme-model/src/component-model-types";
 import type { ThemeModel } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
 
 export interface LoadedTheme {
@@ -33,3 +34,9 @@ export const themeSources: ThemeSource[] = [
       import("./generated/salt-theme.js"),
   },
 ];
+
+/** components matched to the theme in the tiers view, see theme-browser-components.json */
+export const loadComponentModel = (): Promise<{ model: ComponentModel }> =>
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  import("./generated/components.js");

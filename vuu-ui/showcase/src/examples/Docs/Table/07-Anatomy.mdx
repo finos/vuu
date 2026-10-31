@@ -1,0 +1,26 @@
+import tableAnatomy from "./anatomy/table.anatomy.json";
+import tableAnatomyImage from "./anatomy/table.anatomy.png";
+
+# Anatomy
+
+The anatomy shows how the Table is built and which theme variables style each part of it. Select an element in the picture or in the DOM structure. The picture outlines the selected element and each of its ancestors. The panel on the right lists the CSS properties set on that element with theme variables, and the custom properties it defines for the elements inside it. Each variable is traced from the Table's own API variables (`--vuuTable*`), through Salt's characteristics and palette, to the foundation value.
+
+<ComponentAnatomy
+  anatomy={tableAnatomy}
+  image={tableAnatomyImage}
+  initialSelection="vuuTableCell"
+/>
+
+## Reading the anatomy
+
+- **Repeated elements**, such as rows and cells, appear once in the DOM structure, with the number of instances.
+- **Conditional styles**, those that apply only to some instances or only in a state such as `:hover` or `:focus`, are listed with the selector that applies them.
+- **Dashed variables** are not set by the theme, so their fallback is used. These are the API variables you can set to customize the Table, see [CSS custom properties](./08-Styling.mdx#css-custom-properties).
+- **Overridden** declarations are dimmed, another declaration wins the cascade.
+
+> The anatomy is captured from the `TableAnatomy` example with vuu-theme, in light mode and high density. After changing the Table's CSS, regenerate it with `npm run showcase:anatomy` while the Showcase is running.
+
+## Next steps
+
+- Customize the Table with display attributes, class names and CSS custom properties in [Styling](./08-Styling.mdx).
+- Learn about keyboard support and screen readers in [Accessibility](./09-Accessibility.mdx).

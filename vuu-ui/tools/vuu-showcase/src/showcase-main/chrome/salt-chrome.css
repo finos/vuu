@@ -1,0 +1,158 @@
+/*
+ * Salt components in the showcase chrome. The chrome uses Salt components,
+ * restyled with the --sc-* chrome tokens by overriding the Salt
+ * characteristics they consume. Applied from the document root (see
+ * useChromeMode) so that Salt popups rendered into the body are included,
+ * and on the salt-provider wrappers Salt adds around portalled content.
+ * Re-applied on the Theme Browser, which defines --sc-* from its own --tb-*
+ * tokens, so its controls keep its (light only) look in either chrome mode.
+ * The selector outranks the vuu-theme characteristic selectors.
+ */
+:root:root.salt-theme.salt-theme-next[data-showcase-chrome],
+:root[data-showcase-chrome] .salt-provider.salt-theme.salt-theme-next,
+:root[data-showcase-chrome] .vuuThemeBrowser {
+  --salt-text-fontFamily: var(--sc-font);
+  --salt-text-action-fontFamily: var(--sc-font);
+  --salt-text-action-fontWeight: 600;
+  --salt-text-action-letterSpacing: 0;
+  --salt-text-action-textTransform: none;
+  --salt-text-fontSize: 13px;
+  --salt-text-lineHeight: 18px;
+
+  --salt-palette-corner-weaker: 4px;
+  --salt-palette-corner-weak: var(--sc-radius-sm);
+  --salt-palette-corner: var(--sc-radius);
+
+  --salt-focused-outlineColor: var(--sc-focus);
+
+  --salt-content-primary-foreground: var(--sc-text);
+  --salt-content-secondary-foreground: var(--sc-text-3);
+  --salt-content-accent-foreground: var(--sc-accent-text);
+
+  --salt-container-primary-background: var(--sc-surface);
+  --salt-container-primary-borderColor: var(--sc-border);
+  --salt-overlayable-shadow-popout: var(--sc-shadow-2);
+  --salt-overlayable-shadow-modal: var(--sc-shadow-3);
+
+  /* neutral bordered */
+  --salt-actionable-foreground: var(--sc-text);
+  --salt-actionable-foreground-hover: var(--sc-text);
+  --salt-actionable-foreground-active: var(--sc-text);
+  --salt-actionable-background: var(--sc-surface);
+  --salt-actionable-background-hover: var(--sc-surface-2);
+  --salt-actionable-background-active: var(--sc-surface-3);
+  --salt-actionable-borderColor: var(--sc-border);
+  --salt-actionable-borderColor-hover: var(--sc-border-strong);
+  --salt-actionable-borderColor-active: var(--sc-border-strong);
+  /* neutral transparent */
+  --salt-actionable-subtle-foreground: var(--sc-text-2);
+  --salt-actionable-subtle-foreground-hover: var(--sc-text);
+  --salt-actionable-subtle-foreground-active: var(--sc-text);
+  --salt-actionable-subtle-background: transparent;
+  --salt-actionable-subtle-background-hover: var(--sc-surface-2);
+  --salt-actionable-subtle-background-active: var(--sc-surface-3);
+  --salt-actionable-subtle-borderColor: transparent;
+  --salt-actionable-subtle-borderColor-hover: transparent;
+  --salt-actionable-subtle-borderColor-active: transparent;
+  /* neutral solid */
+  --salt-actionable-bold-foreground: var(--sc-text);
+  --salt-actionable-bold-foreground-hover: var(--sc-text);
+  --salt-actionable-bold-foreground-active: var(--sc-text);
+  --salt-actionable-bold-background: var(--sc-surface-2);
+  --salt-actionable-bold-background-hover: var(--sc-surface-3);
+  --salt-actionable-bold-background-active: var(--sc-surface-3);
+  --salt-actionable-bold-borderColor: transparent;
+  --salt-actionable-bold-borderColor-hover: transparent;
+  --salt-actionable-bold-borderColor-active: transparent;
+  /* toggle buttons */
+  --salt-actionable-foreground-selected: var(--sc-text);
+  --salt-actionable-background-selected: var(--sc-surface-3);
+  --salt-actionable-borderColor-selected: transparent;
+
+  /* accented */
+  --salt-actionable-accented-bold-foreground: var(--sc-on-accent);
+  --salt-actionable-accented-bold-foreground-hover: var(--sc-on-accent);
+  --salt-actionable-accented-bold-foreground-active: var(--sc-on-accent);
+  --salt-actionable-accented-bold-background: var(--sc-accent);
+  --salt-actionable-accented-bold-background-hover: var(--sc-accent-strong);
+  --salt-actionable-accented-bold-background-active: var(--sc-accent-strong);
+  --salt-actionable-accented-bold-borderColor: transparent;
+  --salt-actionable-accented-bold-borderColor-hover: transparent;
+  --salt-actionable-accented-bold-borderColor-active: transparent;
+  --salt-actionable-accented-subtle-foreground: var(--sc-accent-text);
+  --salt-actionable-accented-subtle-foreground-hover: var(--sc-accent-text);
+  --salt-actionable-accented-subtle-foreground-active: var(--sc-accent-text);
+  --salt-actionable-accented-subtle-background: transparent;
+  --salt-actionable-accented-subtle-background-hover: var(--sc-accent-soft);
+  --salt-actionable-accented-subtle-background-active: var(--sc-accent-soft);
+  --salt-actionable-accented-foreground-selected: var(--sc-accent-text);
+  --salt-actionable-accented-background-selected: var(--sc-accent-soft);
+  --salt-actionable-accented-borderColor-selected: transparent;
+
+  /* inputs and dropdowns */
+  --salt-editable-primary-background: var(--sc-surface);
+  --salt-editable-primary-background-hover: var(--sc-surface);
+  --salt-editable-primary-background-active: var(--sc-surface);
+  --salt-editable-secondary-background: var(--sc-surface-2);
+  --salt-editable-secondary-background-hover: var(--sc-surface-2);
+  --salt-editable-secondary-background-active: var(--sc-surface);
+  --salt-editable-borderColor: var(--sc-border);
+  --salt-editable-borderColor-hover: var(--sc-border-strong);
+  --salt-editable-borderColor-active: var(--sc-accent);
+
+  /* list options */
+  --salt-selectable-background-hover: var(--sc-surface-2);
+  --salt-selectable-background-selected: var(--sc-accent-soft);
+  --salt-selectable-borderColor-selected: var(--sc-accent);
+
+  /* tabs */
+  --salt-navigable-accent-indicator-active: var(--sc-accent);
+  --salt-navigable-indicator-hover: var(--sc-border-strong);
+  --salt-separable-secondary-borderColor: var(--sc-border);
+}
+
+/* chrome controls are a little taller than the high density vuu-theme */
+:root[data-showcase-chrome]
+  :is(.saltButton, .saltToggleButton, .saltInput, .saltDropdown) {
+  --salt-size-base: 28px;
+}
+
+:root[data-showcase-chrome] .saltTabNext {
+  --salt-size-base: 40px;
+}
+
+/*
+ * vuu-theme restyles Salt Button and ToggleButton (height, padding, gap,
+ * selected background). Undo that in the chrome, restoring Salt defaults.
+ * The theme browser's tile buttons (.tb-tile) are styled by their own classes.
+ */
+:root:root.salt-theme.vuu-theme[data-showcase-chrome],
+:root[data-showcase-chrome] .salt-provider.salt-theme.vuu-theme {
+  --saltButton-borderRadius: initial;
+  --saltButton-padding: 8px;
+}
+:root:root.salt-theme.vuu-theme[data-showcase-chrome]
+  .saltButton:not(.tb-tile) {
+  gap: 6px;
+  height: var(--saltButton-height, var(--salt-size-base));
+}
+:root:root.salt-theme.vuu-theme[data-showcase-chrome]
+  .saltToggleButtonGroup-horizontal
+  .saltToggleButton {
+  gap: 6px;
+  height: var(--salt-size-base);
+  padding: 0 calc(8px - var(--toggleButton-borderWidth));
+}
+:root:root.salt-theme.vuu-theme[data-showcase-chrome]
+  .saltToggleButtonGroup-horizontal
+  .saltToggleButton.saltToggleButton-neutral.saltToggleButton-solid[aria-checked="true"] {
+  background: var(--toggleButton-background-selected);
+}
+:root:root.salt-theme.vuu-theme[data-showcase-chrome]
+  .saltDropdown
+  .saltDropdown-toggle {
+  display: revert;
+}
+:root[data-showcase-chrome] .saltToggleButton {
+  gap: 6px;
+}

@@ -1,0 +1,20 @@
+# Writing examples
+
+Examples are the components exported from `*.examples.tsx` files under `showcase/src/examples`. Every exported `const` whose name starts with an upper case letter is an example. The folder and file names give its place in the navigation tree, its name gives its title, so `Table/Misc.examples.tsx` exporting `TestTable` is shown as _Table › Misc › Test table_.
+
+## Metadata
+
+A JSDoc comment on the export adds optional metadata:
+
+```tsx
+/**
+ * A table of 1,000 rows of generated data.
+ * @title Test table
+ * @tags data-consumer
+ */
+export const TestTable = () => …
+```
+
+- The description is shown in the example header, in search results and on folder pages.
+- `@title` replaces the title derived from the export name.
+- `@tags data-consumer` marks an example that consumes data. It gets the data source control, local or a remote Vuu server, and the _Live data_ filter. The older form `/** tags=data-consumer */` still works.

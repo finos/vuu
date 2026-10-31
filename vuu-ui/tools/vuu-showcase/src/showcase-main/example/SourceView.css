@@ -1,0 +1,111 @@
+.ShowcaseSource {
+  background: var(--sc-surface);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ShowcaseSource-toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--sc-border);
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--sc-space-3);
+  padding: var(--sc-space-2) var(--sc-space-8);
+}
+
+.ShowcaseSource-file {
+  align-items: center;
+  color: var(--sc-text);
+  display: inline-flex;
+  font: 600 13px/1 var(--sc-font);
+  gap: 6px;
+}
+
+.ShowcaseSource-actions {
+  display: flex;
+  gap: var(--sc-space-2);
+  margin-left: auto;
+}
+
+.ShowcaseSource-scroller {
+  flex: 1 1 auto;
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+}
+
+.ShowcaseSource-message {
+  color: var(--sc-text-3);
+  font: 400 13px/1.5 var(--sc-font);
+  padding: var(--sc-space-4) var(--sc-space-8);
+}
+
+.ShowcaseSource-code {
+  font: 400 13px/1.7 var(--sc-mono);
+  margin: 0;
+  min-width: max-content;
+  padding: var(--sc-space-3) 0;
+  tab-size: 2;
+
+  span {
+    color: var(--showcaseSource-light, var(--sc-text));
+  }
+}
+
+.ShowcaseShell[data-chrome-mode="dark"] .ShowcaseSource-code span {
+  color: var(--showcaseSource-dark, var(--sc-text));
+}
+
+.ShowcaseSource-line {
+  display: flex;
+  padding-right: var(--sc-space-8);
+}
+
+.ShowcaseSource-line-highlighted {
+  background: var(--sc-accent-soft);
+}
+
+.ShowcaseSource-lineNumber {
+  box-sizing: content-box;
+  color: var(--sc-text-4) !important;
+  flex: 0 0 auto;
+  padding-inline: var(--sc-space-4) var(--sc-space-6);
+  text-align: right;
+  user-select: none;
+  width: 4ch;
+}
+
+.ShowcaseSourceDock {
+  border-top: 1px solid var(--sc-border);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  position: relative;
+
+  > .ShowcaseSource {
+    flex: 1 1 auto;
+  }
+}
+
+.ShowcaseSourceDock-resizer {
+  cursor: row-resize;
+  height: 7px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: -4px;
+  z-index: 1;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--sc-accent);
+    height: 3px;
+    outline: none;
+    top: -2px;
+  }
+}
+
+.ShowcaseExamplePage-panel > .ShowcaseSource {
+  flex: 1 1 auto;
+}

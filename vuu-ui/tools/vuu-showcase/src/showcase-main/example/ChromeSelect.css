@@ -1,0 +1,38 @@
+.ShowcaseSelect {
+  width: auto;
+}
+
+.ShowcaseSelect-adornments {
+  align-items: center;
+  color: var(--sc-text-3);
+  display: inline-flex;
+  gap: var(--sc-space-2);
+}
+
+.ShowcaseSelect-option {
+  gap: var(--sc-space-2);
+  height: auto;
+  min-width: 200px;
+  padding-block: 6px;
+}
+
+.ShowcaseSelect-optionIcon {
+  color: var(--sc-text-3);
+  display: inline-flex;
+}
+
+.ShowcaseSelect-optionText {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ShowcaseSelect-optionLabel {
+  font: 600 13px/1.3 var(--sc-font);
+}
+
+.ShowcaseSelect-optionDescription {
+  color: var(--sc-text-3);
+  font: 400 12px/1.3 var(--sc-font);
+}

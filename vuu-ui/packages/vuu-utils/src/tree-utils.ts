@@ -60,10 +60,15 @@ const addChildValues = (
     });
   }
   for (let i = 0; i < treeSourceNodes.length; i++, index.value += 1) {
-    const { childNodes, icon, label, nodeData /*, tags */ } =
-      treeSourceNodes[i];
+    const {
+      childNodes,
+      icon,
+      keySegment = treeSourceNodes[i].label,
+      label,
+      nodeData /*, tags */,
+    } = treeSourceNodes[i];
     const blanks = Array(depth - 1).fill("");
-    const fullKey = `${keyBase}|${label}`;
+    const fullKey = `${keyBase}|${keySegment}`;
 
     // we create all nodes as non-leaf in a TreeTable, even those with no childNodes
     // prettier-ignore

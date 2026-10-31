@@ -1,0 +1,546 @@
+/* Documents render in the showcase chrome, styled with --sc-* tokens only */
+
+.ShowcaseDocsPage {
+  container-type: size;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.ShowcaseDocsPage-scroll {
+  /* lets wide blocks (e.g. ComponentAnatomy) break out of the column */
+  container-type: inline-size;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: auto;
+}
+
+.ShowcaseDocsPage-column {
+  box-sizing: content-box;
+  margin: 0 auto;
+  max-width: 720px;
+  padding: var(--sc-space-6) var(--sc-space-8) 64px;
+}
+
+.ShowcaseDocsPage-header {
+  align-items: center;
+  display: flex;
+  gap: var(--sc-space-3);
+  min-height: 30px;
+}
+
+.ShowcaseDocsPage-breadcrumb {
+  align-items: center;
+  color: var(--sc-text-4);
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  font: 400 13px/20px var(--sc-font);
+  gap: 6px;
+  min-width: 0;
+}
+
+.ShowcaseDocsPage-crumb {
+  color: var(--sc-text-3);
+  text-decoration: none;
+
+  &:is(a):hover {
+    color: var(--sc-text);
+  }
+
+  &[aria-current="page"] {
+    color: var(--sc-text);
+    font-weight: 500;
+  }
+}
+
+.ShowcaseDocsPage-readTime {
+  color: var(--sc-text-3);
+  font: 400 13px/20px var(--sc-font);
+  white-space: nowrap;
+}
+
+.ShowcaseDocsPage-openWindow {
+  --saltButton-padding: 0;
+  --saltButton-width: 28px;
+}
+
+.ShowcaseDocsPage-error {
+  color: var(--sc-warn);
+}
+
+.ShowcaseDocsPage-footer {
+  border-top: 1px solid var(--sc-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-4);
+  margin-top: 48px;
+  padding-top: var(--sc-space-4);
+}
+
+.ShowcaseDocsPage-meta {
+  align-items: center;
+  display: flex;
+  font: 400 13px/20px var(--sc-font);
+  gap: var(--sc-space-4);
+  justify-content: space-between;
+}
+
+.ShowcaseDocsPage-updated {
+  color: var(--sc-text-3);
+}
+
+.ShowcaseDocsPage-pager {
+  display: grid;
+  gap: var(--sc-space-4);
+  grid-template-columns: 1fr 1fr;
+}
+
+.ShowcaseDocsPage-pagerCard {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sc-space-3) var(--sc-space-4);
+  text-decoration: none;
+  transition: border-color 120ms;
+
+  &:hover {
+    border-color: var(--sc-accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sc-focus);
+    outline-offset: 1px;
+  }
+}
+
+.ShowcaseDocsPage-next {
+  align-items: flex-end;
+  grid-column: 2;
+}
+
+.ShowcaseDocsPage-pagerLabel {
+  color: var(--sc-text-3);
+  font: 400 12px/16px var(--sc-font);
+}
+
+.ShowcaseDocsPage-pagerTitle {
+  align-items: center;
+  color: var(--sc-accent-text);
+  display: inline-flex;
+  font: 600 14px/20px var(--sc-font);
+  gap: 4px;
+}
+
+/* a document opened in its own window */
+.ShowcaseDocsStandalone {
+  background: var(--sc-surface);
+  color: var(--sc-text);
+  display: flex;
+  height: 100vh;
+}
+
+/* ------ Right rail ------ */
+
+.ShowcaseDocsRail {
+  border-left: 1px solid var(--sc-border);
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 260px;
+  flex-direction: column;
+  gap: var(--sc-space-6);
+  overflow: auto;
+  padding: var(--sc-space-6) var(--sc-space-4);
+}
+
+.ShowcaseDocsRail-title {
+  color: var(--sc-text-3);
+  font: 600 11px/16px var(--sc-font);
+  letter-spacing: 0.08em;
+  margin-bottom: var(--sc-space-2);
+  text-transform: uppercase;
+}
+
+.ShowcaseDocsToc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ShowcaseDocsToc-link {
+  border-left: 2px solid transparent;
+  color: var(--sc-text-3);
+  display: block;
+  font: 400 13px/18px var(--sc-font);
+  margin-left: -2px;
+  padding: 5px 0 5px 12px;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--sc-text);
+  }
+
+  &[aria-current="location"] {
+    border-left-color: var(--sc-accent);
+    color: var(--sc-accent-text);
+    font-weight: 600;
+  }
+}
+
+.ShowcaseDocsToc-level3 {
+  padding-left: 26px;
+}
+
+.ShowcaseDocsRail-card {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
+  padding: var(--sc-space-3) var(--sc-space-4);
+}
+
+.ShowcaseDocsRail-cardTitle {
+  color: var(--sc-text);
+  font: 600 13px/20px var(--sc-font);
+  margin-bottom: var(--sc-space-1);
+}
+
+.ShowcaseDocsRail-examples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  a {
+    color: var(--sc-text-2);
+    display: block;
+    font: 400 13px/22px var(--sc-font);
+    overflow: hidden;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+      color: var(--sc-accent-text);
+    }
+  }
+}
+
+@container (max-width: 960px) {
+  .ShowcaseDocsRail {
+    display: none;
+  }
+}
+
+/* ------ Document typography ------ */
+
+.ShowcaseDocs {
+  color: var(--sc-text-2);
+  font: 400 15px/1.7 var(--sc-font);
+  overflow-anchor: auto;
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--sc-text);
+    font-family: var(--sc-font);
+    letter-spacing: -0.01em;
+    scroll-margin-top: var(--sc-space-6);
+  }
+
+  h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: var(--sc-space-3) 0 var(--sc-space-3);
+  }
+
+  /* the lead paragraph */
+  h1 + p {
+    color: var(--sc-text-2);
+    font-size: 17px;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 650;
+    line-height: 1.3;
+    margin: 40px 0 var(--sc-space-2);
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.4;
+    margin: 28px 0 var(--sc-space-2);
+  }
+
+  h4 {
+    font-size: 15px;
+    font-weight: 650;
+    margin: var(--sc-space-6) 0 var(--sc-space-1);
+  }
+
+  p,
+  ul,
+  ol {
+    margin: 0 0 var(--sc-space-4);
+  }
+
+  ul,
+  ol {
+    padding-left: var(--sc-space-6);
+  }
+
+  li + li {
+    margin-top: var(--sc-space-1);
+  }
+
+  strong {
+    color: var(--sc-text);
+    font-weight: 600;
+  }
+
+  a {
+    color: var(--sc-accent-text);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--sc-border);
+    margin: var(--sc-space-8) 0;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  :not(pre) > code {
+    background: var(--sc-surface-2);
+    border: 1px solid var(--sc-border);
+    border-radius: 5px;
+    color: var(--sc-text);
+    font: 400 0.86em/1 var(--sc-mono);
+    padding: 2px 5px;
+    white-space: nowrap;
+  }
+
+  pre {
+    background: var(--sc-surface-2);
+    border: 1px solid var(--sc-border);
+    border-radius: var(--sc-radius);
+    font: 400 13px/1.6 var(--sc-mono);
+    margin: 0 0 var(--sc-space-4);
+    overflow: auto;
+    padding: var(--sc-space-3) var(--sc-space-4);
+  }
+
+  pre code {
+    font: inherit;
+  }
+
+  /* Shiki emits both themes as css variables (see mdx-options.ts) */
+  pre.shiki span {
+    color: var(--shiki-light);
+    font-style: var(--shiki-light-font-style);
+    font-weight: var(--shiki-light-font-weight);
+  }
+}
+
+[data-chrome-mode="dark"] .ShowcaseDocs pre.shiki span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+}
+
+.ShowcaseDocs-table {
+  margin: 0 0 var(--sc-space-4);
+  overflow-x: auto;
+
+  table {
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    min-width: 100%;
+  }
+
+  th,
+  td {
+    border-bottom: 1px solid var(--sc-border);
+    padding: var(--sc-space-2) var(--sc-space-3);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    color: var(--sc-text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+
+/* ------ Callouts ------ */
+
+.ShowcaseCallout {
+  --callout-color: var(--sc-accent-text);
+  --callout-bg: var(--sc-accent-soft);
+  background: var(--callout-bg);
+  border-radius: var(--sc-radius);
+  display: flex;
+  font-size: 14px;
+  gap: 10px;
+  line-height: 1.6;
+  margin: var(--sc-space-4) 0 var(--sc-space-6);
+  padding: var(--sc-space-3) var(--sc-space-4);
+
+  > .ShowcaseCallout-icon {
+    color: var(--callout-color);
+    flex: 0 0 auto;
+    margin-top: 3px;
+  }
+}
+
+.ShowcaseCallout-tip {
+  --callout-color: var(--sc-ok);
+  --callout-bg: var(--sc-ok-halo);
+}
+
+.ShowcaseCallout-warning {
+  --callout-color: var(--sc-warn);
+  --callout-bg: color-mix(in srgb, var(--sc-warn) 14%, transparent);
+}
+
+.ShowcaseCallout-danger {
+  --callout-color: #d63b3b;
+  --callout-bg: color-mix(in srgb, #d63b3b 13%, transparent);
+}
+
+.ShowcaseCallout-body {
+  color: var(--sc-text-2);
+  flex: 1 1 auto;
+  min-width: 0;
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  > p {
+    margin-bottom: var(--sc-space-2);
+  }
+}
+
+.ShowcaseCallout-title {
+  color: var(--callout-color);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+/* ------ Live examples ------ */
+
+.ShowcaseLivePreview {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
+  box-shadow: var(--sc-shadow-1);
+  margin: var(--sc-space-4) 0 var(--sc-space-3);
+  overflow: hidden;
+  scroll-margin-top: var(--sc-space-6);
+}
+
+.ShowcaseLivePreview-header {
+  align-items: center;
+  background: var(--sc-surface-2);
+  border-bottom: 1px solid var(--sc-border);
+  display: flex;
+  font: 400 13px/20px var(--sc-font);
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 var(--sc-space-2) 0 var(--sc-space-3);
+}
+
+.ShowcaseLivePreview-icon {
+  color: var(--sc-text-3);
+}
+
+.ShowcaseLivePreview-name {
+  color: var(--sc-text);
+  font-weight: 600;
+}
+
+.ShowcaseLivePreview-live {
+  color: var(--sc-text-3);
+}
+
+.ShowcaseLivePreview-spacer {
+  flex: 1 1 auto;
+}
+
+.ShowcaseLivePreview-action {
+  font-size: 12px;
+  gap: 4px;
+}
+
+.ShowcaseLivePreview-open {
+  --saltButton-padding: 0;
+  --saltButton-width: 28px;
+}
+
+.ShowcaseLivePreview-preview {
+  background-color: var(--sc-bg);
+  background-image: radial-gradient(
+    var(--sc-border-strong) 1px,
+    transparent 1px
+  );
+  background-size: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-4);
+  padding: var(--sc-space-4);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.ShowcaseLivePreview-code pre {
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  max-height: 480px;
+}
+
+.ShowcaseEmbeddedExample {
+  background: transparent;
+  border: 0;
+  display: block;
+  /* the example sizes its iframe to fit, once loaded */
+  height: 160px;
+  scroll-margin-top: var(--sc-space-6);
+  width: 100%;
+}
+
+.ShowcaseLivePreview-preview .ShowcaseEmbeddedExample {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+}
+
+/* ------ Mermaid ------ */
+
+.ShowcaseMermaid {
+  display: flex;
+  justify-content: center;
+  margin: var(--sc-space-4) 0 var(--sc-space-6);
+  overflow-x: auto;
+}
+
+.ShowcaseMermaid-error {
+  color: var(--sc-warn);
+  white-space: pre-wrap;
+}

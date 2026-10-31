@@ -1,0 +1,392 @@
+/* Chrome only (--sc-* tokens), never the theme being documented. */
+.ShowcaseAnatomy {
+  --anatomy-api: #2563eb;
+  --anatomy-internal: #94a3b8;
+  --anatomy-characteristics: #e2730f;
+  --anatomy-palette: #0d9488;
+  --anatomy-foundations: #8a5cf6;
+  --anatomy-other: #64748b;
+
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
+  box-shadow: var(--sc-shadow-1);
+  color: var(--sc-text-2);
+  font: 400 13px/20px var(--sc-font);
+  margin: var(--sc-space-4) 0 var(--sc-space-3);
+  overflow: hidden;
+}
+
+.ShowcaseAnatomy-header {
+  align-items: baseline;
+  background: var(--sc-surface-2);
+  border-bottom: 1px solid var(--sc-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-2);
+  padding: 10px var(--sc-space-3);
+}
+
+.ShowcaseAnatomy-title {
+  color: var(--sc-text);
+  font-weight: 600;
+}
+
+.ShowcaseAnatomy-meta {
+  color: var(--sc-text-3);
+  font-size: 12px;
+}
+
+.ShowcaseAnatomy-capture {
+  color: var(--sc-text-3);
+  font: 400 11px/20px var(--sc-mono);
+  margin-left: auto;
+}
+
+/* ------ x-ray stage ------ */
+
+.ShowcaseAnatomy-stage {
+  background:
+    radial-gradient(circle, var(--sc-border) 1px, transparent 1px) 0 0 / 14px
+      14px,
+    var(--sc-bg);
+  border-bottom: 1px solid var(--sc-border);
+  cursor: crosshair;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+}
+
+.ShowcaseAnatomy-shot {
+  box-shadow: 0 0 0 1px var(--sc-border);
+  opacity: 0.45;
+  position: absolute;
+}
+
+.ShowcaseAnatomy-instance,
+.ShowcaseAnatomy-hover,
+.ShowcaseAnatomy-xray {
+  box-sizing: border-box;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ShowcaseAnatomy-instance {
+  border: 1px dashed color-mix(in srgb, var(--sc-accent) 45%, transparent);
+}
+
+.ShowcaseAnatomy-hover {
+  background: color-mix(in srgb, var(--sc-accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sc-accent) 60%, transparent);
+}
+
+.ShowcaseAnatomy-xray {
+  background: color-mix(in srgb, var(--anatomy-hue) 4%, transparent);
+  border: 1.5px solid var(--anatomy-hue);
+  border-radius: 4px;
+}
+
+.ShowcaseAnatomy-xray-selected {
+  background: color-mix(in srgb, var(--anatomy-hue) 18%, transparent);
+  border-width: 2px;
+}
+
+.ShowcaseAnatomy-tab {
+  background: var(--anatomy-hue);
+  border-radius: 3px 0 3px 0;
+  color: #fff;
+  cursor: pointer;
+  font: 600 10px/16px var(--sc-mono);
+  left: -1px;
+  padding: 0 6px;
+  pointer-events: auto;
+  position: absolute;
+  top: -1px;
+  white-space: nowrap;
+}
+
+.ShowcaseAnatomy-tab-below {
+  border-radius: 0 3px 3px 3px;
+  bottom: -18px;
+  top: auto;
+}
+
+/* ------ DOM tree | variables ------ */
+
+.ShowcaseAnatomy-split {
+  display: grid;
+  grid-template-columns: fit-content(55%) 1fr;
+  height: 440px;
+}
+
+.ShowcaseAnatomy-tree {
+  min-width: 220px;
+  border-right: 1px solid var(--sc-border);
+  overflow: auto;
+  padding: var(--sc-space-1) 0;
+}
+
+.ShowcaseAnatomy-treeItem {
+  align-items: center;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  font: 400 12px/24px var(--sc-mono);
+  gap: 6px;
+  padding-right: var(--sc-space-2);
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--sc-surface-2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sc-focus);
+    outline-offset: -2px;
+  }
+}
+
+.ShowcaseAnatomy-treeItem-chain {
+  color: var(--sc-text);
+}
+
+.ShowcaseAnatomy-treeItem[aria-selected="true"] {
+  background: var(--sc-accent-soft);
+  border-left-color: var(--sc-accent);
+  color: var(--sc-accent-text);
+}
+
+.ShowcaseAnatomy-treeHue {
+  border-radius: 2px;
+  flex: none;
+  height: 8px;
+  width: 8px;
+}
+
+.ShowcaseAnatomy-treeLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ShowcaseAnatomy-tag,
+.ShowcaseAnatomy-extra,
+.ShowcaseAnatomy-variant {
+  color: var(--sc-text-3);
+}
+
+.ShowcaseAnatomy-variant {
+  font-style: italic;
+}
+
+.ShowcaseAnatomy-nested {
+  border: 1px solid var(--sc-border-strong);
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text-3);
+  font: 500 10px/14px var(--sc-font);
+  margin-left: 6px;
+  padding: 0 4px;
+}
+
+.ShowcaseAnatomy-count {
+  color: var(--sc-text-3);
+  font-size: 11px;
+}
+
+.ShowcaseAnatomy-varCount {
+  background: var(--sc-surface-3);
+  border-radius: 8px;
+  color: var(--sc-text-2);
+  font: 600 10px/16px var(--sc-font);
+  min-width: 16px;
+  padding: 0 5px;
+  text-align: center;
+}
+
+.ShowcaseAnatomy-vars {
+  overflow: auto;
+  padding: var(--sc-space-2) var(--sc-space-3) var(--sc-space-3);
+}
+
+.ShowcaseAnatomy-varsHeader {
+  align-items: baseline;
+  display: flex;
+  gap: var(--sc-space-2);
+  margin-bottom: var(--sc-space-1);
+}
+
+.ShowcaseAnatomy-varsTitle {
+  color: var(--sc-text);
+  font: 600 13px/22px var(--sc-mono);
+}
+
+.ShowcaseAnatomy .ShowcaseAnatomy-note {
+  color: var(--sc-text-3);
+  font-size: 12px;
+  margin: var(--sc-space-1) 0;
+}
+
+.ShowcaseAnatomy-groupTitle {
+  border-bottom: 1px solid var(--sc-border);
+  color: var(--sc-text-3);
+  font: 600 11px/24px var(--sc-font);
+  letter-spacing: 0.04em;
+  margin-top: var(--sc-space-2);
+  text-transform: uppercase;
+}
+
+.ShowcaseAnatomy-ref {
+  border-bottom: 1px solid var(--sc-border);
+  padding: 6px 0;
+}
+
+.ShowcaseAnatomy-ref-overridden {
+  opacity: 0.5;
+}
+
+.ShowcaseAnatomy-refHead {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.ShowcaseAnatomy-property {
+  color: var(--sc-text);
+  font: 600 12px/20px var(--sc-mono);
+}
+
+.ShowcaseAnatomy-flag {
+  border: 1px solid var(--sc-border-strong);
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text-3);
+  font-size: 10px;
+  line-height: 14px;
+  padding: 0 4px;
+}
+
+.ShowcaseAnatomy-value {
+  align-items: center;
+  color: var(--sc-text-2);
+  display: flex;
+  font: 400 11px/20px var(--sc-mono);
+  gap: 5px;
+  margin-left: auto;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ShowcaseAnatomy-swatch {
+  background-clip: padding-box;
+  border: 1px solid var(--sc-border-strong);
+  border-radius: 3px;
+  flex: none;
+  height: 12px;
+  width: 12px;
+}
+
+.ShowcaseAnatomy-selector {
+  color: var(--sc-text-3);
+  font: 400 11px/16px var(--sc-mono);
+  overflow-wrap: anywhere;
+}
+
+.ShowcaseAnatomy-chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  margin-top: 4px;
+}
+
+.ShowcaseAnatomy-step {
+  align-items: center;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  color: var(--sc-text-2);
+  display: inline-flex;
+  font: 400 11px/18px var(--sc-mono);
+  gap: 5px;
+  padding: 0 7px;
+
+  & + &::before {
+    color: var(--sc-text-4);
+    content: "→";
+    margin-left: -24px;
+    margin-right: 6px;
+  }
+
+  & + & {
+    margin-left: 22px;
+  }
+}
+
+.ShowcaseAnatomy-step-unset {
+  border-style: dashed;
+  color: var(--sc-text-3);
+}
+
+.ShowcaseAnatomy-literal {
+  background: var(--sc-surface-2);
+  border-radius: var(--sc-radius-sm);
+}
+
+.ShowcaseAnatomy-dot {
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+  height: 8px;
+  width: 8px;
+
+  &[data-tier="api"] {
+    background: var(--anatomy-api);
+  }
+  &[data-tier="internal"] {
+    background: var(--anatomy-internal);
+  }
+  &[data-tier="characteristics"] {
+    background: var(--anatomy-characteristics);
+  }
+  &[data-tier="palette"] {
+    background: var(--anatomy-palette);
+  }
+  &[data-tier="foundations"] {
+    background: var(--anatomy-foundations);
+  }
+  &[data-tier="other"] {
+    background: var(--anatomy-other);
+  }
+}
+
+.ShowcaseAnatomy-dot-unset {
+  border: 1px dashed var(--sc-text-3);
+  box-sizing: border-box;
+}
+
+.ShowcaseAnatomy-legend {
+  background: var(--sc-surface-2);
+  border-top: 1px solid var(--sc-border);
+  color: var(--sc-text-3);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  gap: var(--sc-space-3);
+  padding: 6px var(--sc-space-3);
+
+  > span {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+  }
+}
+
+/* ------ breakout ------ */
+
+/* Docs text is capped at a readable measure; the anatomy needs room, so it
+   breaks out of the column to the width of the scroll area (cqi). */
+.ShowcaseDocs .ShowcaseAnatomy {
+  --anatomy-width: max(100%, min(100cqi - 2 * var(--sc-space-8), 1400px));
+  margin-inline: calc((100% - var(--anatomy-width)) / 2);
+  width: var(--anatomy-width);
+}
