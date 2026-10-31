@@ -49,7 +49,7 @@
     "test:playwright:components": "playwright test --config=playwright.config.ts --project=components-chromium",
     "test:playwright:perf": "VUU_PERF=1 playwright test --config=playwright.config.ts --project=components-chromium Table-scroll-performance",
     "test:vite": "npm run build:worker && vitest run",
-    "test:coverage:server-proxy": "vitest run packages/vuu-data-remote/test --coverage.enabled --coverage.provider=v8 --coverage.include='packages/vuu-data-remote/src/server-proxy/**' --coverage.reporter=text --coverage.reporter=html --coverage.reportsDirectory=coverage/server-proxy",
+    "test:coverage:server-proxy": "vitest run packages/vuu-data-remote/test --coverage.enabled --coverage.provider=v8 --coverage.include='packages/vuu-data-remote/src/server-proxy/**' --coverage.reporter=text --coverage.reporter=html --coverage.reportsDirectory=coverage/server-proxy --coverage.thresholds.statements=93 --coverage.thresholds.lines=93 --coverage.thresholds.branches=91 --coverage.thresholds.functions=98",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.ts",
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
