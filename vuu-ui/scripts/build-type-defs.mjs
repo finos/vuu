@@ -1,15 +1,13 @@
 import fs from "fs";
 import { readPackageJson } from "./utils.mjs";
-import { execWait, getCommandLineArg } from "./utils.mjs";
+import { execWait } from "./utils.mjs";
 
 const packageJson = readPackageJson();
 const { name: scopedPackageName } = packageJson;
 const [, packageName] = scopedPackageName.split("/");
-const debug = getCommandLineArg("--debug");
-const packageNameSuffix = debug ? "-debug" : "";
 
 const DIST_PATH = `../../dist`;
-const outdir = `${DIST_PATH}/${packageName}${packageNameSuffix}`;
+const outdir = `${DIST_PATH}/${packageName}`;
 // A local ts config that we will write to the working directory,
 // then remove when we're done. It specifies the output directory
 // so will vary by package. Most of the config is defined at workspace

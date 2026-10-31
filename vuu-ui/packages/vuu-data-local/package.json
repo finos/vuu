@@ -5,7 +5,6 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build-rslib.ts",
     "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"

@@ -6,7 +6,6 @@
  * Check the package versions currently published on npm without publishing:
  *   npm run pub -- --version-check
  *
- * Add --debug to publish from the debug package output.
  * Add --verbose to print complete command output when a command fails.
  */
 import { execWait } from "./utils.ts";
@@ -70,7 +69,6 @@ const getArgument = (name: string, expectsValue = false) => {
   return args[index + 1];
 };
 
-const debug = getArgument("--debug") !== undefined;
 const verbose = getArgument("--verbose") !== undefined;
 const publishTag = getArgument("--tag", true);
 const versionCheck = getArgument("--version-check") !== undefined;
@@ -109,12 +107,12 @@ const assertDistMatchesSource = () => {
   }
 };
 
-const publishPackage = async (packageName: PackageName, suffix: string) => {
+const publishPackage = async (packageName: PackageName) => {
   await execWait(
     `npm publish --registry ${registry} --access public${
       publishTag ? ` --tag ${publishTag}` : ""
     }`,
-    `dist/${packageName}${suffix}`,
+    `dist/${packageName}`,
     verbose,
     true,
   );
@@ -207,12 +205,9 @@ if (versionCheck) {
     throw Error(`${failures.length} version check(s) failed`);
   }
 } else {
-  const packageNameSuffix = debug ? "-debug" : "";
   assertDistMatchesSource();
   const publishResults = await Promise.allSettled(
-    packages.map((packageName) =>
-      publishPackage(packageName, packageNameSuffix),
-    ),
+    packages.map((packageName) => publishPackage(packageName)),
   );
   reportResults("publish", publishResults);
 
