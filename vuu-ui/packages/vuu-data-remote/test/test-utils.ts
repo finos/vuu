@@ -1,24 +1,16 @@
-import { vi } from "vitest";
 import {
   VuuViewportCreateSuccessResponse,
   ServerToClientTableRows,
   VuuRow,
   VuuServerMessage,
   VuuTableMetaResponse,
-  VuuDataRow,
 } from "@vuu-ui/vuu-protocol-types";
-import {
-  ServerProxy,
-  TEST_setRequestId,
-} from "../src/server-proxy/server-proxy";
-
-import { PostMessageToClientCallback } from "../src";
+import type { ServerProxy } from "../src/server-proxy/server-proxy";
 import {
   DataSourceConstructorProps,
   ServerProxySubscribeMessage,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { WebSocketConnection } from "../src/WebSocketConnection";
 
 export const COMMON_ATTRS = {
   module: "TEST",
@@ -50,14 +42,6 @@ export const sizeRow = (viewPortId = "server-vp-1", vpSize = 100) =>
     rowKey: "SIZE",
     updateType: "SIZE",
   }) as VuuRow;
-
-export const TABLE_ROW = (rows: VuuRow<VuuDataRow>[]): VuuServerMessage => ({
-  ...COMMON_ATTRS,
-  body: {
-    ...COMMON_TABLE_ROW_ATTRS,
-    rows,
-  },
-});
 
 /**
  *
@@ -294,101 +278,3 @@ export type SubscriptionDetails = {
   key?: string;
   to?: number;
 };
-
-export type Mock = { mockClear: () => void };
-export type MockedConnection = Omit<
-  WebSocketConnection,
-  "on" | "protocols" | "send"
-> & {
-  on: WebSocketConnection["on"] & Mock;
-  send: WebSocketConnection["send"] & Mock;
-};
-
-export const createConnection = () => {
-  return {
-    connectionTimeout: 0,
-    on: vi.fn(),
-    requiresLogin: true,
-    send: vi.fn(),
-    status: "ready" as const,
-  };
-};
-
-export const createFixtures = async (
-  proxyParams: {
-    bufferSize?: number;
-    connection?: MockedConnection;
-    key?: string;
-    to?: number;
-  } = {},
-): Promise<
-  [ServerProxy, PostMessageToClientCallback & Mock, MockedConnection]
-> => {
-  TEST_setRequestId(1);
-  const postMessageToClient = vi.fn();
-  const connection = createConnection();
-  const serverProxy = await createServerProxyAndSubscribeToViewport(
-    postMessageToClient,
-    {
-      ...proxyParams,
-      connection,
-    },
-  );
-
-  return [serverProxy, postMessageToClient, connection];
-};
-
-export const createServerProxyAndSubscribeToViewport = async (
-  postMessageToClient: any,
-  {
-    bufferSize = 0,
-    connection = createConnection(),
-    key = "1",
-    to = 10,
-  }: { bufferSize?: number; connection?: any; key?: string; to?: number } = {},
-) => {
-  const serverProxy = new ServerProxy(connection, postMessageToClient);
-  //TODO we shouldn't be able to bypass checks like this
-  serverProxy["sessionId"] = "dsdsd";
-  serverProxy["authToken"] = "test";
-
-  await subscribe(serverProxy, { bufferSize, key, to });
-
-  return serverProxy;
-};
-
-class ServerAPI {
-  #serverProxy: ServerProxy;
-  constructor(serverProxy: ServerProxy) {
-    this.#serverProxy = serverProxy;
-  }
-  ackRangeRequest(
-    from: number,
-    to: number,
-    requestId = "1",
-    viewPortId = "server-vp-1",
-  ) {
-    this.#serverProxy.handleMessageFromServer({
-      ...COMMON_ATTRS,
-      requestId,
-      body: {
-        type: "CHANGE_VP_RANGE_SUCCESS",
-        viewPortId,
-        from,
-        to,
-      },
-    });
-  }
-
-  receiveWebsocketData(rows: VuuRow[]) {
-    this.#serverProxy.handleMessageFromServer({
-      ...COMMON_ATTRS,
-      body: {
-        ...COMMON_TABLE_ROW_ATTRS,
-        rows,
-      },
-    });
-  }
-}
-export const serverAPI = (serverProxy: ServerProxy) =>
-  new ServerAPI(serverProxy);

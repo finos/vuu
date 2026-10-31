@@ -1,18 +1,14 @@
-import {
-  DataSourceRow,
-  ServerProxySubscribeMessage,
-} from "@vuu-ui/vuu-data-types";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { describe, expect, it } from "vitest";
-import { Viewport } from "../src/server-proxy/viewport";
 import "./global-mocks";
 import {
-  createSubscription,
-  createTableRows,
-  sizeRow,
-  testSchema,
-  updateTableRow,
-} from "./test-utils";
+  rows,
+  size,
+  update,
+  type ViewportHarness,
+  viewportHarness,
+} from "./server-proxy-dsl";
 
 /**
  * Minimal model of the client-side DataRowMovingWindow, as used by the Table.
@@ -23,7 +19,6 @@ import {
 class ClientWindow {
   private rows = new Map<number, number>();
   constructor(private range: VuuRange) {}
-
   setRange(range: VuuRange) {
     this.range = range;
     for (const rowIndex of this.rows.keys()) {
@@ -32,7 +27,6 @@ class ClientWindow {
       }
     }
   }
-
   add(rows: readonly DataSourceRow[] | undefined) {
     rows?.forEach(([rowIndex, key]) => {
       if (rowIndex >= this.range.from && rowIndex < this.range.to) {
@@ -40,98 +34,83 @@ class ClientWindow {
       }
     });
   }
-
   get keys() {
     return Array.from(this.rows.values());
   }
-
   get duplicateKeys() {
     const seen = new Set<number>();
     return this.keys.filter((key) => seen.has(key) || !seen.add(key));
   }
 }
 
-const createViewport = (range: VuuRange) => {
-  const vp = new Viewport(
-    {
-      aggregations: [],
-      columns: ["col1"],
-      filterSpec: { filter: "" },
-      groupBy: [],
-      sort: { sortDefs: [] },
-      bufferSize: 10,
-      range,
-      table: { module: "TEST", table: "test-table" },
-      viewport: "vp1",
-    } as ServerProxySubscribeMessage,
-    () => undefined,
-  );
-  const [, serverSubscription] = createSubscription();
-  vp.handleSubscribed(serverSubscription.body, testSchema);
-  return vp;
+/** A subscribed viewport and a client window over the same range. */
+const setup = (from: number, to: number) => {
+  const v = viewportHarness({ bufferSize: 10, range: [from, to] });
+  v.subscribed();
+  const client = new ClientWindow({ from, to });
+  return { v, client };
 };
 
+/** Sends the viewport's pending client rows to the client window. */
+const flushToClient = (v: ViewportHarness, client: ClientWindow) => {
+  client.add(v.viewport.getClientRows()[0]);
+};
+
+/**
+ * The Table updates its own window synchronously, then the server proxy
+ * processes the range request.
+ */
 const setRange = (
-  vp: Viewport,
+  v: ViewportHarness,
   client: ClientWindow,
-  requestId: string,
-  range: VuuRange,
+  from: number,
+  to: number,
 ) => {
-  // Table updates its own window synchronously, then the request is
-  // processed by the server proxy.
-  client.setRange(range);
-  const [, rows] = vp.rangeRequest(requestId, range);
-  client.add(rows);
+  client.setRange({ from, to });
+  client.add(v.setRange(from, to).rows);
 };
 
 const sendUpdates = (
-  vp: Viewport,
+  v: ViewportHarness,
   client: ClientWindow,
   rowIndices: number[],
 ) => {
-  vp.updateRows(
-    rowIndices.map((rowIndex) =>
-      updateTableRow("server-vp-1", rowIndex, Math.random()),
-    ),
-  );
-  const [rows] = vp.getClientRows();
-  client.add(rows);
+  v.receives(rowIndices.map((rowIndex) => update(rowIndex, Math.random())));
+  flushToClient(v, client);
 };
 
 describe("Viewport render keys", () => {
   it("never holds duplicate keys on client when first range change reduces range size", () => {
-    const vp = createViewport({ from: 0, to: 30 });
-    const client = new ClientWindow({ from: 0, to: 30 });
+    const { v, client } = setup(0, 30);
 
-    vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 40)]);
-    client.add(vp.getClientRows()[0]);
+    v.receives(size(), rows(0, 40));
+    flushToClient(v, client);
     expect(client.duplicateKeys).toEqual([]);
 
     // KeySet was constructed from the subscribe range, a distinct object, so
     // this shrink is detected and KeySet.init() re-assigns every key. Only
     // delta rows (none here) are sent to client, which retains old keys.
-    setRange(vp, client, "1", { from: 5, to: 25 });
+    setRange(v, client, 5, 25);
     expect(client.duplicateKeys).toEqual([]);
 
     // Update for row 15 now carries key 10. Row 10, still on the client,
     // also has key 10.
-    sendUpdates(vp, client, [15]);
+    sendUpdates(v, client, [15]);
     expect(client.duplicateKeys).toEqual([]);
   });
 
   it("recycles keys when range shrinks then grows (after first range change)", () => {
-    const vp = createViewport({ from: 0, to: 30 });
-    const client = new ClientWindow({ from: 0, to: 30 });
+    const { v, client } = setup(0, 30);
 
-    vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 50)]);
-    client.add(vp.getClientRows()[0]);
+    v.receives(size(), rows(0, 50));
+    flushToClient(v, client);
 
     // Same-size range change. From here on, KeySet.range is a reference to
     // dataWindow.clientRange, which is mutated by setClientRange before
     // KeySet.reset is called, so size reductions are never detected.
-    setRange(vp, client, "1", { from: 1, to: 31 });
-    setRange(vp, client, "2", { from: 1, to: 21 });
-    setRange(vp, client, "3", { from: 1, to: 31 });
+    setRange(v, client, 1, 31);
+    setRange(v, client, 1, 21);
+    setRange(v, client, 1, 31);
 
     expect(client.duplicateKeys).toEqual([]);
     // 30 rows have been rendered at any one time, so 30 keys (0-29) suffice.

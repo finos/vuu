@@ -167,7 +167,7 @@ describe("ServerProxy", () => {
       t.expectClient();
     });
 
-    it("Data sequence is correct when scrolling backward, user scrolls faster than cache replenished, data arrives from server in multiple batches", async () => {
+    it("Data sequence is correct when ... scrolling backward user scrolls faster than cache replenished data arrives from server in multiple batches", async () => {
       const t = await serverProxyHarness({ bufferSize: 10 });
       // rows 0..20 cached, 0..10 sent to client
       t.server.sends(size(), rows(0, 20));
@@ -209,7 +209,7 @@ describe("ServerProxy", () => {
       const t = await serverProxyHarness({ bufferSize: 100 });
       t.server.sends(size(1000), rows(0, 110, { vpSize: 1000 }));
 
-      expect(t.viewportState()).toEqual({
+      expect(t.viewportState()).toMatchObject({
         cachedRowCount: 110,
         clientRange: { from: 0, to: 10 },
       });

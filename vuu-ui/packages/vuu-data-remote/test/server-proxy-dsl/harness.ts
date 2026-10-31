@@ -1,4 +1,5 @@
 import { expect } from "vitest";
+import type { WithFullConfig } from "@vuu-ui/vuu-data-types";
 import type { VuuRow } from "@vuu-ui/vuu-protocol-types";
 import {
   ServerProxy,
@@ -6,18 +7,32 @@ import {
 } from "../../src/server-proxy/server-proxy";
 import type { Viewport } from "../../src/server-proxy/viewport";
 import type { WebSocketConnection } from "../../src/WebSocketConnection";
-import { COMMON_ATTRS, COMMON_TABLE_ROW_ATTRS, subscribe } from "../test-utils";
+import {
+  COMMON_ATTRS,
+  COMMON_TABLE_ROW_ATTRS,
+  createSubscription,
+  subscribe,
+} from "../test-utils";
 import { DEFAULT_CLIENT_VP, DEFAULT_SERVER_VP } from "./builders";
 
-export interface HarnessOptions {
+export interface SubscriptionOptions {
   bufferSize?: number;
+  /** "1" gives client-vp-1 / server-vp-1, "2" gives client-vp-2 / server-vp-2 */
+  key?: string;
   /** end of the initial client range, default 10 */
   to?: number;
 }
 
+export interface HarnessOptions extends SubscriptionOptions {
+  /** false: create the proxy with no viewport. Default true. */
+  subscribe?: boolean;
+  /** keep the subscription's messages pending instead of discarding them */
+  keepSubscribeMessages?: boolean;
+}
+
 type ServerRequest = {
   requestId: string;
-  body: { type: string; viewPortId?: string };
+  body: { type: string; viewPortId?: string; [key: string]: unknown };
 };
 
 /**
@@ -53,6 +68,39 @@ export class ServerProxyHarness {
     this.proxy["authToken"] = "test";
   }
 
+  /** Subscribes another viewport and waits for the server ACKs. */
+  async subscribe({
+    bufferSize = 0,
+    key = "1",
+    to = 10,
+  }: SubscriptionOptions = {}) {
+    await subscribe(this.proxy, { bufferSize, key, to });
+  }
+
+  /**
+   * Sends the subscribe request without the server ACKs. complete() delivers
+   * CREATE_VP_SUCCESS and TABLE_META_RESP and waits for the proxy to settle.
+   */
+  startSubscription({
+    bufferSize = 0,
+    key = "1",
+    to = 10,
+  }: SubscriptionOptions = {}) {
+    const [request, ack, tableMeta] = createSubscription({
+      bufferSize,
+      key,
+      to,
+    });
+    this.proxy.subscribe(request);
+    return {
+      complete: async () => {
+        this.proxy.handleMessageFromServer(ack);
+        this.proxy.handleMessageFromServer(tableMeta);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      },
+    };
+  }
+
   /** Actions arriving from the server over the websocket. */
   readonly server = {
     /** TABLE_ROW message; accepts single rows and arrays of rows. */
@@ -67,23 +115,100 @@ export class ServerProxyHarness {
      * sent for this viewport, using that request's id.
      */
     acksRange: (from: number, to: number, vp = DEFAULT_SERVER_VP) => {
-      const request = this.#lastRequest("CHANGE_VP_RANGE", vp);
+      this.server.acks("CHANGE_VP_RANGE", { from, to }, vp);
+    },
+    /**
+     * `${type}_SUCCESS` for the most recent `type` request sent for this
+     * viewport, using that request's id. The body echoes the request body,
+     * with any overrides applied.
+     */
+    acks: (type: string, overrides: object = {}, vp = DEFAULT_SERVER_VP) => {
+      const { requestId, body } = this.#lastRequest(type, vp);
+      this.server.receives(
+        { ...body, ...overrides, type: `${type}_SUCCESS` },
+        requestId,
+      );
+    },
+    /** Any other server message body. */
+    receives: (body: object, requestId = "") => {
       this.proxy.handleMessageFromServer({
         ...COMMON_ATTRS,
-        requestId: request.requestId,
-        body: { type: "CHANGE_VP_RANGE_SUCCESS", viewPortId: vp, from, to },
-      });
+        requestId,
+        body,
+      } as Parameters<ServerProxy["handleMessageFromServer"]>[0]);
     },
   };
 
   /** Actions arriving from the UI client. */
   readonly client = {
     setRange: (from: number, to: number, vp = DEFAULT_CLIENT_VP) => {
-      this.proxy.handleMessageFromClient({
+      this.client.send({
         viewport: vp,
         type: "setViewRange",
         range: { from, to },
       });
+    },
+    /** config message; unset fields take the subscription's defaults. */
+    config: (config: Partial<WithFullConfig>, vp = DEFAULT_CLIENT_VP) => {
+      this.client.send({
+        viewport: vp,
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filterSpec: { filter: "" },
+          groupBy: [],
+          sort: { sortDefs: [] },
+          ...config,
+        },
+      });
+    },
+    select: (
+      rowKey: string,
+      {
+        requestId = "client-request-1",
+        preserveExistingSelection = false,
+        vp = DEFAULT_CLIENT_VP,
+      } = {},
+    ) => {
+      this.client.send({
+        preserveExistingSelection,
+        requestId,
+        rowKey,
+        type: "SELECT_ROW",
+        vpId: vp,
+      });
+    },
+    disable: (vp = DEFAULT_CLIENT_VP) =>
+      this.client.send({ type: "disable", viewport: vp }),
+    enable: (vp = DEFAULT_CLIENT_VP) =>
+      this.client.send({ type: "enable", viewport: vp }),
+    suspend: (
+      vp = DEFAULT_CLIENT_VP,
+      options: { escalateToDisable?: boolean; escalateDelay?: number } = {},
+    ) => this.client.send({ type: "suspend", viewport: vp, ...options }),
+    resume: (vp = DEFAULT_CLIENT_VP) =>
+      this.client.send({ type: "resume", viewport: vp }),
+    createLink: ({
+      parent = "client-vp-1",
+      child = "client-vp-2",
+      parentColumn = "col-1",
+      childColumn = "col-1",
+      requestId = "req1",
+    } = {}) =>
+      this.client.send({
+        requestId,
+        type: "CREATE_VISUAL_LINK",
+        parentVpId: parent,
+        parentColumnName: parentColumn,
+        childColumnName: childColumn,
+        childVpId: child,
+      }),
+    /** Any other client message. */
+    send: (message: object) => {
+      this.proxy.handleMessageFromClient(
+        message as Parameters<ServerProxy["handleMessageFromClient"]>[0],
+      );
     },
   };
 
@@ -108,13 +233,41 @@ export class ServerProxyHarness {
 
   /** Read-only view of a viewport's internal state. */
   viewportState(vp = DEFAULT_SERVER_VP) {
-    const viewport = this.proxy["viewports"].get(vp) as Viewport | undefined;
-    if (!viewport) throw Error(`no viewport ${vp}`);
+    const viewport = this.#viewport(vp);
     const dataWindow = viewport["dataWindow"];
     return {
+      status: viewport.status,
+      clientViewportId: viewport.clientViewportId,
+      serverViewportId: viewport.serverViewportId,
+      isTree: viewport.isTree,
+      disabled: viewport.disabled,
+      suspended: viewport.suspended,
       cachedRowCount: dataWindow?.["internalData"].length,
       clientRange: dataWindow?.clientRange,
+      pendingRangeCount: viewport["pendingRangeRequests"].length,
+      filter: viewport["filter"],
     };
+  }
+
+  /** The cached row at rowIndex, as held by the viewport's data window. */
+  cachedRow(rowIndex: number, vp = DEFAULT_SERVER_VP) {
+    return this.#viewport(vp)["dataWindow"]?.getAtIndex(rowIndex);
+  }
+
+  /** Read-only view of the proxy's internal state. */
+  proxyState() {
+    return {
+      viewportCount: this.proxy["viewports"].size,
+      queuedRequestCount: this.proxy["queuedRequests"].length,
+      serverViewportFor: (clientVp: string) =>
+        this.proxy["mapClientToServerViewport"].get(clientVp),
+    };
+  }
+
+  #viewport(vp: string) {
+    const viewport = this.proxy["viewports"].get(vp) as Viewport | undefined;
+    if (!viewport) throw Error(`no viewport ${vp}`);
+    return viewport;
   }
 
   #lastRequest(type: string, vp: string) {
@@ -130,16 +283,22 @@ export class ServerProxyHarness {
 
 /**
  * Creates a ServerProxy with one subscribed viewport (client-vp-1 /
- * server-vp-1, range 0..to). Messages from the subscription are discarded.
+ * server-vp-1, range 0..to). Messages from the subscription are discarded
+ * unless keepSubscribeMessages is set.
  */
 export const serverProxyHarness = async ({
-  bufferSize = 0,
-  to = 10,
+  subscribe = true,
+  keepSubscribeMessages = false,
+  ...subscription
 }: HarnessOptions = {}) => {
   TEST_setRequestId(1);
   const t = new ServerProxyHarness();
-  await subscribe(t.proxy, { bufferSize, to });
-  t.discard();
+  if (subscribe) {
+    await t.subscribe(subscription);
+    if (!keepSubscribeMessages) {
+      t.discard();
+    }
+  }
   return t;
 };
 

@@ -1,7 +1,14 @@
 import { expect } from "vitest";
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableSchema, WithFullConfig } from "@vuu-ui/vuu-data-types";
 import type { VuuRow } from "@vuu-ui/vuu-protocol-types";
-import { createTableRows, sizeRow, testSchema } from "../test-utils";
+import {
+  COMMON_ROW_ATTRS,
+  createTableGroupRows,
+  createTableRows,
+  sizeRow,
+  testSchema,
+  updateTableRow,
+} from "../test-utils";
 
 export const DEFAULT_SERVER_VP = "server-vp-1";
 export const DEFAULT_CLIENT_VP = "client-vp-1";
@@ -40,9 +47,86 @@ export const rows = (
   }: RowOptions = {},
 ): VuuRow[] => createTableRows(vp, from, to, vpSize, ts, sel, value);
 
+export interface UpdateOptions {
+  /** suffix for rowKey and name, default: last two digits of rowIndex */
+  id?: string;
+  vpSize?: number;
+  /** default 2 */
+  ts?: number;
+  vp?: string;
+}
+
+/** An update to the row at rowIndex, setting the numeric column to value. */
+export const update = (
+  rowIndex: number,
+  value: string | number | boolean,
+  { id = "", vpSize = 100, ts = 2, vp = DEFAULT_SERVER_VP }: UpdateOptions = {},
+): VuuRow => updateTableRow(vp, rowIndex, value, { key: id, vpSize, ts });
+
+/**
+ * Group rows for server-vp-1 grouped by currency (USD, EUR, GBX, CAD),
+ * optionally preceded by a SIZE row of 4.
+ */
+export const groupRows = (withSizeRow = true): VuuRow[] =>
+  createTableGroupRows(withSizeRow).body.rows;
+
+/** Group labels and counts in groupRows(), by rowIndex. */
+export const GROUPS: Array<[label: string, count: number]> = [
+  ["USD", 43714],
+  ["EUR", 43941],
+  ["GBX", 43997],
+  ["CAD", 44108],
+];
+
+/** One group row from the server for server-vp-1, laid out as in groupRows(). */
+export const groupRow = (
+  rowIndex: number,
+  label: string,
+  count: number,
+): VuuRow => ({
+  ...COMMON_ROW_ATTRS,
+  viewPortId: DEFAULT_SERVER_VP,
+  vpSize: 4,
+  rowIndex,
+  rowKey: `$root|${label}`,
+  updateType: "U",
+  // biome-ignore format: matches createTableGroupRows layout
+  data: [1, false, `$root|${label}`, false, label, count, "", label, "", "", "", "", ""],
+});
+
 /* ------------------------------------------------------------------ */
 /* Messages expected at the client                                    */
 /* ------------------------------------------------------------------ */
+
+export interface SingleClientRowOptions {
+  /** render key, default rowIndex */
+  key?: number;
+  /** suffix for rowKey and name, default: last two digits of rowIndex */
+  id?: string;
+  ts?: number;
+  sel?: 0 | 1;
+  /** numeric column, default 1000 + rowIndex */
+  value?: string | number | boolean;
+}
+
+/** One flat client row tuple, e.g. for a row sent by update(). */
+export const clientRow = (
+  rowIndex: number,
+  {
+    key = rowIndex,
+    id = `0${rowIndex}`.slice(-2),
+    ts = 1,
+    sel = 0,
+    value = 1000 + rowIndex,
+  }: SingleClientRowOptions = {},
+) => {
+  const rowKey = `key-${id}`;
+  // biome-ignore format: one line of metadata, one line of data
+  return [
+    rowIndex, key, true, false, 0, 0, rowKey, sel, ts, false,
+    rowKey, `name ${id}`, value, true,
+  ];
+};
 
 export interface ClientRowOptions {
   /** render key of the first row; keys run consecutively. Default: from */
@@ -73,6 +157,24 @@ export const clientRows = (
   }
   return out;
 };
+
+/** Tree client row tuple for a collapsed depth-1 group row. */
+export const groupClientRow = (
+  rowIndex: number,
+  label: string,
+  count: number,
+) =>
+  // biome-ignore format: one line of metadata, one line of data
+  [
+    rowIndex, rowIndex, false, false, 1, count, `$root|${label}`, 0, 1, false,
+    "", label, "", "", "", "", "",
+  ];
+
+/** Tree client rows [from, to) for groupRows(). */
+export const groupClientRows = (from: number, to: number) =>
+  GROUPS.slice(from, to).map(([label, count], i) =>
+    groupClientRow(from + i, label, count),
+  );
 
 export interface ViewportUpdateOptions {
   rows?: unknown[][];
@@ -121,6 +223,10 @@ export const subscribedMessage = ({
   sort: { sortDefs: [] },
   tableSchema,
 });
+
+/** Size-only viewport update, sent when only the row count changed. */
+export const sizeOnly = (size: number, vp = DEFAULT_CLIENT_VP) =>
+  viewportUpdate({ mode: "size-only", size, vp });
 
 /* ------------------------------------------------------------------ */
 /* Requests expected at the server                                    */
@@ -171,3 +277,63 @@ export const changeRange = (
     requestId,
   }: { vp?: string; requestId?: string } = {},
 ) => serverRequest(changeRangeBody(from, to, vp), requestId);
+
+interface RequestOptions {
+  vp?: string;
+  requestId?: string;
+}
+
+/** CHANGE_VP sent for a client config message; unset fields take defaults. */
+export const changeVp = (
+  config: Partial<WithFullConfig> = {},
+  { vp = DEFAULT_SERVER_VP, requestId }: RequestOptions = {},
+) =>
+  serverRequest(
+    {
+      aggregations: [],
+      viewPortId: vp,
+      type: "CHANGE_VP",
+      columns: ["col-1", "col-2", "col-3", "col-4"],
+      sort: { sortDefs: [] },
+      filterSpec: { filter: "" },
+      groupBy: [],
+      ...config,
+    },
+    requestId,
+  );
+
+export const disableVp = ({
+  vp = DEFAULT_SERVER_VP,
+  requestId,
+}: RequestOptions = {}) =>
+  serverRequest({ type: "DISABLE_VP", viewPortId: vp }, requestId);
+
+export const enableVp = ({
+  vp = DEFAULT_SERVER_VP,
+  requestId,
+}: RequestOptions = {}) =>
+  serverRequest({ type: "ENABLE_VP", viewPortId: vp }, requestId);
+
+export const selectRow = (
+  rowKey: string,
+  {
+    vp = DEFAULT_SERVER_VP,
+    requestId = "client-request-1",
+    preserveExistingSelection = false,
+  }: RequestOptions & { preserveExistingSelection?: boolean } = {},
+) =>
+  serverRequest(
+    { preserveExistingSelection, rowKey, type: "SELECT_ROW", vpId: vp },
+    requestId,
+  );
+
+/** The four requests the proxy sends when client-vp-1 subscribes. */
+export const subscriptionRequests = (range: [number, number]) => [
+  serverRequest(
+    { table: { module: "TEST", table: "test-table" }, type: "GET_TABLE_META" },
+    "1",
+  ),
+  serverRequest(createVpBody({ range }), "client-vp-1"),
+  serverRequest({ type: "GET_VP_VISUAL_LINKS", vpId: DEFAULT_SERVER_VP }, "2"),
+  serverRequest({ type: "GET_VIEW_PORT_MENUS", vpId: DEFAULT_SERVER_VP }, "3"),
+];
