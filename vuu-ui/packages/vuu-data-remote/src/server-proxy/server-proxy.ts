@@ -137,6 +137,8 @@ export class ServerProxy {
   private postMessageToClient: PostMessageToClientCallback;
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
+  /** server viewport ids sent REMOVE_VP, awaiting REMOVE_VP_SUCCESS */
+  private pendingRemovals = new Set<string>();
   private authToken = "";
   private pendingLogin?: PendingLogin;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -173,12 +175,17 @@ export class ServerProxy {
     // The "active" viewports are those the user has on their open layout
     // Reconnect these first.
     const [activeViewports, inactiveViewports] = partition(
-      Array.from(this.viewports.values()),
+      Array.from(this.viewports.values()).filter(
+        ({ serverViewportId }) =>
+          serverViewportId === undefined ||
+          !this.pendingRemovals.has(serverViewportId),
+      ),
       isActiveViewport,
     );
 
     this.viewports.clear();
     this.mapClientToServerViewport.clear();
+    this.pendingRemovals.clear();
 
     const reconnectViewports = (viewports: Viewport[]) => {
       viewports.forEach((viewport) => {
@@ -232,7 +239,10 @@ export class ServerProxy {
   }
 
   public disconnect() {
-    this.viewports.forEach((viewport) => {
+    this.viewports.forEach((viewport, viewportId) => {
+      if (this.pendingRemovals.has(viewportId)) {
+        return;
+      }
       const { clientViewportId } = viewport;
       this.unsubscribe(clientViewportId);
       this.postMessageToClient({
@@ -391,8 +401,10 @@ export class ServerProxy {
     const serverViewportId =
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
-      this.mapClientToServerViewport.delete(clientViewportId);
-      this.viewports.delete(serverViewportId);
+      if (this.pendingRemovals.has(serverViewportId)) {
+        return;
+      }
+      this.pendingRemovals.add(serverViewportId);
       info?.(
         `Unsubscribe Message (Client to Server):
         ${serverViewportId}`,
@@ -936,6 +948,7 @@ export class ServerProxy {
         break;
       case "REMOVE_VP_SUCCESS":
         {
+          this.pendingRemovals.delete(body.viewPortId);
           const viewport = viewports.get(body.viewPortId);
           if (viewport) {
             this.mapClientToServerViewport.delete(viewport.clientViewportId);

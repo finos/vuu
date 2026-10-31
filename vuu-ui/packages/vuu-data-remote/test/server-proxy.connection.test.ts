@@ -70,7 +70,7 @@ afterEach(() => {
 
 describe("ServerProxy connection lifecycle", () => {
   describe("login", () => {
-    it("sends LOGIN with the token and resolves with the session id from LOGIN_SUCCESS", async () => {
+    it("sends LOGIN with the token and resolves with the LOGIN_SUCCESS response, including the session id", async () => {
       const t = await serverProxyHarness({ subscribe: false });
       const login = t.proxy.login("token-1");
 
@@ -87,7 +87,12 @@ describe("ServerProxy connection lifecycle", () => {
         { sessionId: "session-1" },
       );
 
-      await expect(login).resolves.toEqual("session-1");
+      await expect(login).resolves.toEqual({
+        type: "LOGIN_SUCCESS",
+        token: "token-1",
+        vuuServerId: "server-1",
+        sessionId: "session-1",
+      });
       t.expectClient({
         type: "LOGIN_SUCCESS",
         token: "token-1",
@@ -98,6 +103,40 @@ describe("ServerProxy connection lifecycle", () => {
       // later requests carry the new session id
       heartbeat(t);
       t.expectServer(heartbeatResponse("session-1"));
+    });
+
+    it("includes the module registry from LOGIN_SUCCESS in the login response", async () => {
+      const t = await serverProxyHarness({ subscribe: false });
+      const login = t.proxy.login("token-1");
+      t.discard();
+      const moduleRegistry = {
+        modules: [
+          {
+            clientIdentifier: "vuu-module-admin",
+            mfComponent: "ModuleAdmin",
+            mfScope: "moduleAdmin",
+            mfUrl: "http://localhost:5008",
+            name: "module-admin",
+            path: "/modules/admin",
+            vuu: { connectionId: "portal" },
+          },
+        ],
+      };
+
+      fromServer(
+        t,
+        { type: "LOGIN_SUCCESS", moduleRegistry, vuuServerId: "portal" },
+        { sessionId: "session-1" },
+      );
+
+      const expected = {
+        type: "LOGIN_SUCCESS",
+        moduleRegistry,
+        vuuServerId: "portal",
+        sessionId: "session-1",
+      };
+      await expect(login).resolves.toEqual(expected);
+      t.expectClient(expected);
     });
 
     it("throws if LOGIN_SUCCESS has no sessionId", async () => {
@@ -347,6 +386,18 @@ describe("ServerProxy connection lifecycle", () => {
       t.expectServer(removeVp("server-vp-1"));
       t.expectClient();
       expect(t.proxyState().viewportCount).toEqual(1);
+    });
+
+    it("does not resend REMOVE_VP when the connection is torn down before REMOVE_VP_SUCCESS", async () => {
+      const t = await serverProxyHarness();
+      t.client.unsubscribe();
+      t.discard();
+
+      t.client.unsubscribe();
+      t.client.disconnect();
+
+      t.expectServer();
+      t.expectClient();
     });
 
     it("logs an error and sends nothing for an unknown viewport", async () => {
