@@ -2,7 +2,7 @@ import {
   GridLayout,
   GridLayoutItem,
   GridLayoutProvider,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ModalProvider, useAuthenticatedUser } from "@vuu-ui/core";

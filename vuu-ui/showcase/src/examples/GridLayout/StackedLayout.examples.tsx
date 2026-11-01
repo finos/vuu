@@ -3,7 +3,7 @@ import {
   GridLayout,
   GridLayoutItem,
   GridLayoutStackedItem,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { DebugGridItem } from "../html/components/DebugGridItem";
 
 export const SingleStackedItemFillsGrid = () => {

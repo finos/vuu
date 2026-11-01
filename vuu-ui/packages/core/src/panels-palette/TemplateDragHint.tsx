@@ -1,4 +1,4 @@
-import { useTemplateDragState } from "@heswell/grid-layout";
+import { useTemplateDragState } from "@vuu-ui/grid-layout";
 
 /**
  * While a template (e.g. a Panels palette row) is dragged over the

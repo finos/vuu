@@ -5,7 +5,7 @@ import {
   type GridLayoutDocument,
   type GridStackSnapshot,
   type TypedComponentTemplate,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import {
   type GridDescriptorLike,
   layoutFromGridDescriptor,

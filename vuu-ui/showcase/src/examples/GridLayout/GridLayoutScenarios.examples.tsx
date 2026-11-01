@@ -7,7 +7,7 @@ import {
   GridLayoutProvider,
   GridLayoutStackedItem,
   useTemplateDragState,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { useCallback, useState } from "react";
 import { GridPalette } from "../html/components/GridPalette";
 import {

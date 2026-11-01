@@ -1,4 +1,4 @@
-import { type TemplateSource, useDragContext } from "@heswell/grid-layout";
+import { type TemplateSource, useDragContext } from "@vuu-ui/grid-layout";
 import { type DragEvent, useCallback, useSyncExternalStore } from "react";
 import { workspacePanelTemplate } from "./workspace-grid";
 

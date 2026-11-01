@@ -3,7 +3,7 @@ import {
   GridLayout,
   GridLayoutProvider,
   type GridLayoutDocumentChangeHandler,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {

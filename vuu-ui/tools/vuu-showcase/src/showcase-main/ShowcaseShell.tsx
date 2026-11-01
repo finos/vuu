@@ -5,7 +5,7 @@ import {
   GridLayoutChangeHandler,
   GridLayoutItem,
   GridLayoutProvider,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { SaltProviderNext } from "@salt-ds/core";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";

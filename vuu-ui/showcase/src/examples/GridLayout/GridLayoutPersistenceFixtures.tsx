@@ -3,7 +3,7 @@ import {
   type GridComponentSettingsCodec,
   GridComponentSettingsRegistry,
   type GridLayoutDocument,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 
 export interface ShowcasePanelSettings {
   readonly background: string;

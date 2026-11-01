@@ -1,7 +1,7 @@
 import type {
   GridComponentRendererRegistry,
   GridComponentSettingsRegistry,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { type ReactNode, useMemo } from "react";
 import type { PanelsPaletteProps } from "../panels-palette/PanelsPalette";
 import type { WorkspaceEmptyContent } from "../panels-palette/WorkspaceDropZone";

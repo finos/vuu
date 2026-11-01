@@ -29,7 +29,7 @@
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "@heswell/grid-layout": "4.1.0",
+    "@vuu-ui/grid-layout": "4.1.0",
     "@vuu-ui/core": "4.0.0-alpha.31"
   },
   "engines": {

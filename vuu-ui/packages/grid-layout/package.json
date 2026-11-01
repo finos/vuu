@@ -1,5 +1,5 @@
 {
-  "name": "@heswell/grid-layout",
+  "name": "@vuu-ui/grid-layout",
   "version": "4.1.0",
   "description": "VUU Layout Components",
   "main": "src/index.ts",

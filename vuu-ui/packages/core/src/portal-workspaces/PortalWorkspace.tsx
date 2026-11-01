@@ -6,7 +6,7 @@ import {
   GridLayoutProvider,
   type GridLayoutDocument,
   type GridLayoutDocumentError,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import {
   type ReactNode,
   useCallback,

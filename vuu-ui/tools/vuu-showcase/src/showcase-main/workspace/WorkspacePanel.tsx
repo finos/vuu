@@ -2,7 +2,7 @@ import { Button, Menu, MenuItem, MenuTrigger } from "@salt-ds/core";
 import {
   GridComponentRendererRegistry,
   useGridLayoutDispatch,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import cx from "clsx";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
