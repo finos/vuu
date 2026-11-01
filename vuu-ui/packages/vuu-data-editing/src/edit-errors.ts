@@ -20,6 +20,6 @@ export const reportEditError = (
   if (onError) {
     onError(error, operation);
   } else {
-    console.error(`[${source}] ${operation} edit session failed`, error);
+    console.error("[%s] %s edit session failed", source, operation, error);
   }
 };

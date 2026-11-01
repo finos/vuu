@@ -40,6 +40,11 @@ const createDataSource = () => {
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+const Expiry = () =>
+  useEditFormContext().getValues().type === "future" ? (
+    <span>Expiry</span>
+  ) : null;
+
 describe("EditForm", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -92,10 +97,6 @@ describe("EditForm", () => {
 
   it("re-renders context consumers as values change", async () => {
     const row = { key: "k1", price: 100, type: "stock" } as unknown as DataRow;
-    const Expiry = () =>
-      useEditFormContext().getValues().type === "future" ? (
-        <span>Expiry</span>
-      ) : null;
     await render(
       <EditForm dataRow={row} dataSource={createDataSource()} isEditMode>
         <EditField dataRow={row} label="Price" name="price" />

@@ -163,6 +163,12 @@ const model = buildApplicationModel({
   ],
 });
 
+const StartCreate = () => {
+  const { startCreate } = useTableEditor();
+  useEffect(() => startCreate(), [startCreate]);
+  return null;
+};
+
 describe("application-centred admin UX", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -211,12 +217,6 @@ describe("application-centred admin UX", () => {
       });
       endEditSession.mockReset().mockResolvedValue({ type: "SUCCESS_RESULT" });
     });
-
-    const StartCreate = () => {
-      const { startCreate } = useTableEditor();
-      useEffect(() => startCreate(), [startCreate]);
-      return null;
-    };
 
     const renderForm = (application?: string) =>
       renderWithModel(

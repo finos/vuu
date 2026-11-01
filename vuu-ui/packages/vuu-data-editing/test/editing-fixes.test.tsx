@@ -38,6 +38,19 @@ const createEditSession = () => {
   return { dataSource, editSession: new EditSession({ dataSource }) };
 };
 
+const StateProbe = ({
+  editSession,
+  n,
+  states,
+}: {
+  editSession: EditSession;
+  n?: number;
+  states: EditSessionStateSnapshot[];
+}) => {
+  states.push(useEditSessionState(editSession));
+  return n === undefined ? null : <span>{n}</span>;
+};
+
 describe("data editing fixes", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -57,11 +70,9 @@ describe("data editing fixes", () => {
   it("useEditSessionState tracks lifecycle and editState", async () => {
     const { editSession } = createEditSession();
     const states: EditSessionStateSnapshot[] = [];
-    const Probe = () => {
-      states.push(useEditSessionState(editSession));
-      return null;
-    };
-    await act(async () => root.render(<Probe />));
+    await act(async () =>
+      root.render(<StateProbe editSession={editSession} states={states} />),
+    );
     expect(states.at(-1)).toMatchObject({
       canSave: false,
       isActive: false,
@@ -91,12 +102,16 @@ describe("data editing fixes", () => {
   it("useEditSessionState returns a stable snapshot between changes", async () => {
     const { editSession } = createEditSession();
     const states: EditSessionStateSnapshot[] = [];
-    const Probe = ({ n }: { n: number }) => {
-      states.push(useEditSessionState(editSession));
-      return <span>{n}</span>;
-    };
-    await act(async () => root.render(<Probe n={1} />));
-    await act(async () => root.render(<Probe n={2} />));
+    await act(async () =>
+      root.render(
+        <StateProbe editSession={editSession} n={1} states={states} />,
+      ),
+    );
+    await act(async () =>
+      root.render(
+        <StateProbe editSession={editSession} n={2} states={states} />,
+      ),
+    );
     expect(states[0]).toBe(states[1]);
   });
 

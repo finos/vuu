@@ -112,7 +112,7 @@ export const useCustomEditField = <T extends EditSessionValue>({
           if (onErrorRef.current) {
             onErrorRef.current(err);
           } else {
-            console.error(`[useCustomEditField] commit ${name} failed`, err);
+            console.error("[useCustomEditField] commit %s failed", name, err);
           }
         }
       } finally {

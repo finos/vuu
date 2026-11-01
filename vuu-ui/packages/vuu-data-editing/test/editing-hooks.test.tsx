@@ -36,6 +36,19 @@ const createDataSource = () => {
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+const HookProbe = <P, R>({
+  hook,
+  hookProps,
+  result,
+}: {
+  hook: (props: P) => R;
+  hookProps: P;
+  result: { current: R };
+}) => {
+  result.current = hook(hookProps);
+  return null;
+};
+
 describe("getEditableColumns", () => {
   const columns: ColumnDescriptor[] = [
     { name: "ric", serverDataType: "string" },
@@ -166,16 +179,14 @@ describe("editing hooks", () => {
 
   const renderHook = async <P, R>(hook: (props: P) => R, props: P) => {
     const result: { current: R } = { current: undefined as R };
-    const Probe = (p: { hookProps: P }) => {
-      result.current = hook(p.hookProps);
-      return null;
-    };
-    await act(async () => root.render(<Probe hookProps={props} />));
+    const probe = (hookProps: P) => (
+      <HookProbe<P, R> hook={hook} hookProps={hookProps} result={result} />
+    );
+    await act(async () => root.render(probe(props)));
     await act(flush);
     return {
       result,
-      rerender: (next: P) =>
-        act(async () => root.render(<Probe hookProps={next} />)),
+      rerender: (next: P) => act(async () => root.render(probe(next))),
     };
   };
 
