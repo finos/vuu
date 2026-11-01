@@ -1,11 +1,11 @@
-import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
+import { getFilterControl } from "../filter-control/get-filter-control";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { ColumnPicker, Icon, VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { HTMLAttributes } from "react";
-import { FilterBarProps } from "../filter-bar";
+import type { FilterBarProps } from "../filter-bar";
 import { useQuickFilters } from "./useQuickFilters";
 
 import quickFiltersCss from "./QuickFilters.css";
@@ -82,20 +82,18 @@ export const QuickFilters = ({
         </FormField>,
       );
     }
-    {
-      filterColumns?.forEach((column) =>
-        controls.push(
-          <FormField key={column.label ?? column.name} data-field={column.name}>
-            <FormFieldLabel>{column.label ?? column.name}</FormFieldLabel>
-            {getDataItemEditControl({
-              dataDescriptor: column,
-              onCommit,
-              table: vuuTable,
-            })}
-          </FormField>,
-        ),
-      );
-    }
+    filterColumns?.forEach((column) =>
+      controls.push(
+        <FormField key={column.label ?? column.name} data-field={column.name}>
+          <FormFieldLabel>{column.label ?? column.name}</FormFieldLabel>
+          {getFilterControl({
+            dataDescriptor: column,
+            onCommit,
+            table: vuuTable,
+          })}
+        </FormField>,
+      ),
+    );
 
     return controls;
   };
