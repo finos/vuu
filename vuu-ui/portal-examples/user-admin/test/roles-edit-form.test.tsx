@@ -1,11 +1,15 @@
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { EditModeProvider, EditSession } from "@vuu-ui/vuu-data-editing";
+import { EditForm } from "@vuu-ui/vuu-data-editing";
+import { EditableTable, useTableEditor } from "@vuu-ui/vuu-table-extras";
 import { PortalModuleRegistryProvider } from "@vuu-ui/core/portal";
-import { RolesEditForm } from "../src/components/roles-edit-form/RolesEditForm";
+import {
+  CreateRoleForm,
+  RoleEditForm,
+} from "../src/components/roles-edit-form/RolesEditForm";
 import {
   buildApplicationModel,
   deriveApplications,
@@ -144,17 +148,24 @@ const remoteModules = applications.map((application, id) => ({
 }));
 
 const SUCCESS = { type: "SUCCESS_RESULT", data: undefined };
-const newRoleRow = {
-  key: EditSession.newRowKey,
-} as unknown as DataRow;
 
-describe("RolesEditForm create flow", () => {
+const StartCreate = () => {
+  const { startCreate } = useTableEditor();
+  useEffect(() => startCreate(), [startCreate]);
+  return null;
+};
+
+const CreateMode = () => {
+  const { mode } = useTableEditor();
+  return <output data-testid="mode">{mode}</output>;
+};
+
+describe("CreateRoleForm", () => {
   let container: HTMLDivElement;
   let root: Root;
   let rpcRequest: ReturnType<typeof vi.fn>;
   let datasourceAddRow: ReturnType<typeof vi.fn>;
   let endEditSession: ReturnType<typeof vi.fn>;
-  let close: ReturnType<typeof vi.fn>;
   let dataSource: DataSource;
 
   beforeEach(() => {
@@ -166,7 +177,6 @@ describe("RolesEditForm create flow", () => {
     rpcRequest = vi.fn().mockResolvedValue(SUCCESS);
     datasourceAddRow = vi.fn().mockResolvedValue(SUCCESS);
     endEditSession = vi.fn().mockResolvedValue(SUCCESS);
-    close = vi.fn();
     dataSource = {
       addRow: datasourceAddRow,
       createSessionDataSource: vi.fn().mockResolvedValue({
@@ -188,20 +198,20 @@ describe("RolesEditForm create flow", () => {
       root.render(
         <PortalModuleRegistryProvider remoteModules={remoteModules}>
           <ApplicationModelContext.Provider value={{ loading: false, model }}>
-            <EditModeProvider isEditMode>
-              <RolesEditForm
-                application={application}
-                dataRow={newRoleRow}
-                dataSource={dataSource}
-                onClose={close}
-              />
-            </EditModeProvider>
+            <EditableTable dataSource={dataSource} editStrategy="form">
+              <StartCreate />
+              <CreateMode />
+              <CreateRoleForm application={application} />
+            </EditableTable>
           </ApplicationModelContext.Provider>
         </PortalModuleRegistryProvider>,
       );
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
   };
+
+  const mode = () =>
+    container.querySelector('[data-testid="mode"]')?.textContent;
 
   const chooseApplication = async (label: string) => {
     const select = container.querySelector<HTMLSelectElement>(
@@ -272,7 +282,10 @@ describe("RolesEditForm create flow", () => {
       role_name: "Administrator",
     });
     expect(endEditSession).toHaveBeenCalledWith(true, false);
-    expect(close).toHaveBeenCalledOnce();
+    expect(mode()).toBe("view");
+    expect(mocks.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ header: "Role created" }),
+    );
   });
 
   it("includes an empty optional description in the staged role row", async () => {
@@ -299,7 +312,7 @@ describe("RolesEditForm create flow", () => {
     expect(rpcRequest).not.toHaveBeenCalled();
     expect(datasourceAddRow).not.toHaveBeenCalled();
     expect(endEditSession).toHaveBeenCalledWith(false, false);
-    expect(close).toHaveBeenCalledOnce();
+    expect(mode()).toBe("view");
   });
 
   it("requires both a role name and an application before insertion", async () => {
@@ -365,20 +378,21 @@ describe("RolesEditForm create flow", () => {
     await act(async () => {
       root.render(
         <PortalModuleRegistryProvider remoteModules={remoteModules}>
-          <EditModeProvider isEditMode>
-            <RolesEditForm
-              dataRow={
-                {
-                  client_identifier: "vuu-portal",
-                  description: "",
-                  key: "role-access",
-                  role_id: "role-access",
-                  role_name: "basket-trading-access",
-                } as unknown as DataRow
-              }
-              dataSource={dataSource}
-            />
-          </EditModeProvider>
+          <EditForm
+            dataRow={
+              {
+                client_identifier: "vuu-portal",
+                description: "",
+                key: "role-access",
+                role_id: "role-access",
+                role_name: "basket-trading-access",
+              } as unknown as DataRow
+            }
+            dataSource={dataSource}
+            showButtons={false}
+          >
+            <RoleEditForm />
+          </EditForm>
         </PortalModuleRegistryProvider>,
       );
     });
@@ -407,13 +421,13 @@ describe("RolesEditForm create flow", () => {
     expect(container.textContent).toContain("temporary service failure");
     expect(datasourceAddRow).toHaveBeenCalledTimes(1);
     expect(endEditSession).toHaveBeenCalledTimes(1);
-    expect(close).not.toHaveBeenCalled();
+    expect(mode()).toBe("create");
 
     await submit();
 
     expect(datasourceAddRow).toHaveBeenCalledTimes(1);
     expect(endEditSession).toHaveBeenCalledTimes(2);
     expect(endEditSession).toHaveBeenLastCalledWith(true, false);
-    expect(close).toHaveBeenCalledOnce();
+    expect(mode()).toBe("view");
   });
 });

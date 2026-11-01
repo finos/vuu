@@ -1,12 +1,11 @@
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { EditModeProvider, EditSession } from "@vuu-ui/vuu-data-editing";
+import { EditableTable, useTableEditor } from "@vuu-ui/vuu-table-extras";
 import { PortalModuleRegistryProvider } from "@vuu-ui/core/portal";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GroupsEditForm } from "../src/components/groups-edit-form/GroupsEditForm";
+import { CreateGroupForm } from "../src/components/groups-edit-form/GroupsEditForm";
 import {
   buildApplicationModel,
   deriveApplications,
@@ -164,6 +163,12 @@ const model = buildApplicationModel({
   ],
 });
 
+const StartCreate = () => {
+  const { startCreate } = useTableEditor();
+  useEffect(() => startCreate(), [startCreate]);
+  return null;
+};
+
 describe("application-centred admin UX", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -215,13 +220,10 @@ describe("application-centred admin UX", () => {
 
     const renderForm = (application?: string) =>
       renderWithModel(
-        <EditModeProvider isEditMode>
-          <GroupsEditForm
-            application={application}
-            dataRow={{ key: EditSession.newRowKey } as unknown as DataRow}
-            dataSource={dataSource}
-          />
-        </EditModeProvider>,
+        <EditableTable dataSource={dataSource} editStrategy="form">
+          <StartCreate />
+          <CreateGroupForm application={application} />
+        </EditableTable>,
       );
 
     const typeGroupName = async (value: string) => {
