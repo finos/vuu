@@ -13,7 +13,7 @@ jobs:
     name: run-semgrep
     runs-on: ubuntu-latest
     container:
-      image: semgrep/semgrep:1.167.0@sha256:06938c1f365d3f67b8cedd8bc117607ae64253f88a0e768e9da9408548927dd6
+      image: semgrep/semgrep:1.183.0@sha256:2e45517a85e13a9cca14a2a00df6bb48affd66b8ebfae1b0991cd57578362fb0
     steps:
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
     - run: semgrep scan --error --config auto
