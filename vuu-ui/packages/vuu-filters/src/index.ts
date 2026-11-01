@@ -6,6 +6,7 @@ export type { SelectableColumnFilterOp } from "./column-filter/column-filter-uti
 export * from "./filter-bar";
 export * from "./expando-combobox/ExpandoCombobox";
 export * from "./filter-bar/filter-clause";
+export * from "./filter-control";
 export { ExtendedSingleValueFilterClause } from "./filter-container/ExtendedSingleValueFilterClause";
 export {
   FilterContainer,
