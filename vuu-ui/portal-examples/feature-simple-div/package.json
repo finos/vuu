@@ -21,8 +21,8 @@
     "@vuu-ui/portal-build": "0.4.0"
   },
   "peerDependencies": {
-    "@vuu-ui/core": "4.0.0-alpha.31",
-    "@vuu-ui/vuu-shell": "4.1.0",
+    "@vuu-ui/core": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-shell": "5.0.0-alpha.1",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"

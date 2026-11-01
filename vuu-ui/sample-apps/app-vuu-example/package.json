@@ -18,19 +18,19 @@
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
     "@salt-ds/core": "1.74.0",
-    "@vuu-ui/vuu-data-local": "4.1.0",
-    "@vuu-ui/vuu-data-remote": "4.1.0",
-    "@vuu-ui/vuu-table-types": "4.1.0",
-    "@vuu-ui/vuu-data-react": "4.1.0",
-    "@vuu-ui/vuu-layout": "4.1.0",
-    "@vuu-ui/vuu-popups": "4.1.0",
-    "@vuu-ui/vuu-shell": "4.1.0",
-    "@vuu-ui/vuu-utils": "4.1.0",
+    "@vuu-ui/vuu-data-local": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-data-remote": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-table-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-data-react": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-layout": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-popups": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-shell": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-utils": "5.0.0-alpha.1",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "@vuu-ui/grid-layout": "4.1.0",
-    "@vuu-ui/core": "4.0.0-alpha.31"
+    "@vuu-ui/grid-layout": "5.0.0-alpha.1",
+    "@vuu-ui/core": "5.0.0-alpha.1"
   },
   "engines": {
     "node": ">=24.0.0"

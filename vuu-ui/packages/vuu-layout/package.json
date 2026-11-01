@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-layout",
-  "version": "4.1.0",
+  "version": "5.0.0-alpha.1",
   "description": "VUU Layout Components",
   "main": "src/index.ts",
   "type": "module",
@@ -12,20 +12,20 @@
   },
   "types": "src/index.ts",
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "4.1.0",
-    "@vuu-ui/vuu-filter-types": "4.1.0"
+    "@vuu-ui/vuu-data-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-filter-types": "5.0.0-alpha.1"
   },
   "dependencies": {
     "@salt-ds/core": "1.74.0",
     "@salt-ds/styles": "0.4.2",
     "@salt-ds/window": "0.1.2",
-    "@vuu-ui/vuu-data-react": "4.1.0",
-    "@vuu-ui/vuu-datatable": "4.1.0",
-    "@vuu-ui/vuu-filters": "4.1.0",
-    "@vuu-ui/vuu-popups": "4.1.0",
-    "@vuu-ui/vuu-table": "4.1.0",
-    "@vuu-ui/vuu-ui-controls": "4.1.0",
-    "@vuu-ui/vuu-utils": "4.1.0"
+    "@vuu-ui/vuu-data-react": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-datatable": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-filters": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-popups": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-table": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-ui-controls": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-utils": "5.0.0-alpha.1"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
