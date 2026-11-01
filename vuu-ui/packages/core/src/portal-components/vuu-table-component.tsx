@@ -8,7 +8,7 @@ import {
   toJsonValue,
   type TypedComponentTemplate,
   useGridComponentSettingsUpdater,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import type {
   DataSource,
   DataSourceConfig,

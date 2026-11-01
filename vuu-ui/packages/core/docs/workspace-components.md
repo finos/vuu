@@ -93,7 +93,7 @@ registered. Register the host's own types with `additional`; registering a
 type twice throws.
 
 Components rendered from the registries can update their own persisted
-settings with `useGridComponentSettingsUpdater()` from `@heswell/grid-layout`.
+settings with `useGridComponentSettingsUpdater()` from `@vuu-ui/grid-layout`.
 The update is published as a `GridLayoutDocumentChange` with
 `kind: "settings"`. The rendered item isn't re-rendered with the new
 settings, so a component keeps any state it derives from them.
@@ -125,16 +125,16 @@ GridLayout share that `GridLayoutProvider`. So:
   `PortalDragSourceScope`, which supplies the drag runtime, under the same
   `GridLayoutProvider` as the workspace;
 - the host and every remote module that renders a drag source must use the
-  same instance of `@heswell/grid-layout`.
+  same instance of `@vuu-ui/grid-layout`.
 
 ## Module Federation
 
-`@heswell/grid-layout` must be a shared singleton in the host and in every
+`@vuu-ui/grid-layout` must be a shared singleton in the host and in every
 remote that renders a drag source or a workspace component, alongside
 `@vuu-ui/core` and `@vuu-ui/core/portal`:
 
 ```json
-"@heswell/grid-layout": {
+"@vuu-ui/grid-layout": {
   "requiredVersion": "package:@vuu-ui/core",
   "singleton": true,
   "strictVersion": true

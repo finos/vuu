@@ -3,7 +3,7 @@ import {
   type GridLayoutDocument,
   GridLayoutProvider,
   type TypedComponentTemplate,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
