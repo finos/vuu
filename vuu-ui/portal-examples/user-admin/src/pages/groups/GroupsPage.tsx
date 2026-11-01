@@ -1,16 +1,34 @@
-import { Avatar, Button, SidePanelTitle } from "@salt-ds/core";
+import { Avatar, SidePanelContent } from "@salt-ds/core";
 import { AddIcon, UserGroupIcon } from "@salt-ds/icons";
-import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
-import { Table } from "@vuu-ui/vuu-table";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
 import {
+  TableEditorForm,
+  TableEditorNewButton,
+  TableEditorTable,
+  EditableTable,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+  EditableTableMain,
+  useTableEditor,
+} from "@vuu-ui/vuu-table-extras";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import {
+  AdminToolbar,
   AppAvatar,
+  PageHeader,
+  PageHeaderActions,
   PanelHeading,
+  PanelHeadingSubtitle,
+  PanelHeadingText,
+  PanelHeadingTitle,
+  RowCount,
   plural,
 } from "../../components/admin-ui/AdminUi";
-import { AdminTablePage } from "../../components/admin-table-page/AdminTablePage";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
-import { GroupsEditForm } from "../../components/groups-edit-form/GroupsEditForm";
+import {
+  CreateGroupForm,
+  GroupEditForm,
+} from "../../components/groups-edit-form/GroupsEditForm";
 import {
   applicationForGroupName,
   groupNameFromPath,
@@ -18,97 +36,90 @@ import {
 import { useApplications } from "../../data/useApplicationModel";
 import { GROUP_ROW_HEIGHT, useGroupsPage } from "./useGroupsPage";
 
-const GroupHeading = ({ dataRow }: { dataRow?: DataRow }) => {
+const GroupHeading = () => {
+  const { mode, selectedRow } = useTableEditor();
   const { applications } = useApplications();
-  const isNew = dataRow?.group_id === undefined;
+  const isNew = mode === "create";
+  const dataRow = isNew ? undefined : selectedRow;
   const groupName = groupNameFromPath(dataRow?.group_path);
   const application = applicationForGroupName(applications, groupName);
   const userCount = Number(dataRow?.user_count ?? 0);
   return (
-    <PanelHeading
-      avatar={
-        application ? (
-          <AppAvatar application={application} size={2} />
-        ) : (
-          <Avatar
-            aria-hidden
-            color="category-20"
-            fallbackIcon={<UserGroupIcon />}
-            size={2}
-          />
-        )
-      }
-      subtitle={
-        isNew
-          ? "Bundle an application's roles for its users"
-          : `${application ? `${application.title} group` : "Unassigned group"} · ${plural(userCount, "member")}`
-      }
-      title={
-        <SidePanelTitle styleAs="h3">
+    <PanelHeading>
+      {application ? (
+        <AppAvatar application={application} size={2} />
+      ) : (
+        <Avatar
+          aria-hidden
+          color="category-20"
+          fallbackIcon={<UserGroupIcon />}
+          size={2}
+        />
+      )}
+      <PanelHeadingText>
+        <PanelHeadingTitle>
           {isNew ? "New group" : (groupName ?? "Group")}
-        </SidePanelTitle>
-      }
-    />
+        </PanelHeadingTitle>
+        <PanelHeadingSubtitle>
+          {isNew
+            ? "Bundle an application's roles for its users"
+            : `${application ? `${application.title} group` : "Unassigned group"} · ${plural(userCount, "member")}`}
+        </PanelHeadingSubtitle>
+      </PanelHeadingText>
+    </PanelHeading>
   );
 };
 
-export const GroupsPage = () => {
-  const {
-    application,
-    close,
-    config,
-    createGroup,
-    dataRow,
-    dataSource,
-    onSelect,
-    open,
-    setApplication,
-    setOpen,
-  } = useGroupsPage();
+/** Starts creating a group when the page is opened with `?create=true`. */
+const CreateGroupFromSearchParams = () => {
+  const { startCreate } = useTableEditor();
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    if (params.get("create") === "true") {
+      startCreate();
+      const next = new URLSearchParams(params);
+      next.delete("create");
+      setParams(next, { replace: true });
+    }
+  }, [params, setParams, startCreate]);
+  return null;
+};
 
+export const GroupsPage = () => {
+  const { application, config, dataSource, setApplication } = useGroupsPage();
   return (
-    <EditModeProvider isEditMode={dataRow && dataRow.group_id === undefined}>
-      <AdminTablePage
-        actions={
-          <Button onClick={createGroup} sentiment="accented">
-            <AddIcon aria-hidden /> Create group
-          </Button>
-        }
-        dataSource={dataSource}
-        description="Each group belongs to one application and bundles its roles."
-        filter={
+    <EditableTable dataSource={dataSource} editStrategy="form">
+      <CreateGroupFromSearchParams />
+      <EditableTableMain className="vuuIdentityAdmin-page">
+        <PageHeader
+          description="Each group belongs to one application and bundles its roles."
+          title="Groups"
+        >
+          <PageHeaderActions>
+            <TableEditorNewButton sentiment="accented">
+              <AddIcon aria-hidden /> Create group
+            </TableEditorNewButton>
+          </PageHeaderActions>
+        </PageHeader>
+        <AdminToolbar>
           <ApplicationFilter onChange={setApplication} value={application} />
-        }
-        noun="group"
-        onPanelOpenChange={(nextOpen) => {
-          if (nextOpen) {
-            setOpen(true);
-          } else {
-            close();
-          }
-        }}
-        panelContent={
-          dataRow ? (
-            <GroupsEditForm
-              application={application}
-              dataRow={dataRow}
-              dataSource={dataSource}
-              onClose={close}
-            />
-          ) : null
-        }
-        panelHeading={<GroupHeading dataRow={dataRow} />}
-        panelOpen={open}
-        table={
-          <Table
-            config={config}
-            dataSource={dataSource}
-            onSelect={onSelect}
-            rowHeight={GROUP_ROW_HEIGHT}
-          />
-        }
-        title="Groups"
-      />
-    </EditModeProvider>
+          <RowCount dataSource={dataSource} noun="group" />
+        </AdminToolbar>
+        <div className="vuuIdentityAdmin-tableCard">
+          <TableEditorTable config={config} rowHeight={GROUP_ROW_HEIGHT} />
+        </div>
+      </EditableTableMain>
+      <EditableTablePanel className="vuuIdentityAdmin-panel">
+        <EditableTablePanelHeader>
+          <GroupHeading />
+        </EditableTablePanelHeader>
+        <SidePanelContent>
+          <TableEditorForm>
+            <GroupEditForm />
+          </TableEditorForm>
+          <CreateGroupForm application={application} />
+        </SidePanelContent>
+      </EditableTablePanel>
+    </EditableTable>
   );
 };

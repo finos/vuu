@@ -6,6 +6,7 @@ export {
 export {
   DirectEditSession,
   type DirectEditSessionConstructorProps,
+  type DirectEditValidator,
 } from "./DirectEditSession";
 export type {
   TableEditSession,
@@ -13,6 +14,11 @@ export type {
 } from "./TableEditSession";
 export { useCellEdited } from "./useCellEdited";
 export { useEditState } from "./useEditState";
+export {
+  useEditSessionState,
+  type EditSessionStateSnapshot,
+} from "./useEditSessionState";
+export type { EditErrorHandler, EditOperation } from "./edit-errors";
 export {
   getVuuEditMessage,
   isInlineEditingSession,
@@ -45,6 +51,7 @@ export {
   type EditActionType,
   type EditCommitOptions,
   type EditLifecycle,
+  type EditSessionApi,
   type EditSessionConstructorProps,
   type EditSessionValue,
   type NewRowState,
@@ -76,3 +83,38 @@ export {
   type EditableTableHookProps,
   type EditMode,
 } from "./useEditableTable";
+export {
+  DEFAULT_READ_ONLY_COLUMNS,
+  getEditableColumns,
+  UNDO_COLUMN,
+  useEditableColumns,
+  narrowEditable,
+  type EditableColumnsHookProps,
+} from "./useEditableColumns";
+export {
+  getDataRowValues,
+  useEditForm,
+  type EditFormFieldErrors,
+  type EditFormHookProps,
+  type EditFormHookResult,
+  type EditFormMode,
+  type EditFormValidator,
+  type EditFormValues,
+} from "./useEditForm";
+export {
+  useLookupOptions,
+  type LookupOptionsHookProps,
+  type LookupOptionsHookResult,
+  type LookupRow,
+} from "./lookup-values/useLookupOptions";
+export {
+  useCustomEditField,
+  type CustomEditFieldHookProps,
+} from "./useCustomEditField";
+export {
+  useConfirmDiscard,
+  type ConfirmDiscardHookProps,
+} from "./useConfirmDiscard";
+export * from "./edit-form";
+export * from "./edit-control";
+export { type FormFieldsOptions, getFormFields } from "./form-fields";

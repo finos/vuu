@@ -300,6 +300,7 @@ export const useEditField = <T extends string | number | boolean = string>({
   );
 
   return {
+    commit,
     editing: editState.editing,
     inputProps: {
       onBlur: handleBlur,
