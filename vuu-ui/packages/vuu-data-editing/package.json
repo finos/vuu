@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@salt-ds/core": "1.74.0",
+    "@vuu-ui/core": "5.0.0-alpha.1",
     "@vuu-ui/vuu-ui-controls": "5.0.0-alpha.1",
     "@vuu-ui/vuu-utils": "5.0.0-alpha.1"
   },

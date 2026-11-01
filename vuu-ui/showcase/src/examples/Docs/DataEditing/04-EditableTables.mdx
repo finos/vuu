@@ -1,0 +1,770 @@
+# Editable Tables
+
+`EditableTable` (`@vuu-ui/vuu-table-extras`) is a `Table` whose rows can be
+edited. One component covers every way of editing a table. Three props choose
+how:
+
+| Prop | Values | Meaning |
+| ---- | ------ | ------- |
+| `editStrategy` | `"inline"` (default) | Values are edited in the table's cells. |
+| | `"form"` | The selected row is edited in a form, in a side panel beside the table. Rows are added through a form too. |
+| `createStrategy` | `"inline"` (default with inline editing) | Rows are added with the inline add row (`showInlineAddRow`). |
+| | `"form"` | Rows are added through a form in a side panel. Always `"form"` with `editStrategy="form"`. |
+| `editModel` | `"session"` (default) | Edits are staged in an edit session, then saved or cancelled together. See [Choosing a model](./03-ChoosingAModel.mdx). |
+| | `"direct"` | Each edit is validated, then sent to the server as soon as it is committed. No Save, no Cancel. |
+
+Every strategy works with both models.
+
+The simplest editable table needs nothing but a `config` and a `dataSource`:
+
+```tsx
+import { EditableTable } from "@vuu-ui/vuu-table-extras";
+
+<EditableTable config={config} dataSource={dataSource} />;
+```
+
+The simplest master–detail form needs one more prop. The form is generated
+from the columns:
+
+```tsx
+<EditableTable config={config} dataSource={dataSource} editStrategy="form" />
+```
+
+## Which columns can be edited
+
+The server decides first. Each column in the table's schema
+(`dataSource.tableSchema`) may carry an `editable` flag, a `DataEditable`:
+
+- `true` or `false`, or
+- `{ insert, update }`, when a value can be set on a new row but not changed
+  afterwards (or the reverse).
+
+Everything else about editing a column lives on the column itself, on its
+`ColumnDescriptor` in `config.columns`, next to its label, width and renderer.
+`ColumnDescriptor` extends `DataValueDescriptor`, which carries the edit
+metadata, because how a value is edited applies equally whether it is shown in
+a table cell or a form field:
+
+```ts
+interface DataValueDescriptor {
+  /** Can narrow, never widen, the server's `editable`. Default: inherit. */
+  editable?: DataEditable;
+  /** How the value is edited, in a table cell or a form field. */
+  editor?: ColumnTypeRendering | LookupRenderer | ValueListRenderer | TypeaheadEditor;
+  required?: boolean;
+  // label, name, serverDataType, type ...
+}
+```
+
+A column is editable when:
+
+1. **the server allows it**: the schema column's `editable` is the upper
+   limit. A column with no flag is treated as editable. The server-maintained
+   `vuuCreatedTimestamp`, `vuuUpdatedTimestamp` and `vuuMsg` never are;
+2. **the column doesn't opt out**: `editable` on the `ColumnDescriptor`
+   narrows it, for example `false`, or `{ insert: true, update: false }`;
+3. **and the table is editing**: in view mode `EditableTable` gives `Table`
+   columns with editing turned off, so the same `config` works in both modes.
+
+```tsx
+// Server schema: ric { insert: true, update: false }, exchange false,
+// everything else editable.
+
+const config: TableConfig = {
+  columns: [
+    { name: "ric", label: "RIC" }, // insert only, from the server
+    { name: "description" },
+    {
+      name: "currency",
+      editor: { name: "dropdown-cell", values: ["EUR", "GBP", "USD"] },
+    },
+    { name: "lotSize", editable: false }, // never edited in this table
+    { name: "exchange", editable: true }, // ignored: the server says no
+  ],
+};
+
+<EditableTable config={config} dataSource={dataSource} />;
+```
+
+- `ric` can be set on a new row and is read-only afterwards.
+- `lotSize` is read-only here, though the server would allow it.
+- `exchange` stays read-only: a column can't widen what the server allows.
+
+To allow only a few columns, set `editable: false` on the others.
+
+### Editors
+
+`editor` is separate from `type.renderer` because a column is often rendered
+one way and edited another: currency shown as text, but chosen from a
+dropdown. In view mode the table uses `type.renderer`; while editing, `editor`
+takes its place. In a form, `editor` picks the field control (see
+[Generated forms](#generated-forms)).
+
+| `editor` | Package | Use for |
+| -------- | ------- | ------- |
+| `"input-cell"` | `@vuu-ui/vuu-table` | text and numbers (the default) |
+| `"checkbox-cell"`, `"toggle-cell"` | `@vuu-ui/vuu-table` | booleans |
+| `"temporal-input-cell"` | `@vuu-ui/vuu-table` | dates and times |
+| `{ name: "dropdown-cell", values }` | `@vuu-ui/vuu-table-extras` | a fixed list of values |
+| `{ name: "dropdown-cell", lookup }` | `@vuu-ui/vuu-table-extras` | values from a lookup table (see [Lookups](./06-Lookups.mdx)) |
+| `{ name: "typeahead", minCharacterCountToTriggerSuggestions }` | forms only | suggestions from values already in the table (see [Typeahead](#typeahead)) |
+
+Import the package that registers a cell editor before you use it by name.
+
+### Validation
+
+A column's `clientSideEditValidationCheck` runs as the user types and before
+commit. Invalid values are never sent to the server; they show a warning and,
+in a session, put the session in the `invalid` state, which disables Save.
+
+## Inline editing
+
+### View/Edit with a session (the default)
+
+The table opens in View mode. Edit begins an edit session and shows the
+session table; changes show in the table and are saved, or cancelled,
+together from the footer. Saving or cancelling returns to View.
+
+```tsx
+// Add, change and delete rows, with an undo button per changed row
+<EditableTable
+  allowDelete
+  config={config}
+  dataSource={dataSource}
+  rowDefaults={ROW_DEFAULTS}
+  showInlineAddRow
+  undoColumn
+/>
+```
+
+With `showInlineAddRow`, an empty row above the table adds a row to the
+session once its last required field is committed. Rows added during a session
+are tracked by key, so undoing an added row removes it again.
+
+#### Asking before discarding changes
+
+`useConfirmDiscard` returns a `confirmCancel` function that shows a
+confirmation dialog, only when there are changes to lose. It needs a
+`ModalProvider` above it.
+
+```tsx
+const confirmDiscard = useConfirmDiscard({
+  message: "You have unsaved changes. Discard them?",
+});
+
+<EditableTable
+  confirmCancel={confirmDiscard}
+  config={config}
+  dataSource={dataSource}
+  onSaved={() => notify("Instruments saved")}
+/>;
+```
+
+### Direct editing
+
+Each committed cell edit is sent straight to `dataSource`, through its
+`editCell` RPC. There is no session table, no Save and no Cancel. The table is
+always editable unless you ask for View/Edit modes.
+
+```tsx
+// Always editable, like a spreadsheet
+<EditableTable config={config} dataSource={dataSource} editModel="direct" />
+```
+
+```tsx
+// Users switch to Edit first, to avoid accidental edits
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  defaultMode="view"
+  editModel="direct"
+  showEditModeToggle
+/>
+```
+
+Switching back to View just makes the cells read-only again; there is nothing
+to save or discard. Session-only props (`allowDelete`, `showInlineAddRow`,
+`undoColumn`, `confirmCancel`, `saveLabel`, ...) are type errors with
+`editModel="direct"`.
+
+### Inline editing, form for new rows
+
+Editing cells suits changing a value or two; a new row usually needs several
+values entered together, some of them required. `createStrategy="form"` keeps
+inline editing for existing rows and adds rows with a form in a side panel,
+the same generated (or composed) create form the form strategy uses.
+
+```tsx
+// Spreadsheet-style edits, committed as they are made; a form for new rows
+<EditableTable
+  config={config}
+  createStrategy="form"
+  createTitle="New instrument"
+  dataSource={dataSource}
+  editModel="direct"
+  validateCreate={validateInstrument}
+/>
+```
+
+```tsx
+// View/Edit session for existing rows; a form for new rows
+<EditableTable config={config} createStrategy="form" dataSource={dataSource} />
+```
+
+- The default layout adds a New button to the toolbar and a side panel holding
+  the create form. The panel is open only while creating, and mode `"create"`
+  becomes valid.
+- Where the new row goes depends on `editModel`:
+  - `"direct"`: the row is inserted when the user clicks Create.
+  - `"session"`: the row joins the table's edit session. New in View mode
+    begins the session and opens the form; the form's button reads Add. The
+    added row shows in the table as a new, unsaved row, and is saved or
+    cancelled with every other change in the session. It can be edited inline
+    like any other row, and the undo column removes it.
+- The create form validates its own fields (`validateCreate`, `required`)
+  before Add or Create; the session validates as usual on Save.
+- `createStrategy="form"` replaces `showInlineAddRow`; using both is a type
+  error.
+
+## Form editing
+
+With `editStrategy="form"`, selecting a row shows it, read-only, in a form in
+a side panel to the right of the table. Edit makes the form editable; New
+replaces it with a form for adding a row. While a form is being edited, row
+selection is locked and the panel can't be closed. With `editModel="session"`
+(the default), the form's Save applies the change to the source table.
+
+### Generated forms
+
+With no form of your own, `EditableTable` builds one from the table's schema.
+Each field's control comes from `getDataItemEditControl`
+(`@vuu-ui/vuu-data-editing`), the one place that decides how a
+`DataValueDescriptor` is edited. Filters, the bulk edit insert row, `EditField`
+and generated forms all use it, so a value is edited the same way wherever it
+appears.
+
+- **One field per schema column**, except the server-maintained
+  `vuuCreatedTimestamp`, `vuuUpdatedTimestamp` and `vuuMsg`. A form can't
+  depend on `config.columns`, because users can hide, remove or reorder table
+  columns. Columns that are also in `config.columns` come first, in that
+  order, then the rest in schema order.
+- **Each field's descriptor** is the schema column, overlaid with the matching
+  column from `config.columns` when there is one, so `label`, `editor`, `type`
+  and a narrowed `editable` carry over from the table.
+- **`getDataItemEditControl`** picks the control:
+
+  | Descriptor | Control |
+  | ---------- | ------- |
+  | not editable for this operation | read-only input |
+  | `editor: "checkbox-cell"` or `"toggle-cell"`, or a `boolean` column | checkbox |
+  | `editor` with `values` (e.g. `dropdown-cell`) | dropdown of those values |
+  | `editor` with `lookup` | dropdown of values from the lookup table |
+  | `editor: { name: "typeahead", ... }` | `VuuTypeaheadInput` (see below) |
+  | date, datetime or timestamp type | `VuuDatePicker` |
+  | time type | `VuuTimePicker` |
+  | anything else | `VuuInput` |
+
+- **Edit or create:** the edit form treats each field as an update, the create
+  form as an insert, so a column that is `{ insert: true, update: false }` can
+  be set on a new row and is read-only afterwards. Create forms leave out
+  columns that can't be set on insert. Create form fields are required unless
+  they have `required: false`.
+
+Each control is bound to the form's edit session, so a generated field is
+validated, saved and cancelled exactly like an `EditField`.
+
+#### Typeahead
+
+A typeahead suggests values already in the table. That suits codes, not free
+text, so it is used only when a descriptor asks for it:
+
+```ts
+// Few distinct values: suggestions show on focus, like a dropdown
+{ name: "currency", editor: { name: "typeahead", minCharacterCountToTriggerSuggestions: 0 } }
+
+// Many distinct values: the user types the first characters
+{ name: "orderId", editor: { name: "typeahead", minCharacterCountToTriggerSuggestions: 2 } }
+```
+
+#### Choosing the fields
+
+To keep the generated form but choose the fields, pass `fields` (and
+`createFields`, which default to `fields`). They are `DataValueDescriptor`s,
+the same type columns build on, and each is overlaid on its schema column:
+
+```tsx
+const fields: DataValueDescriptor[] = [
+  { label: "RIC", name: "ric" },
+  { label: "Description", name: "description" },
+  { label: "Lot size", name: "lotSize" },
+  {
+    label: "Exchange",
+    name: "exchange",
+    editor: {
+      name: "dropdown-cell",
+      lookup: {
+        labelColumn: "description",
+        table: { module: "SIMUL", table: "exchanges" },
+        valueColumn: "code",
+      },
+    },
+  },
+];
+
+<EditableTable
+  config={config}
+  createTitle="New instrument"
+  dataSource={dataSource}
+  editStrategy="form"
+  fields={fields}
+  formTitle={(row) => `Instrument ${row.ric}`}
+  validate={validateInstrument}
+/>;
+```
+
+Fields still respect the server schema: a field for a column the server won't
+let you edit is read-only, whatever `fields` says.
+
+### Direct form editing
+
+With `editModel="direct"`, Edit makes the form's fields editable and each field
+is saved when its value is committed (Enter, Tab, blur or a selection), not on
+every keystroke. The value is validated first (`validate`, `required`, type);
+an invalid value is shown with its error and not sent. There is no Save or
+Cancel; Done returns the form to read-only.
+
+```tsx
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  editModel="direct"
+  editStrategy="form"
+  validate={validateInstrument}
+/>
+```
+
+### Panel options
+
+```tsx
+// The panel is always shown, with a placeholder when no row is selected
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  editStrategy="form"
+  panelClassName="instrumentPanel" /* --saltSidePanel-width: min(460px, 45%) */
+  panelVisibility="always"
+  placeholder="Select an instrument"
+/>
+```
+
+```tsx
+// Edit existing rows only: no New button, no create form
+<EditableTable
+  allowCreate={false}
+  config={config}
+  dataSource={dataSource}
+  editStrategy="form"
+/>
+```
+
+## Props
+
+### All strategies
+
+| Prop | Description |
+| ---- | ----------- |
+| `config`, `dataSource` | As for `Table`. `config.columns` carry the per-column edit metadata. |
+| `editStrategy` | How existing rows are edited: `"inline"` (default) or `"form"`. |
+| `createStrategy` | How rows are added: `"inline"` (default with inline editing) or `"form"`. |
+| `editModel` | `"session"` (default) or `"direct"`. |
+| `mode`, `defaultMode`, `onModeChange` | `"view"`, `"edit"`, or (with a create form) `"create"`. Use `mode` with `onModeChange` to control the mode from the parent. `defaultMode` is `"edit"` for inline direct editing, otherwise `"view"`. |
+| `onSaved`, `onCancelled` | Called after a successful save or cancel. |
+| `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./09-ErrorHandling.mdx). |
+| `className`, `style` | For the container. |
+| `testId` | Suffix for the `data-testid` of the parts, for tests. |
+
+Other `Table` props are passed through.
+
+### Inline only
+
+| Prop | Description |
+| ---- | ----------- |
+| `showEditModeToggle` | Show the View/Edit toggle. Default `true`, or `false` for direct editing. |
+| `allowDelete` | Session only. Adds checkbox selection and a Delete button. |
+| `undoColumn` | Session only. Adds a column with an undo button on each changed row. Pass a partial column descriptor to customise it. |
+| `showInlineAddRow` | Session only; not with `createStrategy="form"`. |
+| `copyOption` | Session only. Rows copied into the session table: `All` (default), `Selected` or `Empty`. |
+| `saveLabel` | Session only. Label for the Save button. |
+
+### Form only
+
+| Prop | Description |
+| ---- | ----------- |
+| `fields` | Edit form fields. Default: generated. |
+| `validate` | Client-side validation on Save (or, with direct editing, on each commit). |
+| `formTitle` | Panel title for the selected row: a string, or a function of the row. |
+| `allowCreate` | Show New and the create form. Default `true`. |
+| `placeholder` | Text shown in the panel when no row is selected. |
+
+### With a create form (`editStrategy="form"` or `createStrategy="form"`)
+
+| Prop | Description |
+| ---- | ----------- |
+| `createFields` | Create form fields. Default: `fields`, or generated. |
+| `validateCreate` | Validation on Create or Add. Defaults to `validate`. |
+| `createTitle` | Panel title while creating. Default `"New"`. |
+| `panelVisibility` | `"on-select"` (default): the panel opens with the selection, Edit or New, and closes when the selection is cleared or its close button is clicked. `"always"`: always shown, with no close button. |
+| `panelClassName` | Class for the `SidePanel`, e.g. to set `--saltSidePanel-width` (default `320px`). Any CSS length works, including a percentage; the form keeps its width while the panel slides open. |
+
+### Edit session (session model)
+
+| Prop | Description |
+| ---- | ----------- |
+| `confirmCancel` | `() => Promise<boolean>`, called before discarding unsaved changes. See `useConfirmDiscard`. |
+| `deleteMode` | `soft` (default) or `hard`. See [Concepts](./02-Concepts.mdx#deleting-rows). |
+| `editSessionApi` | `createSessionDataSource` (default) or `beginEditSession`. |
+| `rowDefaults` | Values for columns the user doesn't fill in when adding a row. Pass a stable reference. |
+
+## Composing your own layout
+
+Give `EditableTable` `children` to lay out the pieces yourself. It still
+renders its container and owns all the editing state: mode, selected row, side
+panel and edit session; you decide where things go. With `children`,
+`EditableTable` takes only the editing props (`editStrategy`,
+`createStrategy`, `editModel`, `mode`, `allowDelete`, `confirmCancel`,
+`panelVisibility`, `rowDefaults`, `onSaved`, ...) and `className`/`style`.
+Table props, plus `undoColumn` and `showInlineAddRow`, go on
+`TableEditorTable`; per-column edit options stay in its `config`. All the
+pieces are in `@vuu-ui/vuu-table-extras`.
+
+### Pieces
+
+| Component | Strategy | Role |
+| --------- | -------- | ---- |
+| `TableEditorTable` | all | The table. Fills the space left in its flex column. In session edit mode it shows the session table, with editable cells and row styling for changes. With a form, selecting a row selects it for the form. |
+| `TableEditorToolbar` | all | A row for controls. |
+| `TableEditorModeToggle` | all | View/Edit toggle. |
+| `TableEditorButtons` | all | Save and Cancel (Done with direct form editing). Nothing with inline direct editing. Render inside a composed `TableEditorForm`, or a `TableEditorCreateForm` with `showButtons={false}`. |
+| `EditableTableFooter` | inline | Save/Cancel/Delete while a session is being edited; otherwise `children`, by default the row count. |
+| `EditableTableMain` | form, or create form | The column beside the side panel, holding the table and anything above or below it. |
+| `EditableTablePanel` | form, or create form | The Salt `SidePanel` that holds the form, on the right. Takes `SidePanel` props; set its width with `--saltSidePanel-width`. |
+| `EditableTablePanelHeader` | form, or create form | The panel's `SidePanelHeader`. Its first child fills the width and a close button follows; pass `canClose={false}` to leave it out. |
+| `TableEditorForm` | form | The form for the selected row. Generated when it has no `children` or `fields`. Takes `EditForm` props such as `validate` and `title`. Renders nothing when no row is selected. |
+| `TableEditorCreateForm` | form, or create form | The form for a new row, shown in create mode. Generated when it has no `children` or `fields`. Takes `CreateRowForm` props. |
+| `TableEditorPlaceholder` | form | Its `children`, shown only when no row is selected and no row is being created. |
+| `TableEditorEditButton` | form | Start editing the selected row. |
+| `TableEditorNewButton` | form, or create form | Start a new row. |
+| `TableEditorPanelCloseButton` | form, or create form | Closes the panel; not rendered while it can't be closed. |
+
+`EditableTable` provides the Salt `SidePanelProvider`, so `EditableTablePanel`
+opens and closes with the selection. Any component inside `EditableTable` can
+call `useTableEditor()` for the state and actions: `mode`, `editStrategy`,
+`createStrategy`, `editModel`, `isEditing`, `selectedRow`, `panelOpen`,
+`canClosePanel`, `startEdit()`, `startCreate()`, `cancel()` and
+`setPanelOpen()`.
+
+### Inline: your own toolbar
+
+```tsx
+import {
+  EditableTable,
+  EditableTableFooter,
+  TableEditorModeToggle,
+  TableEditorTable,
+  TableEditorToolbar,
+} from "@vuu-ui/vuu-table-extras";
+
+<EditableTable allowDelete dataSource={dataSource}>
+  <TableEditorToolbar>
+    <H2>Instruments</H2>
+    <TableEditorModeToggle />
+  </TableEditorToolbar>
+  <TableEditorTable config={config} showInlineAddRow />
+  <EditableTableFooter saveLabel="Apply" />
+</EditableTable>;
+```
+
+### Inline with a create form
+
+```tsx
+<EditableTable createStrategy="form" dataSource={dataSource}>
+  <EditableTableMain>
+    <TableEditorToolbar>
+      <TableEditorModeToggle />
+      <TableEditorNewButton>New instrument</TableEditorNewButton>
+    </TableEditorToolbar>
+    <TableEditorTable config={config} />
+    <EditableTableFooter />
+  </EditableTableMain>
+  <EditableTablePanel>
+    <EditableTablePanelHeader canClose={false}>New instrument</EditableTablePanelHeader>
+    <TableEditorCreateForm />
+  </EditableTablePanel>
+</EditableTable>
+```
+
+### Form: your own page, generated forms
+
+Lay out the page; leave the forms to `EditableTable`. A `TableEditorForm` or
+`TableEditorCreateForm` with no `children` and no `fields` is generated, as
+with the default layout.
+
+```tsx
+const InstrumentTitle = () => {
+  const { mode, selectedRow } = useTableEditor();
+  return (
+    <SidePanelTitle>
+      {mode === "create" ? "New instrument" : selectedRow?.description}
+    </SidePanelTitle>
+  );
+};
+
+<EditableTable dataSource={dataSource} editStrategy="form">
+  <EditableTableMain>
+    <PageHeader title="Instruments">
+      <TableEditorNewButton>New instrument</TableEditorNewButton>
+    </PageHeader>
+    <TableEditorTable config={config} />
+  </EditableTableMain>
+  <EditableTablePanel>
+    <EditableTablePanelHeader>
+      <InstrumentTitle />
+    </EditableTablePanelHeader>
+    <SidePanelContent>
+      <TableEditorForm validate={validateInstrument} />
+      <TableEditorCreateForm validate={validateInstrument} />
+    </SidePanelContent>
+  </EditableTablePanel>
+</EditableTable>;
+```
+
+### Form: your own form content
+
+Give `TableEditorForm` `children` for tabs, custom editors or anything else.
+
+```tsx
+<EditableTable dataSource={dataSource} editStrategy="form">
+  <EditableTableMain>
+    <TableEditorTable config={config} />
+  </EditableTableMain>
+  <EditableTablePanel>
+    <EditableTablePanelHeader>
+      <InstrumentTitle />
+    </EditableTablePanelHeader>
+    <SidePanelContent>
+      <TableEditorPlaceholder>Select an instrument</TableEditorPlaceholder>
+      <TableEditorForm validate={validateInstrument}>
+        <TableEditorModeToggle />
+        <Tabs defaultValue="details">
+          {/* TabBar ... */}
+          <TabPanel value="details">
+            <EditField label="Description" name="description" />
+          </TabPanel>
+          <TabPanel value="trading">
+            <EditField label="Lot size" name="lotSize" serverDataType="int" />
+            <TagsField name="tags" />
+          </TabPanel>
+        </Tabs>
+        <TableEditorButtons />
+      </TableEditorForm>
+      {/* generated */}
+      <TableEditorCreateForm validate={validateInstrument} />
+    </SidePanelContent>
+  </EditableTablePanel>
+</EditableTable>
+```
+
+- `EditField`s inside `TableEditorForm` edit the selected row; they don't need
+  a `dataRow`. They are read-only until the form is in edit mode, and still
+  respect the server schema.
+- A custom editor, such as a picker that edits a non-field value, should use
+  `useCustomEditField` (see [Custom fields](./05-EditForms.mdx#custom-fields)).
+  It commits to the form's edit session, so its changes are saved, or
+  discarded, with the fields, and it resets itself when editing ends.
+- After a save, `selectedRow` holds the saved values, so headers built from it
+  update immediately.
+- `TableEditorForm` and `TableEditorCreateForm` take `onSaved` and
+  `onCancelled`, for side effects such as a notification. They run before the
+  panel is updated, so there's no need to close or reset anything yourself.
+- To pick a different form for each row, use `useEditFormContext().dataRow`
+  inside `TableEditorForm`, as the user-admin `RolesPage` does.
+
+### Form: a custom create form
+
+When a new row's values aren't one input per column, render your own editors
+as `children` of `TableEditorCreateForm`. Stage each value with `setValue`
+from `useEditFormContext()`; staged values are what `validate` receives and
+what is added when the user clicks Create.
+
+```tsx
+const NewGroupValues = ({ groupName, roleAssignments }) => {
+  const { fieldErrors, setValue } = useEditFormContext();
+  useEffect(() => setValue("group_name", groupName), [groupName, setValue]);
+  useEffect(
+    () => setValue("role_assignments", roleAssignments),
+    [roleAssignments, setValue],
+  );
+  return fieldErrors.group_name ? (
+    <p role="alert">{fieldErrors.group_name}</p>
+  ) : null;
+};
+
+const CreateGroupForm = () => {
+  const [suffix, setSuffix] = useState("");
+  // ... other local state
+  return (
+    <TableEditorCreateForm onSaved={notifyCreated} validate={validateGroup}>
+      <Input value={suffix} onChange={(e) => setSuffix(e.target.value)} />
+      <NewGroupValues groupName={groupName} roleAssignments={roleAssignments} />
+    </TableEditorCreateForm>
+  );
+};
+```
+
+- `setValue(name, value)` also clears a validation error keyed by `name`, so
+  keying errors to the value they describe clears them as the user edits.
+  `EditField`s in a create form go through `setValue` too.
+- If the row is added but the save then fails, the error is shown and Create
+  stays enabled. Clicking it again retries the save without adding the row a
+  second time.
+- Local state in the create form survives between creates unless it remounts.
+  Render it only while `useTableEditor().mode === "create"` to start each new
+  row from a blank form.
+
+### Controlling the mode
+
+```tsx
+const [mode, setMode] = useState<EditableTableMode>("view");
+
+<EditableTable
+  dataSource={dataSource}
+  editStrategy="form"
+  mode={mode}
+  onModeChange={setMode}
+>
+  {/* ... */}
+</EditableTable>;
+```
+
+## Building your own editable table
+
+When you need more control than the components give, use the hooks they are
+built from.
+
+```tsx
+import {
+  DataEditingProvider,
+  EditButtons,
+  useEditableColumns,
+  useEditableTable,
+} from "@vuu-ui/vuu-data-editing";
+
+const MyEditableTable = ({ config, dataSource }) => {
+  const [isEditMode, setIsEditMode] = useState(false);
+  const stopEditing = useCallback(() => setIsEditMode(false), []);
+
+  const {
+    canCancel,
+    canSave,
+    columnsDiverge,
+    dataSource: activeDataSource,
+    editSchema,
+    editSession,
+    isEditSessionReady,
+    onCancel,
+    onSave,
+    rowClassNameGenerators,
+  } = useEditableTable({
+    dataSource,
+    isEditMode,
+    onCancel: stopEditing,
+    onSave: stopEditing,
+  });
+
+  const columns = useEditableColumns({
+    columns: config.columns,
+    columnsDiverge,
+    editSchema,
+    isEditing: isEditSessionReady,
+    undoColumn: true,
+  });
+
+  return (
+    <>
+      <button onClick={() => setIsEditMode(true)}>Edit</button>
+      <DataEditingProvider editSession={editSession}>
+        <Table
+          config={{ ...config, columns, rowClassNameGenerators }}
+          dataSource={activeDataSource}
+        />
+      </DataEditingProvider>
+      {isEditSessionReady ? (
+        <EditButtons
+          canCancel={canCancel}
+          canSave={canSave}
+          editSession={editSession}
+          onCancel={onCancel}
+          onSave={onSave}
+        />
+      ) : null}
+    </>
+  );
+};
+```
+
+Things to know:
+
+- Always pass the `dataSource` returned by `useEditableTable` to `Table`. It is
+  the source in view mode and the session table while editing. Use
+  `sourceDataSource` for anything that should always show the source, such as
+  row counts or filters.
+- Wait for `isEditSessionReady` before showing edit columns and buttons.
+- `useEditableColumns` applies the column edit metadata described in
+  [Which columns can be edited](#which-columns-can-be-edited): it narrows by
+  the schema, turns `editor` into the cell renderer while editing, and turns
+  editing off in view mode.
+- When `isEditMode` is omitted, `useEditableTable` reads it from the nearest
+  `EditModeProvider`.
+- `useEditableTable` also returns `onDelete`, `hasSelection`,
+  `isRowSelectable` and `onUndoRowChange` for delete and undo.
+
+## Migrating
+
+`TableWithEditForm` has been folded into `EditableTable`, and the separate
+`editable`/`readOnly` props have moved onto the column descriptors.
+
+| Before | After |
+| ------ | ----- |
+| `<TableWithEditForm ...>` | `<EditableTable editStrategy="form" ...>` |
+| `TableWithEditFormTablePanel` | `EditableTableMain` |
+| `TableWithEditFormPanel` | `EditableTablePanel` |
+| `TableWithEditFormPanelHeader` | `EditableTablePanelHeader` |
+| `fields` required for a default form | `fields` optional: generated from the schema and columns |
+| `TableWithEditFormMode` | `EditableTableMode` (includes `"create"`) |
+| Field (`TableEditorField`, `CreateRowFormField`) with `readOnly: true` | Fields are now `DataValueDescriptor`s: `editable: false` |
+| `editable={{ currency: { renderer: "dropdown-cell", values } }}` | `editor: { name: "dropdown-cell", values }` on the `currency` column |
+| `editable={{ lotSize: false }}`, `readOnly={["lotSize"]}` | `editable: false` on the `lotSize` column |
+| `editable={{ "*": false, description: true }}` | `editable: false` on every column except `description` |
+
+```tsx
+// Before
+<TableWithEditForm dataSource={dataSource}>
+  <TableWithEditFormTablePanel className="page">
+    <TableEditorTable config={config} />
+  </TableWithEditFormTablePanel>
+  <TableWithEditFormPanel>...</TableWithEditFormPanel>
+</TableWithEditForm>
+
+// After
+<EditableTable dataSource={dataSource} editStrategy="form">
+  <EditableTableMain className="page">
+    <TableEditorTable config={config} />
+  </EditableTableMain>
+  <EditableTablePanel>...</EditableTablePanel>
+</EditableTable>
+```
+
+See the showcase examples under `DataEditing / EditableTable` (one per
+pattern, including `SessionCreateForm`, `DirectCreateForm`, `FormEditing` and
+`DirectFormEditing`) and `DataEditing / EditForms`, and the user-admin
+`UsersPage`, `GroupsPage` and `RolesPage`.

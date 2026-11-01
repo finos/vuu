@@ -1,0 +1,216 @@
+# Edit Forms
+
+There are three ways to edit a row in a form, from most to least complete:
+
+| Component | Use it to |
+| --------- | --------- |
+| `EditableTable editStrategy="form"` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New. The form is generated from the schema and columns, or composed from your own content. See [Form editing](./04-EditableTables.mdx#form-editing) |
+| `CreateRowForm` | add a row from a list of fields |
+| `EditForm` | lay out your own form for editing or adding a row |
+
+All of them own an edit session, so you don't need `useEditableTable` or a
+`DataEditingProvider`. In edit mode the session holds just the row being
+edited (copy option `Selected`); in create mode it starts empty (`Empty`). Save
+applies the change to the source table.
+
+`EditableTable` builds its forms from the components on this page:
+`TableEditorForm` is an `EditForm` for the selected row and
+`TableEditorCreateForm` is a `CreateRowForm`. Both take the props described
+here.
+
+## Fields
+
+`fields` and `createFields` are lists of `DataValueDescriptor`, the type
+`ColumnDescriptor` extends, so a field is described the same way as a table
+column. Each field's control is chosen by `getDataItemEditControl` from its
+`editor`, `type` and `serverDataType` (see
+[Generated forms](./04-EditableTables.mdx#generated-forms)):
+
+```ts
+const fields: DataValueDescriptor[] = [
+  { editable: false, label: "RIC", name: "ric" },
+  { label: "Description", name: "description" },
+  { label: "Lot size", name: "lotSize", serverDataType: "int" },
+  { label: "Active", name: "active", serverDataType: "boolean" },
+  {
+    label: "Currency",
+    name: "currency",
+    editor: { name: "dropdown-cell", values: ["EUR", "GBP", "USD"] },
+  },
+  {
+    label: "Exchange",
+    name: "exchange",
+    editor: {
+      name: "dropdown-cell",
+      lookup: {
+        labelColumn: "description",
+        table: { module: "SIMUL", table: "exchanges" },
+        valueColumn: "code",
+      },
+    },
+  },
+];
+```
+
+- `serverDataType` converts the typed text before it is sent (default
+  `"string"`); `"boolean"` gives a checkbox.
+- `editable: false` makes a field read-only; `{ insert: true, update: false }`
+  lets it be set on a new row only. In `EditableTable`, the server schema
+  still has the last word.
+- `required` defaults to `true` in a create form. Set it to `false` for
+  optional fields.
+- A lookup dropdown gets its options from a lookup table. See
+  [Lookups](./06-Lookups.mdx).
+
+To render a single field from a descriptor yourself, pass it to `EditField`
+as `column`: `<EditField column={descriptor} />`.
+
+## CreateRowForm
+
+```tsx
+<CreateRowForm
+  dataSource={dataSource}
+  fields={createFields}
+  key={formKey}
+  onCancelled={close}
+  onSaved={close}
+  title="New instrument"
+  validate={validateInstrument}
+/>
+```
+
+The row is added only when the user clicks Create and every check passes:
+required fields, `validate`, and the server. If the server rejects the row,
+its message is shown above the fields and the user can correct the values and
+try again.
+
+A `CreateRowForm` adds one row. To add another, close it from `onSaved`, or
+change its `key` to get a fresh form.
+
+## EditForm
+
+Use `EditForm` when you want to lay out the fields yourself.
+
+```tsx
+import { EditField, EditForm } from "@vuu-ui/vuu-data-editing";
+
+<EditForm
+  dataRow={row}
+  dataSource={dataSource}
+  isEditMode={isEditMode}
+  key={row.key}
+  onCancelled={() => setIsEditMode(false)}
+  onSaved={() => setIsEditMode(false)}
+  title={`Instrument ${row.ric}`}
+  validate={validateInstrument}
+>
+  <EditField dataRow={row} label="Description" name="description" />
+  <EditField dataRow={row} label="Lot size" name="lotSize" serverDataType="int" />
+</EditForm>;
+```
+
+- In edit mode, the row must be the one selected in `dataSource`. Fields are
+  read-only until `isEditMode` is true (or, if omitted, until the nearest
+  `EditModeProvider` is in edit mode).
+- For create mode, pass `mode="create"`, `columns` and `requiredColumns`, and
+  give each field `dataRow={{ key: EditSession.newRowKey }}` and `deferNewRow`.
+  `CreateRowForm` does all this for you.
+- A component inside the form can call `useEditFormContext()` for the form
+  state, for example to show fields depending on other values:
+
+  ```tsx
+  const ExpiryField = ({ row }) => {
+    const { getValues } = useEditFormContext();
+    return getValues().type === "future" ? (
+      <EditField dataRow={row} label="Expiry" name="expiry" />
+    ) : null;
+  };
+
+  <EditForm {...props}>
+    <EditField dataRow={row} label="Type" name="type" />
+    <ExpiryField row={row} />
+  </EditForm>;
+  ```
+
+- `showButtons={false}` hides the built-in Save and Cancel so you can render
+  your own. A component inside the form can call `useEditFormContext()` to get
+  `submit()`, `cancel()`, `canSave` and the rest of the form state. If the
+  buttons must live outside the form, such as in a dialog footer, use
+  `useEditForm` instead (see below).
+- `saveLabel` defaults to "Save", or "Create" in create mode.
+
+## Validation
+
+`validate(values)` returns an object of error messages keyed by field name.
+It runs on submit, with `values` being the row's current values including
+unsaved edits. Errors are shown on the fields, and nothing is saved until the
+object is empty.
+
+```ts
+const validateInstrument: EditFormValidator = ({ currency, lotSize }) => {
+  const errors: Record<string, string> = {};
+  if (!["EUR", "GBP", "USD"].includes(currency as string)) {
+    errors.currency = "Unknown currency";
+  }
+  if (typeof lotSize === "number" && lotSize <= 0) {
+    errors.lotSize = "Lot size must be greater than zero";
+  }
+  return errors;
+};
+```
+
+Validation happens in three places:
+
+1. `clientSideEditValidationCheck` on a field: as the user types.
+2. `validate` on the form: when the user clicks Save or Create.
+3. The server: when the edit or row is sent. Rejections are shown in the
+   form's error banner. See [Error handling](./09-ErrorHandling.mdx).
+
+## Custom fields
+
+`EditField` handles text, checkbox and dropdown values. For anything else,
+such as a list of tags or a value edited with several controls, write your own
+field with `useCustomEditField`. It records the value in the form's edit
+session, so the form knows it is dirty and Save sends it.
+
+```tsx
+const TagsField = ({ dataRow, name }) => {
+  const originalValue = useMemo(() => parseTags(dataRow[name]), [dataRow, name]);
+  const { error, isDirty, setValue, value = originalValue } =
+    useCustomEditField<string[]>({
+      equals: sameTags,
+      name,
+      originalValue,
+      rowKey: dataRow.key,
+      serialize: (tags) => tags.join(","),
+    });
+  // render value, call setValue(nextTags) when it changes
+};
+```
+
+- `serialize` turns your value into the scalar sent to the server.
+- `equals` decides when the value is back to the original, so the edit is
+  dropped and the form is clean again.
+- The hook returns `{ value, setValue, reset, isDirty, committing, error }`.
+- It uses the edit session from the enclosing form. Pass `editSession` to use
+  another.
+
+:::caution
+Pressing Enter in a single text input inside a `<form>` submits it. If your
+field uses Enter for something else, call `event.preventDefault()`.
+:::
+
+## Building your own form
+
+`EditForm` is built on `useEditForm`, which you can use directly. It takes the
+same props and returns the form state and actions: `submit(force?)`,
+`cancel()`, `setValue(name, value)`, `getValues()`, `fieldErrors`, `saving`,
+`error`, `isDirty`, `canSave` and the `editSession`. Wrap your fields in a
+`DataEditingProvider` with the returned `editSession`.
+
+## Things to know
+
+- Table rows passed to `onSelect` are proxies that are only valid during that
+  render. To keep one, copy it with `getDataRowValues(row)`.
+- `rowDefaults` must be a stable reference. A new object recreates the edit
+  session.

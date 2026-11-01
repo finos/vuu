@@ -7,7 +7,7 @@ import { registerRules } from "./edit-validation-rules";
 import { type EditFormHookProps, useEditForm } from "./useEditForm";
 
 import editFormCss from "./EditForm.css";
-import { getDataItemEditControl } from "./get-data-item-edit-control";
+import { getDataItemEditControl } from "@vuu-ui/vuu-data-editing";
 
 const classBase = "EditForm";
 
@@ -15,7 +15,7 @@ registerRules();
 
 export interface EditFormProps
   extends EditFormHookProps,
-  Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> { }
+    Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> {}
 
 export const EditForm = ({
   className,
