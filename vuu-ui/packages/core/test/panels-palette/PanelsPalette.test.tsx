@@ -2,7 +2,7 @@ import {
   GridLayout,
   type GridLayoutDocument,
   GridLayoutProvider,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";

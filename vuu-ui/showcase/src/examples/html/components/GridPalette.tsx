@@ -2,12 +2,12 @@ import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
   useDraggable,
   useGridLayoutDragStartHandler,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import cx from "clsx";
 import { CSSProperties, DragEvent, HTMLAttributes, useCallback } from "react";
 
 import "./GridPalette.css";
-import { TemplateSource } from "@heswell/grid-layout/src/GridLayoutContext";
+import { TemplateSource } from "@vuu-ui/grid-layout/src/GridLayoutContext";
 
 const classBase = "vuuGridPalette";
 

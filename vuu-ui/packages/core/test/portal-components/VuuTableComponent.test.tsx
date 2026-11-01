@@ -3,7 +3,7 @@ import {
   type GridLayoutDocument,
   type GridLayoutDocumentChange,
   GridLayoutProvider,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import type { DataSourceConfig, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";

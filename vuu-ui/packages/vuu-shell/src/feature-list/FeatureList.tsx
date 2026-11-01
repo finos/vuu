@@ -6,7 +6,7 @@ import {
   useOptionalDragContext,
   type TemplateSource,
   type TypedComponentTemplate,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { Icon } from "@vuu-ui/vuu-ui-controls";

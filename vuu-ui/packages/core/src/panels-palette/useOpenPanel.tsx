@@ -6,7 +6,7 @@ import {
   type GridSnapshot,
   type TypedComponentTemplate,
   useGridLayoutCommands,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import type { GridLayoutSplitDirection } from "@vuu-ui/vuu-utils";
 import {
   createContext,

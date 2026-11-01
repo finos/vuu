@@ -1,4 +1,4 @@
-import type { TypedComponentTemplate } from "@heswell/grid-layout";
+import type { TypedComponentTemplate } from "@vuu-ui/grid-layout";
 import { useCallback, useState } from "react";
 import { usePersistedState } from "../persistence/PersistenceContext";
 import type { JsonValue } from "../persistence/StateDocument";

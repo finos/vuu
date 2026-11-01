@@ -222,6 +222,6 @@ What the portal host must provide for these modules:
   and `PortalNavVuuServers` for the server list in the nav.
 - Strict singletons, shared with the remotes: `react`, `react-dom`,
   `react-router-dom`, `@vuu-ui/core`, `@vuu-ui/core/portal`,
-  `@heswell/grid-layout` and `@vuu-ui/vuu-notifications`, as configured in
+  `@vuu-ui/grid-layout` and `@vuu-ui/vuu-notifications`, as configured in
   `portal-build.json`. The Browse page renders the host's workspace and
   palette contexts, so a second copy of any of these would not see them.

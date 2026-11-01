@@ -1,7 +1,7 @@
 import type {
   GridComponentRendererRegistry,
   GridComponentSettingsRegistry,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { WorkspaceController } from "../workspace/WorkspaceController";
 import type { WorkspacePersistenceService } from "../workspace/WorkspacePersistenceService";

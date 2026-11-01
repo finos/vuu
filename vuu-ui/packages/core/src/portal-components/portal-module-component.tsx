@@ -5,7 +5,7 @@ import {
   type JsonValue,
   type TypedComponentTemplate,
   useGridComponentSettingsUpdater,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import { type ReactNode, useCallback, useMemo, useRef } from "react";
 import { useOptionalIdentityContext } from "../auth/AuthenticationProvider";
 import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
