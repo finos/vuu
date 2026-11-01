@@ -1,0 +1,11 @@
+.vuuTableEditorToolbar {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-50) var(--salt-spacing-100);
+}
+
+.vuuTableEditorPlaceholder {
+  color: var(--salt-content-secondary-foreground);
+}

@@ -266,22 +266,21 @@ export const OverviewPage = () => {
   return (
     <section className={`vuuIdentityAdmin-page ${classBase}`}>
       <PageHeader
-        actions={
-          <nav aria-label="Quick actions" className="vuuAdminUi-actions">
-            <AdminButtonLink to="../roles?create=true">
-              <KeyIcon aria-hidden /> Create application role
-            </AdminButtonLink>
-            <AdminButtonLink to="../groups?create=true">
-              <AddIcon aria-hidden /> Create application group
-            </AdminButtonLink>
-            <AdminButtonLink sentiment="accented" to="../users">
-              <AddUserIcon aria-hidden /> Grant application access
-            </AdminButtonLink>
-          </nav>
-        }
         description="Who can open each portal application. Access is granted by adding users to an application's groups."
         title="Overview"
-      />
+      >
+        <nav aria-label="Quick actions" className="vuuAdminUi-actions">
+          <AdminButtonLink to="../roles?create=true">
+            <KeyIcon aria-hidden /> Create application role
+          </AdminButtonLink>
+          <AdminButtonLink to="../groups?create=true">
+            <AddIcon aria-hidden /> Create application group
+          </AdminButtonLink>
+          <AdminButtonLink sentiment="accented" to="../users">
+            <AddUserIcon aria-hidden /> Grant application access
+          </AdminButtonLink>
+        </nav>
+      </PageHeader>
       {search ? (
         <SearchResults key={search} search={search} />
       ) : (

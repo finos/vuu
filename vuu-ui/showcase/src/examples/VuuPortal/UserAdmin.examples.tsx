@@ -3,36 +3,41 @@ import {
   PortalModuleRegistryProvider,
   type RemoteModuleDescriptor,
 } from "@vuu-ui/core/portal";
-import type {
-  DataSourceSubscribeCallback,
-  SchemaColumn,
-} from "@vuu-ui/vuu-data-types";
-import { dataRowFactory, type DataRowFunc } from "@vuu-ui/vuu-table";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { Range } from "@vuu-ui/vuu-utils";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import {
   createMemoryRouter,
   MemoryRouter,
   RouterProvider,
 } from "react-router-dom";
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { ModulePicker } from "user-admin";
-import { GroupsEditForm } from "user-admin/src/components/groups-edit-form/GroupsEditForm";
-import { RolesEditForm } from "user-admin/src/components/roles-edit-form/RolesEditForm";
+import {
+  CreateGroupForm,
+  GroupEditForm,
+} from "user-admin/src/components/groups-edit-form/GroupsEditForm";
+import {
+  CreateRoleForm,
+  RoleEditForm,
+} from "user-admin/src/components/roles-edit-form/RolesEditForm";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
-import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
+import type { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
 import { ApplicationModelProvider } from "user-admin/src/data/ApplicationModelProvider";
 import { ApplicationsPage } from "user-admin/src/pages/applications/ApplicationsPage";
 import { GroupsPage } from "user-admin/src/pages/groups/GroupsPage";
 import { RolesPage } from "user-admin/src/pages/roles/RolesPage";
 import { UsersPage } from "user-admin/src/pages/users/UsersPage";
-import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
+import {
+  USER_COLUMNS,
+  USER_ROW_HEIGHT,
+  usersTableConfig,
+} from "user-admin/src/pages/users/usersTable";
+import {
+  TableEditorForm,
+  TableEditorNewButton,
+  TableEditorPlaceholder,
+  TableEditorTable,
+  EditableTable,
+} from "@vuu-ui/vuu-table-extras";
 import UserAdmin from "user-admin/src/UserAdmin";
 
 import "user-admin/src/UserAdmin.css";
@@ -130,26 +135,13 @@ export const DefaultModulePicker = () => {
   );
 };
 
-const USER_COLUMNS = [
-  "user_id",
-  "username",
-  "email",
-  "first_name",
-  "last_name",
-  "enabled",
-  "email_verified",
-  "password_update_required",
-  "last_login",
-  "group_count",
-  "role_count",
-  "module_access",
-  "module_access_count",
-];
-
+/**
+ * UserEditForm renders within a TableEditorForm, editing the row selected in
+ * the TableEditorTable alongside it.
+ */
 /** tags=data-consumer */
 export const DefaultUserEditForm = () => {
   const { VuuDataSource } = useData();
-  const [dataRow, setDataRow] = useState<DataRow>();
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
@@ -158,58 +150,24 @@ export const DefaultUserEditForm = () => {
       }),
     [VuuDataSource],
   );
-
-  useEffect(() => {
-    let active = true;
-    let DataRow: DataRowFunc | undefined;
-    const subscribe: DataSourceSubscribeCallback = (message) => {
-      if (!active) return;
-      if (message.type === "subscribed") {
-        [DataRow] = dataRowFactory(
-          message.columns,
-          message.tableSchema.columns as readonly SchemaColumn[],
-        );
-      } else if (message.type === "subscribe-failed") {
-        console.error(
-          `User editor data source subscription failed: ${message.msg}`,
-        );
-      } else if (message.type === "viewport-update" && message.rows?.[0]) {
-        if (!DataRow) {
-          console.error(
-            "The user table sent rows before supplying its column metadata.",
-          );
-          return;
-        }
-        setDataRow(DataRow(message.rows[0]));
-      }
-    };
-
-    void dataSource
-      .subscribe({ range: Range(0, 1) }, subscribe)
-      .catch((cause: unknown) => {
-        if (active) {
-          console.error("User editor data source subscription failed:", cause);
-        }
-      });
-
-    return () => {
-      active = false;
-      dataSource.unsubscribe();
-    };
-  }, [dataSource]);
+  const config = useMemo(() => usersTableConfig({ compact: true }), []);
 
   return (
-    <div style={{ width: 480, height: 800 }}>
-      {dataRow ? (
-        <AdminContext>
-          <EditModeProvider>
-            <UserEditForm dataRow={dataRow} dataSource={dataSource} />
-          </EditModeProvider>
-        </AdminContext>
-      ) : (
-        <p role="status">Loading user...</p>
-      )}
-    </div>
+    <AdminContext>
+      <EditableTable dataSource={dataSource} editStrategy="form">
+        <div style={{ display: "flex", gap: 16, height: 800 }}>
+          <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+            <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
+          </div>
+          <div style={{ flex: "0 0 480px" }}>
+            <TableEditorPlaceholder>Select a user</TableEditorPlaceholder>
+            <TableEditorForm>
+              <UserEditForm />
+            </TableEditorForm>
+          </div>
+        </div>
+      </EditableTable>
+    </AdminContext>
   );
 };
 
@@ -246,10 +204,23 @@ const GROUP_COLUMNS = [
   "role_count",
 ];
 
+const ROLE_TABLE_CONFIG: TableConfig = {
+  columns: [
+    { name: "role_name", label: "Role", width: 220 },
+    { name: "client_identifier", label: "Client", width: 180 },
+    { name: "group_count", label: "Groups", width: 100 },
+  ],
+  columnLayout: "fit",
+};
+
+/**
+ * RoleEditForm renders within a TableEditorForm, editing the row selected
+ * in the TableEditorTable alongside it. CreateRoleForm is shown instead
+ * while a role is being created.
+ */
 /** tags=data-consumer */
 export const DefaultRolesEditPage = () => {
   const { VuuDataSource } = useData();
-  const [dataRow, setDataRow] = useState<DataRow>();
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
@@ -259,57 +230,34 @@ export const DefaultRolesEditPage = () => {
     [VuuDataSource],
   );
 
-  useEffect(() => {
-    let active = true;
-    let DataRow: DataRowFunc | undefined;
-    const subscribe: DataSourceSubscribeCallback = (message) => {
-      if (!active) return;
-      if (message.type === "subscribed") {
-        [DataRow] = dataRowFactory(
-          message.columns,
-          message.tableSchema.columns as readonly SchemaColumn[],
-        );
-      } else if (message.type === "subscribe-failed") {
-        console.error(
-          `Role editor data source subscription failed: ${message.msg}`,
-        );
-      } else if (message.type === "viewport-update" && message.rows?.[0]) {
-        if (!DataRow) {
-          console.error(
-            "The role table sent rows before supplying its column metadata.",
-          );
-          return;
-        }
-        setDataRow(DataRow(message.rows[0]));
-      }
-    };
-
-    void dataSource
-      .subscribe({ range: Range(0, 1) }, subscribe)
-      .catch((cause: unknown) => {
-        if (active) {
-          console.error("Role editor data source subscription failed:", cause);
-        }
-      });
-
-    return () => {
-      active = false;
-      dataSource.unsubscribe();
-    };
-  }, [dataSource]);
-
   return (
-    <div style={{ width: 480, height: 500 }}>
-      {dataRow ? (
-        <AdminContext>
-          <EditModeProvider>
-            <RolesEditForm dataRow={dataRow} dataSource={dataSource} />
-          </EditModeProvider>
-        </AdminContext>
-      ) : (
-        <p role="status">Loading role...</p>
-      )}
-    </div>
+    <AdminContext>
+      <EditableTable dataSource={dataSource} editStrategy="form">
+        <div style={{ display: "flex", gap: 16, height: 800 }}>
+          <div
+            style={{
+              display: "flex",
+              flex: "1 1 auto",
+              flexDirection: "column",
+              gap: 8,
+              minWidth: 0,
+            }}
+          >
+            <TableEditorNewButton style={{ alignSelf: "flex-start" }}>
+              Create role
+            </TableEditorNewButton>
+            <TableEditorTable config={ROLE_TABLE_CONFIG} />
+          </div>
+          <div style={{ flex: "0 0 480px" }}>
+            <TableEditorPlaceholder>Select a role</TableEditorPlaceholder>
+            <TableEditorForm>
+              <RoleEditForm />
+            </TableEditorForm>
+            <CreateRoleForm />
+          </div>
+        </div>
+      </EditableTable>
+    </AdminContext>
   );
 };
 
@@ -320,10 +268,23 @@ export const DefaultRolesPage = () => (
   </AdminContext>
 );
 
+const GROUP_TABLE_CONFIG: TableConfig = {
+  columns: [
+    { name: "group_display_name", label: "Group", width: 200 },
+    { name: "user_count", label: "Members", width: 100 },
+    { name: "role_count", label: "Roles", width: 100 },
+  ],
+  columnLayout: "fit",
+};
+
+/**
+ * GroupEditForm renders within a TableEditorForm, editing the row selected
+ * in the TableEditorTable alongside it. CreateGroupForm is shown instead
+ * while a group is being created.
+ */
 /** tags=data-consumer */
 export const DefaultGroupsEditPage = () => {
   const { VuuDataSource } = useData();
-  const [dataRow, setDataRow] = useState<DataRow>();
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
@@ -333,57 +294,34 @@ export const DefaultGroupsEditPage = () => {
     [VuuDataSource],
   );
 
-  useEffect(() => {
-    let active = true;
-    let DataRow: DataRowFunc | undefined;
-    const subscribe: DataSourceSubscribeCallback = (message) => {
-      if (!active) return;
-      if (message.type === "subscribed") {
-        [DataRow] = dataRowFactory(
-          message.columns,
-          message.tableSchema.columns as readonly SchemaColumn[],
-        );
-      } else if (message.type === "subscribe-failed") {
-        console.error(
-          `Group editor data source subscription failed: ${message.msg}`,
-        );
-      } else if (message.type === "viewport-update" && message.rows?.[0]) {
-        if (!DataRow) {
-          console.error(
-            "The group table sent rows before supplying its column metadata.",
-          );
-          return;
-        }
-        setDataRow(DataRow(message.rows[0]));
-      }
-    };
-
-    void dataSource
-      .subscribe({ range: Range(0, 1) }, subscribe)
-      .catch((cause: unknown) => {
-        if (active) {
-          console.error("Group editor data source subscription failed:", cause);
-        }
-      });
-
-    return () => {
-      active = false;
-      dataSource.unsubscribe();
-    };
-  }, [dataSource]);
-
   return (
-    <div style={{ width: 480, height: 600 }}>
-      {dataRow ? (
-        <AdminContext>
-          <EditModeProvider>
-            <GroupsEditForm dataRow={dataRow} dataSource={dataSource} />
-          </EditModeProvider>
-        </AdminContext>
-      ) : (
-        <p role="status">Loading group...</p>
-      )}
-    </div>
+    <AdminContext>
+      <EditableTable dataSource={dataSource} editStrategy="form">
+        <div style={{ display: "flex", gap: 16, height: 800 }}>
+          <div
+            style={{
+              display: "flex",
+              flex: "1 1 auto",
+              flexDirection: "column",
+              gap: 8,
+              minWidth: 0,
+            }}
+          >
+            <TableEditorNewButton style={{ alignSelf: "flex-start" }}>
+              Create group
+            </TableEditorNewButton>
+            <TableEditorTable config={GROUP_TABLE_CONFIG} />
+          </div>
+          <div style={{ flex: "0 0 480px" }}>
+            <TableEditorPlaceholder>Select a group</TableEditorPlaceholder>
+            <TableEditorForm>
+              <GroupEditForm />
+            </TableEditorForm>
+            <CreateGroupForm />
+          </div>
+        </div>
+      </EditableTable>
+    </AdminContext>
   );
 };
 

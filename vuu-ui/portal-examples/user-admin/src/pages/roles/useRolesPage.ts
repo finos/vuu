@@ -1,11 +1,6 @@
 import { useData } from "@vuu-ui/core";
-import type {
-  DataRow,
-  TableConfig,
-  TableRowSelectHandler,
-} from "@vuu-ui/vuu-table-types";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { useMemo } from "react";
 import {
   ROLE_APPLICATION_CELL_RENDERER,
   ROLE_NAME_CELL_RENDERER,
@@ -21,10 +16,6 @@ export const ROLE_ROW_HEIGHT = 52;
 
 export const useRolesPage = () => {
   const { VuuDataSource } = useData();
-  const [params, setParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
-  const [dataRow, setDataRow] = useState<DataRow>();
-
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
@@ -102,49 +93,5 @@ export const useRolesPage = () => {
     [],
   );
 
-  const handleCreateRole = useCallback(() => {
-    setDataRow({
-      key: "__vuu_new_row__",
-    } as DataRow);
-    setOpen(true);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    setDataRow(undefined);
-    setOpen(false);
-  }, []);
-
-  useEffect(() => {
-    if (params.get("create") === "true") {
-      handleCreateRole();
-      const next = new URLSearchParams(params);
-      next.delete("create");
-      setParams(next, { replace: true });
-    }
-  }, [handleCreateRole, params, setParams]);
-
-  const handleSelect = useCallback<TableRowSelectHandler>(
-    (nextDataRow) => {
-      if (nextDataRow) {
-        setDataRow(nextDataRow);
-        setOpen(true);
-      } else {
-        handleClose();
-      }
-    },
-    [handleClose],
-  );
-
-  return {
-    application,
-    config,
-    dataRow,
-    dataSource,
-    createRole: handleCreateRole,
-    close: handleClose,
-    onSelect: handleSelect,
-    open,
-    setApplication,
-    setOpen,
-  };
+  return { application, config, dataSource, setApplication };
 };

@@ -42,7 +42,10 @@ import type {
 } from "@vuu-ui/vuu-utils";
 import type {
   ColumnDescriptor,
+  ColumnTypeRendering,
   DataValueTypeDescriptor,
+  LookupRenderer,
+  ValueListRenderer,
 } from "@vuu-ui/vuu-table-types";
 import type { PostMessageToClientCallback } from "@vuu-ui/vuu-data-remote";
 
@@ -171,8 +174,40 @@ export declare type DataEditable =
       update: boolean;
     };
 
+/**
+ * Requests a typeahead editor, which suggests values already present in the
+ * table. Suits codes (currency, exchange), not free text.
+ */
+export interface TypeaheadEditor {
+  name: "typeahead";
+  /**
+   * 0 shows suggestions on focus, like a dropdown. Use 1 or more for columns
+   * with many distinct values, so the user must type first.
+   * @default 1
+   */
+  minCharacterCountToTriggerSuggestions?: 0 | 1 | 2 | 3;
+}
+
+/**
+ * How a value is edited, in a table cell or a form field. Names a registered
+ * cell editor (e.g. "input-cell", "checkbox-cell", "dropdown-cell") with any
+ * options it needs, or requests a typeahead.
+ */
+export declare type DataValueEditor =
+  | ColumnTypeRendering
+  | LookupRenderer
+  | ValueListRenderer
+  | TypeaheadEditor;
+
 export interface DataValueDescriptor {
+  /**
+   * Whether the value can be edited. On a server schema column, what the
+   * server allows. On a client descriptor (e.g. a table column) it can only
+   * narrow what the server allows.
+   */
   editable?: DataEditable;
+  /** How the value is edited, in a table cell or a form field. */
+  editor?: DataValueEditor;
   /**
    There are three values for editableBulk. 
     - false user will not see these values when applying a bulk edit. 

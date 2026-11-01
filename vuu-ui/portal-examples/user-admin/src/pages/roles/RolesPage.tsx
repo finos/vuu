@@ -1,24 +1,45 @@
-import { Avatar, Button, SidePanelTitle, Tag } from "@salt-ds/core";
+import { Avatar, SidePanelContent, Tag } from "@salt-ds/core";
 import { KeyIcon } from "@salt-ds/icons";
-import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
-import { Table } from "@vuu-ui/vuu-table";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
+import {
+  TableEditorForm,
+  TableEditorNewButton,
+  TableEditorTable,
+  EditableTable,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+  EditableTableMain,
+  useTableEditor,
+} from "@vuu-ui/vuu-table-extras";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   AccessTag,
   AppTag,
+  AdminToolbar,
+  PageHeader,
+  PageHeaderActions,
   PanelHeading,
+  PanelHeadingSubtitle,
+  PanelHeadingTags,
+  PanelHeadingText,
+  PanelHeadingTitle,
+  RowCount,
   useApplicationCategory,
 } from "../../components/admin-ui/AdminUi";
-import { AdminTablePage } from "../../components/admin-table-page/AdminTablePage";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
-import { RolesEditForm } from "../../components/roles-edit-form/RolesEditForm";
+import {
+  CreateRoleForm,
+  RoleEditForm,
+} from "../../components/roles-edit-form/RolesEditForm";
 import { classifyRole } from "../../data/applications";
 import { useApplications } from "../../data/useApplicationModel";
 import { ROLE_ROW_HEIGHT, useRolesPage } from "./useRolesPage";
 
-const RoleHeading = ({ dataRow }: { dataRow?: DataRow }) => {
+const RoleHeading = () => {
+  const { mode, selectedRow } = useTableEditor();
   const { applications } = useApplications();
-  const isNew = dataRow?.role_id === undefined;
+  const isNew = mode === "create";
+  const dataRow = isNew ? undefined : selectedRow;
   const match = isNew
     ? undefined
     : classifyRole(
@@ -28,21 +49,23 @@ const RoleHeading = ({ dataRow }: { dataRow?: DataRow }) => {
       );
   const category = useApplicationCategory(match?.application.name);
   return (
-    <PanelHeading
-      avatar={
-        <Avatar
-          aria-hidden
-          color={category ? `category-${category}` : "category-20"}
-          fallbackIcon={<KeyIcon />}
-          size={2}
-        />
-      }
-      subtitle={
-        isNew ? "Roles grant what users can do in an application" : undefined
-      }
-      tags={
-        isNew ? null : (
-          <>
+    <PanelHeading>
+      <Avatar
+        aria-hidden
+        color={category ? `category-${category}` : "category-20"}
+        fallbackIcon={<KeyIcon />}
+        size={2}
+      />
+      <PanelHeadingText>
+        <PanelHeadingTitle>
+          {isNew ? "New role" : String(dataRow?.role_name ?? "Role")}
+        </PanelHeadingTitle>
+        {isNew ? (
+          <PanelHeadingSubtitle>
+            Roles grant what users can do in an application
+          </PanelHeadingSubtitle>
+        ) : (
+          <PanelHeadingTags>
             {match ? <AppTag application={match.application} /> : null}
             {match?.kind === "access" ? (
               <AccessTag>Portal access role</AccessTag>
@@ -51,69 +74,63 @@ const RoleHeading = ({ dataRow }: { dataRow?: DataRow }) => {
             ) : (
               <Tag bordered>Unassigned</Tag>
             )}
-          </>
-        )
-      }
-      title={
-        <SidePanelTitle styleAs="h3">
-          {isNew ? "New role" : String(dataRow?.role_name ?? "Role")}
-        </SidePanelTitle>
-      }
-    />
+          </PanelHeadingTags>
+        )}
+      </PanelHeadingText>
+    </PanelHeading>
   );
 };
 
-export const RolesPage = () => {
-  const {
-    application,
-    close,
-    config,
-    createRole,
-    dataRow,
-    dataSource,
-    onSelect,
-    open,
-    setApplication,
-    setOpen,
-  } = useRolesPage();
+/** Starts creating a role when the page is opened with `?create=true`. */
+const CreateRoleFromSearchParams = () => {
+  const { startCreate } = useTableEditor();
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    if (params.get("create") === "true") {
+      startCreate();
+      const next = new URLSearchParams(params);
+      next.delete("create");
+      setParams(next, { replace: true });
+    }
+  }, [params, setParams, startCreate]);
+  return null;
+};
 
+export const RolesPage = () => {
+  const { application, config, dataSource, setApplication } = useRolesPage();
   return (
-    <EditModeProvider isEditMode={dataRow && dataRow?.role_id === undefined}>
-      <AdminTablePage
-        actions={
-          <Button onClick={createRole} sentiment="accented">
-            <KeyIcon aria-hidden /> Create role
-          </Button>
-        }
-        dataSource={dataSource}
-        description="Access roles open an application; application roles grant what users can do in it."
-        filter={
+    <EditableTable dataSource={dataSource} editStrategy="form">
+      <CreateRoleFromSearchParams />
+      <EditableTableMain className="vuuIdentityAdmin-page">
+        <PageHeader
+          description="Access roles open an application; application roles grant what users can do in it."
+          title="Roles"
+        >
+          <PageHeaderActions>
+            <TableEditorNewButton sentiment="accented">
+              <KeyIcon aria-hidden /> Create role
+            </TableEditorNewButton>
+          </PageHeaderActions>
+        </PageHeader>
+        <AdminToolbar>
           <ApplicationFilter onChange={setApplication} value={application} />
-        }
-        noun="role"
-        onPanelOpenChange={setOpen}
-        panelContent={
-          dataRow ? (
-            <RolesEditForm
-              application={application}
-              dataRow={dataRow}
-              dataSource={dataSource}
-              onClose={close}
-            />
-          ) : null
-        }
-        panelHeading={<RoleHeading dataRow={dataRow} />}
-        panelOpen={open}
-        table={
-          <Table
-            config={config}
-            dataSource={dataSource}
-            onSelect={onSelect}
-            rowHeight={ROLE_ROW_HEIGHT}
-          />
-        }
-        title="Roles"
-      />
-    </EditModeProvider>
+          <RowCount dataSource={dataSource} noun="role" />
+        </AdminToolbar>
+        <div className="vuuIdentityAdmin-tableCard">
+          <TableEditorTable config={config} rowHeight={ROLE_ROW_HEIGHT} />
+        </div>
+      </EditableTableMain>
+      <EditableTablePanel className="vuuIdentityAdmin-panel">
+        <EditableTablePanelHeader>
+          <RoleHeading />
+        </EditableTablePanelHeader>
+        <SidePanelContent>
+          <TableEditorForm>
+            <RoleEditForm />
+          </TableEditorForm>
+          <CreateRoleForm application={application} />
+        </SidePanelContent>
+      </EditableTablePanel>
+    </EditableTable>
   );
 };
