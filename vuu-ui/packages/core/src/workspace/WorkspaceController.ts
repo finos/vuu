@@ -4,7 +4,7 @@ import {
   type GridComponentSettingsRegistry,
   type GridLayoutDocument,
   type GridLayoutDocumentChange,
-} from "@heswell/grid-layout";
+} from "@vuu-ui/grid-layout";
 import type { WorkspacePersistenceService } from "./WorkspacePersistenceService";
 import { WorkspacePersistentStateStore } from "./WorkspacePersistentState";
 import { WorkspaceRepository } from "./WorkspaceRepository";

@@ -30,7 +30,7 @@
         "requiredVersion": "package:@vuu-ui/core",
         "strictVersion": true
       },
-      "@heswell/grid-layout": {
+      "@vuu-ui/grid-layout": {
         "requiredVersion": "package:@vuu-ui/core",
         "singleton": true,
         "strictVersion": true
