@@ -91,7 +91,7 @@
     "istanbul-reports": "^3.2.0",
     "serve": "^14.2.6",
     "serve-handler": "^6.1.6",
-    "tinycolor2": "1.4.2",
+    "tinycolor2": "1.6.0",
     "tsx": "^4.19.1",
     "typescript": "7.0.2",
     "vite": "6.4.5",
