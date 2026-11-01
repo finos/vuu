@@ -1,6 +1,6 @@
 import type { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
 import type { VuuSort, VuuSortType } from "@vuu-ui/vuu-protocol-types";
-import { ColumnMap } from "@vuu-ui/vuu-utils";
+import type { ColumnMap } from "@vuu-ui/vuu-utils";
 
 export type ColIndexSortDef = [number, VuuSortType];
 type SortPredicate = (
@@ -44,33 +44,33 @@ export const sortComparator = (
 
 const singleColComparator: RowSortComparatorFactory =
   ([[i, direction]]) =>
-  (r1, r2) => {
-    const v1 = direction === "D" ? r2[i] : r1[i];
-    const v2 = direction === "D" ? r1[i] : r2[i];
-    return v1 > v2 ? 1 : v2 > v1 ? -1 : 0;
-  };
+    (r1, r2) => {
+      const v1 = direction === "D" ? r2[i] : r1[i];
+      const v2 = direction === "D" ? r1[i] : r2[i];
+      return v1 > v2 ? 1 : v2 > v1 ? -1 : 0;
+    };
 
 const twoColComparator: RowSortComparatorFactory =
   ([[idx1, direction1], [idx2, direction2]]) =>
-  (r1, r2) => {
-    const v1 = direction1 === "D" ? r2[idx1] : r1[idx1];
-    const v2 = direction1 === "D" ? r1[idx1] : r2[idx1];
-    const v3 = direction2 === "D" ? r2[idx2] : r1[idx2];
-    const v4 = direction2 === "D" ? r1[idx2] : r2[idx2];
-    return v1 > v2 ? 1 : v2 > v1 ? -1 : v3 > v4 ? 1 : v4 > v3 ? -1 : 0;
-  };
+    (r1, r2) => {
+      const v1 = direction1 === "D" ? r2[idx1] : r1[idx1];
+      const v2 = direction1 === "D" ? r1[idx1] : r2[idx1];
+      const v3 = direction2 === "D" ? r2[idx2] : r1[idx2];
+      const v4 = direction2 === "D" ? r1[idx2] : r2[idx2];
+      return v1 > v2 ? 1 : v2 > v1 ? -1 : v3 > v4 ? 1 : v4 > v3 ? -1 : 0;
+    };
 
 const multiColComparator: RowSortComparatorFactory =
   (sortDefs, test = defaultSortPredicate) =>
-  (r1, r2) => {
-    for (const sortDef of sortDefs) {
-      const result = test(r1, r2, sortDef);
-      if (result !== 0) {
-        return result;
+    (r1, r2) => {
+      for (const sortDef of sortDefs) {
+        const result = test(r1, r2, sortDef);
+        if (result !== 0) {
+          return result;
+        }
       }
-    }
-    return 0;
-  };
+      return 0;
+    };
 
 export const sortRows = (
   rows: readonly DataSourceRowWithBigint[],
@@ -91,8 +91,8 @@ export function binarySearch(
 ) {
   let l = 0;
   let h = items.length - 1;
-  let m;
-  let comparison;
+  let m: number;
+  let comparison: number;
 
   while (l <= h) {
     m = (l + h) >>> 1; /* equivalent to Math.floor((l + h) / 2) but faster */

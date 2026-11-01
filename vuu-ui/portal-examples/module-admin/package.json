@@ -1,0 +1,72 @@
+{
+  "name": "module-admin",
+  "version": "1.0.0",
+  "description": "Vuu Module Admin Module",
+  "scripts": {
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
+    "postbuild": "node ../scripts/set-portal-urls.ts",
+    "dev": "rsbuild dev",
+    "test": "vitest run --root ../.. portal-examples/module-admin/test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome lint src test",
+    "start": "ws --directory ../../dist_portal/module-admin --spa index.html --port 5002"
+  },
+  "type": "module",
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.4.0",
+    "@vuu-ui/vuu-data-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-icons": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-table-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-theme": "5.0.0-alpha.1"
+  },
+  "dependencies": {
+    "@heswell/module-admin": "1.1.0",
+    "@salt-ds/core": "1.72.0",
+    "@vuu-ui/core": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-data-test": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-notifications": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-protocol-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-ui-controls": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-utils": "5.0.0-alpha.1",
+    "react-router-dom": "7.18.3"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {
+      "vuuTables": [
+        {
+          "module": "MODULE_DISCOVERY",
+          "table": "modules"
+        },
+        {
+          "module": "MODULE_DISCOVERY",
+          "table": "modulePermissions"
+        }
+      ]
+    },
+    "module-federation": {
+      "exposes": {
+        "./ModuleAdmin": "./src/ModuleAdmin",
+        "./ModuleAdminLocal": "./src/ModuleAdminLocal"
+      },
+      "name": "moduleAdmin",
+      "port": 5002
+    }
+  }
+}

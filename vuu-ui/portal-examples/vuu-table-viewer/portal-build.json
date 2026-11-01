@@ -1,0 +1,26 @@
+{
+  "extends": "../portal-build.remote.json",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "output": "../../dist_portal/vuu-table-viewer",
+    "publicPath": "http://localhost:5005/"
+  },
+  "html": {
+    "title": "vuuTableViewer (standalone)"
+  },
+  "server": {
+    "corsOrigins": [
+      "http://localhost:5001"
+    ]
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {}
+  },
+  "moduleFederation": {
+    "name": "vuuTableViewer",
+    "exposes": {
+      "./VuuTableViewer": "./src/VuuTableViewer"
+    }
+  }
+}

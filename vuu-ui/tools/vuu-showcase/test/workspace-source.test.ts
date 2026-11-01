@@ -53,7 +53,7 @@ describe("workspace-source", () => {
       resolve,
     );
     expect(source).toContain(
-      'import { GridLayout, GridLayoutItem, GridLayoutStackedItem } from "@heswell/grid-layout";',
+      'import { GridLayout, GridLayoutItem, GridLayoutStackedItem } from "@vuu-ui/grid-layout";',
     );
     expect(source).toContain(
       'import { SimpleTable, TableWithMenu } from "./Table/Table.examples";',
@@ -94,7 +94,7 @@ describe("workspace-source", () => {
       resolve,
     );
     expect(source).toContain(
-      'import { GridLayout, GridLayoutItem } from "@heswell/grid-layout";',
+      'import { GridLayout, GridLayoutItem } from "@vuu-ui/grid-layout";',
     );
     expect(source).not.toContain("GridLayoutStackedItem");
   });

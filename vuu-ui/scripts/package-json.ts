@@ -2,14 +2,13 @@ import fs from "fs";
 
 export const readPackageJson = (path = "package.json") => readJson(path);
 
-type PackageExports = {
-  ".": {
+type PackageExports = Record<
+  string,
+  {
     import: string;
-  };
-  ['./style']?: {
-    import: string;
-  };
-};
+    types?: string;
+  }
+>;
 
 type Json = {
   exports?: PackageExports;
@@ -31,51 +30,57 @@ export async function writePackageJSON(
   readmePath: string,
   additionalFiles: string[] = [],
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const {
-      files: filesFromPackageJson = [],
-      name: scopedPackageName,
-      style,
-      ...packageRest
-    } = packageJson;
+  const {
+    exports: sourceExports,
+    files: filesFromPackageJson = [],
+    name: scopedPackageName,
+    style,
+    ...packageRest
+  } = packageJson;
 
-    const files = [readmePath];
-    const filesToPublish = filesFromPackageJson.concat(files);
+  const filesToPublish = Array.from(
+    new Set(filesFromPackageJson.concat(readmePath)),
+  );
 
-    filesToPublish.forEach((fileName) => {
-      const filePath = fileName.replace(/^\//, "./");
-      const outPath = `${outdir}/${fileName}`;
-      fs.cp(filePath, outPath, { recursive: true }, (err) => {
-        if (err) throw err;
-      });
-    });
+  await Promise.all(
+    filesToPublish.map((fileName) =>
+      fs.promises.cp(fileName.replace(/^\//, "./"), `${outdir}/${fileName}`, {
+        recursive: true,
+      }),
+    ),
+  );
 
-    const exports: PackageExports = {
-      ".": { import: "./src/index.js" },
+  const exports: PackageExports = Object.fromEntries(
+    Object.entries(
+      sourceExports ?? { ".": "./src/index.ts" },
+    ).map(([subpath, target]) => {
+      const importPath = typeof target === "string" ? target : target.import;
+      return [subpath, { import: importPath.replace(/\.tsx?$/, ".js") }];
+    }),
+  );
+
+  if (style) {
+    const styleExport = {
+      types: `${style}.d.ts`,
+      import: style,
     };
+    exports["./style"] = styleExport;
+    exports[style] = styleExport;
+  }
 
-    if (style) {
-      exports['./style'] = { import: style };
-    }
+  const newPackage: Json = {
+    ...packageRest,
+    files: filesToPublish.concat(additionalFiles, ["src"]),
+    exports,
+    main: "./src/index.js",
+    module: "./src/index.js",
+    name: scopedPackageName,
+    style,
+    type: "module",
+  };
 
-    const newPackage: Json = {
-      ...packageRest,
-      files: filesToPublish.concat(additionalFiles, ["src"]),
-      exports,
-      main: "./src/index.js",
-      module: "./src/index.js",
-      name: scopedPackageName,
-      style,
-      type: "module",
-    };
-
-    fs.writeFile(
-      `${outdir}/package.json`,
-      JSON.stringify(newPackage, null, 2),
-      (err) => {
-        if (err) reject(err);
-        else resolve();
-      },
-    );
-  });
+  await fs.promises.writeFile(
+    `${outdir}/package.json`,
+    JSON.stringify(newPackage, null, 2),
+  );
 }

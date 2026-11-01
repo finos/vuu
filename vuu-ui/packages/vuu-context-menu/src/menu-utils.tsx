@@ -1,4 +1,5 @@
-import { Menu, MenuItem, MenuPanel, MenuTrigger } from "@salt-ds/core";
+import { Divider, Menu, MenuItem, MenuPanel, MenuTrigger } from "@salt-ds/core";
+import { Fragment } from "react";
 import type {
   MenuRpcResponse,
   OpenDialogActionWithSchema,
@@ -12,12 +13,15 @@ import { MenuActionHandler } from "./ContextMenuProvider";
 export interface ContextMenuItemBase {
   className?: string;
   disabled?: boolean;
+  /** Renders a divider above the item, to separate groups of items. */
+  dividerBefore?: boolean;
   icon?: string;
   label: string;
   location?: string;
 }
 
 export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
+  disabled?: boolean;
   id: string;
   options?: unknown;
 }
@@ -49,6 +53,19 @@ export const menuItemsFromMenuDescriptors = (
   menuActionHandler: MenuActionHandler,
 ) => {
   const fromDescriptor = (
+    menuItem: ContextMenuItemDescriptor,
+    index: number,
+  ) =>
+    menuItem.dividerBefore ? (
+      <Fragment key={index}>
+        <Divider aria-hidden className="vuuContextMenuDivider" />
+        {itemFromDescriptor(menuItem, index)}
+      </Fragment>
+    ) : (
+      itemFromDescriptor(menuItem, index)
+    );
+
+  const itemFromDescriptor = (
     menuItem: ContextMenuItemDescriptor,
     index: number,
   ) =>

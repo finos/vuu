@@ -213,6 +213,52 @@ describe("EditSession lifecycle", () => {
     });
   });
 
+  it("reports a server rejection against the final column and allows a retry", async () => {
+    const addRow = vi
+      .fn<AddRow>()
+      .mockResolvedValueOnce({
+        errorMessage: "Insert rejected",
+        type: "ERROR_RESULT",
+      })
+      .mockResolvedValue(SUCCESS);
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
+    editSession.configureNewRow(["id", "name"]);
+    editSession.setNewRowValue("id", 7);
+    editSession.setNewRowValue("name", "Alice");
+
+    await expect(editSession.addNewRow()).resolves.toMatchObject({
+      type: "ERROR_RESULT",
+    });
+    expect(editSession.newRowState).toMatchObject({
+      errors: { name: "Insert rejected" },
+      rowErrorColumn: "name",
+    });
+
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledTimes(2);
+    expect(editSession.newRowState.errors).toEqual({});
+  });
+
+  it("clears a server rejection when any draft value changes", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue({
+      errorMessage: "Insert rejected",
+      type: "ERROR_RESULT",
+    });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
+    editSession.configureNewRow(["id", "name"]);
+    editSession.setNewRowValue("id", 7);
+    editSession.setNewRowValue("name", "Alice");
+    await editSession.addNewRow();
+
+    editSession.setNewRowValue("id", 8);
+    expect(editSession.newRowState.errors).toEqual({});
+    expect(editSession.newRowState.rowErrorColumn).toBeUndefined();
+  });
+
   it("prevents duplicate new-row submissions", async () => {
     const pendingAdd = deferred<RpcResultSuccess>();
     const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);

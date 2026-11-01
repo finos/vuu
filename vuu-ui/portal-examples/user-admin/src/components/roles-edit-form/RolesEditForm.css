@@ -1,0 +1,11 @@
+.vuuRolesEditForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+}
+
+.vuuRolesEditForm-clientField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+}

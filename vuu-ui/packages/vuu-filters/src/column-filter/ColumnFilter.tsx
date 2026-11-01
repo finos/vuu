@@ -4,9 +4,9 @@ import {
   useForkRef,
 } from "@salt-ds/core";
 import {
-  DataItemEditControlProps,
-  getDataItemEditControl,
-} from "@vuu-ui/vuu-data-react";
+  type FilterControlProps,
+  getFilterControl,
+} from "../filter-control/get-filter-control";
 import cx from "clsx";
 import { ForwardedRef, forwardRef, useMemo, useRef } from "react";
 import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
@@ -27,7 +27,7 @@ export interface ColumnFilterProps
   extends ColumnFilterHookProps,
     Omit<SegmentedButtonGroupProps, "defaultValue">,
     Pick<
-      DataItemEditControlProps,
+      FilterControlProps,
       "TypeaheadProps" | "labels" | "table" | "values" | "variant"
     > {
   /**
@@ -157,7 +157,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
           variant="dropdown"
         />
       ) : null}
-      {getDataItemEditControl({
+      {getFilterControl({
         InputProps,
         TypeaheadProps,
         commitWhenCleared: true,
@@ -169,7 +169,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         variant,
       })}
       {isBetweenOperator(operator)
-        ? getDataItemEditControl({
+        ? getFilterControl({
             InputProps: InputPropsRange,
             className: `${classBase}-rangeHigh`,
             commitWhenCleared: true,

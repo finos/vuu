@@ -12,9 +12,10 @@
     border-radius: 0 0 6px 6px;
     padding: 31px 0 0 0;
 
-    & > .vuuTabs-tabPanel {
-      border: solid 1px var(--salt-separable-primary-borderColor);
-      border-top: none !important;
+    .vuuWorkspaceHost-content {
+      border-style: none solid solid solid;
+      border-width: 1px;
+      border-color: var(--salt-separable-primary-borderColor);
       border-radius: 0 0 6px 6px;
       padding: 0 8px 8px 8px;
     }

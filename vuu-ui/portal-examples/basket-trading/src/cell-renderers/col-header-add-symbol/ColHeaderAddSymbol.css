@@ -1,0 +1,28 @@
+.vuuColHeaderAddSymbol {
+  align-items: center;
+  display: flex;
+  flex: 0 0 20px;
+  height: 20px;
+  min-width: 0;
+}
+
+.vuuColHeaderAddSymbol .saltButton {
+  --saltButton-height: 20px;
+  --saltButton-width: 20px;
+  --saltButton-minWidth: 20px;
+  --saltButton-padding: 0;
+  --vuu-icon-size: 12px;
+  --vuu-icon-height: 12px;
+  --vuu-icon-width: 12px;
+  flex: 0 0 20px;
+  height: 20px;
+  min-height: 0;
+  margin-left: auto;
+  min-width: 20px;
+  padding: 0;
+  width: 20px;
+}
+
+.vuuBasketConstituentSearch {
+  --vuuTableSearch-padding: 12px 4px;
+}

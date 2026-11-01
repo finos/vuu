@@ -24,6 +24,7 @@ import type {
   VuuServerMessage,
   VuuTableListResponse,
   VuuTableMetaResponse,
+  VuuLoginSuccessResponse,
   VuuLinkDescriptor,
   VuuTable,
   VuuRpcRequest,
@@ -119,7 +120,9 @@ type PendingRequest<T = unknown> = {
 };
 
 interface PendingLogin {
-  resolve: (sessionId: string) => void;
+  resolve: (
+    loginResponse: VuuLoginSuccessResponse & { sessionId: string },
+  ) => void;
   reject: (rejectReason: string) => void;
 }
 
@@ -134,6 +137,8 @@ export class ServerProxy {
   private postMessageToClient: PostMessageToClientCallback;
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
+  /** server viewport ids sent REMOVE_VP, awaiting REMOVE_VP_SUCCESS */
+  private pendingRemovals = new Set<string>();
   private authToken = "";
   private pendingLogin?: PendingLogin;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,12 +175,17 @@ export class ServerProxy {
     // The "active" viewports are those the user has on their open layout
     // Reconnect these first.
     const [activeViewports, inactiveViewports] = partition(
-      Array.from(this.viewports.values()),
+      Array.from(this.viewports.values()).filter(
+        ({ serverViewportId }) =>
+          serverViewportId === undefined ||
+          !this.pendingRemovals.has(serverViewportId),
+      ),
       isActiveViewport,
     );
 
     this.viewports.clear();
     this.mapClientToServerViewport.clear();
+    this.pendingRemovals.clear();
 
     const reconnectViewports = (viewports: Viewport[]) => {
       viewports.forEach((viewport) => {
@@ -208,7 +218,9 @@ export class ServerProxy {
     }, 2000);
   };
 
-  public async login(authToken?: string): Promise<string | undefined> {
+  public async login(
+    authToken?: string,
+  ): Promise<(VuuLoginSuccessResponse & { sessionId: string }) | undefined> {
     if (authToken) {
       this.authToken = authToken;
       return new Promise((resolve, reject) => {
@@ -227,7 +239,10 @@ export class ServerProxy {
   }
 
   public disconnect() {
-    this.viewports.forEach((viewport) => {
+    this.viewports.forEach((viewport, viewportId) => {
+      if (this.pendingRemovals.has(viewportId)) {
+        return;
+      }
       const { clientViewportId } = viewport;
       this.unsubscribe(clientViewportId);
       this.postMessageToClient({
@@ -386,6 +401,10 @@ export class ServerProxy {
     const serverViewportId =
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
+      if (this.pendingRemovals.has(serverViewportId)) {
+        return;
+      }
+      this.pendingRemovals.add(serverViewportId);
       info?.(
         `Unsubscribe Message (Client to Server):
         ${serverViewportId}`,
@@ -919,18 +938,17 @@ export class ServerProxy {
       case "LOGIN_SUCCESS":
         if (sessionId) {
           this.sessionId = sessionId;
-          this.pendingLogin?.resolve(sessionId);
+          const loginResponse = { ...body, sessionId };
+          this.pendingLogin?.resolve(loginResponse);
           this.pendingLogin = undefined;
-          this.postMessageToClient({
-            ...body,
-            sessionId,
-          });
+          this.postMessageToClient(loginResponse);
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
         }
         break;
       case "REMOVE_VP_SUCCESS":
         {
+          this.pendingRemovals.delete(body.viewPortId);
           const viewport = viewports.get(body.viewPortId);
           if (viewport) {
             this.mapClientToServerViewport.delete(viewport.clientViewportId);

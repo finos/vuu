@@ -1,8 +1,8 @@
 import {
   DataEditingProvider,
   DirectEditSession,
+  getDataItemEditControl,
 } from "@vuu-ui/vuu-data-editing";
-import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { TableCell } from "@vuu-ui/vuu-table";

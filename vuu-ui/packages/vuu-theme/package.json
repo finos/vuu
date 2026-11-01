@@ -1,13 +1,14 @@
 {
   "name": "@vuu-ui/vuu-theme",
-  "version": "4.1.0",
+  "version": "5.0.0-alpha.1",
   "license": "Apache-2.0",
   "style": "./index.css",
   "type": "module",
   "files": [
     "index.css",
-    "NunitoSans.css",
     "reset.css",
+    "index.css.d.ts",
+    "NunitoSans.css",
     "css",
     "fonts"
   ],

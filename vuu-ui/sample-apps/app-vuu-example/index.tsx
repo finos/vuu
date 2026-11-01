@@ -1,42 +1,24 @@
 import {
-  ConnectionManager,
-  ConnectionStatus,
-  LostConnectionHandler,
-  VuuAuthenticator,
-  VuuAuthProvider,
-  VuuAuthTokenIssuePolicy,
-} from "@vuu-ui/vuu-data-remote";
-import { isLoginErrorMessage, PageVisibilityObserver } from "@vuu-ui/vuu-utils";
+  AuthenticationErrorBoundary,
+  AuthenticationProvider,
+  DirectVuuSessionResolver,
+  VuuAuthHandler,
+  VuuConnectionError,
+  VuuConnectionRegistry,
+} from "@vuu-ui/core";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
+import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
 import { App } from "./src/App";
 
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 
-const CONNECTION_FAILED = "connection-failed";
-const isConnectionFailedMessage = (err) =>
-  typeof err === "string" && err.includes(CONNECTION_FAILED);
-
-const { websocketUrl } = await vuuConfig;
-
-const vuuAuth = new VuuAuthenticator({
-  authProvider: new VuuAuthProvider("/api/authn"),
-  authTokenIssuePolicy: VuuAuthTokenIssuePolicy.UsernamePassword,
-  websocketUrl,
+const config = await vuuConfig;
+const VUU_CONNECTION_ID = "vuu-sample-app";
+const registry = new VuuConnectionRegistry({
+  sessionResolver: new DirectVuuSessionResolver(),
 });
-
-const lostConnectionHandler = new LostConnectionHandler(vuuAuth);
-
-const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
-  if (connectionStatus === "disconnected") {
-    // do we care about the reason ?
-    lostConnectionHandler.reconnect().then((status) => {
-      if (status === CONNECTION_FAILED) {
-        throw new Error(status);
-      }
-    });
-  }
-};
 
 new PageVisibilityObserver({
   onHidden: () => {
@@ -47,20 +29,53 @@ new PageVisibilityObserver({
   },
 });
 
+const ConnectionErrorMessage = ({ error }: { error: Error }) => {
+  // Invalid or expired token, e.g. the token was issued before the VUU
+  // server was restarted. The user must log in again to get a new one.
+  if (error instanceof VuuConnectionError && error.loginError) {
+    return (
+      <div role="alert">
+        <p>VUU server rejected login: {error.loginError}</p>
+        <button
+          type="button"
+          onClick={() => new VuuAuthHandler(config).logout()}
+        >
+          Log in again
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div role="alert">
+      <p>{error.message}</p>
+      <button type="button" onClick={() => window.location.reload()}>
+        Retry
+      </button>
+    </div>
+  );
+};
+
 const container = document.getElementById("root");
 if (!container) {
   throw Error("No react root defined in page");
 }
 try {
-  const [{ userName }] = await vuuAuth.login();
-  ConnectionManager.on("connection-status", onConnectionStatusChange);
   const root = createRoot(container);
-  root.render(<App logout={vuuAuth.logout} user={{ username: userName }} />);
+  root.render(
+    <AuthenticationErrorBoundary
+      fallback={(error) => <ConnectionErrorMessage error={error} />}
+    >
+      <AuthenticationProvider
+        authConfig={config}
+        authHandlerClass={VuuAuthHandler}
+        connectionId={VUU_CONNECTION_ID}
+        mode="identity"
+        registry={registry}
+      >
+        <App />
+      </AuthenticationProvider>
+    </AuthenticationErrorBoundary>,
+  );
 } catch (err: unknown) {
-  if (isLoginErrorMessage(err) || isConnectionFailedMessage(err)) {
-    const root = createRoot(container);
-    root.render(<div>{`${err}`}</div>);
-  } else {
-    vuuAuth.logout();
-  }
+  console.error(err);
 }

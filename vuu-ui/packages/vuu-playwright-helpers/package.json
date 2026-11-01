@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-playwright-helpers",
-  "version": "4.1.0",
+  "version": "5.0.0-alpha.1",
   "author": "heswell",
   "license": "Apache-2.0",
   "main": "src/index.ts",
@@ -9,7 +9,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@vuu-ui/vuu-protocol-types": "4.1.0"
+    "@vuu-ui/vuu-protocol-types": "5.0.0-alpha.1"
   },
   "peerDependencies": {
     "@playwright/test": "^1.62.1"

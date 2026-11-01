@@ -1,0 +1,244 @@
+.vuuPortalAppSwitcher {
+  width: 100%;
+
+  &.saltVerticalNavigation {
+    ol {
+      gap: 20px;
+    }
+  }
+
+  &.vuuPortalAppSwitcher-dashboard {
+    --dashboardNavItemIcon-size: var(--vuuDashboardNavIcon-size, 90px);
+    --dashboardNavItem-size: calc(var(--dashboardNavItemIcon-size) + 40px);
+    --dashboardNavItem-height: var(--vuuDashboardNavItem-height, var(--dashboardNavItem-size));
+    --dashboardNavItem-width: var(--vuuDashboardNavItem-width, var(--dashboardNavItem-size));
+    align-items: center;
+    display: grid;
+    gap: var(--salt-spacing-400);
+    grid-template-columns: repeat(auto-fit, var(--dashboardNavItem-width));
+    grid-auto-rows: var(--dashboardNavItem-height);
+    justify-content: center;
+
+    .vuuDashboardNavItem {
+      background-color: var(--vuuDashboardNavItem-background);
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--salt-spacing-200);
+      height: 100%;
+      justify-content: space-around;
+      text-decoration: none;
+
+      .vuuIcon {
+        --vuu-icon-size: var(--dashboardNavItemIcon-size);
+      }
+
+      .vuuDashboardNavItem-label {
+        font-size: var(--vuuDashboardNavItem-fontSize, 16px);
+        text-decoration: none;
+      }
+    }
+  }
+
+  &.vuuPortalAppSwitcher-icon-only {
+    width: 36px;
+
+    .vuuIconNavItem {
+      display: flex;
+      width: fit-content;
+      z-index: 100;
+
+      .vuuIconNavItem-flyout {
+        align-items: center;
+        background-color: var(--vuuNavItem-background, var(--salt-actionable-bold-background));
+        border-radius: 18px;
+        display: flex;
+        column-gap: 0;
+        transition: background-color 0.25s linear;
+        width: fit-content;
+
+        .vuuIcon {
+          height: 36px;
+          width: 36px;
+          --vuu-icon-left: 6px;
+          --vuu-icon-top: 6px;
+        }
+
+        .vuuIconNavItem-label {
+          display: inline-block;
+          font-size: var(--vuuNavItem-fontSize, 16px);
+          font-weight: bold;
+          overflow: hidden;
+          text-align: right;
+          text-decoration: none;
+          transition: width 0.125s ease-out;
+          transition-delay: 0s;
+          width: 0;
+        }
+      }
+
+      &.vuuIconNavItem-active {
+        .vuuIconNavItem-flyout {
+          background-color: var(--vuuNavItem-selected-background, var(--salt-selectable-foreground-selected));
+          color: var(--vuuNavItem-selected-color, white);
+
+          .vuuIcon {
+            --vuu-icon-color: white;
+          }
+        }
+      }
+
+      &:hover {
+        .vuuIconNavItem-flyout {
+          background-color: var(--vuuNavItem-selected-background, var(--salt-selectable-foreground-selected));
+          color: var(--vuuNavItem-selected-color, white);
+          interpolate-size: allow-keywords;
+
+          .vuuIcon {
+            --vuu-icon-color: var(--vuuNavItem-selected-color, white);
+          }
+          .vuuIconNavItem-label {
+            transition-delay: 0.6s;
+            width: auto;
+          }
+        }
+      }
+    }
+  }
+
+  .saltVerticalNavigationItemContent {
+    align-items: center;
+    min-height: 50px;
+    padding-left: calc(var(--verticalNavigationItem-depth) * 38px);
+
+    .saltVerticalNavigationItemTrigger {
+      gap: var(--salt-spacing-200);
+    }
+
+    .vuuIcon {
+      --vuu-icon-color: white;
+      --vuu-icon-size: 20px;
+      --vuu-icon-top: -2px;
+    }
+
+    .saltVerticalNavigationItemLabel {
+      color: var(--vuuPortalNav-itemLabel-color);
+      text-transform: uppercase;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &.saltVerticalNavigationItemContent-active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.vuuNavItem-icon {
+  display: inline-flex;
+  position: relative;
+}
+
+.vuuNavItem-unavailable {
+  cursor: default;
+
+  :is(
+    .vuuIcon,
+    .vuuIconNavItem-label,
+    .vuuDashboardNavItem-label,
+    .saltVerticalNavigationItemLabel
+  ) {
+    opacity: var(--vuuNavItem-unavailable-opacity, 0.45);
+  }
+
+  .vuuIcon {
+    filter: grayscale(1);
+  }
+}
+
+.vuuNavItemPresence-statusBadge {
+  align-items: center;
+  background: var(--salt-container-primary-background);
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  line-height: 0;
+
+  .vuuNavItem-icon > & {
+    position: absolute;
+    right: var(--vuuNavItem-badge-offset, -4px);
+    top: var(--vuuNavItem-badge-offset, -4px);
+  }
+}
+
+.vuuNavItemPresence-unreadBadge {
+  display: inline-flex;
+  line-height: 0;
+
+  /* Vuu theme does not yet define --salt-sentiment-accent-background */
+  .saltBadge-badge {
+    background: var(--salt-sentiment-accent-background, var(--salt-palette-accent));
+  }
+
+  .vuuNavItem-icon > & {
+    position: absolute;
+    right: var(--vuuNavItem-badge-offset, -4px);
+    top: var(--vuuNavItem-badge-offset, -4px);
+  }
+
+  .saltVerticalNavigationItemTrigger > & {
+    margin-inline-start: auto;
+  }
+}
+
+.vuuNavItemPresence-overlay {
+  background: var(--salt-container-primary-background);
+  border: var(--salt-size-border) var(--salt-container-primary-borderStyle)
+    var(--salt-container-primary-borderColor);
+  border-radius: var(--salt-palette-corner, 0);
+  box-shadow: var(--salt-overlayable-shadow-popout);
+  color: var(--salt-content-primary-foreground);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--salt-text-fontSize);
+  gap: var(--salt-spacing-200);
+  margin: var(--salt-spacing-100);
+  max-width: var(--vuuNavItem-unavailableOverlay-width, 320px);
+  padding: var(--salt-spacing-200);
+  text-transform: none;
+  width: max-content;
+  z-index: var(--salt-zIndex-popout, 1100);
+
+  .vuuNavItemPresence-module {
+    display: flex;
+    flex-direction: column;
+    gap: var(--salt-spacing-50);
+  }
+
+  .vuuNavItemPresence-headline {
+    align-items: center;
+    display: flex;
+    font-weight: var(--salt-text-fontWeight-strong);
+    gap: var(--salt-spacing-100);
+  }
+
+  :is(
+    .vuuNavItemPresence-since,
+    .vuuNavItemPresence-retry,
+    .vuuNavItemPresence-details
+  ) {
+    color: var(--salt-content-secondary-foreground);
+  }
+
+  .vuuNavItemPresence-details summary {
+    cursor: pointer;
+  }
+
+  .vuuNavItemPresence-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--salt-spacing-100);
+  }
+}

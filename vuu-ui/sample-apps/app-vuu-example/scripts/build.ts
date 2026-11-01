@@ -1,120 +1,269 @@
-import fs from "node:fs/promises";
+import { createRsbuild } from "@rsbuild/core";
+import { pluginReact } from "@rsbuild/plugin-react";
+import { cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { parseArgs } from "node:util";
-import {
-  addStylesheetLinks,
-  buildSampleApp,
-  entryCss,
-} from "../../../scripts/build-sample-app.ts";
+import { fileURLToPath } from "node:url";
+import { getCommandLineArg } from "../../../scripts/utils.ts";
+import { pluginCssInline } from "../../../tools/rsbuild-plugin-inline-css/src/index.js";
 
-const appDir = path.resolve(import.meta.dirname, "..");
-const outDir = path.resolve(appDir, "../../deployed_apps/app-vuu-example");
-const appEntries = ["index", "login"];
+const appDirectory = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+);
+const outputDirectory = path.resolve(
+  appDirectory,
+  "../../deployed_apps/app-vuu-example",
+);
+const defaultFeatures =
+  "feature-filter-table,feature-instrument-tiles,feature-basket-trading";
 
-const { values: args } = parseArgs({
-  options: {
-    config: { type: "string", default: "./config/localhost.config.json" },
-    dev: { type: "boolean", default: false },
-    features: {
-      type: "string",
-      default:
-        "feature-filter-table,feature-instrument-tiles,feature-basket-trading",
-    },
-    insecure: { type: "boolean", default: false },
-    url: { type: "string", default: "wss://localhost:8090/websocket" },
-  },
-});
+const websocketProtocol = "ws";
 
-const WS = "ws"; // to stop semGrep complaining
-function toWebsocketUrl(url: string, insecure: boolean) {
-  if (url.startsWith(`${WS}s://`) && insecure) {
+function toWebsocketUrl(url: string | undefined, insecure: boolean) {
+  if (url === undefined) {
+    return undefined;
+  }
+
+  if (url.startsWith(`${websocketProtocol}s://`) && insecure) {
     console.warn(
       "WARN: Passed websocket url is secure. Ignoring `--insecure` flag.",
     );
-  } else if (url.startsWith(`${WS}://`) && !insecure) {
+    return url;
+  }
+
+  if (url.startsWith(`${websocketProtocol}://`) && !insecure) {
     console.warn(
       `WARN: Use '--insecure' flag if websocket connection (${url}) is not secure.`,
     );
+    return url;
   }
-  return new RegExp(`^${WS}s?://`).test(url)
+
+  return url.match(new RegExp(`^${websocketProtocol}s?://`))
     ? url
-    : `${WS}${insecure ? "://" : "s://"}${url}`;
+    : `${websocketProtocol}${insecure ? "://" : "s://"}${url}`;
 }
 
-const readJson = async (filePath: string) =>
-  JSON.parse(await fs.readFile(filePath, "utf8"));
+function resolveConfigPath(configPath: string | undefined) {
+  if (configPath === undefined) {
+    return path.join(appDirectory, "config/localhost.config.json");
+  }
 
-type FeatureConfig = {
-  css?: string;
-  name: string;
-  title: string;
-  url: string;
+  return path.isAbsolute(configPath)
+    ? configPath
+    : path.resolve(appDirectory, configPath);
+}
+
+async function readJson<T>(filePath: string): Promise<T> {
+  return JSON.parse(await readFile(filePath, "utf8")) as T;
+}
+
+async function fileExists(filePath: string) {
+  try {
+    await stat(filePath);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return false;
+    }
+    throw error;
+  }
+}
+
+type FeaturePackage = {
+  description?: string;
+  vuu?: Record<string, unknown>;
 };
 
-async function writeConfigJson(features: FeatureConfig[]) {
-  const configJson = await readJson(path.resolve(appDir, args.config));
-  configJson.ssl = !args.insecure;
-  configJson.websocketUrl = toWebsocketUrl(args.url, args.insecure);
-  configJson.features ??= {};
-  for (const feature of features) {
-    configJson.features[feature.name] = feature;
+type RsbuildManifest = {
+  entries: Record<
+    string,
+    {
+      initial?: {
+        css?: string[];
+      };
+    }
+  >;
+};
+
+async function addEntryStylesheets(
+  manifest: RsbuildManifest,
+  entryName: string,
+  htmlFileName: string,
+) {
+  const stylesheets = manifest.entries[entryName]?.initial?.css ?? [];
+  const htmlPath = path.join(outputDirectory, htmlFileName);
+  const html = await readFile(htmlPath, "utf8");
+  const links = stylesheets
+    .map((stylesheet) => `<link rel="stylesheet" href="${stylesheet}" />`)
+    .join("\n    ");
+
+  await writeFile(htmlPath, html.replace("</head>", `    ${links}\n  </head>`));
+}
+
+async function writeFeatureEntriesToConfigJson(
+  featureEntries: string[],
+  configFile: string,
+  insecure: boolean,
+  websocketUrl: string | undefined,
+) {
+  const configJson = await readJson<Record<string, unknown>>(configFile);
+  const features =
+    (configJson.features as
+      | Record<string, Record<string, unknown>>
+      | undefined) ?? {};
+
+  configJson.ssl = !insecure;
+  configJson.authUrl ??= "login.html";
+  configJson.restUrl ??= "/api/authn";
+  configJson.features = features;
+  if (websocketUrl !== undefined) {
+    configJson.websocketUrl = websocketUrl;
   }
-  await fs.writeFile(
-    path.join(outDir, "config.json"),
-    JSON.stringify(configJson, null, 2),
+
+  await Promise.all(
+    featureEntries.map(async (featureEntry) => {
+      const featureDirectory = path.join(appDirectory, "..", featureEntry);
+      const featureName = featureEntry.replace(/^feature-/, "");
+      const packageJson = await readJson<FeaturePackage>(
+        path.join(featureDirectory, "package.json"),
+      );
+      const featureOutputDirectory = path.join(outputDirectory, featureEntry);
+      const cssPath = path.join(featureOutputDirectory, "index.css");
+
+      features[featureName] = {
+        title: packageJson.description ?? featureName,
+        name: featureName,
+        url: `../${featureEntry}/index.js`,
+        ...((await fileExists(cssPath))
+          ? { css: `./${featureEntry}/index.css` }
+          : {}),
+        ...packageJson.vuu,
+      };
+    }),
+  );
+
+  await writeFile(
+    path.join(outputDirectory, "config.json"),
+    `${JSON.stringify(configJson, null, 2)}\n`,
   );
 }
 
 async function main() {
-  const featureFolders = args.features.split(",");
-  const entries: Record<string, string> = {};
-  for (const name of appEntries) {
-    entries[`app-vuu-example/${name}`] = `./${name}.tsx`;
-  }
-  for (const folder of featureFolders) {
-    entries[`${folder}/index`] = `../${folder}/index.ts`;
-  }
+  const insecure = getCommandLineArg("--insecure") !== undefined;
+  const development =
+    getCommandLineArg("--watch") !== undefined ||
+    getCommandLineArg("--dev") !== undefined;
+  const websocketUrl = toWebsocketUrl(
+    getCommandLineArg("--url", true, "wss://localhost:8090/websocket"),
+    insecure,
+  );
+  const featureEntries = (
+    getCommandLineArg("--features", true, defaultFeatures) ?? defaultFeatures
+  ).split(",");
+  const configFile = resolveConfigPath(getCommandLineArg("--config", true));
 
-  console.log(`[BUILD] ${args.dev ? "development" : "production"}`);
-  const start = performance.now();
-  const manifest = await buildSampleApp({
-    appDir,
-    development: args.dev,
-    entries,
-    outDir,
+  const sourceEntries = Object.fromEntries([
+    ["app-vuu-example/index", "./index.tsx"],
+    ["app-vuu-example/login", "./login.tsx"],
+    ...featureEntries.map((featureEntry) => [
+      `${featureEntry}/index`,
+      `../${featureEntry}/index.ts`,
+    ]),
+  ]);
+
+  const rsbuild = await createRsbuild({
+    config: {
+      root: appDirectory,
+      source: {
+        entry: sourceEntries,
+        define: {
+          "process.env.NODE_ENV": JSON.stringify(
+            development ? "development" : "production",
+          ),
+          "process.env.NODE_DEBUG": "false",
+        },
+      },
+      output: {
+        cleanDistPath: true,
+        distPath: {
+          root: outputDirectory,
+          css: "./",
+          js: "./",
+        },
+        filenameHash: false,
+        minify: !development,
+        manifest: {
+          filename: "rsbuild-manifest.json",
+        },
+        sourceMap: true,
+        target: "web",
+      },
+      performance: {
+        chunkSplit: {
+          strategy: "split-by-experience",
+        },
+      },
+      plugins: [
+        pluginReact(),
+        pluginCssInline({
+          include: [
+            "/packages/core/",
+            "/packages/grid-layout/",
+            "/packages/vuu-datatable/",
+            "/packages/vuu-context-menu/",
+            "/packages/vuu-data-react/",
+            "/packages/vuu-filters/",
+            "/packages/vuu-layout/",
+            "/packages/vuu-notifications/",
+            "/packages/vuu-popups/",
+            "/packages/vuu-shell/",
+            "/packages/vuu-chart/",
+            "/packages/vuu-table/",
+            "/packages/vuu-table-extras/",
+            "/packages/vuu-ui-controls/",
+          ],
+        }),
+      ],
+      tools: {
+        rspack: {
+          optimization: {
+            runtimeChunk: "single",
+          },
+          output: {
+            chunkFormat: "module",
+            chunkLoading: "import",
+            library: {
+              type: "module",
+            },
+          },
+        },
+      },
+    },
   });
 
-  for (const name of appEntries) {
-    await addStylesheetLinks(
-      path.join(outDir, `${name}.html`),
-      entryCss(manifest, `app-vuu-example/${name}`),
-    );
-  }
-
-  const features: FeatureConfig[] = [];
-  for (const folder of featureFolders) {
-    const { description, vuu } = await readJson(
-      path.join(appDir, "..", folder, "package.json"),
-    );
-    const name = folder.replace(/^feature-/, "");
-    const css = entryCss(manifest, `${folder}/index`);
-    if (css.length > 1) {
-      throw Error(`feature ${folder} has more than one css file`);
-    }
-    features.push({
-      title: description ?? name,
-      name,
-      // Feature bundles are imported by shell code in a shared chunk at the
-      // root of outDir, css is fetched relative to the page.
-      url: `./${folder}/index.js`,
-      css: css[0] && `./${css[0]}`,
-      ...vuu,
-    });
-  }
-  await writeConfigJson(features);
-
-  console.log(
-    `build took ${((performance.now() - start) / 1000).toFixed(1)}s -> ${path.relative(process.cwd(), outDir)}`,
+  await rsbuild.build();
+  await Promise.all(
+    Object.keys(sourceEntries).map((entryName) =>
+      rm(path.join(outputDirectory, `${entryName}.html`), { force: true }),
+    ),
+  );
+  await mkdir(outputDirectory, { recursive: true });
+  await cp(path.join(appDirectory, "public"), outputDirectory, {
+    force: true,
+    recursive: true,
+  });
+  const manifest = await readJson<RsbuildManifest>(
+    path.join(outputDirectory, "rsbuild-manifest.json"),
+  );
+  await Promise.all([
+    addEntryStylesheets(manifest, "app-vuu-example/index", "index.html"),
+    addEntryStylesheets(manifest, "app-vuu-example/login", "login.html"),
+  ]);
+  await writeFeatureEntriesToConfigJson(
+    featureEntries,
+    configFile,
+    insecure,
+    websocketUrl,
   );
 }
 

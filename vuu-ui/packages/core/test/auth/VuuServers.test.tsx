@@ -1,0 +1,472 @@
+import { act, Component, type ReactNode } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  AuthenticationProvider,
+  useAuthenticatedUser,
+  useVuuConnectionId,
+  useVuuServers,
+} from "../../src/auth/AuthenticationProvider";
+import type { AuthConfig } from "../../src/auth/AuthConfig";
+import type { AuthHandler } from "../../src/auth/AuthHandler";
+import {
+  VuuConnectionRegistry,
+  type VuuConnectionClient,
+} from "../../src/connection-management/VuuConnectionRegistry";
+import {
+  VuuServerMonitorProvider,
+  useModuleServerStatus,
+} from "../../src/server-monitor/VuuServerMonitorProvider";
+import type { PortalModuleRegistry } from "../../src/RemoteModuleDescriptor";
+import type {
+  LocalVuuServer,
+  VuuServerDescriptor,
+} from "../../src/VuuServerDescriptor";
+import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
+
+/** Lets React flush pending work until `assertion` passes. */
+const waitForAct = async (assertion: () => void, timeout = 1000) => {
+  const start = Date.now();
+  for (;;) {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    try {
+      assertion();
+      return;
+    } catch (error) {
+      if (Date.now() - start > timeout) {
+        throw error;
+      }
+    }
+  }
+};
+
+/** The config.json served by each module, keyed by its URL. */
+const remoteConfigs = new Map<string, string>();
+// Configs are cached by URL, so every module gets a URL of its own.
+let urlSequence = 0;
+
+const moduleDescriptor = (
+  name: string,
+  vuu?: RemoteModuleConnection,
+  config = JSON.stringify(vuu ?? {}),
+): PortalModuleRegistry["modules"][number] => {
+  const mfUrl = `http://localhost:5010/${name}-${urlSequence++}`;
+  remoteConfigs.set(`${mfUrl}/config.json`, config);
+  return {
+    accessRole: `${name}-access`,
+    clientIdentifier: name,
+    description: name,
+    id: name,
+    mfComponent: name,
+    mfScope: name,
+    mfUrl,
+    name,
+    navLocation: `/${name}`,
+    path: `/${name}`,
+    title: name,
+    version: 1,
+  };
+};
+
+/** Marks its subtree with the connectionId of the local server it belongs to. */
+const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
+  <div data-local-server={useVuuConnectionId()}>{children}</div>
+);
+
+const localServer = (connectionId: string): LocalVuuServer => ({
+  connectionId,
+  DataSourceProvider: LocalDataSourceProvider,
+});
+
+let servers: VuuServerDescriptor[] | undefined;
+
+const ServersProbe = () => {
+  servers = useVuuServers();
+  return null;
+};
+
+const ConnectionIdProbe = () => <output>{useVuuConnectionId()}</output>;
+
+const ModuleServerStatusProbe = () => {
+  const connectionId = useVuuConnectionId();
+  const status = useModuleServerStatus("module-admin");
+  const ordersStatus = useModuleServerStatus("orders");
+  return (
+    <>
+      <output>{`${connectionId}:${status.presence}`}</output>
+      <span data-orders-status={ordersStatus.presence}>
+        {ordersStatus.detail?.reason}
+      </span>
+    </>
+  );
+};
+
+const ShellProbe = ({ onRender }: { onRender: () => void }) => {
+  const user = useAuthenticatedUser();
+  onRender();
+  return <header>{user.userName}</header>;
+};
+
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { error?: Error }
+> {
+  state: { error?: Error } = {};
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    return this.state.error ? (
+      <output data-error={this.state.error.name}>
+        {this.state.error.message}
+      </output>
+    ) : (
+      this.props.children
+    );
+  }
+}
+
+describe("Vuu servers", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+    servers = undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) =>
+        remoteConfigs.has(url)
+          ? new Response(remoteConfigs.get(url))
+          : new Response("Not found", { status: 404 }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  describe("local mode", () => {
+    it("scopes a vuu-connection to the matching local server without a websocket", async () => {
+      const webSocketConstructor = vi.fn();
+      vi.stubGlobal("WebSocket", webSocketConstructor);
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider
+            localServers={[localServer("simul"), localServer("basket")]}
+            mode="local"
+          >
+            <AuthenticationProvider
+              connection={{ connectionId: "basket" }}
+              mode="vuu-connection"
+            >
+              <ConnectionIdProbe />
+            </AuthenticationProvider>
+          </AuthenticationProvider>,
+        );
+      });
+
+      expect(
+        container.querySelector('[data-local-server="basket"] output')
+          ?.textContent,
+      ).toBe("basket");
+      expect(webSocketConstructor).not.toHaveBeenCalled();
+    });
+
+    it("reports a configuration error when no local server matches", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider localServers={[]} mode="local">
+            <ErrorBoundary>
+              <AuthenticationProvider
+                connection={{ connectionId: "orders" }}
+                mode="vuu-connection"
+              >
+                <span>unreachable</span>
+              </AuthenticationProvider>
+            </ErrorBoundary>
+          </AuthenticationProvider>,
+        );
+      });
+
+      const error = container.querySelector("output");
+      expect(error?.dataset.error).toBe("AuthenticationConfigurationError");
+      expect(error?.textContent).toBe(
+        "No local Vuu server is registered for connection orders",
+      );
+    });
+
+    it("lists module servers that have a local implementation", async () => {
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider
+            localServers={[localServer("simul"), localServer("basket")]}
+            mode="local"
+            registry={{
+              modules: [
+                moduleDescriptor("baskets", { connectionId: "basket" }),
+                moduleDescriptor("no-vuu"),
+                moduleDescriptor("orders", { connectionId: "orders" }),
+                moduleDescriptor("tiles", { connectionId: "simul" }),
+                moduleDescriptor("basket-admin", { connectionId: "basket" }),
+              ],
+            }}
+          >
+            <ServersProbe />
+          </AuthenticationProvider>,
+        );
+      });
+
+      expect(servers).toEqual([
+        { connectionId: "basket", moduleTitles: ["baskets", "basket-admin"] },
+        { connectionId: "simul", moduleTitles: ["tiles"] },
+      ]);
+    });
+
+    it("omits modules whose config.json can't be loaded", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider
+            localServers={[localServer("simul")]}
+            mode="local"
+            registry={{
+              modules: [
+                moduleDescriptor("missing", undefined, "<!doctype html>"),
+                moduleDescriptor("tiles", { connectionId: "simul" }),
+              ],
+            }}
+          >
+            <ServersProbe />
+          </AuthenticationProvider>,
+        );
+      });
+
+      expect(servers).toEqual([
+        { connectionId: "simul", moduleTitles: ["tiles"] },
+      ]);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("is not valid JSON"),
+      );
+    });
+
+    it("lists no servers when no module has a vuu connection", async () => {
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider
+            localServers={[localServer("simul")]}
+            mode="local"
+            registry={{ modules: [moduleDescriptor("no-vuu")] }}
+          >
+            <ServersProbe />
+          </AuthenticationProvider>,
+        );
+      });
+
+      expect(servers).toEqual([]);
+    });
+  });
+
+  describe("identity mode", () => {
+    const authConfig: AuthConfig = {
+      authUrl: "https://portal.example.test/auth",
+      restUrl: "https://portal.example.test/api/authn",
+      websocketUrl: "wss://portal.example.test/websocket",
+    };
+
+    class TestAuthHandler implements AuthHandler {
+      async authenticate() {
+        return { user: { userName: "steve" } };
+      }
+      async getIdentityToken() {
+        return "identity-token";
+      }
+      async logout() {}
+    }
+
+    const renderWithRegistry = async (moduleRegistry: PortalModuleRegistry) => {
+      const connectionRegistry = {
+        acquire: vi.fn(async () => ({
+          authorizations: [],
+          moduleRegistry,
+          token: "vuu-token",
+          user: { userName: "steve" },
+        })),
+        disconnectAll: vi.fn(async () => undefined),
+        release: vi.fn(),
+        subscribe: vi.fn(() => () => undefined),
+      } as unknown as VuuConnectionRegistry;
+
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider
+            authConfig={authConfig}
+            authHandlerClass={TestAuthHandler}
+            mode="identity"
+            registry={connectionRegistry}
+          >
+            <ServersProbe />
+          </AuthenticationProvider>,
+        );
+      });
+    };
+
+    it("derives servers from module connections, keyed by connectionId", async () => {
+      const ordersConnection = {
+        connectionId: "orders",
+        restUrl: "https://orders.example.test/api/authn",
+        websocketUrl: "wss://orders.example.test/websocket",
+      };
+      await renderWithRegistry({
+        modules: [
+          moduleDescriptor("blotter", ordersConnection),
+          moduleDescriptor("no-vuu"),
+          moduleDescriptor("portal-tables", { connectionId: "portal" }),
+          moduleDescriptor("tickets", ordersConnection),
+          moduleDescriptor("incomplete", { connectionId: "risk" }),
+        ],
+      });
+
+      expect(servers).toEqual([
+        { ...ordersConnection, moduleTitles: ["blotter", "tickets"] },
+        { connectionId: "portal", moduleTitles: ["portal-tables"] },
+      ]);
+    });
+
+    it("shares one portal websocket and keeps the shell stable when another server hits its session limit", async () => {
+      const connection = {
+        connectionId: "module-admin",
+        restUrl: authConfig.restUrl,
+        websocketUrl: authConfig.websocketUrl,
+      };
+      const moduleRegistry = {
+        modules: [
+          moduleDescriptor("module-admin", connection),
+          moduleDescriptor("tables", { ...connection, connectionId: "tables" }),
+          moduleDescriptor("orders", {
+            connectionId: "orders",
+            restUrl: "https://orders.example.test/api/authn",
+            websocketUrl: "wss://orders.example.test/websocket",
+          }),
+        ],
+      };
+      const connected = new Set<string>();
+      const connectionClient: VuuConnectionClient = {
+        connectWithLoginResponseTo: vi.fn(async (connectionId) => {
+          if (connectionId === "orders") {
+            throw new Error("User session limit exceeded");
+          }
+          connected.add(connectionId);
+          return {
+            status: "connected",
+            loginResponse: {
+              type: "LOGIN_SUCCESS",
+              sessionId: "portal-session",
+              vuuServerId: "portal",
+              moduleRegistry,
+            },
+          };
+        }),
+        connectedFor: (connectionId) => connected.has(connectionId),
+        destroyConnection: vi.fn(async (connectionId) => {
+          connected.delete(connectionId);
+        }),
+        onConnectionStatus: () => () => undefined,
+      };
+      const exchangeToken = vi.fn(async () => ({
+        authorizations: [],
+        token: "portal-token",
+        user: { userName: "steve" },
+      }));
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken,
+      });
+      const shellRender = vi.fn();
+      const render = () => (
+        <AuthenticationProvider
+          authConfig={authConfig}
+          authHandlerClass={TestAuthHandler}
+          mode="identity"
+          registry={registry}
+        >
+          <ShellProbe onRender={shellRender} />
+          <VuuServerMonitorProvider
+            options={{ probeIntervalMs: 10, staggerMs: 0 }}
+          >
+            <ServersProbe />
+            <AuthenticationProvider
+              connection={connection}
+              mode="vuu-connection"
+            >
+              <ModuleServerStatusProbe />
+            </AuthenticationProvider>
+          </VuuServerMonitorProvider>
+        </AuthenticationProvider>
+      );
+      const settled = () => {
+        expect(container.querySelector("output")?.textContent).toBe(
+          "portal:online",
+        );
+        expect(
+          container.querySelector("[data-orders-status]")?.textContent,
+        ).toBe("User session limit exceeded. Close another session and retry.");
+      };
+      await act(async () => root.render(render()));
+      await waitForAct(settled);
+      await act(async () => root.render(render()));
+
+      const shell = container.querySelector("header");
+      const shellRenderCount = shellRender.mock.calls.length;
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+      settled();
+      expect(
+        container
+          .querySelector("[data-orders-status]")
+          ?.getAttribute("data-orders-status"),
+      ).toBe("offline");
+      expect(container.querySelector("header")).toBe(shell);
+      expect(shellRender).toHaveBeenCalledTimes(shellRenderCount);
+      expect(servers).toEqual([
+        {
+          connectionId: "orders",
+          restUrl: "https://orders.example.test/api/authn",
+          websocketUrl: "wss://orders.example.test/websocket",
+          moduleTitles: ["orders"],
+        },
+      ]);
+      expect(exchangeToken).toHaveBeenCalledTimes(2);
+      expect(connectionClient.connectWithLoginResponseTo).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(connectionClient.connectWithLoginResponseTo).toHaveBeenCalledWith(
+        "portal",
+        { token: "portal-token", url: authConfig.websocketUrl },
+        true,
+      );
+      expect(registry.getRefCount("portal")).toBe(2);
+      expect(registry.getRefCount("module-admin")).toBe(0);
+      expect(registry.getRefCount("tables")).toBe(0);
+    });
+  });
+
+  it("lists no servers without an identity provider", async () => {
+    await act(async () => {
+      root.render(<ServersProbe />);
+    });
+    expect(servers).toEqual([]);
+  });
+});

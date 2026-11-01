@@ -1,12 +1,12 @@
+import type { InputProps } from "@salt-ds/core";
 import {
   buildValidationChecker,
   getEditValidationRules,
 } from "@vuu-ui/vuu-data-react";
-import { DataValueDescriptor, EditPhase } from "@vuu-ui/vuu-data-types";
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { CommitHandler, getTypedValue, queryClosest } from "@vuu-ui/vuu-utils";
-import { InputProps } from "@salt-ds/core";
+import type { DataValueDescriptor, EditPhase } from "@vuu-ui/vuu-data-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { type CommitHandler, getTypedValue, queryClosest } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
   useCallback,
@@ -153,7 +153,7 @@ export const useBulkEditRow = ({
   } = validationStateRef;
 
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
-    (evt, value) => {
+    (_evt, value) => {
       if (typeof value === "string" && value.trim() !== "") {
         const columnName = focusedFieldRef.current;
         if (columnName) {

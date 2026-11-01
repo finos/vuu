@@ -1,8 +1,8 @@
 import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
-import { ExpandoInput, MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
+import { ExpandoInput, type MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
 import {
-  CommitHandler,
+  type CommitHandler,
   dispatchKeyboardEvent,
   getVuuTable,
   NO_DATA_MATCH,
@@ -11,9 +11,9 @@ import { Option, useForkRef } from "@salt-ds/core";
 import {
   ForwardedRef,
   forwardRef,
-  HTMLAttributes,
-  KeyboardEventHandler,
-  SyntheticEvent,
+  type HTMLAttributes,
+  type KeyboardEventHandler,
+  type SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -22,11 +22,11 @@ import {
   type ChangeEvent,
 } from "react";
 import { ExpandoCombobox } from "../ExpandoCombobox";
-import { FilterClauseValueEditor } from "../filterClauseTypes";
+import type { FilterClauseValueEditor } from "../filterClauseTypes";
 
 export interface FilterClauseTextValueEditorProps
   extends FilterClauseValueEditor,
-    HTMLAttributes<HTMLDivElement> {
+  HTMLAttributes<HTMLDivElement> {
   "data-field"?: string;
   operator: string;
   value: string | string[];

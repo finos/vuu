@@ -1,40 +1,41 @@
 {
   "name": "@vuu-ui/vuu-table-extras",
-  "version": "4.1.0",
+  "version": "5.0.0-alpha.1",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "prebuild": "npm run lezer-generate:column",
     "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs",
-    "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.js ./src/column-expression-input/column-language-parser/grammar/column.grammar"
+    "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.ts ./src/column-expression-input/column-language-parser/grammar/column.grammar"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-filter-types": "4.1.0",
-    "@vuu-ui/vuu-protocol-types": "4.1.0"
+    "@vuu-ui/vuu-filter-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-protocol-types": "5.0.0-alpha.1"
   },
   "dependencies": {
-    "@vuu-ui/vuu-codemirror": "4.1.0",
-    "@vuu-ui/vuu-data-editing": "4.1.0",
-    "@vuu-ui/vuu-data-react": "4.1.0",
-    "@vuu-ui/vuu-data-types": "4.1.0",
-    "@vuu-ui/vuu-table-types": "4.1.0",
-    "@vuu-ui/vuu-popups": "4.1.0",
-    "@vuu-ui/vuu-table": "4.1.0",
-    "@vuu-ui/vuu-utils": "4.1.0",
-    "@vuu-ui/vuu-ui-controls": "4.1.0",
+    "@vuu-ui/vuu-codemirror": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-data-editing": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-data-react": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-data-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-table-types": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-popups": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-table": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-utils": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-ui-controls": "5.0.0-alpha.1",
     "@lezer/lr": "1.4.2",
     "@salt-ds/core": "1.74.0",
     "@salt-ds/styles": "0.4.2",
     "@salt-ds/window": "0.1.2",
-    "csv-parse": "^7.0.0"
+    "csv-parse": "^7.0.0",
+    "@vuu-ui/core": "5.0.0-alpha.1"
   },
   "peerDependencies": {
     "@floating-ui/react": "^0.27.19",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
-  },
-  "type": "module"
+  }
 }

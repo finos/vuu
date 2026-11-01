@@ -1,9 +1,10 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { useAsDropTarget } from "./useAsDropTarget";
 
 import gridPlaceholderCss from "./GridPlaceholder.css";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuGridPlaceholder";
 
@@ -22,7 +23,8 @@ export const GridPlaceholder = ({
     window: targetWindow,
   });
 
-  const dragDropHandlers = useAsDropTarget();
+  // Empty: a drop anywhere fills it, not only in the centre.
+  const dragDropHandlers = useAsDropTarget({ fill: true });
 
   return (
     <div
@@ -33,3 +35,5 @@ export const GridPlaceholder = ({
     />
   );
 };
+
+registerComponent("GridPlaceholder", GridPlaceholder, "component");

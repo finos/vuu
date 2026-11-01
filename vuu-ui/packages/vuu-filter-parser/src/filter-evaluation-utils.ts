@@ -1,13 +1,15 @@
-import { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
-import {
+import type { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
+import type {
   ColumnDescriptorsByName,
   Filter,
   MultiClauseFilter,
   MultiValueFilterClause,
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
+import type { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
 import {
-  ColumnMap,
+  type ColumnMap,
   getScaledDecimalScale,
   isFilter,
   isScaledDecimalFilterClause,
@@ -16,8 +18,6 @@ import {
   toScaledInteger,
 } from "@vuu-ui/vuu-utils";
 import { parseFilter } from "./FilterParser";
-import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
-import { DataRow } from "@vuu-ui/vuu-table-types";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
 const dataRowFilterPredicateMap = new Map<string, DataRowFilterPredicate>();

@@ -1,0 +1,31 @@
+{
+  "extends": "../portal-build.remote.json",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "output": "../../dist_portal/module-admin",
+    "publicPath": "http://localhost:5002/"
+  },
+  "html": {
+    "title": "moduleAdmin (standalone)"
+  },
+  "server": {
+    "corsOrigins": [
+      "http://localhost:5002"
+    ]
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "connectionId": "module-admin",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
+    }
+  },
+  "moduleFederation": {
+    "name": "moduleAdmin",
+    "exposes": {
+      "./ModuleAdmin": "./src/ModuleAdmin",
+      "./ModuleAdminLocal": "./src/ModuleAdminLocal"
+    }
+  }
+}

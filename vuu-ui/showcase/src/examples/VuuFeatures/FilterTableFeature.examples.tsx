@@ -1,12 +1,9 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { FlexboxLayout, LayoutProvider, View } from "@vuu-ui/vuu-layout";
-import { Feature } from "@vuu-ui/vuu-shell";
 import FilterTableFeature from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
-import { type DynamicFeatureProps, registerComponent } from "@vuu-ui/vuu-utils";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 
-registerComponent("FilterTableFeature", FilterTableFeature, "view");
 
 /** tags=data-consumer */
 export const DefaultFilterTableFeature = () => {
@@ -68,37 +65,4 @@ export const FilterTableFeatureFlexBox = () => {
   );
 };
 
-type Environment = "development" | "production";
-const env = process.env.NODE_ENV as Environment;
-const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
-  development: {
-    url: "/src/features/FilterTable.feature",
-  },
-  production: {
-    url: "/features/TableNext.feature.js",
-    css: "/features/TableNext.feature.css",
-  },
-};
 
-/** tags=data-consumer */
-export const FilterTableFeatureAsFeature = () => {
-  const { url, css } = featurePropsForEnv[env];
-  const tableSchema = getSchema("instruments");
-
-  return (
-    <DemoTableContainer>
-      <View
-        Header={VuuBlotterHeader}
-        id="table-next-feature"
-        className="vuuTableFeature"
-        closeable
-        header
-        title="Instruments"
-        style={{ width: 700, height: 500 }}
-      >
-        <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
-      </View>
-    </DemoTableContainer>
-  );
-};
-FilterTableFeatureAsFeature.displayName = "FilterTable";

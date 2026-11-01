@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "scenario": {
+    "id": "scroll-jump-1m-20",
+    "description": "20 scrollbar jumps to random positions in 1M rows",
+    "dataset": {
+      "rows": 1000000,
+      "cols": 20,
+      "cellType": "formatted",
+      "seed": 20261020
+    },
+    "run": {
+      "kind": "scroll-jump",
+      "jumps": 20
+    }
+  },
+  "env": {
+    "gitSha": "49f6f39f2b6490f4e42bedbba46b2a6c0ee73786-dirty",
+    "target": "current",
+    "buildMode": "production",
+    "browser": "chromium",
+    "browserVersion": "151.0.7922.34",
+    "headless": true,
+    "gpu": "on",
+    "cpuThrottle": 4,
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 8,
+    "platform": "darwin arm64"
+  },
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-jump-1m-20",
+      "pass": "timing",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:38:44.212Z",
+      "mount": {
+        "dataGenMs": 911,
+        "dataSourceMs": 1468,
+        "firstRowsMs": 209,
+        "firstPaintMs": 255
+      },
+      "result": {
+        "blankRowMs": {
+          "count": 20,
+          "mean": 80.98,
+          "p50": 83.3,
+          "p95": 85.8,
+          "p99": 86,
+          "max": 86
+        },
+        "durationMs": 2133,
+        "frames": {
+          "count": 99,
+          "mean": 21.38,
+          "p50": 16.7,
+          "p95": 50,
+          "p99": 50.9,
+          "max": 50.9,
+          "jankyFrames": 21,
+          "jankyPct": 21.21
+        },
+        "longFrames": {
+          "count": 0,
+          "blockingMs": 0
+        }
+      },
+      "cdp": {
+        "layoutCount": 20,
+        "layoutMs": 161,
+        "recalcStyleCount": 20,
+        "recalcStyleMs": 3,
+        "scriptMs": 651,
+        "taskMs": 1332,
+        "jsHeapUsedMB": 480.1,
+        "domNodes": 1989,
+        "jsEventListeners": 344
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "scroll-jump-1m-20",
+      "pass": "instrumented",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:38:52.059Z",
+      "mount": {
+        "dataGenMs": 1054,
+        "dataSourceMs": 1394,
+        "firstRowsMs": 220,
+        "firstPaintMs": 252
+      },
+      "result": {
+        "blankRowMs": {
+          "count": 20,
+          "mean": 81.38,
+          "p50": 83.3,
+          "p95": 88.4,
+          "p99": 88.7,
+          "max": 88.7
+        },
+        "durationMs": 2183,
+        "frames": {
+          "count": 99,
+          "mean": 21.89,
+          "p50": 16.7,
+          "p95": 50,
+          "p99": 50.9,
+          "max": 50.9,
+          "jankyFrames": 24,
+          "jankyPct": 24.24
+        },
+        "longFrames": {
+          "count": 0,
+          "blockingMs": 0
+        },
+        "dom": {
+          "rowMounts": 0,
+          "rowMoves": 0,
+          "elementsInserted": 0,
+          "elementsRemoved": 0,
+          "textChanges": 13789,
+          "attributeChanges": 1760,
+          "rowUnmounts": 0,
+          "tableNodes": 1126
+        }
+      },
+      "cdp": {
+        "layoutCount": 20,
+        "layoutMs": 159,
+        "recalcStyleCount": 20,
+        "recalcStyleMs": 7,
+        "scriptMs": 654,
+        "taskMs": 1340,
+        "jsHeapUsedMB": 480.1,
+        "domNodes": 1989,
+        "jsEventListeners": 345
+      }
+    }
+  ],
+  "summary": {
+    "mount.dataGenMs": 911,
+    "mount.dataSourceMs": 1468,
+    "mount.firstRowsMs": 209,
+    "mount.firstPaintMs": 255,
+    "cdp.layoutCount": 20,
+    "cdp.layoutMs": 161,
+    "cdp.recalcStyleCount": 20,
+    "cdp.recalcStyleMs": 3,
+    "cdp.scriptMs": 651,
+    "cdp.taskMs": 1332,
+    "cdp.jsHeapUsedMB": 480.1,
+    "cdp.domNodes": 1989,
+    "cdp.jsEventListeners": 344,
+    "frames.count": 99,
+    "frames.mean": 21.38,
+    "frames.p50": 16.7,
+    "frames.p95": 50,
+    "frames.p99": 50.9,
+    "frames.max": 50.9,
+    "frames.jankyFrames": 21,
+    "frames.jankyPct": 21.21,
+    "longFrames.count": 0,
+    "longFrames.blockingMs": 0,
+    "blankRowMs.count": 20,
+    "blankRowMs.mean": 80.98,
+    "blankRowMs.p50": 83.3,
+    "blankRowMs.p95": 85.8,
+    "blankRowMs.p99": 86,
+    "blankRowMs.max": 86,
+    "durationMs": 2133,
+    "dom.rowMounts": 0,
+    "dom.rowMoves": 0,
+    "dom.elementsInserted": 0,
+    "dom.elementsRemoved": 0,
+    "dom.textChanges": 13789,
+    "dom.attributeChanges": 1760,
+    "dom.rowUnmounts": 0,
+    "dom.tableNodes": 1126,
+    "perUnit.layoutsPerFrame": 0.202
+  }
+}

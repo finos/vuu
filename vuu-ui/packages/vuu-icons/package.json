@@ -1,12 +1,14 @@
 {
   "name": "@vuu-ui/vuu-icons",
-  "version": "4.1.0",
+  "version": "5.0.0-alpha.1",
   "description": "css embedded svg icons plus icon components for Vuu",
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "style": "./index.css",
+  "type": "module",
   "files": [
-    "index.css"
+    "index.css",
+    "index.css.d.ts"
   ],
   "scripts": {
     "build": "node ../../scripts/run-build-rslib.ts",
