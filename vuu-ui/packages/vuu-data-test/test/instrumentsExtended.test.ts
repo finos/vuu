@@ -72,4 +72,13 @@ describe("instrumentsExtended", () => {
       expect(valuesOf(name).every((v) => /^-?\d+$/.test(String(v)))).toBe(true);
     }
   });
+
+  it("holds unique tradeIds beyond the int range", () => {
+    const tradeIds = valuesOf("tradeId") as number[];
+    expect(new Set(tradeIds).size).toBe(tradeIds.length);
+    for (const tradeId of tradeIds) {
+      expect(Number.isSafeInteger(tradeId)).toBe(true);
+      expect(tradeId).toBeGreaterThan(2 ** 31 - 1);
+    }
+  });
 });
