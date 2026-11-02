@@ -3,7 +3,7 @@ import {
   TypeaheadParams,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useDataSource } from "./context-definitions/DataSourceProvider";
 import { useCallback } from "react";
 
 export const getTypeaheadParams = (
