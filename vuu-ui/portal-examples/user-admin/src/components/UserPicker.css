@@ -1,0 +1,53 @@
+.vuuAdminUserPicker {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  min-height: 0;
+}
+
+.vuuAdminUserPicker-list {
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
+  border-radius: var(--salt-palette-corner, 8px);
+  flex: 1 1 240px;
+  list-style: none;
+  margin: 0;
+  min-height: 160px;
+  overflow: auto;
+  padding: 0;
+}
+
+.vuuAdminUserPicker-list > li {
+  border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+  padding: var(--salt-spacing-75) var(--salt-spacing-150);
+}
+
+.vuuAdminUserPicker-list > li:last-child {
+  border-bottom: 0;
+}
+
+.vuuAdminUserPicker-list > li.vuuAdminUserPicker-selected {
+  background: var(--salt-selectable-background-selected);
+}
+
+.vuuAdminUserPicker-list .saltCheckbox {
+  align-items: center;
+  width: 100%;
+}
+
+.vuuAdminUserPicker-list .saltCheckbox-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.vuuAdminUserPicker-user {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+}
+
+.vuuAdminUserPicker-user > .vuuAdminUi-stack {
+  flex: 1;
+  min-width: 0;
+}

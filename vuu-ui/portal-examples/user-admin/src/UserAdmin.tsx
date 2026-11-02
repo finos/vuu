@@ -11,15 +11,19 @@ import {
 import {
   AppSwitcherIcon,
   DashboardIcon,
-  KeyIcon,
   UserAdminIcon,
-  UserGroupIcon,
   UserIcon,
 } from "@salt-ds/icons";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { useModal } from "@vuu-ui/core";
 import { PortalLink } from "@vuu-ui/core/portal";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Link,
   Navigate,
@@ -30,7 +34,7 @@ import {
   useBeforeUnload,
   useMatch,
   useNavigate,
-  useResolvedPath,
+  useParams,
   useSearchParams,
 } from "react-router-dom";
 import { AdminSearch } from "./components/AdminSearch";
@@ -38,10 +42,17 @@ import { EditingContext } from "./components/EditingContext";
 import { AdminDataContext } from "./data/AdminDataContext";
 import { EMPTY_CONFIG, type AdminConfig } from "./data/admin-contract";
 import { ApplicationModelProvider } from "./data/ApplicationModelProvider";
+import {
+  AdminBaseContext,
+  useAdminPaths,
+  useMountPath,
+} from "./data/useAdminPaths";
+import { APPLICATION_PARAM } from "./data/useApplicationScope";
+import { ApplicationPage } from "./pages/application/ApplicationPage";
 import { ApplicationsPage } from "./pages/applications/ApplicationsPage";
-import { GroupsPage } from "./pages/groups/GroupsPage";
 import { OverviewPage } from "./pages/overview/OverviewPage";
-import { RolesPage } from "./pages/roles/RolesPage";
+import { CreateUserPage } from "./pages/user/CreateUserPage";
+import { UserPage } from "./pages/user/UserPage";
 import { UsersPage } from "./pages/users/UsersPage";
 import "./themeFallbacks.css";
 import "./UserAdmin.css";
@@ -56,8 +67,6 @@ const PAGES: { icon: ReactNode; label: string; page: string }[] = [
     page: "applications",
   },
   { icon: <UserIcon aria-hidden />, label: "Users", page: "users" },
-  { icon: <UserGroupIcon aria-hidden />, label: "Groups", page: "groups" },
-  { icon: <KeyIcon aria-hidden />, label: "Roles", page: "roles" },
 ];
 
 const NavItem = ({
@@ -69,15 +78,12 @@ const NavItem = ({
   label: string;
   page: string;
 }) => {
-  const to = `../${page}`;
-  const { pathname } = useResolvedPath(to, { relative: "path" });
-  const active = useMatch({ end: false, path: pathname }) !== null;
+  const to = useAdminPaths().page(page);
+  const active = useMatch({ end: false, path: to }) !== null;
   return (
     <VerticalNavigationItem active={active}>
       <VerticalNavigationItemContent>
-        <VerticalNavigationItemTrigger
-          render={<PortalLink relative="path" to={to} />}
-        >
+        <VerticalNavigationItemTrigger render={<PortalLink to={to} />}>
           {icon}
           <VerticalNavigationItemLabel>{label}</VerticalNavigationItemLabel>
         </VerticalNavigationItemTrigger>
@@ -88,6 +94,7 @@ const NavItem = ({
 
 const HeaderSearch = () => {
   const navigate = useNavigate();
+  const paths = useAdminPaths();
   const [params] = useSearchParams();
   const search = params.get(SEARCH_PARAM) ?? "";
   return (
@@ -95,26 +102,59 @@ const HeaderSearch = () => {
       className="vuuIdentityAdmin-headerSearch"
       defaultValue={search}
       key={search}
-      label="Search users, groups and roles"
+      label="Search applications and users"
       onSearch={(value) =>
         navigate(
           value
-            ? `../overview?${new URLSearchParams({ [SEARCH_PARAM]: value })}`
-            : "../overview",
-          { relative: "path" },
+            ? `${paths.overview}?${new URLSearchParams({ [SEARCH_PARAM]: value })}`
+            : paths.overview,
         )
       }
+      placeholder="Search applications and users"
     />
   );
 };
 
+/**
+ * Groups and roles are managed inside their application, so the old
+ * `groups` and `roles` pages open the application they were scoped to.
+ */
+const LegacyEntityRedirect = () => {
+  const paths = useAdminPaths();
+  const [params] = useSearchParams();
+  const application = params.get(APPLICATION_PARAM);
+  return (
+    <Navigate
+      replace
+      to={application ? paths.application(application) : paths.applications}
+    />
+  );
+};
+
+const ApplicationRoute = () => {
+  const { applicationName = "" } = useParams();
+  return <ApplicationPage key={applicationName} name={applicationName} />;
+};
+
+const UserRoute = () => {
+  const { userId = "" } = useParams();
+  return <UserPage key={userId} userId={userId} />;
+};
+
 const AdminLayout = () => {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditingState] = useState(false);
+  // Read by the blocker, so a page can clear its edits and navigate at once.
+  const editingRef = useRef(false);
+  const setEditing = useCallback((value: boolean) => {
+    editingRef.current = value;
+    setEditingState(value);
+  }, []);
   const blocker = useBlocker(
     useCallback(
       ({ currentLocation, nextLocation }) =>
-        editing && currentLocation.pathname !== nextLocation.pathname,
-      [editing],
+        editingRef.current &&
+        currentLocation.pathname !== nextLocation.pathname,
+      [],
     ),
   );
   const { closePrompt, showPrompt } = useModal();
@@ -142,7 +182,7 @@ const AdminLayout = () => {
     );
 
     return closePrompt;
-  }, [closePrompt, proceed, reset, showPrompt, state]);
+  }, [closePrompt, proceed, reset, setEditing, showPrompt, state]);
 
   useBeforeUnload((event) => {
     if (editing) {
@@ -164,7 +204,7 @@ const AdminLayout = () => {
             <div>
               <h1>Identity Admin</h1>
               <Text color="secondary" styleAs="label">
-                Application access, users, groups and roles
+                Applications and the users who can open them
               </Text>
             </div>
           </div>
@@ -202,33 +242,41 @@ export interface UserAdminProps {
 }
 
 const UserAdmin = ({ config = EMPTY_CONFIG }: UserAdminProps) => (
-  <NotificationsProvider>
-    <AdminDataContext.Provider value={config}>
-      <ApplicationModelProvider>
-        <Routes>
-          <Route element={<AdminLayout />}>
-            <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<OverviewPage />} />
-            <Route path="applications" element={<ApplicationsPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="groups" element={<GroupsPage />} />
-            <Route path="roles" element={<RolesPage />} />
-            <Route
-              path="*"
-              element={
-                <p>
-                  Page not found.{" "}
-                  <Link relative="path" to="../overview">
-                    Return to Overview
-                  </Link>
-                </p>
-              }
-            />
-          </Route>
-        </Routes>
-      </ApplicationModelProvider>
-    </AdminDataContext.Provider>
-  </NotificationsProvider>
+  <AdminBaseContext.Provider value={useMountPath()}>
+    <NotificationsProvider>
+      <AdminDataContext.Provider value={config}>
+        <ApplicationModelProvider>
+          <Routes>
+            <Route element={<AdminLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<OverviewPage />} />
+              <Route path="applications" element={<ApplicationsPage />} />
+              <Route
+                path="applications/:applicationName"
+                element={<ApplicationRoute />}
+              />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="users/new" element={<CreateUserPage />} />
+              <Route path="users/:userId" element={<UserRoute />} />
+              <Route path="groups" element={<LegacyEntityRedirect />} />
+              <Route path="roles" element={<LegacyEntityRedirect />} />
+              <Route
+                path="*"
+                element={
+                  <p>
+                    Page not found.{" "}
+                    <Link relative="path" to="../overview">
+                      Return to Overview
+                    </Link>
+                  </p>
+                }
+              />
+            </Route>
+          </Routes>
+        </ApplicationModelProvider>
+      </AdminDataContext.Provider>
+    </NotificationsProvider>
+  </AdminBaseContext.Provider>
 );
 
 export default UserAdmin;
