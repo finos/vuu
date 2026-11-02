@@ -42,15 +42,12 @@ describe("server-driven identity contract", () => {
       'missing required column "client_identifier"',
     );
   });
-  it.each([
-    "users",
-    "groups",
-    "user_groups",
-    "clients",
-    "roles",
-  ] as const)("does not scope %s by client", (name) => {
-    expect(buildClientScopeFilter(schema, {}, name)).toBeUndefined();
-  });
+  it.each(["users", "groups", "user_groups", "clients", "roles"] as const)(
+    "does not scope %s by client",
+    (name) => {
+      expect(buildClientScopeFilter(schema, {}, name)).toBeUndefined();
+    },
+  );
   it("uses configured table and columns without inventing a schema", () => {
     expect(tableFor(config, "users")).toEqual(schema.table);
     expect(tableFor(config, "roles")).toEqual({
@@ -164,14 +161,12 @@ describe("server-driven identity contract", () => {
     ).toThrow("No searchable columns");
   });
 
-  it.each([
-    'a" or enabled = true',
-    "a\\b",
-    "a\nb",
-    "a\tb",
-  ])("rejects unsupported filter literal %j", (search) => {
-    expect(() => buildFilter(schema, config, "users", { search })).toThrow(
-      "Search values cannot contain",
-    );
-  });
+  it.each(['a" or enabled = true', "a\\b", "a\nb", "a\tb"])(
+    "rejects unsupported filter literal %j",
+    (search) => {
+      expect(() => buildFilter(schema, config, "users", { search })).toThrow(
+        "Search values cannot contain",
+      );
+    },
+  );
 });

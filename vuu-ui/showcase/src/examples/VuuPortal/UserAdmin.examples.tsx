@@ -1,43 +1,11 @@
-import { useData } from "@vuu-ui/core";
 import {
   PortalModuleRegistryProvider,
   type RemoteModuleDescriptor,
 } from "@vuu-ui/core/portal";
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import {
-  createMemoryRouter,
-  MemoryRouter,
-  RouterProvider,
-} from "react-router-dom";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
 import { ModulePicker } from "user-admin";
-import {
-  CreateGroupForm,
-  GroupEditForm,
-} from "user-admin/src/components/groups-edit-form/GroupsEditForm";
-import {
-  CreateRoleForm,
-  RoleEditForm,
-} from "user-admin/src/components/roles-edit-form/RolesEditForm";
-import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
 import type { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
-import { ApplicationModelProvider } from "user-admin/src/data/ApplicationModelProvider";
-import { ApplicationsPage } from "user-admin/src/pages/applications/ApplicationsPage";
-import { GroupsPage } from "user-admin/src/pages/groups/GroupsPage";
-import { RolesPage } from "user-admin/src/pages/roles/RolesPage";
-import { UsersPage } from "user-admin/src/pages/users/UsersPage";
-import {
-  USER_COLUMNS,
-  USER_ROW_HEIGHT,
-  usersTableConfig,
-} from "user-admin/src/pages/users/usersTable";
-import {
-  TableEditorForm,
-  TableEditorNewButton,
-  TableEditorPlaceholder,
-  TableEditorTable,
-  EditableTable,
-} from "@vuu-ui/vuu-table-extras";
 import UserAdmin from "user-admin/src/UserAdmin";
 
 import "user-admin/src/UserAdmin.css";
@@ -87,20 +55,6 @@ const remoteModules: RemoteModuleDescriptor[] = [
   },
 ];
 
-/**
- * The context the admin pages expect: routing for `?application=`, the portal
- * module registry, and the application model derived from both.
- */
-const AdminContext = ({ children }: { children: ReactNode }) => (
-  <MemoryRouter>
-    <PortalModuleRegistryProvider remoteModules={remoteModules}>
-      <ApplicationModelProvider>
-        <div className="vuuIdentityAdmin">{children}</div>
-      </ApplicationModelProvider>
-    </PortalModuleRegistryProvider>
-  </MemoryRouter>
-);
-
 const modulePickerModules: ModulePickerModuleDescriptor[] = remoteModules.map(
   ({ accessRole, title }) => ({
     label: title,
@@ -135,205 +89,8 @@ export const DefaultModulePicker = () => {
   );
 };
 
-/**
- * UserEditForm renders within a TableEditorForm, editing the row selected in
- * the TableEditorTable alongside it.
- */
-/** tags=data-consumer */
-export const DefaultUserEditForm = () => {
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(
-    () =>
-      new VuuDataSource({
-        columns: USER_COLUMNS,
-        table: { module: "USER_ADMIN", table: "users" },
-      }),
-    [VuuDataSource],
-  );
-  const config = useMemo(() => usersTableConfig({ compact: true }), []);
-
-  return (
-    <AdminContext>
-      <EditableTable dataSource={dataSource} editStrategy="form">
-        <div style={{ display: "flex", gap: 16, height: 800 }}>
-          <div style={{ flex: "1 1 auto", minWidth: 0 }}>
-            <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
-          </div>
-          <div style={{ flex: "0 0 480px" }}>
-            <TableEditorPlaceholder>Select a user</TableEditorPlaceholder>
-            <TableEditorForm>
-              <UserEditForm />
-            </TableEditorForm>
-          </div>
-        </div>
-      </EditableTable>
-    </AdminContext>
-  );
-};
-
-/** tags=data-consumer */
-export const DefaultUsersPage = () => (
-  <AdminContext>
-    <UsersPage />
-  </AdminContext>
-);
-
-/** tags=data-consumer */
-export const DefaultApplicationsPage = () => (
-  <AdminContext>
-    <ApplicationsPage />
-  </AdminContext>
-);
-
-const ROLE_COLUMNS = [
-  "role_id",
-  "role_name",
-  "role_display_name",
-  "client_id",
-  "client_identifier",
-  "client_name",
-  "description",
-  "group_count",
-];
-const GROUP_COLUMNS = [
-  "group_id",
-  "group_display_name",
-  "group_path",
-  "parent_group_id",
-  "user_count",
-  "role_count",
-];
-
-const ROLE_TABLE_CONFIG: TableConfig = {
-  columns: [
-    { name: "role_name", label: "Role", width: 220 },
-    { name: "client_identifier", label: "Client", width: 180 },
-    { name: "group_count", label: "Groups", width: 100 },
-  ],
-  columnLayout: "fit",
-};
-
-/**
- * RoleEditForm renders within a TableEditorForm, editing the row selected
- * in the TableEditorTable alongside it. CreateRoleForm is shown instead
- * while a role is being created.
- */
-/** tags=data-consumer */
-export const DefaultRolesEditPage = () => {
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(
-    () =>
-      new VuuDataSource({
-        columns: ROLE_COLUMNS,
-        table: { module: "USER_ADMIN", table: "roles" },
-      }),
-    [VuuDataSource],
-  );
-
-  return (
-    <AdminContext>
-      <EditableTable dataSource={dataSource} editStrategy="form">
-        <div style={{ display: "flex", gap: 16, height: 800 }}>
-          <div
-            style={{
-              display: "flex",
-              flex: "1 1 auto",
-              flexDirection: "column",
-              gap: 8,
-              minWidth: 0,
-            }}
-          >
-            <TableEditorNewButton style={{ alignSelf: "flex-start" }}>
-              Create role
-            </TableEditorNewButton>
-            <TableEditorTable config={ROLE_TABLE_CONFIG} />
-          </div>
-          <div style={{ flex: "0 0 480px" }}>
-            <TableEditorPlaceholder>Select a role</TableEditorPlaceholder>
-            <TableEditorForm>
-              <RoleEditForm />
-            </TableEditorForm>
-            <CreateRoleForm />
-          </div>
-        </div>
-      </EditableTable>
-    </AdminContext>
-  );
-};
-
-/** tags=data-consumer */
-export const DefaultRolesPage = () => (
-  <AdminContext>
-    <RolesPage />
-  </AdminContext>
-);
-
-const GROUP_TABLE_CONFIG: TableConfig = {
-  columns: [
-    { name: "group_display_name", label: "Group", width: 200 },
-    { name: "user_count", label: "Members", width: 100 },
-    { name: "role_count", label: "Roles", width: 100 },
-  ],
-  columnLayout: "fit",
-};
-
-/**
- * GroupEditForm renders within a TableEditorForm, editing the row selected
- * in the TableEditorTable alongside it. CreateGroupForm is shown instead
- * while a group is being created.
- */
-/** tags=data-consumer */
-export const DefaultGroupsEditPage = () => {
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(
-    () =>
-      new VuuDataSource({
-        columns: GROUP_COLUMNS,
-        table: { module: "USER_ADMIN", table: "groups" },
-      }),
-    [VuuDataSource],
-  );
-
-  return (
-    <AdminContext>
-      <EditableTable dataSource={dataSource} editStrategy="form">
-        <div style={{ display: "flex", gap: 16, height: 800 }}>
-          <div
-            style={{
-              display: "flex",
-              flex: "1 1 auto",
-              flexDirection: "column",
-              gap: 8,
-              minWidth: 0,
-            }}
-          >
-            <TableEditorNewButton style={{ alignSelf: "flex-start" }}>
-              Create group
-            </TableEditorNewButton>
-            <TableEditorTable config={GROUP_TABLE_CONFIG} />
-          </div>
-          <div style={{ flex: "0 0 480px" }}>
-            <TableEditorPlaceholder>Select a group</TableEditorPlaceholder>
-            <TableEditorForm>
-              <GroupEditForm />
-            </TableEditorForm>
-            <CreateGroupForm />
-          </div>
-        </div>
-      </EditableTable>
-    </AdminContext>
-  );
-};
-
-/** tags=data-consumer */
-export const DefaultGroupsPage = () => (
-  <AdminContext>
-    <GroupsPage />
-  </AdminContext>
-);
-
-/** The complete Identity Admin module, as mounted by the portal. */
-export const DefaultUserAdmin = () => {
+/** The complete Identity Admin module, mounted at /admin, opened at `entry`. */
+const UserAdminAt = ({ entry }: { entry: string }) => {
   const router = useMemo(
     () =>
       createMemoryRouter(
@@ -349,9 +106,32 @@ export const DefaultUserAdmin = () => {
             ),
           },
         ],
-        { initialEntries: ["/admin/overview"] },
+        { initialEntries: [entry] },
       ),
-    [],
+    [entry],
   );
   return <RouterProvider router={router} />;
 };
+
+/** The complete Identity Admin module, as mounted by the portal. */
+/** tags=data-consumer */
+export const DefaultUserAdmin = () => <UserAdminAt entry="/admin/overview" />;
+
+/** Application workflow: groups and roles, users and checks of one application. */
+/** tags=data-consumer */
+export const ApplicationWorkflow = () => (
+  <UserAdminAt entry="/admin/applications/basket-trading" />
+);
+
+/** Application workflow, Users tab: batch group changes. */
+/** tags=data-consumer */
+export const ApplicationUsers = () => (
+  <UserAdminAt entry="/admin/applications/basket-trading?tab=users" />
+);
+
+/** User workflow: create a user and give them application access. */
+/** tags=data-consumer */
+export const NewUser = () => <UserAdminAt entry="/admin/users/new" />;
+
+/** tags=data-consumer */
+export const Users = () => <UserAdminAt entry="/admin/users" />;

@@ -25,9 +25,7 @@ export interface AdminTableContract {
 export type AdminConfig = Partial<Record<AdminTableName, AdminTableContract>>;
 export const EMPTY_CONFIG: AdminConfig = {};
 export const VUU_CLIENT_PREFIX = "vuu-";
-const CLIENT_SCOPED_TABLES = new Set<AdminTableName>([
-  "user_group_roles",
-]);
+const CLIENT_SCOPED_TABLES = new Set<AdminTableName>(["user_group_roles"]);
 
 export const ENTITY_LABELS: Record<Entity, string> = {
   users: "Users",

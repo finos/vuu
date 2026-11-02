@@ -60,8 +60,16 @@ const roles = [
 ];
 
 const groups = [
-  { group_id: "g-bt-read", group_path: "/vuu/basket-trading-read", user_count: 2 },
-  { group_id: "g-bt-trade", group_path: "/vuu/basket-trading-trade", user_count: 1 },
+  {
+    group_id: "g-bt-read",
+    group_path: "/vuu/basket-trading-read",
+    user_count: 2,
+  },
+  {
+    group_id: "g-bt-trade",
+    group_path: "/vuu/basket-trading-trade",
+    user_count: 1,
+  },
   { group_id: "g-ua-read", group_path: "/vuu/user-admin-read", user_count: 0 },
   { group_id: "g-other", group_path: "/other", user_count: 0 },
 ];
@@ -101,7 +109,10 @@ describe("deriveApplications", () => {
     const result = deriveApplications([
       { ...descriptor("orders"), accessRole: "orders-login" },
       descriptor("basket-trading"),
-      { ...descriptor("basket-trading-copy"), accessRole: "basket-trading-access" },
+      {
+        ...descriptor("basket-trading-copy"),
+        accessRole: "basket-trading-access",
+      },
     ]);
     expect(result.applications.map(({ name }) => name)).toEqual([
       "basket-trading",
@@ -152,7 +163,10 @@ describe("matching", () => {
   it("classifies access roles and application roles", () => {
     expect(
       classifyRole(applications, "basket-trading-access", "vuu-portal"),
-    ).toMatchObject({ application: { name: "basket-trading" }, kind: "access" });
+    ).toMatchObject({
+      application: { name: "basket-trading" },
+      kind: "access",
+    });
     expect(
       classifyRole(applications, "anything", "vuu-basket-trading"),
     ).toMatchObject({
@@ -200,9 +214,9 @@ describe("buildApplicationModel", () => {
   });
 
   it("reports applications without Keycloak objects", () => {
-    const { applications: [orders] } = deriveApplications([
-      descriptor("orders"),
-    ]);
+    const {
+      applications: [orders],
+    } = deriveApplications([descriptor("orders")]);
     const empty = buildApplicationModel({
       applications: [orders],
       clients: [],

@@ -6,14 +6,14 @@ combined with each module descriptor's `accessRole` and `clientIdentifier`.
 
 ## Rules
 
-| Item | Rule | Example |
-| --- | --- | --- |
-| Client | Every portal client identifier starts with `vuu-`. Each application has its own client, named by the descriptor's `clientIdentifier`. | `vuu-basket-trading` |
-| Access role | Exactly one per application, on the `vuu-portal` client, named `<app>-access`. It is the descriptor's `accessRole`. | `basket-trading-access` |
-| Application roles | One or more per application, on the application's own client. Only the owning client links a role to its application, but `<app>-<permission>` is the recommended name. | `basket-trading-trade` |
-| Group | One or more per application, named `<app>-<suffix>`. `<app>-` is the access role with `-access` removed. Each group belongs to exactly one application. | `basket-trading-read` |
-| Group contents | Each group contains its application's access role plus any of that application's own roles. It never contains roles from another application. | `basket-trading-trade` = `basket-trading-access` + `basket-trading-trade` |
-| Users | Users join groups only. They are never assigned roles directly. | |
+| Item              | Rule                                                                                                                                                                    | Example                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Client            | Every portal client identifier starts with `vuu-`. Each application has its own client, named by the descriptor's `clientIdentifier`.                                   | `vuu-basket-trading`                                                      |
+| Access role       | Exactly one per application, on the `vuu-portal` client, named `<app>-access`. It is the descriptor's `accessRole`.                                                     | `basket-trading-access`                                                   |
+| Application roles | One or more per application, on the application's own client. Only the owning client links a role to its application, but `<app>-<permission>` is the recommended name. | `basket-trading-trade`                                                    |
+| Group             | One or more per application, named `<app>-<suffix>`. `<app>-` is the access role with `-access` removed. Each group belongs to exactly one application.                 | `basket-trading-read`                                                     |
+| Group contents    | Each group contains its application's access role plus any of that application's own roles. It never contains roles from another application.                           | `basket-trading-trade` = `basket-trading-access` + `basket-trading-trade` |
+| Users             | Users join groups only. They are never assigned roles directly.                                                                                                         |                                                                           |
 
 ## How names are matched
 

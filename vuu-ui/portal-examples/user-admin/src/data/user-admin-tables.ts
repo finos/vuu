@@ -12,5 +12,6 @@ export const USER_ADMIN_TABLES = {
   groupRoles: table("group_roles"),
   groups: table("groups"),
   roles: table("roles"),
+  userGroups: table("user_groups"),
   users: table("users"),
 } as const;

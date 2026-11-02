@@ -19,7 +19,7 @@ import {
 } from "react";
 import { useApplications } from "../../data/useApplicationModel";
 import { AppAvatar } from "../admin-ui/AdminUi";
-import type { ModulePermissions } from "../user-edit-form/ModulePermissions";
+import type { ModulePermissions } from "./ModulePermissions";
 import { PermissionGroupPicker } from "./PermissionGroupPicker";
 
 import "./ModulePicker.css";

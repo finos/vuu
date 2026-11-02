@@ -74,11 +74,16 @@ vi.mock("../src/pages/users/UsersPage", () => ({
     );
   },
 }));
-vi.mock("../src/pages/groups/GroupsPage", () => ({
-  GroupsPage: () => <div>Groups page</div>,
+vi.mock("../src/pages/application/ApplicationPage", () => ({
+  ApplicationPage: ({ name }: { name: string }) => (
+    <div>Application page {name}</div>
+  ),
 }));
-vi.mock("../src/pages/roles/RolesPage", () => ({
-  RolesPage: () => <div>Roles page</div>,
+vi.mock("../src/pages/user/CreateUserPage", () => ({
+  CreateUserPage: () => <div>New user page</div>,
+}));
+vi.mock("../src/pages/user/UserPage", () => ({
+  UserPage: ({ userId }: { userId: string }) => <div>User page {userId}</div>,
 }));
 
 describe("embedded identity routes", () => {
@@ -105,14 +110,113 @@ describe("embedded identity routes", () => {
     style.remove();
     vi.unstubAllGlobals();
   });
-  it.each([
-    "/workspace/identity",
-    "/custom/mount",
-  ])("renders Overview by default at arbitrary mount %s", async (mount) => {
+  it.each(["/workspace/identity", "/custom/mount"])(
+    "renders Overview by default at arbitrary mount %s",
+    async (mount) => {
+      const router = createMemoryRouter(
+        [
+          {
+            path: `${mount}/*`,
+            element: (
+              <PortalModuleRegistryProvider remoteModules={remoteModules}>
+                <UserAdmin />
+              </PortalModuleRegistryProvider>
+            ),
+          },
+        ],
+        { initialEntries: [mount] },
+      );
+
+      await act(async () => root.render(<RouterProvider router={router} />));
+      expect(container.textContent).toContain("Overview page");
+      expect(container.textContent).toContain(
+        "vuu-user-admin:user-admin-access",
+      );
+      const rail = container.querySelector<HTMLElement>(
+        'nav[aria-label="Identity administration"]',
+      );
+      const workspace = container.querySelector<HTMLElement>(
+        ".vuuIdentityAdmin-workspace",
+      );
+      const content = container.querySelector<HTMLElement>(
+        ".vuuIdentityAdmin-content",
+      );
+      if (!rail || !workspace || !content)
+        throw new Error("Missing left navigation layout");
+      expect(workspace.children[0]).toBe(rail);
+      expect(workspace.children[1]).toBe(content);
+      expect(content.querySelector("main")).not.toBeNull();
+      expect(getComputedStyle(workspace).flexDirection).toBe("row");
+      expect(getComputedStyle(rail).display).toBe("flex");
+      expect(getComputedStyle(rail).flexDirection).toBe("column");
+      expect(
+        [...rail.querySelectorAll("a")].map(({ textContent }) => textContent),
+      ).toEqual(["Overview", "Applications", "Users"]);
+      expect(rail.querySelector('[aria-current="page"]')?.textContent).toBe(
+        "Overview",
+      );
+      await act(async () =>
+        rail
+          .querySelector<HTMLAnchorElement>('a[href$="/applications"]')
+          ?.click(),
+      );
+      expect(container.textContent).toContain("Applications page");
+      expect(
+        container.querySelector('a[href$="/users"]')?.getAttribute("href"),
+      ).toBe(`${mount}/users`);
+      await act(async () =>
+        container
+          .querySelector<HTMLAnchorElement>('a[href$="/users"]')
+          ?.click(),
+      );
+      expect(container.textContent).toContain("Users page");
+      expect(rail.querySelector('[aria-current="page"]')?.textContent).toBe(
+        "Users",
+      );
+      await act(async () =>
+        container.querySelector<HTMLButtonElement>("button")?.click(),
+      );
+      const applicationsLink = rail.querySelector<HTMLAnchorElement>(
+        'a[href$="/applications"]',
+      );
+      await act(async () => applicationsLink?.click());
+      expect(container.textContent).toContain("Users page");
+      expect(modal.showPrompt).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          cancelButtonLabel: "Cancel",
+          confirmButtonLabel: "Discard changes",
+          title: "Unsaved changes",
+        }),
+      );
+      expect(content.querySelector('[role="status"]')?.textContent).toContain(
+        "Save or discard",
+      );
+      const promptProps =
+        modal.showPrompt.mock.calls[
+          modal.showPrompt.mock.calls.length - 1
+        ]?.[1];
+      await act(async () => promptProps?.onCancel?.());
+      expect(container.textContent).toContain("Users page");
+      await act(async () =>
+        container
+          .querySelector<HTMLAnchorElement>('a[href$="/applications"]')
+          ?.click(),
+      );
+      const confirmPromptProps =
+        modal.showPrompt.mock.calls[
+          modal.showPrompt.mock.calls.length - 1
+        ]?.[1];
+      await act(async () => confirmPromptProps?.onConfirm?.());
+      expect(container.textContent).toContain("Applications page");
+    },
+  );
+
+  const renderAt = async (entry: string) => {
     const router = createMemoryRouter(
       [
         {
-          path: `${mount}/*`,
+          path: "/admin/*",
           element: (
             <PortalModuleRegistryProvider remoteModules={remoteModules}>
               <UserAdmin />
@@ -120,85 +224,37 @@ describe("embedded identity routes", () => {
           ),
         },
       ],
-      { initialEntries: [mount] },
+      { initialEntries: [entry] },
     );
-
     await act(async () => root.render(<RouterProvider router={router} />));
-    expect(container.textContent).toContain("Overview page");
-    expect(container.textContent).toContain("vuu-user-admin:user-admin-access");
-    const rail = container.querySelector<HTMLElement>(
-      'nav[aria-label="Identity administration"]',
-    );
-    const workspace = container.querySelector<HTMLElement>(
-      ".vuuIdentityAdmin-workspace",
-    );
-    const content = container.querySelector<HTMLElement>(
-      ".vuuIdentityAdmin-content",
-    );
-    if (!rail || !workspace || !content)
-      throw new Error("Missing left navigation layout");
-    expect(workspace.children[0]).toBe(rail);
-    expect(workspace.children[1]).toBe(content);
-    expect(content.querySelector("main")).not.toBeNull();
-    expect(getComputedStyle(workspace).flexDirection).toBe("row");
-    expect(getComputedStyle(rail).display).toBe("flex");
-    expect(getComputedStyle(rail).flexDirection).toBe("column");
-    expect(
-      [...rail.querySelectorAll("a")].map(({ textContent }) => textContent),
-    ).toEqual(["Overview", "Applications", "Users", "Groups", "Roles"]);
-    expect(rail.querySelector('[aria-current="page"]')?.textContent).toBe(
-      "Overview",
-    );
-    await act(async () =>
-      rail
-        .querySelector<HTMLAnchorElement>('a[href$="/applications"]')
-        ?.click(),
-    );
-    expect(container.textContent).toContain("Applications page");
-    expect(
-      container.querySelector('a[href$="/users"]')?.getAttribute("href"),
-    ).toBe(`${mount}/users`);
-    await act(async () =>
-      container.querySelector<HTMLAnchorElement>('a[href$="/users"]')?.click(),
-    );
-    expect(container.textContent).toContain("Users page");
-    expect(rail.querySelector('[aria-current="page"]')?.textContent).toBe(
-      "Users",
-    );
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>("button")?.click(),
-    );
-    const groupsLink =
-      rail.querySelector<HTMLAnchorElement>('a[href$="/groups"]');
-    await act(async () => groupsLink?.click());
-    expect(container.textContent).toContain("Users page");
-    expect(modal.showPrompt).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        cancelButtonLabel: "Cancel",
-        confirmButtonLabel: "Discard changes",
-        title: "Unsaved changes",
-      }),
-    );
-    expect(content.querySelector('[role="status"]')?.textContent).toContain(
-      "Save or discard",
-    );
-    const promptProps =
-      modal.showPrompt.mock.calls[modal.showPrompt.mock.calls.length - 1]?.[1];
-    await act(async () => promptProps?.onCancel?.());
-    expect(container.textContent).toContain("Users page");
-    await act(async () =>
-      container.querySelector<HTMLAnchorElement>('a[href$="/groups"]')?.click(),
-    );
-    const confirmPromptProps =
-      modal.showPrompt.mock.calls[modal.showPrompt.mock.calls.length - 1]?.[1];
-    await act(async () => confirmPromptProps?.onConfirm?.());
-    expect(container.textContent).toContain("Groups page");
-    await act(async () =>
-      container.querySelector<HTMLAnchorElement>('a[href$="/roles"]')?.click(),
-    );
-    expect(container.textContent).toContain("Roles page");
+  };
+
+  it.each([
+    ["/admin/applications/basket-trading", "Application page basket-trading"],
+    ["/admin/users/new", "New user page"],
+    ["/admin/users/u-42", "User page u-42"],
+  ])("routes %s to the workflow page", async (entry, text) => {
+    await renderAt(entry);
+    expect(container.textContent).toContain(text);
   });
+
+  it.each([
+    [
+      "/admin/groups?application=basket-trading",
+      "Application page basket-trading",
+    ],
+    [
+      "/admin/roles?application=basket-trading",
+      "Application page basket-trading",
+    ],
+    ["/admin/groups", "Applications page"],
+  ])(
+    "redirects the old %s page into the application workflow",
+    async (entry, text) => {
+      await renderAt(entry);
+      expect(container.textContent).toContain(text);
+    },
+  );
 });
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";

@@ -1,91 +1,79 @@
-import { Avatar, SidePanelContent, Tag } from "@salt-ds/core";
+import { Input } from "@salt-ds/core";
+import { AddIcon, SearchIcon } from "@salt-ds/icons";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
+import { type ChangeEvent, useDeferredValue, useMemo, useState } from "react";
 import {
-  EditableTablePanel,
-  EditableTablePanelHeader,
-  TableEditorForm,
-  EditableTableMain,
-  TableEditorTable,
-  EditableTable,
-  useTableEditor,
-} from "@vuu-ui/vuu-table-extras";
-import {
+  AdminButtonLink,
   AdminToolbar,
   PageHeader,
-  PanelHeading,
-  PanelHeadingSubtitle,
-  PanelHeadingTags,
-  PanelHeadingText,
-  PanelHeadingTitle,
-  RowCount,
+  PageHeaderActions,
 } from "../../components/admin-ui/AdminUi";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
-import { userDisplayName } from "../../components/UserCells";
-import { UserEditForm } from "../../components/user-edit-form/UserEditForm";
-import { USER_ROW_HEIGHT } from "./usersTable";
-import { useUsersPage } from "./useUsersPage";
+import { UsersTable } from "../../components/UsersTable";
+import { UNASSIGNED } from "../../data/applications";
+import { useAdminPaths } from "../../data/useAdminPaths";
+import { useApplicationModel } from "../../data/useApplicationModel";
+import { userSearchFilter } from "../../data/useApplicationUsers";
+import {
+  useApplicationParam,
+  userScopeFilter,
+} from "../../data/useApplicationScope";
 
-const UserHeading = () => {
-  const { selectedRow: dataRow } = useTableEditor();
-  const name = dataRow ? userDisplayName(dataRow) : "";
-  return (
-    <PanelHeading>
-      <Avatar aria-hidden name={name || undefined} size={2} />
-      <PanelHeadingText>
-        <PanelHeadingTitle>{name || "User"}</PanelHeadingTitle>
-        {typeof dataRow?.email === "string" ? (
-          <PanelHeadingSubtitle>{dataRow.email}</PanelHeadingSubtitle>
-        ) : null}
-        {dataRow ? (
-          <PanelHeadingTags>
-            {dataRow.enabled === false ? (
-              <Tag bordered>Disabled</Tag>
-            ) : (
-              <Tag category={5}>Enabled</Tag>
-            )}
-            {dataRow.email_verified === true ? (
-              <Tag bordered>Email verified</Tag>
-            ) : null}
-            {dataRow.password_update_required === true ? (
-              <Tag bordered>Password update required</Tag>
-            ) : null}
-          </PanelHeadingTags>
-        ) : null}
-      </PanelHeadingText>
-    </PanelHeading>
-  );
-};
-
+/** Every user. Open one to change their application access, or create one. */
 export const UsersPage = () => {
-  const { application, config, dataSource, setApplication } = useUsersPage();
+  const paths = useAdminPaths();
+  const { model } = useApplicationModel();
+  const [application, setApplication] = useApplicationParam();
+  const [searchText, setSearchText] = useState("");
+  const deferredSearch = useDeferredValue(searchText);
+  const knownApplication =
+    application === UNASSIGNED || model.byName.has(application);
+
+  const search = useMemo(
+    () => userSearchFilter(deferredSearch),
+    [deferredSearch],
+  );
+  const filter = useMemo<Filter | undefined>(() => {
+    const filters: Filter[] = [];
+    if (application && knownApplication) {
+      filters.push(userScopeFilter(model, application));
+    }
+    if (search.filter) filters.push(search.filter);
+    return filters.length > 1 ? { op: "and", filters } : filters[0];
+  }, [application, knownApplication, model, search.filter]);
+
   return (
-    <EditableTable dataSource={dataSource} editStrategy="form">
-      <EditableTableMain className="vuuIdentityAdmin-page">
-        <PageHeader
-          description="Grant application access by adding users to an application's groups."
-          title="Users"
+    <section className="vuuIdentityAdmin-page">
+      <PageHeader
+        description="Open a user to change the applications they can use, or create a new one."
+        title="Users"
+      >
+        <PageHeaderActions>
+          <AdminButtonLink sentiment="accented" to={paths.newUser}>
+            <AddIcon aria-hidden /> New user
+          </AdminButtonLink>
+        </PageHeaderActions>
+      </PageHeader>
+      <AdminToolbar>
+        <Input
+          bordered
+          className="vuuIdentityAdmin-searchInput"
+          inputProps={{ "aria-label": "Filter users" }}
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            setSearchText(event.target.value)
+          }
+          placeholder="Filter by name, username or email"
+          startAdornment={<SearchIcon aria-hidden />}
+          value={searchText}
         />
-        <AdminToolbar>
-          <ApplicationFilter
-            noAccessLabel="No application access"
-            onChange={setApplication}
-            value={application}
-          />
-          <RowCount dataSource={dataSource} noun="user" />
-        </AdminToolbar>
-        <div className="vuuIdentityAdmin-tableCard">
-          <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
-        </div>
-      </EditableTableMain>
-      <EditableTablePanel className="vuuIdentityAdmin-panel">
-        <EditableTablePanelHeader>
-          <UserHeading />
-        </EditableTablePanelHeader>
-        <SidePanelContent>
-          <TableEditorForm>
-            <UserEditForm />
-          </TableEditorForm>
-        </SidePanelContent>
-      </EditableTablePanel>
-    </EditableTable>
+        <ApplicationFilter
+          noAccessLabel="No application access"
+          onChange={setApplication}
+          value={knownApplication ? application : ""}
+        />
+      </AdminToolbar>
+      {search.error ? <p role="alert">{search.error}</p> : null}
+      <UsersTable aria-label="Users" filter={filter} />
+    </section>
   );
 };
