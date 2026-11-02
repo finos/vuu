@@ -5,7 +5,7 @@ export { useSessionDataSource } from "./hooks/useSessionDataSource";
 export {
   getTypeaheadParams,
   useTypeaheadSuggestions,
-} from "./hooks/useTypeaheadSuggestions";
+} from "@vuu-ui/vuu-utils";
 export { useVisualLinks } from "./hooks/useVisualLinks";
 export {
   isRowMenu,
