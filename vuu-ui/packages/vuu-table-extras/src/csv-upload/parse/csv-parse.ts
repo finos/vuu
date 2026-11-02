@@ -167,12 +167,12 @@ export const parseCsv = (
       relax_column_count: true,
       skip_empty_lines: true,
     }) as string[][];
-  } catch (err) {
+  } catch {
     addCsvFileError(
       errorState,
       "*",
       CsvParseErrorEnum.INVALID_FORMAT,
-      err instanceof Error ? err.message : "Invalid CSV format.",
+      "Invalid CSV format.",
     );
     return withError(
       "Invalid CSV format.",
@@ -248,6 +248,22 @@ export const parseCsv = (
     );
     return withError(
       `CSV header contains duplicate column '${duplicateHeader}'.`,
+      errorState.errorMap,
+      errorState.errors,
+      header,
+      [],
+    );
+  }
+
+  if (rows.length === 0) {
+    addCsvFileError(
+      errorState,
+      "*",
+      CsvParseErrorEnum.EMPTY_FILE,
+      "CSV file is empty.",
+    );
+    return withError(
+      "CSV file is empty.",
       errorState.errorMap,
       errorState.errors,
       header,

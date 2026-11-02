@@ -116,4 +116,49 @@ describe("parseCsv", () => {
       });
     });
   });
+
+  describe("empty data files", () => {
+    it("returns EMPTY_FILE error when CSV file is completely empty", () => {
+      const result = parseCsv("");
+
+      expect(result.error?.errorMap.fileErrors).toEqual({
+        "*": [CsvParseErrorEnum.EMPTY_FILE],
+      });
+      expect(result.error?.message).toBe("CSV file is empty.");
+    });
+
+    it("returns EMPTY_FILE error when CSV file has only headers and no data rows", () => {
+      const result = parseCsv("id,name\n");
+
+      expect(result.error?.errorMap.fileErrors).toEqual({
+        "*": [CsvParseErrorEnum.EMPTY_FILE],
+      });
+      expect(result.error?.message).toBe("CSV file is empty.");
+      expect(result.header).toEqual(["id", "name"]);
+      expect(result.rows).toEqual([]);
+    });
+
+    it("returns EMPTY_FILE error when CSV file has only headers with customHeaders", () => {
+      const result = parseCsv("col_a,col_b\n", {
+        customHeaders: ["id", "name"],
+      });
+
+      expect(result.error?.errorMap.fileErrors).toEqual({
+        "*": [CsvParseErrorEnum.EMPTY_FILE],
+      });
+      expect(result.error?.message).toBe("CSV file is empty.");
+    });
+  });
+
+  describe("invalid / non-CSV content", () => {
+    it("returns generic INVALID_FORMAT error when csv-parse fails on malformed quotes", () => {
+      const result = parseCsv('id,name\n1,foo"bar\n');
+
+      expect(result.error?.errorMap.fileErrors).toEqual({
+        "*": [CsvParseErrorEnum.INVALID_FORMAT],
+      });
+      expect(result.error?.message).toBe("Invalid CSV format.");
+      expect(result.error?.errors[0]?.message).toBe("Invalid CSV format.");
+    });
+  });
 });
