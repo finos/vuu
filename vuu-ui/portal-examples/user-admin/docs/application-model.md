@@ -43,13 +43,13 @@ flowchart LR
 
 ## Output: `ApplicationModel`
 
-| Field | Contents |
-| --- | --- |
-| `applications` / `byName` | One `ApplicationDetails` per application. Each has the descriptor, its `accessRole`, `client`, `groups`, own `roles` and `issues`. |
-| `groupsById`, `rolesById` | Lookups over every group and role. |
-| `groupApplication`, `roleApplication` | The application each group or role ID belongs to. |
-| `unmatchedGroups`, `unmatchedRoles` | The "Unassigned" bucket, i.e. naming drift. |
-| `issues` | All health issues. Per-application ones are also on each entry. |
+| Field                                 | Contents                                                                                                                           |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `applications` / `byName`             | One `ApplicationDetails` per application. Each has the descriptor, its `accessRole`, `client`, `groups`, own `roles` and `issues`. |
+| `groupsById`, `rolesById`             | Lookups over every group and role.                                                                                                 |
+| `groupApplication`, `roleApplication` | The application each group or role ID belongs to.                                                                                  |
+| `unmatchedGroups`, `unmatchedRoles`   | The "Unassigned" bucket, i.e. naming drift.                                                                                        |
+| `issues`                              | All health issues. Per-application ones are also on each entry.                                                                    |
 
 **Per-application checks:**
 
@@ -62,14 +62,10 @@ flowchart LR
 
 ## How it's used
 
-- **`ApplicationModelProvider`** (wrapped around the routes in `UserAdmin.tsx`) exposes `{ loading, error, model }` through `useApplicationModel()`.
-- **Scoping pages:** `groupIdsFor` and `roleIdsFor` turn an application into an ID-based `in` filter for the Groups and Roles tables (`useApplicationScope`). Users are scoped separately, using the server's `module_access` column.
-- **Cell renderers and forms** read the model to:
-  - show the Application column and the "Access" tag
-  - fix the group name prefix
-  - always include the access role
-  - limit the role picker to the application's own roles
-  - pick a new role's client
+- **`ApplicationModelProvider`** (wrapped around the routes in `UserAdmin.tsx`) exposes `{ loading, error, model }` through `useApplicationModel()`, and the RPC function through `useAdminRpc()`.
+- **Application workflow:** the groups × roles matrix, the new group panel (fixed prefix, access role always included, only the application's roles) and the batch user actions are built from one `ApplicationDetails`.
+- **User workflow:** each application offers its groups that include the access role; the least-privileged one is the default.
+- **Scoping:** `userScopeFilter` scopes the Users page to an application, using the server's `module_access` column.
 
 ## Limits
 

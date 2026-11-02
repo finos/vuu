@@ -1,5 +1,6 @@
 import { usePortalModuleRegistry } from "@vuu-ui/core/portal";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useMemo } from "react";
+import { type AdminRpc, callAdminRpc } from "./admin-rpc";
 import {
   buildApplicationModel,
   deriveApplications,
@@ -22,6 +23,7 @@ const GROUP_COLUMNS = [
 ];
 const GROUP_ROLE_COLUMNS = ["assignment_id", "group_id", "role_id"];
 const ROLE_COLUMNS = [
+  "description",
   "role_id",
   "role_name",
   "role_display_name",
@@ -54,7 +56,9 @@ export const useApplicationModel = () => useContext(ApplicationModelContext);
  * Joins the portal module registry with the Keycloak reference tables to
  * derive applications, their groups and roles, and configuration issues.
  */
-export const useLoadApplicationModel = (): ApplicationModelResource => {
+export const useLoadApplicationModel = (): ApplicationModelResource & {
+  rpc: AdminRpc;
+} => {
   const { applications, issues } = useApplications();
   const clients = useLookupRows(USER_ADMIN_TABLES.clients, CLIENT_COLUMNS);
   const groups = useLookupRows(USER_ADMIN_TABLES.groups, GROUP_COLUMNS);
@@ -88,5 +92,15 @@ export const useLoadApplicationModel = (): ApplicationModelResource => {
     clients.error ?? groups.error ?? groupRoles.error ?? roles.error;
   const loading =
     clients.loading || groups.loading || groupRoles.loading || roles.loading;
-  return useMemo(() => ({ error, loading, model }), [error, loading, model]);
+  // The groups lookup stays subscribed for the module's lifetime, so its
+  // viewport carries the module's RPCs.
+  const rpcDataSource = groups.dataSource;
+  const rpc = useCallback<AdminRpc>(
+    (rpcName, params) => callAdminRpc(rpcDataSource, rpcName, params),
+    [rpcDataSource],
+  );
+  return useMemo(
+    () => ({ error, loading, model, rpc }),
+    [error, loading, model, rpc],
+  );
 };
