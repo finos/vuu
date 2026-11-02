@@ -63,6 +63,15 @@ const nextWeight = scaledDecimalColumn(8, 8, 0, 0.05);
 
 const nextRandom = createRandom(1);
 
+/**
+ * Trade ids are unique, ascending and larger than the int range (2^31 - 1),
+ * but within Number.MAX_SAFE_INTEGER, so they need a long column.
+ */
+const FIRST_TRADE_ID = 4_000_000_000_000;
+const nextTradeIdGap = createRandom(3);
+let tradeId = FIRST_TRADE_ID;
+const nextTradeId = () => (tradeId += randomInt(nextTradeIdGap, 1, 1_000));
+
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -84,6 +93,7 @@ const instrumentsExtendedData: VuuRowDataItemType[][] = instrumentsData.map(
       supported: nextRandom() < 0.5,
       wishlist: nextRandom() < 0.5,
       lastUpdated: instrument[InstrumentColumnMap.vuuUpdatedTimestamp],
+      tradeId: nextTradeId(),
       price: Math.round(nextRandom() * 100_000) / 100,
       notional: nextNotional(rowIndex),
       closePrice: nextClosePrice(rowIndex),

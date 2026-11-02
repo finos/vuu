@@ -35,6 +35,12 @@ export const lotSizeColumn: ColumnDescriptor = {
   serverDataType: "int",
 };
 
+export const tradeIdColumn: ColumnDescriptor = {
+  label: "Trade id",
+  name: "tradeId",
+  serverDataType: "long",
+};
+
 export const priceColumn: ColumnDescriptor = {
   label: "Price",
   name: "price",
@@ -99,6 +105,7 @@ export const filterColumns: ColumnDescriptor[] = [
   bbgColumn,
   sideColumn,
   lotSizeColumn,
+  tradeIdColumn,
   priceColumn,
   supportedColumn,
   ...scaledDecimalColumns,
@@ -112,6 +119,7 @@ export const instrumentsExtendedColumns: ColumnDescriptor[] = [
   { label: "Currency", name: "currency", serverDataType: "string" },
   sideColumn,
   lotSizeColumn,
+  tradeIdColumn,
   priceColumn,
   supportedColumn,
   ...scaledDecimalColumns,

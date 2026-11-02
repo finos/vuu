@@ -52,6 +52,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
       { name: "supported", serverDataType: "boolean" },
       { name: "wishlist", serverDataType: "boolean" },
       { name: "lastUpdated", serverDataType: "long" },
+      { name: "tradeId", serverDataType: "long" },
       { name: "price", serverDataType: "double" },
       { name: "notional", serverDataType: "scaleddecimal2" },
       { name: "closePrice", serverDataType: "scaleddecimal4" },
