@@ -8,7 +8,11 @@ import {
   FilterContainerColumnFilter,
   FilterContainerProps,
   FilterDisplay,
+  FilterProvider,
+  useFilterContextMenu,
+  useSavedFilters,
 } from "@vuu-ui/vuu-filters";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -25,7 +29,7 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import {
@@ -452,39 +456,54 @@ const allColumnTypesColumnsByName = getColumnsByNameForFilter(
   getColumnsByName(allColumnTypesTableColumns),
 );
 
+/**
+ * The filter is held by FilterProvider, so the FilterContainer and the Table
+ * context menu ('Set filter', 'Add to filter', 'Clear filter' etc) both
+ * read and update the same filter.
+ */
 const AllColumnTypesTemplate = ({
   filter: filterProp,
   showOperatorPicker = false,
 }: Pick<FilterContainerProps, "filter"> &
   Pick<ColumnFilterProps, "showOperatorPicker">) => {
-  const [filter, setFilter] =
-    useState<FilterContainerProps["filter"]>(filterProp);
+  const { clearCurrentFilter, currentFilter, setCurrentFilter } =
+    useSavedFilters();
+  const filter = currentFilter.filter ?? undefined;
 
-  const dataSource = useMemo(() => {
-    const dataSource = createDataSourceWithTwins(instrumentsExtendedColumns);
+  useEffect(() => {
     if (filterProp) {
-      dataSource.setFilter(filterProp);
+      setCurrentFilter(filterProp);
     }
-    return dataSource;
-  }, [filterProp]);
+  }, [filterProp, setCurrentFilter]);
+
+  const dataSource = useMemo(
+    () => createDataSourceWithTwins(instrumentsExtendedColumns),
+    [],
+  );
+
+  useMemo(() => {
+    if (filter) {
+      dataSource.setFilter(filter);
+    } else {
+      dataSource.clearFilter?.();
+    }
+  }, [dataSource, filter]);
 
   const config = useMemo(
     () => ({ columns: allColumnTypesTableColumns, rowSeparators: true }),
     [],
   );
 
+  const filterContextMenuProps = useFilterContextMenu({
+    filterColumns: allColumnTypesFilterColumns.map(toColumnName),
+  });
+
   const onFilterApplied = useCallback<FilterAppliedHandler>(
     (filter) => {
-      dataSource.setFilter?.(filter);
-      setFilter(filter as FilterContainerProps["filter"]);
+      setCurrentFilter(filter as FilterContainerFilter);
     },
-    [dataSource],
+    [setCurrentFilter],
   );
-
-  const onFilterCleared = useCallback(() => {
-    dataSource.clearFilter?.();
-    setFilter(undefined);
-  }, [dataSource]);
 
   return (
     <DataSourceProvider dataSource={dataSource}>
@@ -492,7 +511,7 @@ const AllColumnTypesTemplate = ({
         <FilterContainer
           filter={filter}
           onFilterApplied={onFilterApplied}
-          onFilterCleared={onFilterCleared}
+          onFilterCleared={clearCurrentFilter}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -528,13 +547,15 @@ const AllColumnTypesTemplate = ({
             dataSource={dataSource}
             style={{ flex: "0 0 32px" }}
           />
-          <Table
-            config={config}
-            dataSource={dataSource}
-            height={500}
-            renderBufferSize={20}
-            width={1100}
-          />
+          <ContextMenuProvider {...filterContextMenuProps}>
+            <Table
+              config={config}
+              dataSource={dataSource}
+              height={500}
+              renderBufferSize={20}
+              width={1100}
+            />
+          </ContextMenuProvider>
         </div>
       </div>
     </DataSourceProvider>
@@ -546,27 +567,34 @@ const AllColumnTypesTemplate = ({
  * columns display fewer decimals than they hold, a value entered as displayed
  * matches every row that displays that value.
  */
-export const AllColumnTypes = () => <AllColumnTypesTemplate />;
-
-export const AllColumnTypesWithOperators = () => (
-  <AllColumnTypesTemplate showOperatorPicker />
+export const AllColumnTypes = () => (
+  <FilterProvider>
+    <AllColumnTypesTemplate />
+  </FilterProvider>
 );
 
+export const AllColumnTypesWithOperators = () => (
+  <FilterProvider>
+    <AllColumnTypesTemplate showOperatorPicker />
+  </FilterProvider>
+);
+
+const fxRateFilter: FilterContainerFilter = {
+  column: "fxRate",
+  op: "=",
+  value: "1.23",
+  extendedOptions: {
+    type: "ScaledDecimal",
+    scale: 6,
+    decimals: 2,
+    roundingRule: "round",
+  },
+};
+
 export const AllColumnTypesWithScaledDecimalFilter = () => (
-  <AllColumnTypesTemplate
-    filter={{
-      column: "fxRate",
-      op: "=",
-      value: "1.23",
-      extendedOptions: {
-        type: "ScaledDecimal",
-        scale: 6,
-        decimals: 2,
-        roundingRule: "round",
-      },
-    }}
-    showOperatorPicker
-  />
+  <FilterProvider>
+    <AllColumnTypesTemplate filter={fxRateFilter} showOperatorPicker />
+  </FilterProvider>
 );
 
 const instrumentsExtendedSchema = getSchema("instrumentsExtended");
