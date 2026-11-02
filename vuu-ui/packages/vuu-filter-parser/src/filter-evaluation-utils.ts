@@ -1,5 +1,5 @@
-import { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
-import {
+import type { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
+import type {
   ColumnDescriptorsByName,
   Filter,
   MultiClauseFilter,
@@ -7,17 +7,18 @@ import {
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
 import {
-  ColumnMap,
+  type ColumnMap,
   getScaledDecimalScale,
   isFilter,
   isScaledDecimalFilterClause,
   type ScaledDecimalScale,
+  stringIsValidLong,
   toDecimalString,
   toScaledInteger,
 } from "@vuu-ui/vuu-utils";
 import { parseFilter } from "./FilterParser";
-import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
-import { DataRow } from "@vuu-ui/vuu-table-types";
+import type { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
 const dataRowFilterPredicateMap = new Map<string, DataRowFilterPredicate>();
@@ -72,7 +73,7 @@ export function getFilterPredicate(
       return filterReject;
     }
   } else {
-    throw Error(`[getFilterPredicate] invalid params`);
+    throw Error("[getFilterPredicate] invalid params");
   }
 }
 
@@ -86,7 +87,11 @@ export function getFilterPredicate(
  */
 
 // prettier-ignore
-export function filterPredicate(columnMap: ColumnMap, filter: Filter, columnsByName?: ColumnDescriptorsByName): FilterPredicate;
+export function filterPredicate(
+  columnMap: ColumnMap,
+  filter: Filter,
+  columnsByName?: ColumnDescriptorsByName,
+): FilterPredicate;
 export function filterPredicate(filter: Filter): DataRowFilterPredicate;
 export function filterPredicate(
   columnMapOrFilter: ColumnMap | Filter,
@@ -98,17 +103,12 @@ export function filterPredicate(
       case "in":
         return testDataRowInclude(columnMapOrFilter);
       case "=":
-        return testDataRowEQ(columnMapOrFilter);
       case "!=":
-        return testDataRowNE(columnMapOrFilter);
       case ">":
-        return testDataRowGT(columnMapOrFilter);
       case ">=":
-        return testDataRowGE(columnMapOrFilter);
       case "<":
-        return testDataRowLT(columnMapOrFilter);
       case "<=":
-        return testDataRowLE(columnMapOrFilter);
+        return testDataRowComparison(columnMapOrFilter);
       case "ends":
         return testDataRowEW(columnMapOrFilter);
       case "starts":
@@ -121,7 +121,7 @@ export function filterPredicate(
         return testDataRowOR(columnMapOrFilter as MultiClauseFilter<"or">);
       default: {
         const unreachable: never = columnMapOrFilter;
-        console.log('unrecognized filter type', unreachable);
+        console.log("unrecognized filter type", unreachable);
         return () => true;
       }
     }
@@ -142,17 +142,12 @@ export function filterPredicate(
       case "in":
         return testInclude(columnMapOrFilter, filter);
       case "=":
-        return testEQ(columnMapOrFilter, filter);
       case "!=":
-        return testNE(columnMapOrFilter, filter);
       case ">":
-        return testGT(columnMapOrFilter, filter);
       case ">=":
-        return testGE(columnMapOrFilter, filter);
       case "<":
-        return testLT(columnMapOrFilter, filter);
       case "<=":
-        return testLE(columnMapOrFilter, filter);
+        return testComparison(columnMapOrFilter, filter);
       case "ends":
         return testEW(columnMapOrFilter, filter);
       case "starts":
@@ -173,12 +168,12 @@ export function filterPredicate(
         );
       default: {
         const unreachable: never = filter;
-        console.log('unrecognized filter type', unreachable);
+        console.log("unrecognized filter type", unreachable);
         return () => true;
       }
     }
   } else {
-    throw Error(`[filterPredicate] invalid params`);
+    throw Error("[filterPredicate] invalid params");
   }
 }
 
@@ -222,105 +217,96 @@ const testScaledDecimal = (
   };
 };
 
+/**
+ * A long filter value is held as a string, so no precision is lost before it
+ * reaches the server, but long values in local data are numbers. Where the row
+ * value is a number, a whole number string filter value is compared as a
+ * number. Other values are compared as they are.
+ */
+const asNumber = (value: unknown) =>
+  typeof value === "string" && stringIsValidLong(value)
+    ? Number(value)
+    : undefined;
+
+type ValueComparison = (rowValue: unknown, filterValue: unknown) => boolean;
+
+const comparisons: Record<ComparisonOp, ValueComparison> = {
+  "=": (a, b) => a === b,
+  "!=": (a, b) => a !== b,
+  // biome-ignore lint/suspicious/noExplicitAny: values of any comparable type
+  ">": (a: any, b: any) => a > b,
+  // biome-ignore lint/suspicious/noExplicitAny: values of any comparable type
+  ">=": (a: any, b: any) => a >= b,
+  // biome-ignore lint/suspicious/noExplicitAny: values of any comparable type
+  "<": (a: any, b: any) => a < b,
+  // biome-ignore lint/suspicious/noExplicitAny: values of any comparable type
+  "<=": (a: any, b: any) => a <= b,
+};
+
+/**
+ * Compares a row value with the filter value, as a number where the row value
+ * is a number (see asNumber).
+ */
+const valueComparison = (
+  filter: SingleValueFilterClause,
+): ((rowValue: unknown) => boolean) => {
+  const test = comparisons[filter.op as ComparisonOp];
+  const { value } = filter;
+  const numericValue = asNumber(value);
+  return numericValue === undefined
+    ? (rowValue) => test(rowValue, value)
+    : (rowValue) =>
+        test(rowValue, typeof rowValue === "number" ? numericValue : value);
+};
+
+/** As valueComparison, for each of the values of an 'in' filter */
+const includesValue = (
+  filter: MultiValueFilterClause,
+): ((rowValue: unknown) => boolean) => {
+  const values = filter.values as unknown[];
+  const numericValues = values.map((value) => asNumber(value) ?? value);
+  return (rowValue) =>
+    (typeof rowValue === "number" ? numericValues : values).includes(rowValue);
+};
+
 const testInclude = (
   columnMap: ColumnMap,
   filter: MultiValueFilterClause,
 ): FilterPredicate => {
-  return (row) =>
-    (filter.values as unknown[]).indexOf(row[columnMap[filter.column]]) !== -1;
+  const includes = includesValue(filter);
+  return (row) => includes(row[columnMap[filter.column]]);
 };
 
 const testDataRowInclude = (
   filter: MultiValueFilterClause,
 ): DataRowFilterPredicate => {
-  return (row) =>
-    (filter.values as unknown[]).indexOf(row[filter.column]) !== -1;
+  const includes = includesValue(filter);
+  return (row) => includes(row[filter.column]);
 };
 
-const testEQ = (
+const testComparison = (
   columnMap: ColumnMap,
   filter: SingleValueFilterClause,
 ): FilterPredicate => {
-  if (isScaledDecimalFilterClause(filter)) {
-    return (row) => row[columnMap[filter.column]] === filter.value.asLong;
-  } else {
-    return (row) => row[columnMap[filter.column]] === filter.value;
+  const index = columnMap[filter.column];
+  if (
+    isScaledDecimalFilterClause(filter) &&
+    (filter.op === "=" || filter.op === "!=")
+  ) {
+    const { asLong } = filter.value;
+    return filter.op === "="
+      ? (row) => row[index] === asLong
+      : (row) => row[index] !== asLong;
   }
+  const test = valueComparison(filter);
+  return (row) => test(row[index]);
 };
 
-const testNE = (
-  columnMap: ColumnMap,
-  filter: SingleValueFilterClause,
-): FilterPredicate => {
-  if (isScaledDecimalFilterClause(filter)) {
-    return (row) => row[columnMap[filter.column]] !== filter.value.asLong;
-  } else {
-    return (row) => row[columnMap[filter.column]] !== filter.value;
-  }
-};
-
-const testDataRowEQ = (
+const testDataRowComparison = (
   filter: SingleValueFilterClause,
 ): DataRowFilterPredicate => {
-  return (row) => row[filter.column] === filter.value;
-};
-
-const testDataRowNE = (
-  filter: SingleValueFilterClause,
-): DataRowFilterPredicate => {
-  return (row) => row[filter.column] !== filter.value;
-};
-
-const testGT = (
-  columnMap: ColumnMap,
-  filter: SingleValueFilterClause,
-): FilterPredicate => {
-  return (row) => row[columnMap[filter.column]] > filter.value;
-};
-
-const testDataRowGT = (
-  filter: SingleValueFilterClause,
-): DataRowFilterPredicate => {
-  return (row) => row[filter.column] > filter.value;
-};
-
-const testGE = (
-  columnMap: ColumnMap,
-  filter: SingleValueFilterClause,
-): FilterPredicate => {
-  return (row) => row[columnMap[filter.column]] >= filter.value;
-};
-
-const testDataRowGE = (
-  filter: SingleValueFilterClause,
-): DataRowFilterPredicate => {
-  return (row) => row[filter.column] >= filter.value;
-};
-
-const testLT = (
-  columnMap: ColumnMap,
-  filter: SingleValueFilterClause,
-): FilterPredicate => {
-  return (row) => row[columnMap[filter.column]] < filter.value;
-};
-
-const testDataRowLT = (
-  filter: SingleValueFilterClause,
-): DataRowFilterPredicate => {
-  return (row) => row[filter.column] < filter.value;
-};
-
-const testLE = (
-  columnMap: ColumnMap,
-  filter: SingleValueFilterClause,
-): FilterPredicate => {
-  return (row) => row[columnMap[filter.column]] <= filter.value;
-};
-
-const testDataRowLE = (
-  filter: SingleValueFilterClause,
-): DataRowFilterPredicate => {
-  return (row) => row[filter.column] <= filter.value;
+  const test = valueComparison(filter);
+  return (row) => test(row[filter.column]);
 };
 
 const testEW = (
