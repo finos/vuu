@@ -235,7 +235,7 @@ export const useEditForm = ({
   const requiredRef = useRef(requiredColumns);
   requiredRef.current = requiredColumns;
 
-  const directEditSession = useMemo(
+  const directEditSession = useMemo<DirectEditSession | undefined>(
     () =>
       isDirect
         ? new FormDirectEditSession(
