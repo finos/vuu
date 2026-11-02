@@ -92,5 +92,9 @@ export {
 } from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
+export {
+  getTypeaheadParams,
+  useTypeaheadSuggestions,
+} from "./useTypeaheadSuggestions";
 export * from "./ShellContext";
 export { ThemeLoadChecker } from "./theme-utils";
