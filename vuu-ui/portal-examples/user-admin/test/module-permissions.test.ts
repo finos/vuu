@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ModulePermissions } from "../src/components/user-edit-form/ModulePermissions";
+import { ModulePermissions } from "../src/components/module-picker/ModulePermissions";
 
 describe("ModulePermissions", () => {
   it("creates immutable updates and recognizes a reverted selection", () => {

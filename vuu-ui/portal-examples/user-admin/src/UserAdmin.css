@@ -420,3 +420,54 @@
 .vuuIdentityAdmin .vuuItemPicker-scrollContainer .vuuItemPicker-availableList .saltOption {
   padding-left: var(--salt-spacing-100);
 }
+
+/* Unsaved changes, pinned to the bottom of a page or tab. */
+.vuuIdentityAdmin-saveBar {
+  align-items: center;
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--salt-palette-corner, 8px);
+  bottom: 0;
+  box-shadow: var(--salt-overlayable-shadow-raised, none);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-150);
+  justify-content: space-between;
+  padding: var(--salt-spacing-150) var(--salt-spacing-200);
+  position: sticky;
+  z-index: 1;
+}
+
+.vuuIdentityAdmin-saveBarText {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+}
+
+.vuuIdentityAdmin-issues {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuIdentityAdmin-issues > li {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAdminUi-visuallyHidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}

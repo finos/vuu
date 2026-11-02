@@ -1,5 +1,6 @@
 import { useData } from "@vuu-ui/core";
 import type {
+  DataSource,
   DataSourceSubscribeCallback,
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
@@ -13,6 +14,8 @@ import { errorMessage } from "./admin-contract";
 export const LOOKUP_ROW_LIMIT = 1000;
 
 export interface LookupRows {
+  /** The subscribed data source, e.g. for RPCs on its viewport. */
+  dataSource?: DataSource;
   error?: string;
   loading: boolean;
   rows: DataRow[];
@@ -125,5 +128,5 @@ export const useLookupRows = (
     };
   }, [columns, dataSource, table.table]);
 
-  return resource;
+  return useMemo(() => ({ ...resource, dataSource }), [dataSource, resource]);
 };

@@ -216,6 +216,7 @@ export interface GroupRow {
 export interface RoleRow {
   readonly [column: string]: unknown;
   client_identifier?: unknown;
+  description?: unknown;
   role_display_name?: unknown;
   role_id?: unknown;
   role_name?: unknown;
@@ -236,6 +237,7 @@ export interface ClientRow {
 
 export interface ApplicationRole {
   clientIdentifier: string;
+  description?: string;
   displayName: string;
   groupCount: number;
   kind?: RoleKind;
@@ -326,6 +328,7 @@ export const buildApplicationModel = ({
     return [
       {
         clientIdentifier,
+        description: text(row.description) || undefined,
         displayName: text(row.role_display_name) || roleName,
         groupCount: groupCountByRole.get(roleId) ?? 0,
         kind: classifyRole(applications, roleName, clientIdentifier)?.kind,
