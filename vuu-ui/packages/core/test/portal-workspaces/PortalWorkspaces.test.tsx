@@ -1,6 +1,6 @@
 import type { GridLayoutDocument } from "@vuu-ui/grid-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
-import { act } from "react";
+import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
   MemoryRouter,
@@ -264,6 +264,7 @@ describe("Portal workspaces", () => {
 
   const render = async ({
     emptyContent,
+    headerCenter,
     nav = {},
     palette = false,
     paletteProps,
@@ -272,6 +273,7 @@ describe("Portal workspaces", () => {
     systemWorkspaces = [TRADER],
   }: {
     emptyContent?: WorkspaceEmptyContent;
+    headerCenter?: ReactNode;
     nav?: Partial<PortalNavProps>;
     palette?: boolean;
     paletteProps?: PanelsPaletteProps;
@@ -310,6 +312,7 @@ describe("Portal workspaces", () => {
                                   <button type="button">Add panel</button>
                                 )
                               }
+                              headerCenter={headerCenter}
                               paletteProps={paletteProps}
                             />
                           }
@@ -480,6 +483,47 @@ describe("Portal workspaces", () => {
       expect(q(".vuuPortalWorkspace-body .vuuGridLayout")).not.toBeNull();
       expect(buttonByText("Add panel")).toBeTruthy();
       expect(buttonByText("Reset to default")).toBeUndefined();
+    });
+
+    it("has no centre slot by default", async () => {
+      await render({ path: "/workspaces/trader" });
+      await vi.waitFor(() => expect(latest.activeWorkspaceId).toBe("trader"));
+      await settle();
+      const header = q(".vuuPortalWorkspaceHeader");
+      expect(header?.classList).not.toContain(
+        "vuuPortalWorkspaceHeader-withCenter",
+      );
+      expect(q(".vuuPortalWorkspaceHeader-center")).toBeNull();
+      expect(q(".vuuPortalWorkspaceHeader-spacer")).not.toBeNull();
+    });
+
+    it("renders headerCenter between the name and the actions", async () => {
+      await render({
+        headerCenter: <div data-testid="channel-picker">Channels</div>,
+        path: "/workspaces/trader",
+      });
+      await vi.waitFor(() => expect(latest.activeWorkspaceId).toBe("trader"));
+      await settle();
+      const header = q(".vuuPortalWorkspaceHeader");
+      expect(header?.classList).toContain(
+        "vuuPortalWorkspaceHeader-withCenter",
+      );
+      expect(q(".vuuPortalWorkspaceHeader-spacer")).toBeNull();
+      expect(
+        Array.from(header?.children ?? [], ({ className }) => className),
+      ).toEqual([
+        "vuuPortalWorkspaceHeader-start",
+        "vuuPortalWorkspaceHeader-center",
+        "vuuPortalWorkspaceHeader-actions",
+      ]);
+      expect(
+        q('.vuuPortalWorkspaceHeader-center [data-testid="channel-picker"]'),
+      ).not.toBeNull();
+      expect(
+        q(".vuuPortalWorkspaceHeader-start .vuuPortalWorkspaceHeader-title")
+          ?.textContent,
+      ).toBe("Trader");
+      expect(buttonByText("Add panel")).toBeTruthy();
     });
 
     it("follows the URL", async () => {

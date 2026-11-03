@@ -292,6 +292,37 @@ button.vuuPortalWorkspaceHeader-title {
   gap: 8px;
 }
 
+/*
+ * With a centre slot: equal side columns keep the centre centred when the
+ * sides differ in width; the centre column can shrink to 0 so it never
+ * overlaps either side.
+ */
+.vuuPortalWorkspaceHeader-withCenter {
+  display: grid;
+  grid-template-columns:
+    minmax(max-content, 1fr) minmax(0, max-content)
+    minmax(max-content, 1fr);
+
+  .vuuPortalWorkspaceHeader-actions {
+    justify-self: end;
+  }
+}
+
+.vuuPortalWorkspaceHeader-start {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.vuuPortalWorkspaceHeader-center {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .vuuPortalWorkspaceReset {
   display: grid;
   gap: 10px;

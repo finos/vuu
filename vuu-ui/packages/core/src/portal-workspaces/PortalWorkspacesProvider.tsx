@@ -32,6 +32,13 @@ export interface PortalWorkspacesOptions {
    */
   headerActions?: ReactNode;
   /**
+   * Content centred in the workspace header, e.g. a channel picker. It stays
+   * centred when the name and the actions differ in width, and shrinks
+   * (min-width 0) rather than overlap them, so it should size itself to the
+   * space it gets.
+   */
+  headerCenter?: ReactNode;
+  /**
    * Options of the Panels palette that `<AddPanelButton />` opens, e.g.
    * `{ tabs: ["modules", "tables", "recent"] }` to offer the Tables tab,
    * which is not shown by default.
