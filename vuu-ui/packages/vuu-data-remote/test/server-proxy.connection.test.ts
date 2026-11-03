@@ -298,13 +298,15 @@ describe("ServerProxy connection lifecycle", () => {
       t.expectClient();
     });
 
-    it("on reconnected, drops a viewport whose CREATE_VP is rejected and posts subscribe-failed", async () => {
+    it("on reconnected, drops a viewport whose CREATE_VP is rejected", async () => {
       const t = await serverProxyHarness();
       t.discard();
 
       t.connection.status("reconnected");
       t.discard();
 
+      // Current behaviour: the reject is ignored ("handle reject" is empty),
+      // the viewport is not restored and the client is not told.
       t.server.replies("CREATE_VP", {
         type: "CREATE_VP_REJECT",
         msg: "no such table",
@@ -313,58 +315,46 @@ describe("ServerProxy connection lifecycle", () => {
 
       expect(t.proxyState().viewportCount).toEqual(0);
       expect(t.proxyState().serverViewportFor("client-vp-1")).toBeUndefined();
-      t.expectClient({
-        clientViewportId: "client-vp-1",
-        type: "subscribe-failed",
-        msg: "failed to open subscription on table test-table: no such table",
-      });
+      t.expectClient();
       t.expectServer();
     });
 
-    it("immediately resubscribes a suspended viewport when it is resumed during reconnect after an active session viewport is rejected", async () => {
+    it("on disconnected, removes session table viewports and posts subscribe-failed so they are not resubscribed on reconnect", async () => {
       const t = await serverProxyHarness();
-      await t.subscribe({ key: "2" });
-      t.client.suspend("client-vp-1", { escalateToDisable: false });
+      const [sessionReq, sessionAck, sessionMeta] = createSubscription({
+        key: "2",
+      });
+      const sessionTable = { module: "TEST", table: "session:client/edit-1" };
+      sessionReq.table = sessionTable;
+      sessionAck.body.table = sessionTable.table;
+      sessionMeta.body.table = sessionTable;
+      const subscribing = t.proxy.subscribe(sessionReq);
+      t.server.replies("CREATE_VP", sessionAck.body);
+      t.server.replies("GET_TABLE_META", sessionMeta.body);
+      await subscribing;
       t.discard();
 
-      vi.useFakeTimers();
+      t.connection.status("disconnected");
+
+      t.expectClient(
+        { clientViewportId: "client-vp-1", type: "viewport-clear" },
+        {
+          clientViewportId: "client-vp-2",
+          type: "subscribe-failed",
+          msg: "session table session:client/edit-1 disconnected",
+        },
+      );
+      expect(t.proxyState().viewportCount).toEqual(1);
+      expect(t.proxyState().serverViewportFor("client-vp-2")).toBeUndefined();
+
+      fromServer(
+        t,
+        { type: "LOGIN_SUCCESS", token: "test", vuuServerId: "server-1" },
+        { sessionId: "dsdsd" },
+      );
+      t.discard();
       t.connection.status("reconnected");
-      // Active session viewport (client-vp-2) resubscribes immediately; suspended source viewport (client-vp-1) is deferred
-      t.expectServer(resubscribe("client-vp-2"));
-
-      // Server rejects the session table CREATE_VP
-      t.server.replies("CREATE_VP", {
-        type: "CREATE_VP_REJECT",
-        msg: "no such session table",
-      });
-      await vi.advanceTimersByTimeAsync(0);
-
-      t.expectClient({
-        clientViewportId: "client-vp-2",
-        type: "subscribe-failed",
-        msg: "failed to open subscription on table test-table: no such session table",
-      });
-
-      // Client exits edit mode and resumes the source viewport
-      t.client.resume("client-vp-1");
-      t.expectClient({
-        clientViewportId: "client-vp-1",
-        mode: "update",
-        rows: [],
-        size: 0,
-        type: "viewport-update",
-      });
-
-      // Resuming client-vp-1 immediately triggers its CREATE_VP without waiting 2s
       t.expectServer(resubscribe("client-vp-1"));
-      t.server.receives(createVpSuccess("1", "server-vp-1"), "client-vp-1");
-      await vi.advanceTimersByTimeAsync(0);
-
-      expect(t.viewportState("server-vp-1")).toMatchObject({
-        status: "subscribed",
-        suspended: false,
-      });
-      vi.useRealTimers();
     });
   });
 

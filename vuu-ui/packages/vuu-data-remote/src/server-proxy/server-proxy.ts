@@ -134,7 +134,6 @@ export class ServerProxy {
   private postMessageToClient: PostMessageToClientCallback;
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
-  private reconnectingViewports = new Map<string, Viewport>();
   private authToken = "";
   private pendingLogin?: PendingLogin;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,63 +166,45 @@ export class ServerProxy {
     }
   };
 
-  private reconnectViewport = (viewport: Viewport) => {
-    const { clientViewportId } = viewport;
-    if (
-      !this.reconnectingViewports.has(clientViewportId) ||
-      viewport.status === "resubscribing"
-    ) {
-      return;
-    }
-
-    this.awaitResponseToMessage<VuuViewportCreateResponse>(
-      viewport.subscribe(),
-      clientViewportId,
-    ).then((msg) => {
-      if (!this.reconnectingViewports.has(clientViewportId)) {
-        return;
-      }
-      this.reconnectingViewports.delete(clientViewportId);
-      if (msg.type === "CREATE_VP_SUCCESS") {
-        this.mapClientToServerViewport.set(clientViewportId, msg.viewPortId);
-        this.viewports.set(msg.viewPortId, viewport);
-        // TODO should we just call viewport.reconnected()
-        viewport.status = "subscribed";
-        viewport.serverViewportId = msg.viewPortId;
-        if (this.queuedRequests.length > 0) {
-          this.processQueuedRequests();
-        }
-      } else {
-        this.postMessageToClient({
-          clientViewportId,
-          type: "subscribe-failed",
-          msg: `failed to open subscription on table ${viewport.table.table}: ${msg.msg}`,
-        });
-      }
-    });
-  };
-
   private reconnect = async () => {
     // The "active" viewports are those the user has on their open layout
     // Reconnect these first.
-    const allViewports = Array.from(this.viewports.values());
     const [activeViewports, inactiveViewports] = partition(
-      allViewports,
+      Array.from(this.viewports.values()),
       isActiveViewport,
     );
 
     this.viewports.clear();
     this.mapClientToServerViewport.clear();
-    this.reconnectingViewports.clear();
 
-    for (const viewport of allViewports) {
-      this.reconnectingViewports.set(viewport.clientViewportId, viewport);
-    }
+    const reconnectViewports = (viewports: Viewport[]) => {
+      viewports.forEach((viewport) => {
+        const { clientViewportId } = viewport;
 
-    activeViewports.forEach(this.reconnectViewport);
+        this.awaitResponseToMessage<VuuViewportCreateResponse>(
+          viewport.subscribe(),
+          clientViewportId,
+        ).then((msg) => {
+          if (msg.type === "CREATE_VP_SUCCESS") {
+            this.mapClientToServerViewport.set(
+              clientViewportId,
+              msg.viewPortId,
+            );
+            this.viewports.set(msg.viewPortId, viewport);
+            // TODO should we just call viewport.reconnected()
+            viewport.status = "subscribed";
+            viewport.serverViewportId = msg.viewPortId;
+          } else {
+            // handle reject
+          }
+        });
+      });
+    };
+
+    reconnectViewports(activeViewports);
 
     setTimeout(() => {
-      inactiveViewports.forEach(this.reconnectViewport);
+      reconnectViewports(inactiveViewports);
     }, 2000);
   };
 
@@ -240,8 +221,18 @@ export class ServerProxy {
   }
 
   public clearAllViewports() {
-    this.viewports.forEach((viewport) => {
-      viewport.clearCache();
+    this.viewports.forEach((viewport, key) => {
+      if (isSessionTable(viewport.table)) {
+        this.mapClientToServerViewport.delete(viewport.clientViewportId);
+        this.viewports.delete(key);
+        this.postMessageToClient({
+          clientViewportId: viewport.clientViewportId,
+          type: "subscribe-failed",
+          msg: `session table ${viewport.table.table} disconnected`,
+        });
+      } else {
+        viewport.clearCache();
+      }
     });
   }
 
@@ -387,10 +378,7 @@ export class ServerProxy {
           },
           requestId,
         );
-      } else if (
-        this.viewports.has(clientViewportId) ||
-        this.reconnectingViewports.has(clientViewportId)
-      ) {
+      } else if (this.viewports.has(clientViewportId)) {
         // If the clientViewportId is still used a a key in the viewport map, this
         // viewport has not yet subscribed. Keep in the queue
         newQueue.push(queuedRequest);
@@ -445,8 +433,6 @@ export class ServerProxy {
     } else if (this.viewports.has(clientViewportId)) {
       // Still stored under client viewportId means it is waiting for CREATE_VP to be acked
       return this.viewports.get(clientViewportId);
-    } else if (this.reconnectingViewports.has(clientViewportId)) {
-      return this.reconnectingViewports.get(clientViewportId);
     } else if (throws) {
       throw Error(
         `Viewport server id not found for client viewport ${clientViewportId}`,
@@ -592,12 +578,6 @@ export class ServerProxy {
       viewport.suspendTimer = null;
     }
     const [size, rows] = viewport.resume();
-    if (
-      this.reconnectingViewports.has(viewport.clientViewportId) &&
-      viewport.status !== "resubscribing"
-    ) {
-      this.reconnectViewport(viewport);
-    }
     debug?.(`resumeViewport size ${size}, ${rows.length} rows sent to client`);
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,

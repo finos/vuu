@@ -92,14 +92,14 @@ is entered.
 
 For a remote `VuuDataSource`, the session instance issues its RPCs against its
 own viewport, so it must have completed its subscription first — which is what
-`isEditSessionReady` gates on. On a WebSocket reconnect, `ServerProxy` attempts
-to resubscribe the session table; if the server preserves the session table,
-edit mode continues seamlessly. If the server rejects `CREATE_VP` because the
-session table no longer exists, `ServerProxy` posts `subscribe-failed` and the
-session `VuuDataSource` unsubscribes itself; `EditSession` listens for
-`"unsubscribed"` on the active session data source to cleanly end the session
-without sending an `endEditSession` RPC, and `useEditableTable` calls `onCancel`
-so the table exits edit mode and resumes the source data source.
+`isEditSessionReady` gates on. Because the server removes session tables when a
+WebSocket disconnects, `ServerProxy` drops session-table viewports on
+`"disconnected"` and posts `subscribe-failed` rather than attempting to
+resubscribe them on reconnect. The session `VuuDataSource` then unsubscribes
+itself; `EditSession` listens for `"unsubscribed"` on the active session data
+source to cleanly end the session without sending an `endEditSession` RPC, and
+`useEditableTable` calls `onCancel` so the table exits edit mode and resumes the
+source data source.
 
 ## Divergent edit tables
 
