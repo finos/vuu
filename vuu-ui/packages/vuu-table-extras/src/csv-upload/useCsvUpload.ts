@@ -100,6 +100,18 @@ export type UseCsvUploadReturn = {
   error: CsvUploadErrorResult | undefined;
 };
 
+const CSV_MIME_TYPES = new Set([
+  "",
+  "text/csv",
+  "text/plain",
+  "application/csv",
+  "application/vnd.ms-excel",
+]);
+
+const isCsvFile = (file: File): boolean =>
+  file.name.toLowerCase().endsWith(".csv") &&
+  CSV_MIME_TYPES.has(file.type.toLowerCase());
+
 export const useCsvUpload = ({
   dataSource,
   importMode = "direct",
@@ -203,6 +215,16 @@ export const useCsvUpload = ({
 
       if (table === undefined) {
         throw Error("CsvUpload requires dataSource.table to be defined.");
+      }
+
+      if (!isCsvFile(file)) {
+        const errorMessage = "Invalid file type. Only .csv files are supported.";
+        handleError({
+          errors: {
+            validationError: createUploadError("validation", errorMessage),
+          },
+        });
+        return;
       }
 
       const effectiveParseOptions: CsvParseOptions = {

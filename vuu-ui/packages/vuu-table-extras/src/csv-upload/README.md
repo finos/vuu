@@ -198,7 +198,7 @@ type CsvErrorMap<TError extends string> = {
 
 | Code | Meaning |
 |---|---|
-| `EMPTY_FILE` | The file contains no content. |
+| `EMPTY_FILE` | The file contains no content or has no data rows. |
 | `INVALID_SEPARATOR` | Separator could not be detected. |
 | `INVALID_FORMAT` | General CSV format violation. |
 | `UNQUOTED_VALUE` | A value contains a delimiter but is not quoted (when `requireQuotedValues` is set). |

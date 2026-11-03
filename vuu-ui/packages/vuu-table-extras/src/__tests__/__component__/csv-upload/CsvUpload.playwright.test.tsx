@@ -58,6 +58,82 @@ test.describe("Given a CsvUpload component", () => {
       "Upload Instruments CSV",
     );
   });
+
+  test("WHEN an empty CSV file (without headers) is uploaded THEN a generic empty file error is displayed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/DefaultCsvUpload");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "empty.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(""),
+    });
+
+    await expect(page.locator(".saltFileDropZone")).toHaveClass(
+      /saltFileDropZone-error/,
+      { timeout: 5000 },
+    );
+    await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
+      "Validation failed",
+    );
+    await expect(page.locator(".vuuCsvUpload-errorItem")).toHaveText(
+      "CSV file is empty.",
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+
+  test("WHEN a CSV file with only headers and no data is uploaded THEN a generic empty file error is displayed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/DefaultCsvUpload");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "headers-only.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,name,price\n"),
+    });
+
+    await expect(page.locator(".saltFileDropZone")).toHaveClass(
+      /saltFileDropZone-error/,
+      { timeout: 5000 },
+    );
+    await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
+      "Validation failed",
+    );
+    await expect(page.locator(".vuuCsvUpload-errorItem")).toHaveText(
+      "CSV file is empty.",
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+
+  test("WHEN a non-CSV document is uploaded THEN a clean invalid file type error is displayed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/DefaultCsvUpload");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "document.docx",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      buffer: Buffer.from('PK\x03\x04\x14\x00"binary content'),
+    });
+
+    await expect(page.locator(".saltFileDropZone")).toHaveClass(
+      /saltFileDropZone-error/,
+      { timeout: 5000 },
+    );
+    await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
+      "Validation failed",
+    );
+    await expect(page.locator(".vuuCsvUpload-errorItem")).toHaveText(
+      "Invalid file type. Only .csv files are supported.",
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
 });
 
 test.describe("Given a CsvUpload with the instruments schema", () => {
