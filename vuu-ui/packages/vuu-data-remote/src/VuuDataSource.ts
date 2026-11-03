@@ -249,6 +249,11 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         this.#menu = message.menu;
       } else if (isVisualLinksAction(message)) {
         this.#links = message.links as LinkDescriptorWithLabel[];
+      } else if (message.type === "subscribe-failed") {
+        this._clientCallback?.(message);
+        if (this.#sourceTableDataSource) {
+          this.unsubscribe(false);
+        }
       } else {
         if (infoEnabled && message.type === "viewport-update") {
           info(
@@ -276,17 +281,20 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     }
   };
 
-  unsubscribe() {
+  unsubscribe(notifyServer = true) {
     if (this.#status !== "unsubscribed") {
       info?.(`unsubscribe #${this.viewport}`);
-      if (this.viewport) {
-        this.server?.unsubscribe(this.viewport);
-        this.emit("unsubscribed", this.viewport);
+      const viewport = this.viewport;
+      this.#status = "unsubscribed";
+      if (viewport) {
+        if (notifyServer) {
+          this.server?.unsubscribe(viewport);
+        }
+        this.emit("unsubscribed", viewport);
       }
-      this.server?.destroy(this.viewport);
+      this.server?.destroy(viewport);
       this.server = null;
       this.removeAllListeners();
-      this.#status = "unsubscribed";
       this.viewport = "";
       this.range = Range(0, 0);
     }

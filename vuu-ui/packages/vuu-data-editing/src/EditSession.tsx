@@ -623,6 +623,12 @@ export class EditSession
     this.emit("lifecycle", lifecycle);
   }
 
+  #handleSessionUnsubscribed = () => {
+    if (this.canCancel) {
+      void this.end(false);
+    }
+  };
+
   #enqueue<T>(operation: () => Promise<T>): Promise<T> {
     const result = this.#transitionQueue.then(operation);
     // Reassign to a settled continuation: callers keep the real result, while a
@@ -677,6 +683,7 @@ export class EditSession
         }
 
         this.#sessionDataSource = sessionDataSource;
+        sessionDataSource.on?.("unsubscribed", this.#handleSessionUnsubscribed);
         this.#setStale(false);
         this.#setLifecycle({ status: "active", sessionDataSource });
 
@@ -759,6 +766,10 @@ export class EditSession
         if (sessionDataSource.status !== "unsubscribed" || saveChanges) {
           await this.dataSource?.endEditSession?.(saveChanges, force);
         }
+        sessionDataSource.removeListener?.(
+          "unsubscribed",
+          this.#handleSessionUnsubscribed,
+        );
         this.#clearEdits();
         this.#sessionDataSource = undefined;
         this.#setLifecycle({ status: "idle" });
