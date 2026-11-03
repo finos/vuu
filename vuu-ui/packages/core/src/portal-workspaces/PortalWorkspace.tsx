@@ -164,6 +164,12 @@ export interface PortalWorkspaceProps {
    */
   headerActions?: ReactNode;
   /**
+   * Content centred in the workspace header, between the name and the
+   * actions, e.g. a channel picker. It shrinks (min-width 0) rather than
+   * overlap either side, so it should size itself to the space it gets.
+   */
+  headerCenter?: ReactNode;
+  /**
    * Props of the Panels palette, e.g. its `tabs`. `PortalShell` passes
    * `workspaces.palette`.
    */
@@ -191,6 +197,7 @@ const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
 export const PortalWorkspace = ({
   emptyContent,
   headerActions,
+  headerCenter,
   paletteProps,
 }: PortalWorkspaceProps) => {
   useComponentCssInjection({
@@ -300,6 +307,7 @@ export const PortalWorkspace = ({
         <OpenPaletteForNewWorkspace open={editNameId === summary.id} />
         <PortalWorkspaceHeader
           actions={headerActions}
+          center={headerCenter}
           editName={editNameId === summary.id}
           key={summary.id}
           onEditNameEnd={() => setEditNameId(undefined)}

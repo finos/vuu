@@ -267,6 +267,7 @@ Turn workspaces on with the `workspaces` option of `PortalShell`:
 | `systemWorkspaces` | | Workspaces shipped with the portal (`NamedWorkspaceDefinitionV1`). |
 | `componentRenderers`, `settingsCodecs` | | The panels a workspace can contain, as for `GridLayout`. |
 | `headerActions` | | Content for the actions slot of the workspace header, e.g. `<AddPanelButton />`, which opens the [Panels palette](#panels-palette). |
+| `headerCenter` | | Content centred in the workspace header, between the name and the actions, e.g. a channel picker. It stays centred when the two sides differ in width and shrinks (`min-width: 0`) rather than overlap them, so it should size itself to the space it gets. |
 | `persistenceService` | local storage | Where workspaces are saved. The default `LocalWorkspacePersistenceService` is scoped to the portal id and the signed-in user (namespace `PORTAL_WORKSPACE_NAMESPACE`). Pass a stable instance. |
 
 Without the option the shell renders no `WorkspaceProvider` and no
@@ -343,6 +344,12 @@ workspace's name is a button that edits it in place, and its status is
 **Saved**. A system workspace shows **Default**, or **Your copy** with the
 time of the last edit. `headerActions` are rendered before **Reset to
 default**.
+
+`headerCenter` adds a centre slot. The header then becomes a three-column
+grid, `minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content,
+1fr)`: the equal side columns keep the centre centred, and the centre
+column shrinks to zero before the name or the actions do. Without it the
+header keeps its flex layout.
 
 ### Reset to default
 
