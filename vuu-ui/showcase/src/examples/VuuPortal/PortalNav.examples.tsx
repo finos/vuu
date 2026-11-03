@@ -705,3 +705,29 @@ export const Workspaces = () => {
     </NavShell>
   );
 };
+
+const workspaceOptionsWithCenter: PortalWorkspacesOptions = {
+  ...workspaceOptions,
+  // Centred in the workspace header. Narrow the window to see it shrink
+  // rather than overlap the name or the actions.
+  headerCenter: (
+    <ToggleButtonGroup aria-label="Channel" defaultValue="red">
+      <ToggleButton value="red">Red</ToggleButton>
+      <ToggleButton value="green">Green</ToggleButton>
+      <ToggleButton value="blue">Blue</ToggleButton>
+      <ToggleButton value="yellow">Yellow</ToggleButton>
+    </ToggleButtonGroup>
+  ),
+};
+
+/**
+ * `headerCenter` places content, e.g. a channel picker, centred in the
+ * workspace header, between the name and the actions.
+ */
+export const WorkspacesHeaderCenter = () => (
+  <NavShell
+    modules={nonWorkspaceModules}
+    sections="collapsible"
+    workspaceOptions={workspaceOptionsWithCenter}
+  />
+);

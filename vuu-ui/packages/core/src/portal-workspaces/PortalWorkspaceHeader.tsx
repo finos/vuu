@@ -213,6 +213,13 @@ export const ResetToDefault = ({ workspace }: ResetToDefaultProps) => {
 export interface PortalWorkspaceHeaderProps {
   /** Actions before "Reset to default", e.g. "Add panel". */
   actions?: ReactNode;
+  /**
+   * Content centred in the header, between the name and the actions, e.g.
+   * a channel picker. It stays centred when the two sides differ in width
+   * and, when space is short, shrinks (min-width 0) rather than overlapping
+   * them, so it should size itself to the space it gets.
+   */
+  center?: ReactNode;
   /** Put the name in edit mode, e.g. for a new workspace. */
   editName?: boolean;
   /** The name edit started by `editName` has ended. */
@@ -222,11 +229,12 @@ export interface PortalWorkspaceHeaderProps {
 
 /**
  * Header of the workspace route: name (editable for named workspaces),
- * status, an actions slot and, for an edited system workspace, Reset to
- * default.
+ * status, an optional centre slot, an actions slot and, for an edited system
+ * workspace, Reset to default.
  */
 export const PortalWorkspaceHeader = ({
   actions,
+  center,
   editName = false,
   onEditNameEnd,
   workspace,
@@ -260,39 +268,59 @@ export const PortalWorkspaceHeader = ({
     );
   };
 
-  return (
-    <header className={classBase} data-workspace-id={workspace.id}>
+  const name = editing ? (
+    <WorkspaceNameInput
+      aria-label="Workspace name"
+      className={`${classBase}-nameInput`}
+      name={workspace.name}
+      onCancel={() => setEditing(false)}
+      onCommit={onRename}
+    />
+  ) : named ? (
+    <h1 className={`${classBase}-heading`}>
+      <button
+        className={`${classBase}-title`}
+        onClick={() => setEditing(true)}
+        title="Rename workspace"
+        type="button"
+      >
+        {workspace.name}
+      </button>
+    </h1>
+  ) : (
+    <h1 className={`${classBase}-title`}>{workspace.name}</h1>
+  );
+  const start = (
+    <>
       <span className={`${classBase}-crumb`}>Workspaces /</span>
-      {editing ? (
-        <WorkspaceNameInput
-          aria-label="Workspace name"
-          className={`${classBase}-nameInput`}
-          name={workspace.name}
-          onCancel={() => setEditing(false)}
-          onCommit={onRename}
-        />
-      ) : named ? (
-        <h1 className={`${classBase}-heading`}>
-          <button
-            className={`${classBase}-title`}
-            onClick={() => setEditing(true)}
-            title="Rename workspace"
-            type="button"
-          >
-            {workspace.name}
-          </button>
-        </h1>
-      ) : (
-        <h1 className={`${classBase}-title`}>{workspace.name}</h1>
-      )}
+      {name}
       <WorkspaceStatus workspace={workspace} />
+    </>
+  );
+  const end = (
+    <div className={`${classBase}-actions`}>
+      {actions}
+      {workspace.kind === "system" && workspace.isPersonalCopy ? (
+        <ResetToDefault workspace={workspace} />
+      ) : null}
+    </div>
+  );
+  const hasCenter = center !== undefined && center !== null && center !== false;
+
+  return hasCenter ? (
+    <header
+      className={`${classBase} ${classBase}-withCenter`}
+      data-workspace-id={workspace.id}
+    >
+      <div className={`${classBase}-start`}>{start}</div>
+      <div className={`${classBase}-center`}>{center}</div>
+      {end}
+    </header>
+  ) : (
+    <header className={classBase} data-workspace-id={workspace.id}>
+      {start}
       <span className={`${classBase}-spacer`} />
-      <div className={`${classBase}-actions`}>
-        {actions}
-        {workspace.kind === "system" && workspace.isPersonalCopy ? (
-          <ResetToDefault workspace={workspace} />
-        ) : null}
-      </div>
+      {end}
     </header>
   );
 };
