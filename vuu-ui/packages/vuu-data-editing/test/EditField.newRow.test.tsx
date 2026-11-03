@@ -88,4 +88,16 @@ describe("EditField new-row behavior", () => {
 
     expect(addRow).toHaveBeenCalledWith({ role_name: "Administrator" });
   });
+
+  it("does not insert a new row when an optional field has an invalid value", async () => {
+    editSession.configureNewRow(["role_name", "notes"], ["role_name"]);
+    editSession.setNewRowError("notes", "Invalid value");
+
+    await renderField();
+    await typeAndCommit("Administrator");
+
+    expect(editSession.newRowState.values.role_name).toBe("Administrator");
+    expect(editSession.newRowState.errors.notes).toBe("Invalid value");
+    expect(addRow).not.toHaveBeenCalled();
+  });
 });

@@ -75,17 +75,27 @@ export const useEditField = <T extends string | number | boolean = string>({
 
   const commit = useCallback(
     async (value = editState.value) => {
+      const { current: initialValue } = initialValueRef;
+      const previousValue = getTypedValue(initialValue, type);
       const result = column.clientSideEditValidationCheck?.(value, "*");
       if (result?.ok === false) {
+        const message = result?.messages?.join(",");
         setEditState((state) => ({
           ...state,
-          message: result?.messages?.join(","),
+          message,
         }));
+        await onEdit?.(
+          {
+            editType: "commit",
+            isValid: false,
+            previousValue,
+            value,
+          },
+          "commit",
+        );
         return false;
       } else {
         //save initial value,it could be reset by time async operation completes
-        const { current: initialValue } = initialValueRef;
-        const previousValue = getTypedValue(initialValue, type);
         try {
           const typedValue = getTypedValue(value, type, true);
           const response = await onEdit?.(
@@ -120,15 +130,11 @@ export const useEditField = <T extends string | number | boolean = string>({
           return true;
         } catch (e) {
           if (e instanceof DataValidationError) {
-            const { actualType, expectedType, message } = e;
+            const { actualType, expectedType, message: validationMessage } = e;
             if (column) {
               const { name, label = name } = column;
               const message = `${label} is a ${expectedType} value, data entered is ${actualType} `;
-              setEditState((state) => ({
-                ...state,
-                message,
-              }));
-              onEdit?.(
+              const response = await onEdit?.(
                 {
                   editType: "commit",
                   isValid: false,
@@ -137,10 +143,24 @@ export const useEditField = <T extends string | number | boolean = string>({
                 },
                 "commit",
               );
-            } else {
+              if (isRpcSuccess(response) && value.trim() === "") {
+                isDirtyRef.current = false;
+                initialValueRef.current = "";
+                setEditState({
+                  editing: false,
+                  message: undefined,
+                  value: "",
+                });
+                return true;
+              }
               setEditState((state) => ({
                 ...state,
                 message,
+              }));
+            } else {
+              setEditState((state) => ({
+                ...state,
+                message: validationMessage,
               }));
             }
           }
@@ -158,7 +178,7 @@ export const useEditField = <T extends string | number | boolean = string>({
   const toggleActivation = useCallback(
     async (input: HTMLInputElement, cancel = false) => {
       if (editState.editing) {
-        if (isDirtyRef.current) {
+        if (isDirtyRef.current || editState.message !== undefined) {
           if (cancel) {
             const { value: previousValue } = editState;
             isDirtyRef.current = false;
@@ -167,13 +187,14 @@ export const useEditField = <T extends string | number | boolean = string>({
               value: initialValueRef.current,
               message: undefined,
             });
-            // this assumes the original value was valid, is that safe ?
             onEdit?.(
               {
                 editType: "cancel",
                 isValid: true,
                 previousValue,
-                value: getTypedValue(initialValueRef.current, type, true),
+                value:
+                  getTypedValue(initialValueRef.current, type) ??
+                  initialValueRef.current,
               },
               "commit",
             );
@@ -249,7 +270,8 @@ export const useEditField = <T extends string | number | boolean = string>({
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => {
       const { value } = evt.target as HTMLInputElement;
-      isDirtyRef.current = value !== initialValueRef.current;
+      isDirtyRef.current =
+        value !== initialValueRef.current || editState.message !== undefined;
       const result = column.clientSideEditValidationCheck?.(value, "change");
       setEditState({ editing: true, value });
 
@@ -270,7 +292,7 @@ export const useEditField = <T extends string | number | boolean = string>({
         });
       }
     },
-    [column, onEdit],
+    [column, editState.message, onEdit],
   );
 
   const handleDropdownSelectionChange = useCallback(

@@ -75,6 +75,7 @@ export const TableCell = memo(function TableCell({
       if (editPhase === "commit" && editSession) {
         if (editType === "cancel") {
           if (isNewRow) {
+            stagedEditSession?.clearNewRowError(name);
             // uncommitted values are never applied to the new row draft
             return { data: undefined, type: "SUCCESS_RESULT" };
           }
@@ -84,9 +85,13 @@ export const TableCell = memo(function TableCell({
         if (stagedEditSession && isNewRow) {
           const isEmptyValue = typeof value === "string" && value.trim() === "";
           if (!isValid && !isEmptyValue) {
+            stagedEditSession.setNewRowError(name);
             return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
           }
-          stagedEditSession.setNewRowValue(name, value);
+          stagedEditSession.setNewRowValue(
+            name,
+            isEmptyValue ? undefined : value,
+          );
           if (
             stagedEditSession.isNewRowFinalColumn(name) ||
             stagedEditSession.isNewRowComplete()
