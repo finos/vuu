@@ -35,6 +35,43 @@ test.describe("useEditableTable session readiness", () => {
     await expect(readiness).toHaveAttribute("data-session", "true");
     await expect(readiness).toHaveAttribute("data-ready", "true");
   });
+
+  test("exits edit mode and restores the source table when the session datasource unsubscribes after edits", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/UseEditableTableSessionReadiness", {
+      delaySubscription: false,
+    });
+
+    const readiness = page.locator("output");
+    await expect(readiness).toHaveAttribute("data-mode", "view");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+    await expect(readiness).toHaveAttribute("data-mode", "edit");
+    await expect(readiness).toHaveAttribute("data-session", "true");
+    await expect(readiness).toHaveAttribute("data-ready", "true");
+    await expect(readiness).toHaveAttribute("data-dirty", "false");
+
+    const lotSizeInput = page.getByRole("textbox", { name: "lotSize" }).first();
+    await expect(lotSizeInput).toBeVisible();
+    const originalLotSize = await lotSizeInput.inputValue();
+
+    await lotSizeInput.dblclick();
+    await lotSizeInput.fill("999");
+    await lotSizeInput.press("Enter");
+    await expect(readiness).toHaveAttribute("data-dirty", "true");
+
+    await page.getByRole("button", { name: "Disconnect session" }).click();
+
+    await expect(readiness).toHaveAttribute("data-mode", "view");
+    await expect(readiness).toHaveAttribute("data-session", "false");
+    await expect(readiness).toHaveAttribute("data-ready", "false");
+    await expect(readiness).toHaveAttribute("data-dirty", "false");
+    await expect(page.getByRole("textbox", { name: "lotSize" })).toHaveCount(0);
+    await expect(
+      page.locator('[role="row"][aria-rowindex="2"] [data-field="lotSize"]'),
+    ).toHaveText(originalLotSize);
+  });
 });
 
 test.describe("useEditableTable with a divergent edit table", () => {

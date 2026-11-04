@@ -190,8 +190,9 @@ editSession.undoRowChange(key, action);
 
 - **`end(saveChanges = false, force = false)`**:
   - Transitions lifecycle to `"ending"`.
-  - Calls `dataSource.endEditSession(saveChanges, force)`.
+  - Calls `dataSource.endEditSession(saveChanges, force)` (skipped when discarding an already-unsubscribed session DataSource).
   - On success: clears all edits, resets counters, unsubscribes session DataSource, transitions to `"idle"`.
+  - **Session Disconnection / Unsubscribe**: When a WebSocket disconnects, `ServerProxy` drops session-table viewports and posts `subscribe-failed`. The session DataSource emits `"unsubscribed"`, `EditSession` automatically ends the session locally (`end(false)`) without issuing `endEditSession`, and `useEditableTable` invokes `onCancel` to exit edit mode back to view mode.
   - **Stale Updates (`StaleUpdateError`)**: If the server rejects the commit due to concurrent edits, lifecycle transitions to `error { operation: "end" }` and `editState` becomes `"stale"`. The user can force-save with `end(true, true)`.
 
 ---

@@ -553,7 +553,7 @@ const UseEditableTableSessionReadinessTemplate = ({
     return dataSource;
   }, [VuuDataSource, columns, delaySubscription]);
 
-  const { dataSource, isEditSessionReady, sessionDataSource } =
+  const { dataSource, editSession, isEditSessionReady, sessionDataSource } =
     useEditableTable({
       dataSource: sourceDataSource,
       isEditMode: editMode === "edit",
@@ -562,8 +562,14 @@ const UseEditableTableSessionReadinessTemplate = ({
     });
 
   const config = useMemo<TableConfig>(
-    () => ({ columns: InstrumentColumns }),
-    [],
+    () => ({
+      columns: isEditSessionReady
+        ? InstrumentColumns.map((col) =>
+            col.name === "lotSize" ? { ...col, editable: true } : col,
+          )
+        : InstrumentColumns,
+    }),
+    [isEditSessionReady],
   );
 
   return (
@@ -575,11 +581,21 @@ const UseEditableTableSessionReadinessTemplate = ({
       >
         Release subscription
       </button>
+      <button
+        disabled={!sessionDataSource}
+        onClick={() => sessionDataSource?.unsubscribe()}
+      >
+        Disconnect session
+      </button>
       <output
+        data-dirty={editSession.isDirty}
+        data-mode={editMode}
         data-ready={isEditSessionReady}
         data-session={Boolean(sessionDataSource)}
       />
-      <Table config={config} dataSource={dataSource} />
+      <DataEditingProvider editSession={editSession}>
+        <Table config={config} dataSource={dataSource} />
+      </DataEditingProvider>
     </div>
   );
 };

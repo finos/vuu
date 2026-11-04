@@ -221,8 +221,18 @@ export class ServerProxy {
   }
 
   public clearAllViewports() {
-    this.viewports.forEach((viewport) => {
-      viewport.clearCache();
+    this.viewports.forEach((viewport, key) => {
+      if (isSessionTable(viewport.table)) {
+        this.mapClientToServerViewport.delete(viewport.clientViewportId);
+        this.viewports.delete(key);
+        this.postMessageToClient({
+          clientViewportId: viewport.clientViewportId,
+          type: "subscribe-failed",
+          msg: `session table ${viewport.table.table} disconnected`,
+        });
+      } else {
+        viewport.clearCache();
+      }
     });
   }
 

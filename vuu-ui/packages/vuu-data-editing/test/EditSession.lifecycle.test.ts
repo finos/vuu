@@ -658,4 +658,45 @@ describe("EditSession lifecycle", () => {
     expect(states).toEqual(["dirty"]);
     expect(editSession.editState).toBe("dirty");
   });
+
+  it("automatically ends the edit session without calling endEditSession when the session datasource unsubscribes", async () => {
+    const sessionListeners = new Map<string, () => void>();
+    const sessionEnd = vi.fn<EndEdit>();
+    const sessionDataSource = {
+      status: "subscribed",
+      editCell: vi.fn<EditCell>().mockResolvedValue(SUCCESS),
+      endEditSession: sessionEnd,
+      on: vi.fn((event: string, listener: () => void) => {
+        sessionListeners.set(event, listener);
+      }),
+      removeListener: vi.fn((event: string) => {
+        sessionListeners.delete(event);
+      }),
+    } as unknown as DataSource;
+    const sourceDataSource = new MockDataSource(
+      vi.fn<EndEdit>(),
+      vi.fn<CreateSession>().mockResolvedValue(sessionDataSource),
+    );
+    editSession = new EditSession({
+      dataSource: sourceDataSource as unknown as DataSource,
+    });
+
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    expect(editSession.inEditMode).toBe(true);
+    expect(editSession.editState).toBe("dirty");
+
+    (sessionDataSource as { status: string }).status = "unsubscribed";
+    sessionListeners.get("unsubscribed")?.();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(sessionEnd).not.toHaveBeenCalled();
+    expect(editSession.lifecycle).toEqual({ status: "idle" });
+    expect(editSession.inEditMode).toBe(false);
+    expect(editSession.sessionDataSource).toBeUndefined();
+    expect(editSession.dataSource).toBe(sourceDataSource);
+    expect(editSession.editState).toBe("clean");
+    expect(editSession.editCount).toBe(0);
+  });
 });
