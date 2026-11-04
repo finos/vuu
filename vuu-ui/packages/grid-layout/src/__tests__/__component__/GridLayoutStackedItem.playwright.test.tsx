@@ -48,7 +48,16 @@ test("Dragging a stacked layout tab updates its rendered order and restores focu
   await expect(page.locator(".SpaceMan")).toBeVisible();
 
   await target.hover();
-  await target.hover();
+  // The drop position is determined by which half of the target the pointer is over
+  const targetBox = await target.boundingBox();
+  if (!targetBox) {
+    throw new Error("The target tab must have layout bounds");
+  }
+  await page.mouse.move(
+    targetBox.x + targetBox.width * 0.75,
+    targetBox.y + targetBox.height / 2,
+    { steps: 5 },
+  );
   await expect(
     target.locator('xpath=following-sibling::*[@data-drop-target="true"]'),
   ).toBeVisible();

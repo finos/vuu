@@ -1,11 +1,18 @@
 import { getLayoutComponent, uuid } from "@vuu-ui/vuu-utils";
-import React, { ReactElement } from "react";
-import { LayoutJSON } from "./componentToJson";
+import React, { type ReactElement } from "react";
+import type { LayoutJSON, LayoutJSONChild } from "./componentToJson";
 
-export function layoutFromJson(
-  { active, id = uuid(), type, children, props, state }: LayoutJSON,
-  path: string,
-): ReactElement {
+const childFromJson = (child: LayoutJSONChild) =>
+  typeof child === "object" ? layoutFromJson(child) : child;
+
+/** @deprecated Use GridLayoutProvider document plus renderer registries. */
+export function layoutFromJson({
+  active,
+  id = uuid(),
+  type,
+  children,
+  props,
+}: LayoutJSON): ReactElement {
   const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
 
   if (componentType === undefined) {
@@ -14,24 +21,17 @@ export function layoutFromJson(
     );
   }
 
-  if (state) {
-    console.log(`devide how we deal with state`, {
-      state,
-    });
-    //   setPersistentState(id, state);
-  }
-
-  return React.createElement(
-    componentType,
-    {
-      active,
-      id,
-      ...props,
-      key: id,
-      path,
-    },
-    children
-      ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))
-      : undefined,
-  );
+  const componentProps = {
+    active,
+    id,
+    ...props,
+    key: id,
+  };
+  return children?.length
+    ? React.createElement(
+        componentType,
+        componentProps,
+        children.map(childFromJson),
+      )
+    : React.createElement(componentType, componentProps);
 }

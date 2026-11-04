@@ -16,22 +16,6 @@
 
 .vuuGridPalette {
 
-  .vuuGridPalette-item:has([data-item-id="green"]){
-    background-color: green;
-    color: white;
-  } 
-  .vuuGridPalette-item:has([data-item-id="red"]){
-    background-color: red;
-    color: white;
-  } 
-  .vuuGridPalette-item:has([data-item-id="yellow"]){
-    background-color: yellow;
-  } 
-  .vuuGridPalette-item:has([data-item-id="brown"]){
-    background-color: brown;
-    color: white;
-  } 
-
   [data-item-id] {
     background-color: inherit;
     color: inherit;
