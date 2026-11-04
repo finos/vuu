@@ -127,6 +127,19 @@ export abstract class VuuModule<T extends string = string>
   protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
 
+  /**
+   * Server-side validation applied to every value submitted by editCell and
+   * addRow. `tableName` is the source table, also when the edit targets a
+   * session table. Return a message to reject the value, undefined to accept.
+   */
+  protected validateEdit(
+    _tableName: T,
+    _column: string,
+    _value: VuuRowDataItemType,
+  ): string | undefined {
+    return undefined;
+  }
+
   getTableSchema(tableName: string) {
     return (
       this.schemas[tableName as T] ?? this.#sessionTableMap[tableName]?.schema
@@ -587,10 +600,13 @@ export abstract class VuuModule<T extends string = string>
       const { column, data, key } = rpcRequest.params;
       const sessionTable = this.#sessionTableMap[viewPortId];
       let targetTable: Table | undefined = sessionTable;
+      let sourceTableName: T | undefined =
+        this.#sessionSourceTableMap[viewPortId];
       if (!targetTable) {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         if (dataSource.table) {
-          targetTable = this.tables[dataSource.table.table as T];
+          sourceTableName = dataSource.table.table as T;
+          targetTable = this.tables[sourceTableName];
         }
       }
       if (targetTable) {
@@ -602,6 +618,13 @@ export abstract class VuuModule<T extends string = string>
             throw Error("editCell: cannot edit a deleted row");
           }
           assertUpdateIsValid(targetTable.schema, column as string, data);
+          const validationError =
+            sourceTableName === undefined
+              ? undefined
+              : this.validateEdit(sourceTableName, column as string, data);
+          if (validationError !== undefined) {
+            throw Error(validationError);
+          }
           targetTable.update(key as string, column as string, data);
           if (
             sessionTable &&
@@ -789,6 +812,19 @@ export abstract class VuuModule<T extends string = string>
         };
       }
       const { data, key } = rpcRequest.params;
+      const sourceTableName = this.#sessionSourceTableMap[sessionTableName];
+      if (sourceTableName !== undefined) {
+        for (const [column, value] of Object.entries(data)) {
+          const validationError = this.validateEdit(
+            sourceTableName,
+            column,
+            value,
+          );
+          if (validationError !== undefined) {
+            return { type: "ERROR_RESULT", errorMessage: validationError };
+          }
+        }
+      }
       const keyColumn = sessionTable.schema.key;
       const rowKey = data[keyColumn] ?? key ?? uuid();
       const rowData = { ...data, [keyColumn]: rowKey };

@@ -702,10 +702,20 @@ export const InstrumentsAddEditDelete = () => (
 
 const EditableTestTableTemplate = ({
   allowUpload = false,
+  columnTypes,
   optionalColumns,
   tableName,
 }: {
   allowUpload?: boolean;
+  /**
+   * Column types applied in edit mode, keyed by column name. Used to attach
+   * client-side validation rules.
+   */
+  columnTypes?: Readonly<Record<string, DataValueTypeDescriptor>>;
+  /**
+   * Columns that may be left blank when adding a row. All other columns
+   * must have a value before the inline add row will insert the row.
+   */
   optionalColumns?: readonly string[];
   tableName: TestTableName;
 }) => {
@@ -771,6 +781,9 @@ const EditableTestTableTemplate = ({
           tableSchema.columns.map<ColumnDescriptor>((column) => ({
             ...column,
             editable: true,
+            ...(columnTypes?.[column.name]
+              ? { type: columnTypes[column.name] }
+              : undefined),
             required: optionalColumns?.includes(column.name)
               ? false
               : column.required,
@@ -781,6 +794,7 @@ const EditableTestTableTemplate = ({
       zebraStripes: true,
     }),
     [
+      columnTypes,
       isEditSessionReady,
       optionalColumns,
       rowClassNameGenerators,
@@ -899,6 +913,41 @@ export const TestTableEmpty = ({
   </LocalDataSourceProvider>
 );
 
+const OPTIONAL_DESCRIPTION_AND_QUANTITY = ["description", "quantity"] as const;
+
+/**
+ * description (string) and quantity (int) may be left blank when adding a
+ * row; id, price and externalId are required.
+ * @title Test table empty, optional columns
+ */
+export const TestTableEmptyOptionalColumns = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate
+        optionalColumns={OPTIONAL_DESCRIPTION_AND_QUANTITY}
+        tableName="TestEditEmpty"
+      />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+const OPTIONAL_FINAL_COLUMN = ["externalId"] as const;
+
+/**
+ * externalId, the final column, may be left blank when adding a row.
+ * @title Test table empty, optional final column
+ */
+export const TestTableEmptyOptionalFinalColumn = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate
+        optionalColumns={OPTIONAL_FINAL_COLUMN}
+        tableName="TestEditEmpty"
+      />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
 export const TestTableEmptyWithUpload = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
@@ -914,6 +963,75 @@ export const TestTableFIveRows = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableTestTableTemplate tableName="TestEdit" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+const CLIENT_VALIDATION_COLUMN_TYPES: Readonly<
+  Record<string, DataValueTypeDescriptor>
+> = {
+  id: {
+    name: "string",
+    rules: [{ name: "vuu-case", value: "upper" }],
+  },
+  description: {
+    name: "string",
+    rules: [
+      {
+        name: "vuu-pattern",
+        value: "^.{0,12}$",
+        message: "description must be at most 12 characters",
+      },
+    ],
+  },
+  quantity: {
+    name: "number",
+    rules: [
+      {
+        name: "vuu-pattern",
+        phase: "change",
+        value: "^[0-9]*$",
+        message: "quantity must contain digits only",
+      },
+    ],
+  },
+};
+
+const OPTIONAL_DESCRIPTION = ["description"] as const;
+
+/**
+ * Client-side validation rules: id must be uppercase and description at most
+ * 12 characters (checked on commit); quantity must contain digits only
+ * (checked on every keystroke). description is optional when adding a row.
+ * @title Test table five rows, client validation
+ */
+export const TestTableFiveRowsClientValidation = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate
+        columnTypes={CLIENT_VALIDATION_COLUMN_TYPES}
+        optionalColumns={OPTIONAL_DESCRIPTION}
+        tableName="TestEdit"
+      />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+const OPTIONAL_QUANTITY = ["quantity"] as const;
+
+/**
+ * Server-side validation rules, applied by the local simulator to cell edits
+ * and added rows: quantity must be between 1 and 1000, price must be greater
+ * than zero. quantity is optional when adding a row.
+ * @title Test table five rows, server validation
+ */
+export const TestTableFiveRowsServerValidation = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate
+        optionalColumns={OPTIONAL_QUANTITY}
+        tableName="TestEditValidation"
+      />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );
