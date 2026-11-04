@@ -67,6 +67,7 @@ test.describe("useEditableTable session readiness", () => {
     await expect(readiness).toHaveAttribute("data-session", "false");
     await expect(readiness).toHaveAttribute("data-ready", "false");
     await expect(readiness).toHaveAttribute("data-dirty", "false");
+    await expect(readiness).toHaveAttribute("data-dirty-at-cancel", "false");
     await expect(page.getByRole("textbox", { name: "lotSize" })).toHaveCount(0);
     await expect(
       page.locator('[role="row"][aria-rowindex="2"] [data-field="lotSize"]'),

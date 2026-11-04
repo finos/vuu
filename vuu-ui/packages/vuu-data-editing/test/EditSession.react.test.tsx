@@ -108,25 +108,29 @@ const ToggleableEditButtons = ({
 
 const EditableTableHarness = ({
   onCancel,
+  onReady,
   onSave,
   sessionDataSource,
   sourceDataSource,
 }: {
-  onCancel: () => void;
+  onCancel: (editSession: EditSession) => void;
+  onReady?: (editSession: EditSession) => void;
   onSave: () => void;
   sessionDataSource: DataSource;
   sourceDataSource: DataSource;
 }) => {
   const [isEditMode, setIsEditMode] = useState(true);
-  const { dataSource, isEditSessionReady, lifecycle } = useEditableTable({
-    dataSource: sourceDataSource,
-    isEditMode,
-    onCancel: () => {
-      onCancel();
-      setIsEditMode(false);
-    },
-    onSave,
-  });
+  const { dataSource, editSession, isEditSessionReady, lifecycle } =
+    useEditableTable({
+      dataSource: sourceDataSource,
+      isEditMode,
+      onCancel: () => {
+        onCancel(editSession);
+        setIsEditMode(false);
+      },
+      onSave,
+    });
+  onReady?.(editSession);
 
   return (
     <output
@@ -274,6 +278,7 @@ describe("EditSession React consumers", () => {
         key: "id",
         table: { module: "TEST", table: "session-items" },
       },
+      editCell: vi.fn().mockResolvedValue(SUCCESS),
       endEditSession,
     }) as unknown as DataSource;
 
@@ -287,19 +292,34 @@ describe("EditSession React consumers", () => {
       createSessionDataSource: vi.fn(async () => sessionDataSource),
     }) as unknown as DataSource;
 
-    const onCancel = vi.fn();
+    let currentEditSession: EditSession | undefined;
+    const onCancel = vi.fn((session: EditSession) => ({
+      editCount: session.editCount,
+      inEditMode: session.inEditMode,
+      isDirty: session.isDirty,
+      lifecycle: session.lifecycle.status,
+    }));
     const onSave = vi.fn();
 
     await act(async () => {
       root.render(
         <EditableTableHarness
           onCancel={onCancel}
+          onReady={(session) => {
+            currentEditSession = session;
+          }}
           onSave={onSave}
           sessionDataSource={sessionDataSource}
           sourceDataSource={sourceDataSource}
         />,
       );
     });
+
+    await act(async () => {
+      await currentEditSession?.commit("row-1", "price", 100, 101, true);
+    });
+    expect(currentEditSession?.isDirty).toBe(true);
+    expect(currentEditSession?.editCount).toBe(1);
 
     const output = container.querySelector("output");
     expect(output?.dataset.editMode).toBe("true");
@@ -316,6 +336,12 @@ describe("EditSession React consumers", () => {
     });
 
     expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveReturnedWith({
+      editCount: 0,
+      inEditMode: false,
+      isDirty: false,
+      lifecycle: "idle",
+    });
     expect(onSave).not.toHaveBeenCalled();
     expect(endEditSession).not.toHaveBeenCalled();
     expect(output?.dataset.editMode).toBe("false");

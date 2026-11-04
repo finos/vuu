@@ -153,8 +153,10 @@ export const useEditableTable = ({
     };
     const handleUnsubscribed = () => {
       if (editSession.canCancel) {
-        setSelectionCount(0);
-        onCancelRef.current();
+        void editSession.end().then(() => {
+          setSelectionCount(0);
+          onCancelRef.current();
+        });
       }
     };
 
