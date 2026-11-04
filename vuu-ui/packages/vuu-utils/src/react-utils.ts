@@ -1,9 +1,9 @@
 import {
   Children,
   isValidElement,
-  ReactElement,
-  ReactNode,
-  SetStateAction,
+  type ReactElement,
+  type ReactNode,
+  type SetStateAction,
   useEffect,
   useMemo,
   useRef,
@@ -12,17 +12,8 @@ import {
 const EMPTY_ARRAY: ReactElement[] = [];
 
 export const asReactElements = (children: ReactNode): ReactElement[] => {
-  const isArray = Array.isArray(children);
-  const count = isArray ? children.length : Children.count(children);
-  if (isArray && children.every(isValidElement)) {
-    return children;
-  } else if (count === 1 && !isArray && isValidElement(children)) {
-    return [children];
-  } else if (count > 1) {
-    return children as ReactElement[];
-  } else {
-    return EMPTY_ARRAY;
-  }
+  const elements = Children.toArray(children).filter(isValidElement);
+  return elements.length === 0 ? EMPTY_ARRAY : elements;
 };
 
 export const useIsMounted = (id = "") => {

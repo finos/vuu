@@ -3,13 +3,10 @@
   border: solid 1px white;
   display: flex;
   flex-direction: column;
+  /* A grid item must not size its track to fit its content. */
+  min-height: 0;
+  min-width: 0;
   position: relative;
-
-  &.vuuGridLayoutItem-dragging {
-    display: none;
-    grid-column: 0/0 !important;
-    grid-row: 0/0;
-  }
 
   &.has-h-splitter:not(.vuu-stacked) {
     margin-top: 7px;

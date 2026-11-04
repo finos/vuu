@@ -122,7 +122,7 @@ export const workspaceLayoutSource = (
   const tracks = (sizes: string[]) => `[${sizes.map(quote).join(", ")}]`;
 
   return [
-    `import { ${gridImports.join(", ")} } from "@heswell/grid-layout";`,
+    `import { ${gridImports.join(", ")} } from "@vuu-ui/grid-layout";`,
     ...Array.from(importsByFile).map(
       ([file, names]) =>
         `import { ${Array.from(names).join(", ")} } from ${quote(file)};`,

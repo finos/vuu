@@ -1,6 +1,8 @@
 import { Button, Menu, MenuItem, MenuTrigger } from "@salt-ds/core";
-import { useGridLayoutDispatch } from "@heswell/grid-layout";
-import { registerComponent } from "@vuu-ui/vuu-utils";
+import {
+  GridComponentRendererRegistry,
+  useGridLayoutDispatch,
+} from "@vuu-ui/grid-layout";
 import cx from "clsx";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +10,7 @@ import { ChromeIcon } from "../chrome/ChromeIcon";
 import { ChromeMenuPanel } from "../chrome/ChromeMenu";
 import { standaloneUrl } from "../example/preview-state";
 import { useExampleDrag } from "./workspace-drag";
-import type { WorkspacePanelProps } from "./workspace-grid";
+import { isWorkspacePanelProps, type WorkspacePanelProps } from "./workspace-grid";
 import { WORKSPACE_PANEL_TYPE } from "./workspace-model";
 import { useWorkspacePageContext } from "./WorkspacePageContext";
 
@@ -149,5 +151,10 @@ export const WorkspacePanel = ({ examplePath, title }: WorkspacePanelProps) => {
 
 WorkspacePanel.displayName = WORKSPACE_PANEL_TYPE;
 
-/** GridLayout re-creates panels from json, using the component registry */
-registerComponent(WORKSPACE_PANEL_TYPE, WorkspacePanel, "view");
+/** GridLayout renders workspace panels from their settings */
+export const workspaceComponentRenderers = new GridComponentRendererRegistry();
+workspaceComponentRenderers.register(
+  WORKSPACE_PANEL_TYPE,
+  isWorkspacePanelProps,
+  (props) => <WorkspacePanel {...props} />,
+);
