@@ -148,8 +148,8 @@ A cell is considered edited only when `originalValue !== editedValue && isValid 
 ### New Row Flow (`addNewRow` / `addRow`)
 
 1. **Configure**: `editSession.configureNewRow(columns, requiredColumns)` defines the expected column inputs.
-2. **Draft**: `editSession.setNewRowValue(column, value)` updates `#newRowState.values`.
-3. **Submit**: `editSession.addNewRow()` validates required columns and delegates to `addRow()`.
+2. **Draft**: `editSession.setNewRowValue(column, value)` updates `#newRowState.values` (or removes the column entry if cleared to `undefined`/`""`) and clears any recorded error for `column`. `editSession.setNewRowError(column, errorMessage)` records a validation error in `#newRowState.errors` and `editSession.clearNewRowError(column)` clears it on cancel.
+3. **Submit**: `editSession.addNewRow()` validates required columns and checks that `#newRowState.errors` is empty before delegating to `addRow()`.
 4. **`addRow(rowData)`**:
    - Calls `dataSource.addRow(rowData)` with `#rowDefaults` merged in.
    - On success, extracts the row key directly from the response map (`response.data.key`) and records it in `#addedRowKeys`.

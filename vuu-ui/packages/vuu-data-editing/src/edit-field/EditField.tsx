@@ -64,14 +64,19 @@ export const EditField = ({
 
   const onEdit = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
-      const { isValid = true, previousValue = "", value } = editState;
+      const { editType, isValid = true, previousValue = "", value } = editState;
       if (editPhase === "commit" && editSession) {
         if (editSession.isNewRow(dataRow.key)) {
+          if (editType === "cancel") {
+            editSession.clearNewRowError(name);
+            return { data: undefined, type: "SUCCESS_RESULT" };
+          }
           const isEmptyValue = typeof value === "string" && value.trim() === "";
           if (!isValid && !isEmptyValue) {
+            editSession.setNewRowError(name);
             return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
           }
-          editSession.setNewRowValue(name, value);
+          editSession.setNewRowValue(name, isEmptyValue ? undefined : value);
           if (
             !deferNewRow &&
             (editSession.isNewRowFinalColumn(name) ||
@@ -113,8 +118,9 @@ export const EditField = ({
     label: string;
     name: string;
     clientSideEditValidationCheck?: DataValueValidationChecker;
+    required?: boolean;
     serverDataType: VuuColumnDataType;
-  } = { label, name, serverDataType: "string" };
+  } = { label, name, required, serverDataType: "string" };
 
   const { inputProps, onChange, onDropdownSelectionChange, onKeyDown, value } =
     useEditField({

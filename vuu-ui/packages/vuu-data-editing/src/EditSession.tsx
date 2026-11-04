@@ -251,6 +251,9 @@ export class EditSession
   }
 
   isNewRowComplete() {
+    if (Object.keys(this.#newRowState.errors).length > 0) {
+      return false;
+    }
     const requiredColumns =
       this.#newRowState.requiredColumns ?? this.#newRowState.columns;
     return requiredColumns.every((column) => {
@@ -296,13 +299,44 @@ export class EditSession
     });
   }
 
-  setNewRowValue(column: string, value: VuuRowDataItemType) {
+  setNewRowValue(column: string, value: VuuRowDataItemType | undefined) {
+    const errors = { ...this.#newRowState.errors };
+    delete errors[column];
+    const values = { ...this.#newRowState.values };
+    if (
+      value === undefined ||
+      (typeof value === "string" && value.trim() === "")
+    ) {
+      delete values[column];
+    } else {
+      values[column] = value;
+    }
+    this.#setNewRowState({
+      ...this.#newRowState,
+      errors,
+      values,
+    });
+  }
+
+  setNewRowError(column: string, errorMessage = "Invalid value") {
+    const values = { ...this.#newRowState.values };
+    delete values[column];
+    this.#setNewRowState({
+      ...this.#newRowState,
+      errors: { ...this.#newRowState.errors, [column]: errorMessage },
+      values,
+    });
+  }
+
+  clearNewRowError(column: string) {
+    if (!(column in this.#newRowState.errors)) {
+      return;
+    }
     const errors = { ...this.#newRowState.errors };
     delete errors[column];
     this.#setNewRowState({
       ...this.#newRowState,
       errors,
-      values: { ...this.#newRowState.values, [column]: value },
     });
   }
 

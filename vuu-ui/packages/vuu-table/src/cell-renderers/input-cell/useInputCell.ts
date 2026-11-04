@@ -1,4 +1,7 @@
-import type { VuuColumnDataType, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type {
+  VuuColumnDataType,
+  VuuRowDataItemType,
+} from "@vuu-ui/vuu-protocol-types";
 import type { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 import type {
   RuntimeColumnDescriptor,
@@ -26,7 +29,7 @@ export interface InputCellHookProps<
 > {
   column: Pick<
     RuntimeColumnDescriptor,
-    "clientSideEditValidationCheck" | "label" | "name"
+    "clientSideEditValidationCheck" | "label" | "name" | "required"
   >;
   value?: T;
   onEdit?: TableCellEditHandler;
@@ -79,12 +82,14 @@ export const useInputCell = <T extends string | number | boolean = string>({
   });
   const initialValueRef = useRef<string>(formatValue(value));
   const isDirtyRef = useRef(false);
+  const hasUnresolvedErrorRef = useRef(false);
 
   useEffect(() => {
     const nextValue = formatValue(value);
     if (initialValueRef.current !== nextValue) {
       initialValueRef.current = nextValue;
       isDirtyRef.current = false;
+      hasUnresolvedErrorRef.current = false;
       setEditState((editState) => ({
         ...editState,
         message: undefined,
@@ -95,19 +100,34 @@ export const useInputCell = <T extends string | number | boolean = string>({
 
   const commit = useCallback(async () => {
     const { value } = editState;
-    const result = column.clientSideEditValidationCheck?.(value, "*");
+    const { current: initialValue } = initialValueRef;
+    const previousValue = parseValue(initialValue, false);
+    const isEmptyOptional = column?.required === false && value.trim() === "";
+    const result = isEmptyOptional
+      ? undefined
+      : column.clientSideEditValidationCheck?.(value, "*");
     if (result?.ok === false) {
+      hasUnresolvedErrorRef.current = true;
       setEditState((state) => ({
         ...state,
         message: result?.messages?.join(","),
       }));
+      await onEdit?.(
+        {
+          editType: "commit",
+          isValid: false,
+          previousValue,
+          value,
+        },
+        "commit",
+      );
       return false;
     } else {
       //save initial value,it could be reset by time async operation completes
-      const { current: initialValue } = initialValueRef;
-      const previousValue = parseValue(initialValue, false);
       try {
-        const typedValue = parseValue(value, true) as VuuRowDataItemType;
+        const typedValue = isEmptyOptional
+          ? ""
+          : (parseValue(value, true) as VuuRowDataItemType);
         const response = await onEdit?.(
           {
             editType: "commit",
@@ -119,6 +139,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
         );
         if (isRpcSuccess(response)) {
           isDirtyRef.current = false;
+          hasUnresolvedErrorRef.current = false;
           setEditState(({ previousValue, value }) => ({
             editing: false,
             previousValue:
@@ -130,6 +151,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
             value,
           }));
         } else if (isRpcError(response)) {
+          hasUnresolvedErrorRef.current = true;
           setEditState((state) => ({
             ...state,
             message: response.errorMessage,
@@ -140,6 +162,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
         return true;
       } catch (e) {
         if (e instanceof DataValidationError) {
+          hasUnresolvedErrorRef.current = true;
           const { actualType, expectedType, message } = e;
           if (column) {
             const { name, label = name } = column;
@@ -148,7 +171,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
               ...state,
               message,
             }));
-            onEdit?.(
+            await onEdit?.(
               {
                 editType: "commit",
                 isValid: false,
@@ -176,25 +199,23 @@ export const useInputCell = <T extends string | number | boolean = string>({
   const toggleActivation = useCallback(
     async (input: HTMLInputElement, cancel = false) => {
       if (editState.editing) {
-        if (isDirtyRef.current) {
+        if (isDirtyRef.current || hasUnresolvedErrorRef.current) {
           if (cancel) {
             const { value: previousValue } = editState;
             isDirtyRef.current = false;
+            hasUnresolvedErrorRef.current = false;
             setEditState({
               editing: false,
               value: initialValueRef.current,
               message: undefined,
             });
-            // this assumes the original value was valid, is that safe ?
             onEdit?.(
               {
                 editType: "cancel",
                 isValid: true,
                 previousValue,
-                value: parseValue(
-                  initialValueRef.current,
-                  true,
-                ) as VuuRowDataItemType,
+                value: (parseValue(initialValueRef.current, false) ??
+                  initialValueRef.current) as VuuRowDataItemType,
               },
               "commit",
             );
@@ -260,7 +281,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
 
   const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(async () => {
     if (editState.editing) {
-      if (isDirtyRef.current) {
+      if (isDirtyRef.current || hasUnresolvedErrorRef.current) {
         const commitSuccessful = await commit();
         console.log({ commitSuccessful });
       }
