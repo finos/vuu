@@ -23,9 +23,11 @@ vi.mock("../src/ConnectionManager", () => ({
     serverAPI: new Promise<ServerAPI>((resolve) => {
       // @ts-expect-error
       resolve({
+        destroy: vi.fn(),
         rpcCall: vi.fn(),
         send: vi.fn(),
         subscribe: vi.fn(),
+        unsubscribe: vi.fn(),
       });
     }),
   },
@@ -865,6 +867,43 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     await expect(
       dataSource.createSessionDataSource("All", "export"),
     ).rejects.toThrow(/does not match expected edit table module/);
+  });
+
+  it("unsubscribes a session datasource when subscribe-failed is received from the server, but leaves permanent datasources subscribed", async () => {
+    const { rpcCall } = await ConnectionManager.serverAPI;
+    vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+    const dataSource = await subscribedDataSource({ table, viewport: "vp-source" });
+    const session = await dataSource.createSessionDataSource("All", "edit");
+    const sessionCallback = vi.fn();
+    await session?.subscribe({}, sessionCallback);
+
+    const onSessionUnsubscribed = vi.fn(() => session?.status);
+    session?.on("unsubscribed", onSessionUnsubscribed);
+
+    session?.handleMessageFromServer({
+      clientViewportId: "session-xyz",
+      type: "subscribe-failed",
+      msg: "no such session table",
+    });
+
+    expect(sessionCallback).toHaveBeenCalledWith({
+      clientViewportId: "session-xyz",
+      type: "subscribe-failed",
+      msg: "no such session table",
+    });
+    expect(session?.status).toBe("unsubscribed");
+    expect(onSessionUnsubscribed).toHaveBeenCalledWith("session-xyz");
+    expect(onSessionUnsubscribed).toHaveReturnedWith("unsubscribed");
+
+    const onSourceUnsubscribed = vi.fn();
+    dataSource.on("unsubscribed", onSourceUnsubscribed);
+    dataSource.handleMessageFromServer({
+      clientViewportId: "vp-source",
+      type: "subscribe-failed",
+      msg: "transient error",
+    });
+    expect(dataSource.status).not.toBe("unsubscribed");
+    expect(onSourceUnsubscribed).not.toHaveBeenCalled();
   });
 });
 

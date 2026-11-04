@@ -516,6 +516,7 @@ const UseEditableTableSessionReadinessTemplate = ({
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
   const [canReleaseSubscription, setCanReleaseSubscription] = useState(false);
+  const [dirtyAtCancel, setDirtyAtCancel] = useState<boolean>();
   const releaseSubscriptionRef = useRef<() => void>(undefined);
   const { VuuDataSource } = useData();
   const columns = useMemo(() => schema.columns.map(toColumnName), []);
@@ -553,17 +554,26 @@ const UseEditableTableSessionReadinessTemplate = ({
     return dataSource;
   }, [VuuDataSource, columns, delaySubscription]);
 
-  const { dataSource, isEditSessionReady, sessionDataSource } =
+  const { dataSource, editSession, isEditSessionReady, sessionDataSource } =
     useEditableTable({
       dataSource: sourceDataSource,
       isEditMode: editMode === "edit",
-      onCancel: () => setEditMode("view"),
+      onCancel: () => {
+        setDirtyAtCancel(editSession.isDirty);
+        setEditMode("view");
+      },
       onSave: () => setEditMode("view"),
     });
 
   const config = useMemo<TableConfig>(
-    () => ({ columns: InstrumentColumns }),
-    [],
+    () => ({
+      columns: isEditSessionReady
+        ? InstrumentColumns.map((col) =>
+            col.name === "lotSize" ? { ...col, editable: true } : col,
+          )
+        : InstrumentColumns,
+    }),
+    [isEditSessionReady],
   );
 
   return (
@@ -575,11 +585,22 @@ const UseEditableTableSessionReadinessTemplate = ({
       >
         Release subscription
       </button>
+      <button
+        disabled={!sessionDataSource}
+        onClick={() => sessionDataSource?.unsubscribe()}
+      >
+        Disconnect session
+      </button>
       <output
+        data-dirty={editSession.isDirty}
+        data-dirty-at-cancel={dirtyAtCancel}
+        data-mode={editMode}
         data-ready={isEditSessionReady}
         data-session={Boolean(sessionDataSource)}
       />
-      <Table config={config} dataSource={dataSource} />
+      <DataEditingProvider editSession={editSession}>
+        <Table config={config} dataSource={dataSource} />
+      </DataEditingProvider>
     </div>
   );
 };

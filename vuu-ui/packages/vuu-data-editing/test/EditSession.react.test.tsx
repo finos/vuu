@@ -16,7 +16,9 @@ import {
   EditSession,
   StaleUpdateError,
   useCellEdited,
+  useEditableTable,
 } from "../src";
+import { EventEmitter } from "@vuu-ui/vuu-utils";
 
 vi.hoisted(() => {
   class MockWorker {
@@ -101,6 +103,44 @@ const ToggleableEditButtons = ({
         />
       )}
     </>
+  );
+};
+
+const EditableTableHarness = ({
+  onCancel,
+  onReady,
+  onSave,
+  sessionDataSource,
+  sourceDataSource,
+}: {
+  onCancel: (editSession: EditSession) => void;
+  onReady?: (editSession: EditSession) => void;
+  onSave: () => void;
+  sessionDataSource: DataSource;
+  sourceDataSource: DataSource;
+}) => {
+  const [isEditMode, setIsEditMode] = useState(true);
+  const { dataSource, editSession, isEditSessionReady, lifecycle } =
+    useEditableTable({
+      dataSource: sourceDataSource,
+      isEditMode,
+      onCancel: () => {
+        onCancel(editSession);
+        setIsEditMode(false);
+      },
+      onSave,
+    });
+  onReady?.(editSession);
+
+  return (
+    <output
+      data-datasource={
+        dataSource === sessionDataSource ? "session" : "source"
+      }
+      data-edit-mode={isEditMode}
+      data-lifecycle={lifecycle.status}
+      data-ready={isEditSessionReady}
+    />
   );
 };
 
@@ -227,5 +267,86 @@ describe("EditSession React consumers", () => {
     const buttons = container.querySelectorAll("button");
     await act(async () => buttons[1].click());
     expect(onSave).toHaveBeenCalledWith(true);
+  });
+
+  it("exits edit mode and invokes onCancel when the session datasource unsubscribes on disconnect", async () => {
+    const endEditSession = vi.fn();
+    const sessionDataSource = Object.assign(new EventEmitter(), {
+      status: "subscribed",
+      tableSchema: {
+        columns: [{ name: "price", serverDataType: "double" }],
+        key: "id",
+        table: { module: "TEST", table: "session-items" },
+      },
+      editCell: vi.fn().mockResolvedValue(SUCCESS),
+      endEditSession,
+    }) as unknown as DataSource;
+
+    const sourceDataSource = Object.assign(new EventEmitter(), {
+      status: "subscribed",
+      tableSchema: {
+        columns: [{ name: "price", serverDataType: "double" }],
+        key: "id",
+        table: { module: "TEST", table: "items" },
+      },
+      createSessionDataSource: vi.fn(async () => sessionDataSource),
+    }) as unknown as DataSource;
+
+    let currentEditSession: EditSession | undefined;
+    const onCancel = vi.fn((session: EditSession) => ({
+      editCount: session.editCount,
+      inEditMode: session.inEditMode,
+      isDirty: session.isDirty,
+      lifecycle: session.lifecycle.status,
+    }));
+    const onSave = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <EditableTableHarness
+          onCancel={onCancel}
+          onReady={(session) => {
+            currentEditSession = session;
+          }}
+          onSave={onSave}
+          sessionDataSource={sessionDataSource}
+          sourceDataSource={sourceDataSource}
+        />,
+      );
+    });
+
+    await act(async () => {
+      await currentEditSession?.commit("row-1", "price", 100, 101, true);
+    });
+    expect(currentEditSession?.isDirty).toBe(true);
+    expect(currentEditSession?.editCount).toBe(1);
+
+    const output = container.querySelector("output");
+    expect(output?.dataset.editMode).toBe("true");
+    expect(output?.dataset.lifecycle).toBe("active");
+    expect(output?.dataset.ready).toBe("true");
+    expect(output?.dataset.datasource).toBe("session");
+
+    await act(async () => {
+      (sessionDataSource as { status: string }).status = "unsubscribed";
+      (sessionDataSource as unknown as EventEmitter).emit(
+        "unsubscribed",
+        "session-vp",
+      );
+    });
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveReturnedWith({
+      editCount: 0,
+      inEditMode: false,
+      isDirty: false,
+      lifecycle: "idle",
+    });
+    expect(onSave).not.toHaveBeenCalled();
+    expect(endEditSession).not.toHaveBeenCalled();
+    expect(output?.dataset.editMode).toBe("false");
+    expect(output?.dataset.lifecycle).toBe("idle");
+    expect(output?.dataset.ready).toBe("false");
+    expect(output?.dataset.datasource).toBe("source");
   });
 });

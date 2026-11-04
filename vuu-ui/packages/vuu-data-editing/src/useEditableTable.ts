@@ -151,9 +151,18 @@ export const useEditableTable = ({
       editSession.reconcileWithSessionSchema();
       setSubscribedSessionDataSource(sessionDataSource);
     };
+    const handleUnsubscribed = () => {
+      if (editSession.canCancel) {
+        void editSession.end().then(() => {
+          setSelectionCount(0);
+          onCancelRef.current();
+        });
+      }
+    };
 
     setSubscribedSessionDataSource(undefined);
     sessionDataSource.on("subscribed", handleSubscribed);
+    sessionDataSource.on("unsubscribed", handleUnsubscribed);
     if (
       sessionDataSource.status === "subscribed" &&
       sessionDataSource.tableSchema
@@ -161,8 +170,10 @@ export const useEditableTable = ({
       handleSubscribed();
     }
 
-    return () =>
+    return () => {
       sessionDataSource.removeListener("subscribed", handleSubscribed);
+      sessionDataSource.removeListener("unsubscribed", handleUnsubscribed);
+    };
   }, [editSession, sessionDataSource]);
 
   useEffect(() => {

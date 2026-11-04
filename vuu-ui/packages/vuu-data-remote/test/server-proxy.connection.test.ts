@@ -318,6 +318,44 @@ describe("ServerProxy connection lifecycle", () => {
       t.expectClient();
       t.expectServer();
     });
+
+    it("on disconnected, removes session table viewports and posts subscribe-failed so they are not resubscribed on reconnect", async () => {
+      const t = await serverProxyHarness();
+      const [sessionReq, sessionAck, sessionMeta] = createSubscription({
+        key: "2",
+      });
+      const sessionTable = { module: "TEST", table: "session:client/edit-1" };
+      sessionReq.table = sessionTable;
+      sessionAck.body.table = sessionTable.table;
+      sessionMeta.body.table = sessionTable;
+      const subscribing = t.proxy.subscribe(sessionReq);
+      t.server.replies("CREATE_VP", sessionAck.body);
+      t.server.replies("GET_TABLE_META", sessionMeta.body);
+      await subscribing;
+      t.discard();
+
+      t.connection.status("disconnected");
+
+      t.expectClient(
+        { clientViewportId: "client-vp-1", type: "viewport-clear" },
+        {
+          clientViewportId: "client-vp-2",
+          type: "subscribe-failed",
+          msg: "session table session:client/edit-1 disconnected",
+        },
+      );
+      expect(t.proxyState().viewportCount).toEqual(1);
+      expect(t.proxyState().serverViewportFor("client-vp-2")).toBeUndefined();
+
+      fromServer(
+        t,
+        { type: "LOGIN_SUCCESS", token: "test", vuuServerId: "server-1" },
+        { sessionId: "dsdsd" },
+      );
+      t.discard();
+      t.connection.status("reconnected");
+      t.expectServer(resubscribe("client-vp-1"));
+    });
   });
 
   describe("disconnect", () => {
