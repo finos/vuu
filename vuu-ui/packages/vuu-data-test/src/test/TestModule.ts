@@ -6,6 +6,7 @@ import {
 } from "../vuu-row-generator";
 import tableContainer from "../core/table/TableContainer";
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { withNanoMs } from "../data-utils";
 import { toSchemaColumn } from "@vuu-ui/vuu-utils";
 
@@ -22,7 +23,8 @@ export type TestTableName =
   | "ChartTable"
   | "MaxScrollEndTable"
   | "TestEditEmpty"
-  | "TestEdit";
+  | "TestEdit"
+  | "TestEditValidation";
 
 const { RowGenerator } = defaultGenerators;
 
@@ -40,6 +42,33 @@ const testEditColumns: TableSchema["columns"] = [
   // { name: "tradeDate", serverDataType: "epochtimestamp" },
   { name: "externalId", serverDataType: "long" },
 ];
+
+export const TEST_EDIT_VALIDATION_QUANTITY_MESSAGE =
+  "quantity must be between 1 and 1000";
+export const TEST_EDIT_VALIDATION_PRICE_MESSAGE =
+  "price must be greater than zero";
+
+/**
+ * Server-side rules for the TestEditValidation table, applied to cell edits
+ * and to added rows.
+ */
+const validateTestEditValidation = (
+  column: string,
+  value: VuuRowDataItemType,
+): string | undefined => {
+  if (column === "quantity") {
+    const quantity = Number(value);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000) {
+      return TEST_EDIT_VALIDATION_QUANTITY_MESSAGE;
+    }
+  } else if (column === "price") {
+    const price = Number(value);
+    if (!(price > 0)) {
+      return TEST_EDIT_VALIDATION_PRICE_MESSAGE;
+    }
+  }
+  return undefined;
+};
 
 class TestModule extends VuuModule<TestTableName> {
   #schemas: Record<TestTableName, TableSchema> = {
@@ -131,6 +160,12 @@ class TestModule extends VuuModule<TestTableName> {
       key: "id",
       rangeLimits: DEFAULT_RANGE_LIMITS,
       table: { module: "TEST", table: "TestEdit" },
+    },
+    TestEditValidation: {
+      columns: testEditColumns,
+      key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
+      table: { module: "TEST", table: "TestEditValidation" },
     },
   };
 
@@ -235,6 +270,18 @@ class TestModule extends VuuModule<TestTableName> {
       ],
       buildDataColumnMap(this.#schemas, "TestEdit"),
     ),
+    TestEditValidation: tableContainer.createTable(
+      this.#schemas.TestEditValidation,
+      // prettier-ignore
+      [
+        ["VAL-001", "Alpha", 12, 101.25, true, 1001],
+        ["VAL-002", "Bravo", 24, 202.5, false, 1002],
+        ["VAL-003", "Charlie", 36, 303.75, true, 1003],
+        ["VAL-004", "Delta", 48, 405, true, 1004],
+        ["VAL-005", "Echo", 60, 506.25, false, 1005],
+      ],
+      buildDataColumnMap(this.#schemas, "TestEditValidation"),
+    ),
   };
   constructor() {
     super("TEST");
@@ -262,6 +309,16 @@ class TestModule extends VuuModule<TestTableName> {
   }
   get visualLinks() {
     return undefined;
+  }
+
+  protected validateEdit(
+    tableName: TestTableName,
+    column: string,
+    value: VuuRowDataItemType,
+  ) {
+    return tableName === "TestEditValidation"
+      ? validateTestEditValidation(column, value)
+      : undefined;
   }
 }
 

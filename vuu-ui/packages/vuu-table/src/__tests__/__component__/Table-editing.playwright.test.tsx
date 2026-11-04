@@ -1,3 +1,4 @@
+import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "../../../../../playwright/fixtures";
 import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
@@ -426,6 +427,637 @@ test.describe("Test table editing", () => {
       .click();
     await page.getByRole("button", { name: "Delete" }).click();
     await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
+  });
+});
+
+const getInlineAddRowEditors = (page: Page) => {
+  const inlineAddRow = page.locator(".vuuInlineAddRow");
+  return {
+    id: inlineAddRow.getByRole("textbox", { name: "id", exact: true }),
+    description: inlineAddRow.getByRole("textbox", { name: "description" }),
+    quantity: inlineAddRow.getByRole("textbox", { name: "quantity" }),
+    price: inlineAddRow.getByRole("textbox", { name: "price" }),
+    externalId: inlineAddRow.getByRole("textbox", { name: "externalId" }),
+  };
+};
+
+const getInsertedRows = (page: Page) => page.locator(".vuuTableRow-inserted");
+
+/**
+ * The inline add row moves focus in a requestAnimationFrame after a commit.
+ * Wait for that to happen so the next action is not raced by a focus change.
+ */
+const waitForFocusToSettle = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+
+const commitValue = async (editor: Locator, value: string) => {
+  await editor.fill(value);
+  await editor.press("Enter");
+  await waitForFocusToSettle(editor.page());
+};
+
+const expectError = (editor: Locator) =>
+  expect(editor.locator("..")).toContainClass("vuuTableInputCell-error");
+
+const expectNoError = (editor: Locator) =>
+  expect(editor.locator("..")).not.toContainClass("vuuTableInputCell-error");
+
+const expectErrorMessage = async (
+  page: Page,
+  editor: Locator,
+  message: string,
+) => {
+  await editor.locator("..").locator(".vuuTableInputCell-icon").hover();
+  await expect(page.getByRole("tooltip")).toContainText(message);
+};
+
+test.describe("Inline add row with optional columns", () => {
+  test.describe("optional columns before the final column", () => {
+    test.beforeEach(async ({ mount, page }) => {
+      await mount("Table/Editing/TestTableEmptyOptionalColumns");
+      await page.getByRole("radio", { name: "Edit" }).click();
+    });
+
+    test("inserts a row when the optional columns are left blank", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "id", exact: true }),
+      ).toHaveValue("TEST-006");
+      await expect(
+        insertedRows.getByRole("textbox", { name: "description" }),
+      ).toHaveValue("");
+      await expect(
+        insertedRows.getByRole("textbox", { name: "quantity" }),
+      ).toHaveValue("");
+      await expect(
+        insertedRows.getByRole("textbox", { name: "price" }),
+      ).toHaveValue("607.5");
+
+      await expect(id).toHaveValue("");
+      await expect(description).toHaveValue("");
+      await expect(quantity).toHaveValue("");
+      await expect(id).toBeFocused();
+    });
+
+    test("includes values entered in the optional columns", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "72");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "description" }),
+      ).toHaveValue("Foxtrot");
+      await expect(
+        insertedRows.getByRole("textbox", { name: "quantity" }),
+      ).toHaveValue("72");
+    });
+
+    test("does not mark blank optional columns as invalid when a required column is missing", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(id).toHaveAttribute("aria-invalid", "true");
+      await expect(description).not.toHaveAttribute("aria-invalid", "true");
+      await expect(quantity).not.toHaveAttribute("aria-invalid", "true");
+      await expect(id).toBeFocused();
+    });
+
+    test("inserts a row after an invalid optional value is cleared one character at a time", async ({
+      page,
+    }) => {
+      const { id, quantity, price, externalId } = getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await quantity.pressSequentially("abc");
+      await quantity.press("Enter");
+      await waitForFocusToSettle(page);
+      await expect(quantity.locator("..")).toContainClass(
+        "vuuTableInputCell-error",
+      );
+
+      await quantity.press("Backspace");
+      await quantity.press("Backspace");
+      await quantity.press("Backspace");
+      await expect(quantity).toHaveValue("");
+      await quantity.press("Enter");
+      await expect(quantity.locator("..")).not.toContainClass(
+        "vuuTableInputCell-error",
+      );
+
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "quantity" }),
+      ).toHaveValue("");
+    });
+
+    test("does not insert a row while an optional column holds an invalid value", async ({
+      page,
+    }) => {
+      const { id, quantity, price, externalId } = getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await quantity.pressSequentially("abc");
+      await quantity.press("Enter");
+      await waitForFocusToSettle(page);
+      await expect(quantity.locator("..")).toContainClass(
+        "vuuTableInputCell-error",
+      );
+
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(id).toHaveValue("TEST-006");
+    });
+
+    test("Escape on an invalid optional value clears the error so the row can be inserted", async ({
+      page,
+    }) => {
+      const { id, quantity, price, externalId } = getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await quantity.pressSequentially("abc");
+      await quantity.press("Enter");
+      await waitForFocusToSettle(page);
+      await expectError(quantity);
+
+      await quantity.press("Escape");
+      await expect(quantity).toHaveValue("");
+      await expectNoError(quantity);
+
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      await expect(getInsertedRows(page)).toHaveCount(1);
+    });
+
+    test("correcting an invalid optional value inserts the corrected value", async ({
+      page,
+    }) => {
+      const { id, quantity, price, externalId } = getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await quantity.pressSequentially("abc");
+      await quantity.press("Enter");
+      await waitForFocusToSettle(page);
+      await expectError(quantity);
+
+      await commitValue(quantity, "72");
+      await expectNoError(quantity);
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "quantity" }),
+      ).toHaveValue("72");
+    });
+  });
+
+  test.describe("optional final column", () => {
+    test.beforeEach(async ({ mount, page }) => {
+      await mount("Table/Editing/TestTableEmptyOptionalFinalColumn");
+      await page.getByRole("radio", { name: "Edit" }).click();
+    });
+
+    test("inserts a row when the optional final column is left blank", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "72");
+      await commitValue(price, "607.5");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "externalId" }),
+      ).toHaveValue("");
+      await expect(externalId).toHaveValue("");
+    });
+
+    test("does not insert a row while the optional final column holds an invalid value", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await externalId.pressSequentially("abc");
+      await externalId.press("Enter");
+      await waitForFocusToSettle(page);
+      await expectError(externalId);
+
+      await commitValue(id, "TEST-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "72");
+      await commitValue(price, "607.5");
+
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(externalId).toBeFocused();
+
+      await commitValue(externalId, "");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "externalId" }),
+      ).toHaveValue("");
+    });
+  });
+});
+
+test.describe("Edit validation", () => {
+  test.describe("client-side rules", () => {
+    test.beforeEach(async ({ mount, page }) => {
+      await mount("Table/Editing/TestTableFiveRowsClientValidation");
+      await page.getByRole("radio", { name: "Edit" }).click();
+    });
+
+    test("rejects a commit that breaks a commit-phase rule on an existing row", async ({
+      page,
+    }) => {
+      const description = page
+        .getByRole("textbox", { name: "description" })
+        .nth(1);
+      await expect(description).toHaveValue("Alpha");
+      await description.dblclick();
+      await description.pressSequentially("Much too long a description");
+      await expect(description.locator("..")).not.toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await description.press("Enter");
+
+      await expect(description.locator("..")).toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expect(description).toHaveAttribute("aria-invalid", "true");
+      await expectErrorMessage(
+        page,
+        description,
+        "description must be at most 12 characters",
+      );
+      await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
+    });
+
+    test("flags a change-phase rule as soon as the value breaks it", async ({
+      page,
+    }) => {
+      const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
+      await expect(quantity).toHaveValue("12");
+      await quantity.dblclick();
+      await quantity.pressSequentially("1x");
+
+      await expect(quantity.locator("..")).toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expectErrorMessage(
+        page,
+        quantity,
+        "quantity must contain digits only",
+      );
+
+      await quantity.press("Backspace");
+      await expect(quantity).toHaveValue("1");
+      await expect(quantity.locator("..")).not.toContainClass(
+        "vuuTableInputCell-error",
+      );
+    });
+
+    test("does not add a row while a client rule fails, adds it once corrected", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "test-006");
+      await expect(id.locator("..")).toContainClass("vuuTableInputCell-error");
+
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "72");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(id).toBeFocused();
+
+      await commitValue(id, "TEST-006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "id", exact: true }),
+      ).toHaveValue("TEST-006");
+    });
+
+    test("correcting a rule failure on an existing row clears the error and enables Submit", async ({
+      page,
+    }) => {
+      const submitButton = page.getByRole("button", { name: "Submit" });
+      const description = page
+        .getByRole("textbox", { name: "description" })
+        .nth(1);
+      await description.dblclick();
+      await description.pressSequentially("Much too long a description");
+      await description.press("Enter");
+      await expectError(description);
+      await expect(submitButton).toBeDisabled();
+
+      await description.press("ControlOrMeta+a");
+      await description.pressSequentially("Short");
+      await description.press("Enter");
+
+      await expectNoError(description);
+      await expect(description).toHaveValue("Short");
+      await expect(submitButton).toBeEnabled();
+    });
+
+    test("Escape after a rule failure on an existing row restores the original value", async ({
+      page,
+    }) => {
+      const description = page
+        .getByRole("textbox", { name: "description" })
+        .nth(1);
+      await description.dblclick();
+      await description.pressSequentially("Much too long a description");
+      await description.press("Enter");
+      await expectError(description);
+
+      await description.press("Escape");
+
+      await expect(description).toHaveValue("Alpha");
+      await expectNoError(description);
+      await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
+    });
+
+    test("does not apply rules to an optional column left blank when adding a row", async ({
+      page,
+    }) => {
+      const { id, quantity, price, externalId } = getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await commitValue(quantity, "72");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "description" }),
+      ).toHaveValue("");
+    });
+
+    test("does not add a row while an optional column breaks a rule", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await commitValue(description, "Much too long a description");
+      await expectError(description);
+      await commitValue(quantity, "72");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(description).toBeFocused();
+
+      await commitValue(description, "Foxtrot");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "description" }),
+      ).toHaveValue("Foxtrot");
+    });
+
+    test("flags a change-phase rule in the add row and does not add the row", async ({
+      page,
+    }) => {
+      const { id, quantity, price, externalId } = getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await quantity.pressSequentially("7x");
+      await expectError(quantity);
+      await quantity.press("Enter");
+      await waitForFocusToSettle(page);
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(quantity).toBeFocused();
+    });
+  });
+
+  test.describe("server-side rules", () => {
+    test.beforeEach(async ({ mount, page }) => {
+      await mount("Table/Editing/TestTableFiveRowsServerValidation");
+      await page.getByRole("radio", { name: "Edit" }).click();
+    });
+
+    test("rejects an edit the server refuses on an existing row", async ({
+      page,
+    }) => {
+      const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
+      await expect(quantity).toHaveValue("12");
+      await quantity.dblclick();
+      await quantity.pressSequentially("5000");
+      await quantity.press("Enter");
+
+      await expect(quantity.locator("..")).toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expect(quantity).toHaveAttribute("aria-invalid", "true");
+      await expectErrorMessage(
+        page,
+        quantity,
+        "quantity must be between 1 and 1000",
+      );
+      await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
+    });
+
+    test("accepts an edit the server allows on an existing row", async ({
+      page,
+    }) => {
+      const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
+      await quantity.dblclick();
+      await quantity.pressSequentially("500");
+      await quantity.press("Enter");
+
+      await expect(quantity.locator("..")).not.toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expect(quantity).toHaveValue("500");
+      await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+    });
+
+    test("does not add a row the server rejects", async ({ page }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "VAL-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "5000");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(externalId).toHaveAttribute("aria-invalid", "true");
+      await expectErrorMessage(
+        page,
+        externalId,
+        "quantity must be between 1 and 1000",
+      );
+      await expect(id).toHaveValue("VAL-006");
+      await expect(quantity).toHaveValue("5000");
+    });
+
+    test("adds a row the server accepts", async ({ page }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "VAL-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "72");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "quantity" }),
+      ).toHaveValue("72");
+    });
+
+    test("correcting a server-rejected edit clears the error and enables Submit", async ({
+      page,
+    }) => {
+      const submitButton = page.getByRole("button", { name: "Submit" });
+      const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
+      await quantity.dblclick();
+      await quantity.pressSequentially("5000");
+      await quantity.press("Enter");
+      await expectError(quantity);
+      await expect(submitButton).toBeDisabled();
+
+      await quantity.press("ControlOrMeta+a");
+      await quantity.pressSequentially("500");
+      await quantity.press("Enter");
+
+      await expectNoError(quantity);
+      await expect(quantity).toHaveValue("500");
+      await expect(submitButton).toBeEnabled();
+    });
+
+    test("Escape after a server rejection restores the original value", async ({
+      page,
+    }) => {
+      const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
+      await quantity.dblclick();
+      await quantity.pressSequentially("5000");
+      await quantity.press("Enter");
+      await expectError(quantity);
+
+      await quantity.press("Escape");
+
+      await expect(quantity).toHaveValue("12");
+      await expectNoError(quantity);
+      await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
+    });
+
+    test("applies each server rule independently", async ({ page }) => {
+      const price = page.getByRole("textbox", { name: "price" }).nth(1);
+      await price.dblclick();
+      await price.press("ControlOrMeta+a");
+      await price.pressSequentially("0");
+      await price.press("Enter");
+
+      await expectError(price);
+      await expectErrorMessage(page, price, "price must be greater than zero");
+    });
+
+    test("adds the row once a server-rejected value is corrected", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "VAL-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "5000");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+      await expect(getInsertedRows(page)).toHaveCount(0);
+
+      await commitValue(quantity, "72");
+      // The rejection is reported on the final column, which stays invalid
+      // until it is committed again: Enter to edit, Enter to commit.
+      await externalId.focus();
+      await externalId.press("Enter");
+      await externalId.press("Enter");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "quantity" }),
+      ).toHaveValue("72");
+    });
+
+    test("does not apply server rules to an optional column left blank", async ({
+      page,
+    }) => {
+      const { id, description, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "VAL-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(price, "607.5");
+      await commitValue(externalId, "1006");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "quantity" }),
+      ).toHaveValue("");
+    });
   });
 });
 
