@@ -681,9 +681,11 @@ export const InstrumentsAddEditDelete = () => (
 
 const EditableTestTableTemplate = ({
   allowUpload = false,
+  optionalColumns,
   tableName,
 }: {
   allowUpload?: boolean;
+  optionalColumns?: readonly string[];
   tableName: TestTableName;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
@@ -748,13 +750,21 @@ const EditableTestTableTemplate = ({
           tableSchema.columns.map<ColumnDescriptor>((column) => ({
             ...column,
             editable: true,
+            required: optionalColumns?.includes(column.name)
+              ? false
+              : column.required,
           })).concat({ hidden: true, name: "vuuAction" }, UNDO_DELETE_COLUMN),
       columnDefaultWidth: 150,
       rowClassNameGenerators,
       rowSeparators: true,
       zebraStripes: true,
     }),
-    [isEditSessionReady, rowClassNameGenerators, tableSchema.columns],
+    [
+      isEditSessionReady,
+      optionalColumns,
+      rowClassNameGenerators,
+      tableSchema.columns,
+    ],
   );
 
   const showUploadPreview = useCallback(
@@ -853,10 +863,17 @@ const EditableTestTableTemplate = ({
   );
 };
 
-export const TestTableEmpty = () => (
+export const TestTableEmpty = ({
+  optionalColumns,
+}: {
+  optionalColumns?: readonly string[];
+} = {}) => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
-      <EditableTestTableTemplate tableName="TestEditEmpty" />
+      <EditableTestTableTemplate
+        optionalColumns={optionalColumns}
+        tableName="TestEditEmpty"
+      />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );

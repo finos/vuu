@@ -359,6 +359,54 @@ test.describe("Test table editing", () => {
     );
   });
 
+  test("does not commit an inline row when an optional column has an invalid value", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty", {
+      optionalColumns: ["quantity"],
+    });
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("invalid");
+    await quantity.press("Enter");
+    await expect(quantity.locator("..")).toContainClass(
+      "vuuTableInputCell-error",
+    );
+
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+
+    // Row should not be committed because optional quantity has an invalid value
+    await expect(page.locator(".vuuTableRow-inserted")).toHaveCount(0);
+    await expect(id).toHaveValue("TEST-006");
+    await expect(quantity).toBeFocused();
+
+    // Clearing the optional quantity clears the error and commits the row
+    await quantity.fill("");
+    await quantity.press("Enter");
+
+    await expect(page.locator(".vuuTableRow-inserted")).toHaveCount(1);
+    await expect(id).toHaveValue("");
+  });
+
   test("updates and deletes existing rows", async ({ mount, page }) => {
     await mount("Table/Editing/TestTableFIveRows");
     await page.getByRole("radio", { name: "Edit" }).click();
@@ -448,9 +496,7 @@ test.describe("Added row deletion reconciles edit counters", () => {
     await expect(insertedRow).toHaveCount(1);
     await expect(submitButton).toBeEnabled();
 
-    await insertedRow
-      .getByRole("button", { name: "Undo insert row" })
-      .click();
+    await insertedRow.getByRole("button", { name: "Undo insert row" }).click();
 
     await expect(insertedRow).toHaveCount(0);
     await expect(submitButton).toBeDisabled();
@@ -1048,6 +1094,41 @@ test.describe("Edit conflicts", () => {
       );
       await expect(saveButton).toBeEnabled();
       await expect(cancelButton).toBeEnabled();
+    });
+
+    test("deleting a numeric value and pressing Enter shows error, keeps focus in cell, and disables Save", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Table/Editing/EditableInstruments");
+      const table = new PwTable(page, '[data-testid="table-1"]');
+      await page.getByRole("radio", { name: "Edit" }).click();
+
+      const saveButton = page.getByRole("button", { name: "Save" });
+
+      // Commit a valid edit first so Save becomes enabled
+      const cell1 = table.locateCell(3, 6);
+      await cell1.dblclick();
+      await cell1.pressSequentially("123");
+      await cell1.press("Enter");
+      await expect(saveButton).toBeEnabled();
+
+      // Select numeric value in the next row, delete it, and press Enter
+      const cell2 = table.locateCell(4, 6);
+      const input = cell2.locator(".saltInput");
+      const textbox = cell2.getByRole("textbox");
+
+      await cell2.dblclick();
+      await table.assertCellIsFocused(cell2, "textbox");
+      await textbox.press("Backspace");
+      await textbox.press("Enter");
+
+      await expect(input).toContainClass("vuuTableInputCell-error");
+      await expect(input).toContainClass("vuuEditing");
+      await expect(textbox).toHaveAttribute("aria-invalid", "true");
+      await expect(cell2.locator(".vuuTableInputCell-icon")).toBeVisible();
+      await table.assertCellIsFocused(cell2, "textbox");
+      await expect(saveButton).toBeDisabled();
     });
   });
 });

@@ -115,15 +115,6 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   }, [editSession, newRowState.values, visibleInsertColumns]);
 
   useEffect(() => {
-    const firstInvalidIndex = visibleColumns.findIndex(
-      ({ name }) => newRowState.errors[name] !== undefined,
-    );
-    if (firstInvalidIndex !== -1) {
-      focusEditor(firstInvalidIndex);
-    }
-  }, [focusEditor, newRowState.errors, visibleColumns]);
-
-  useEffect(() => {
     const previousValues = previousValuesRef.current;
     previousValuesRef.current = newRowState.values;
     if (

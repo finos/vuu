@@ -213,6 +213,34 @@ describe("EditSession lifecycle", () => {
     });
   });
 
+  it("blocks new-row completion and submission when an optional column has an invalid value", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
+    editSession.configureNewRow(["id", "name", "quantity"], ["id", "name"]);
+    editSession.setNewRowValue("id", 7);
+    editSession.setNewRowError("quantity", "Invalid quantity");
+    editSession.setNewRowValue("name", "Alice");
+
+    expect(editSession.isNewRowComplete()).toBe(false);
+
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(addRow).not.toHaveBeenCalled();
+    expect(editSession.newRowState.errors).toEqual({
+      quantity: "Invalid quantity",
+    });
+
+    // Clearing the optional column value clears its error and allows submission
+    editSession.setNewRowValue("quantity", undefined);
+    expect(editSession.newRowState.errors).toEqual({});
+    expect(editSession.newRowState.values).toEqual({ id: 7, name: "Alice" });
+    expect(editSession.isNewRowComplete()).toBe(true);
+
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
+  });
+
   it("prevents duplicate new-row submissions", async () => {
     const pendingAdd = deferred<RpcResultSuccess>();
     const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);
