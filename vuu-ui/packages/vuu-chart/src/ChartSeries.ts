@@ -1,11 +1,11 @@
-import {
+import type {
   DataSource,
   DataSourceRow,
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
 import {
   buildColumnMap,
-  ColumnMap,
+  type ColumnMap,
   EventEmitter,
   metadataKeys,
   Range,
@@ -13,11 +13,11 @@ import {
 import { MovingDataRowWindow } from "./DataRowMovingWindow";
 import {
   defaultItemColorFunction,
-  LineSeries,
-  ScatterSeries,
-  Series,
+  type LineSeries,
+  type ScatterSeries,
+  type Series,
 } from "./chart-types";
-import { ChartConfig, DataExclusionOptions } from "./useChartOptions";
+import type { ChartConfig, DataExclusionOptions } from "./useChartOptions";
 
 const { KEY } = metadataKeys;
 
@@ -196,8 +196,10 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
         } else {
           if (!colorMap.has(seriesColumn)) {
             // Record palette color used for each series so we can preserve the color
-            // associations even if some series are hidden by user.
-            colorMap.set(seriesColumn, this.#palette[this.#colorMap.size]);
+            // associations even if some series are hidden by user. Colours repeat
+            // when there are more series than palette entries.
+            const palette = this.#palette;
+            colorMap.set(seriesColumn, palette[colorMap.size % palette.length]);
           }
 
           lineSeries = {

@@ -1,6 +1,6 @@
-import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
-import { ColumnMap, itemsChanged } from "@vuu-ui/vuu-utils";
-import { type EChartsCoreOption } from "echarts/core";
+import type { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { type ColumnMap, itemsChanged } from "@vuu-ui/vuu-utils";
+import type { EChartsCoreOption } from "echarts/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ChartSelectionModel,
@@ -169,16 +169,16 @@ export const useChartOptions = ({
     series: chartSeries.series,
     tooltip: showTooltip
       ? {
-          alwaysShowContent: true,
-          backgroundColor: "",
-          borderColor: "",
-          // borderWidth: "",
-          className: "vuuChartTooltip",
-          enterable: true,
-          formatter: chartTooltip,
-          // padding: "",
-          trigger: "axis",
-        }
+        alwaysShowContent: true,
+        backgroundColor: "",
+        borderColor: "",
+        // borderWidth: "",
+        className: "vuuChartTooltip",
+        enterable: true,
+        formatter: chartTooltip,
+        // padding: "",
+        trigger: "axis",
+      }
       : undefined,
     xAxis: {
       data: chartSeries.categories,
