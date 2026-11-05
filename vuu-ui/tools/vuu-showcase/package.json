@@ -20,7 +20,7 @@
     "remark-gfm": "^4.0.1"
   },
   "dependencies": {
-    "@fontsource/open-sans": "^4.5.13",
+    "@fontsource/open-sans": "^5.0.0",
     "@salt-ds/core": "1.74.0",
     "@salt-ds/theme": "1.48.0",
     "@vuu-ui/vuu-datatable": "4.2.0",
