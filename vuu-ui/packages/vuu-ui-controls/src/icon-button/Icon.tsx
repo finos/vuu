@@ -33,7 +33,8 @@ export const Icon = ({
   return (
     <span
       {...htmlAttributes}
-      aria-hidden
+      // an unlabelled icon is decorative
+      aria-hidden={htmlAttributes["aria-label"] ? undefined : true}
       className={cx(classBase, className)}
       data-icon={name}
       role="img"
