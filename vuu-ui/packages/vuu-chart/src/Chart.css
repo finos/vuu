@@ -29,6 +29,9 @@
         border-color:var(--salt-selectable-borderColor-selected) !important;
         border-radius: 6px !important;
         font-family: var(--salt-text-fontFamily)  !important;
+        /* ECharts sets an inline z-index of 9999999. Popout level keeps the
+           tooltip above page content but below flyovers, e.g. the context menu. */
+        z-index: var(--salt-zIndex-popout) !important;
 
         .vuuChart-tooltip-title {
             color: var(--salt-content-primary-foreground) !important;
