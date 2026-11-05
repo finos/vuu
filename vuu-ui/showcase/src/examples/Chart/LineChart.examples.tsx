@@ -6,7 +6,12 @@ import {
   ChartProps,
   DataExclusionOptions,
 } from "@vuu-ui/vuu-chart";
-import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import {
+  CHART_VARIANT_PREFIXES,
+  CHART_VARIANT_SUFFIXES,
+  getSchema,
+  LocalDataSourceProvider,
+} from "@vuu-ui/vuu-data-test";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import {
   ContextMenuProvider,
@@ -371,3 +376,87 @@ export const EditableChart = () => {
     </LocalDataSourceProvider>
   );
 };
+
+const seriesCounts = [5, 10, 20, 30, 50];
+
+const SwitchSeriesColumnsTemplate = () => {
+  const [suffix, setSuffix] = useState(CHART_VARIANT_SUFFIXES[0]);
+  const [seriesCount, setSeriesCount] = useState(seriesCounts[0]);
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema("ChartVariantTable");
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource]);
+
+  const config = useMemo<ChartConfig>(() => ({}), []);
+
+  const seriesColumnNames = useMemo(
+    () =>
+      CHART_VARIANT_PREFIXES.slice(0, seriesCount).map(
+        (prefix) => `${prefix}_${suffix}`,
+      ),
+    [seriesCount, suffix],
+  );
+
+  const onChangeSuffix = useCallback(
+    (evt: SyntheticEvent<HTMLButtonElement>) => {
+      setSuffix((evt.currentTarget as HTMLButtonElement).value);
+    },
+    [],
+  );
+
+  const onChangeSeriesCount = useCallback(
+    (evt: SyntheticEvent<HTMLButtonElement>) => {
+      setSeriesCount(parseInt((evt.currentTarget as HTMLButtonElement).value));
+    },
+    [],
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", gap: 12, padding: "0px 6px" }}>
+        <ToggleButtonGroup onChange={onChangeSuffix} value={suffix}>
+          {CHART_VARIANT_SUFFIXES.map((value) => (
+            <ToggleButton key={value} value={value}>
+              {value}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        <ToggleButtonGroup
+          aria-label="Number of series"
+          onChange={onChangeSeriesCount}
+          value={String(seriesCount)}
+        >
+          {seriesCounts.map((count) => (
+            <ToggleButton key={count} value={String(count)}>
+              {`${count} series`}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </div>
+      <div style={{ width: 800, height: 600 }}>
+        <Chart
+          categoryColumnName="date"
+          chartSettings={{ useCoarsePointer: true, renderer: "svg" }}
+          config={config}
+          dataSource={dataSource}
+          seriesColumnNames={seriesColumnNames}
+        />
+      </div>
+    </div>
+  );
+};
+
+/**
+ * The user switches between charting the <prefix>_set_a, <prefix>_set_b and
+ * <prefix>_set_c columns, and chooses how many series to chart. Each prefix
+ * keeps its colour across the switch.
+ */
+export const SwitchSeriesColumns = () => (
+  <LocalDataSourceProvider>
+    <SwitchSeriesColumnsTemplate />
+  </LocalDataSourceProvider>
+);

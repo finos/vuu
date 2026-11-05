@@ -153,9 +153,57 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
 
   set seriesColumnNames(seriesColumnNames: string[]) {
     this.#seriesColumns = seriesColumnNames;
+    this.assignColors();
     if (this.#categoryColumn) {
       this.buildCategoriesAndSeries();
     }
+  }
+
+  /**
+   * Assigns a colour to each series column that does not yet have one.
+   * Colours are taken from a runtime palette with one slot per charted
+   * column, filled from the palette (repeating if there are more columns
+   * than palette colours). A new column takes the slot matching its
+   * position in the charted columns. When the user switches between sets
+   * of columns, e.g. alpha_set_a, beta_set_a and alpha_set_b, beta_set_b,
+   * the nth column of each set gets the same colour, whatever the number
+   * of columns. Colour assignments are retained, so a column keeps its
+   * colour when it is charted again. If that colour is already used by
+   * another charted series, the next unused slot is taken.
+   */
+  private assignColors() {
+    const colorMap = this.#colorMap;
+    const seriesColumns = this.#seriesColumns;
+    const count = seriesColumns.length;
+    if (count === 0 || this.#palette.length === 0) {
+      return;
+    }
+    const runtimePalette = Array.from(
+      { length: count },
+      (_, i) => this.#palette[i % this.#palette.length],
+    );
+    const usedColors = new Set<string>();
+    for (const column of seriesColumns) {
+      const color = colorMap.get(column);
+      if (color !== undefined) {
+        usedColors.add(color);
+      }
+    }
+    seriesColumns.forEach((column, preferredSlot) => {
+      if (!colorMap.has(column)) {
+        let slot = preferredSlot;
+        for (let i = 0; i < count; i++) {
+          const candidate = (preferredSlot + i) % count;
+          if (!usedColors.has(runtimePalette[candidate])) {
+            slot = candidate;
+            break;
+          }
+        }
+        const color = runtimePalette[slot];
+        usedColors.add(color);
+        colorMap.set(column, color);
+      }
+    });
   }
 
   get categories() {
@@ -167,7 +215,6 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
   }
 
   private getCategoriesAndSeries(): [string[], Series[]] {
-    const colorMap = this.#colorMap;
     const columnMap = this.#columnMap;
     const data = this.#dataWindow.data;
     const categoryColumn = this.#categoryColumn;
@@ -194,14 +241,6 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
         if (seriesTuple) {
           [lineSeries, scatterSeries] = seriesTuple;
         } else {
-          if (!colorMap.has(seriesColumn)) {
-            // Record palette color used for each series so we can preserve the color
-            // associations even if some series are hidden by user. Colours repeat
-            // when there are more series than palette entries.
-            const palette = this.#palette;
-            colorMap.set(seriesColumn, palette[colorMap.size % palette.length]);
-          }
-
           lineSeries = {
             //any reason we can't simply use col name here ?
             id: seriesColumn,
