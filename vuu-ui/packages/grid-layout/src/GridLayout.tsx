@@ -9,10 +9,12 @@ import {
   type HTMLAttributes,
   type ReactElement,
   type ReactNode,
+  useState,
 } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
+import { GridLayoutHeaderSlots } from "./GridLayoutHeaderSlots";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { GridLayoutStackedItem } from "./GridLayoutStackedtem";
 import type {
@@ -83,6 +85,7 @@ export const GridLayout = ({
   });
 
   const id = useIdMemo(idProp);
+  const [headerSlots] = useState(() => new GridLayoutHeaderSlots());
 
   const {
     children,
@@ -138,6 +141,7 @@ export const GridLayout = ({
         gridLayoutModel,
         gridModel,
         gridSnapshot,
+        headerSlots,
         id,
         onDragEnd,
         onDragLeave,

@@ -9,6 +9,7 @@ import {
   type MouseEventHandler,
   type ReactElement,
   useCallback,
+  useMemo,
 } from "react";
 import { componentToJson, type LayoutJSON } from "./componentToJson";
 import {
@@ -22,7 +23,11 @@ import {
   type GridModelChildItemProps,
   resolveMinimumGridItemSize,
 } from "./GridModel";
-import { IconButton } from "./IconButton";
+import {
+  GridLayoutItemContext,
+  useGridLayoutHeaderSlots,
+} from "./GridLayoutHeaderSlots";
+import { GridLayoutItemHeader } from "./GridLayoutItemHeader";
 import { useAsDropTarget } from "./useAsDropTarget";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
@@ -63,14 +68,15 @@ const getDragSource: DragSourceProvider = (evt) => {
     undefined;
   if (draggedItem) {
     const gridLayout = queryClosest(draggedItem, ".vuuGridLayout", true);
+    const header = draggedItem.querySelector<HTMLElement>(
+      ".vuuGridLayoutItemHeader",
+    );
     return {
       dragElement,
       element: draggedItem,
       id: draggedItem.id,
       layoutId: gridLayout.id,
-      label:
-        draggedItem.querySelector(".vuuDraggableLabel")?.textContent ??
-        "no label",
+      label: header?.dataset.title || dragElement?.textContent || "no label",
       type: "component",
     };
   }
@@ -147,6 +153,12 @@ export const GridLayoutItem = ({
     [dispatch, id],
   );
 
+  const slots = useGridLayoutHeaderSlots();
+  const itemContext = useMemo(
+    () => ({ id, slots, stacked: stacked && !contentDetached, title }),
+    [contentDetached, id, slots, stacked, title],
+  );
+
   const useDropTargetHook = dropTarget ? useAsDropTarget : useNotDropTarget;
   const droppableProps = useDropTargetHook();
   const draggableProps = useDraggable({
@@ -168,7 +180,6 @@ export const GridLayoutItem = ({
     gridArea,
     ...(minHeight === undefined ? {} : { minHeight }),
     ...(minWidth === undefined ? {} : { minWidth }),
-    "--header-height": header ? "25px" : "0px",
   };
 
   return contentVisible || contentDetached ? (
@@ -182,27 +193,15 @@ export const GridLayoutItem = ({
       style={style}
     >
       {header && !stacked ? (
-        <div className={cx(`${classBaseItem}Header`)} data-drop-target="header">
-          <span
-            className={`${classBaseItem}Header-title vuuDraggableLabel`}
-            draggable
-          >
-            {title}
-          </span>
-          <IconButton
-            className={`${classBaseItem}Header-close`}
-            data-align="right"
-            icon="close"
-            onClick={onClose}
-            variant="secondary"
-          />
-        </div>
+        <GridLayoutItemHeader itemId={id} onClose={onClose} title={title} />
       ) : null}
       <div
         className={cx(`${classBaseItem}Content`)}
         data-drop-target={dropTarget}
       >
-        {children}
+        <GridLayoutItemContext.Provider value={itemContext}>
+          {children}
+        </GridLayoutItemContext.Provider>
       </div>
     </div>
   ) : null;

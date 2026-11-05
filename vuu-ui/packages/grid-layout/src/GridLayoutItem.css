@@ -1,6 +1,5 @@
 .vuuGridLayoutItem {
-  --vuu-header-height: var(--header-height, 25px);
-  border: solid 1px white;
+  border: var(--vuuGridLayoutItem-borderWidth, var(--salt-size-border)) solid var(--vuuGridLayoutItem-borderColor, var(--salt-separable-secondary-borderColor));
   display: flex;
   flex-direction: column;
   /* A grid item must not size its track to fit its content. */
@@ -19,27 +18,4 @@
 .vuuGridLayoutItem-active {
   /* border: dashed 1px blue; */
   position: relative;
-}
-
-.vuuGridLayoutItemHeader {
-  align-items: center;
-  background-color: #ccc;
-  cursor: grab;
-  display: flex;
-  flex: 0 0 var(--vuu-grid-header-height);
-  /* inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap); */
-  height: var(--vuu-grid-header-height);
-  padding: 0 var(--salt-spacing-100) 0 0;
-  position: relative;
-
-  [data-align="right"] {
-    margin-left: auto;
-  }
-
-  .vuuGridLayoutItemHeader-title {
-    align-items: center;
-    display: flex;
-    height: 100%;
-    padding: 0 var(--salt-spacing-200);
-  }
 }

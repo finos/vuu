@@ -3,6 +3,10 @@ import type { Locator } from "@playwright/test";
 import { GridLayoutDriver } from "./GridLayoutDriver";
 
 const fixture = "GridLayout/GridLayoutTestFixture/GridLayoutTestFixture";
+/** From a header element, the GridLayoutItem that owns it. */
+const gridLayoutItemAncestor =
+  "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayoutItem ')][1]";
+
 const observeTrustedNativeDrag = async (
   component: Locator,
   target: Locator,
@@ -994,7 +998,7 @@ test.describe("GridLayout browser interactions", () => {
       .locator(".vuuGridLayoutItemHeader-title", {
         hasText: /^Template A$/,
       })
-      .locator("xpath=../..");
+      .locator(gridLayoutItemAncestor);
     await expect(templateItem).toHaveCount(1);
     await expect(templateItem).toBeVisible();
     await expect(
@@ -1052,7 +1056,7 @@ test.describe("GridLayout browser interactions", () => {
       .locator(".vuuGridLayoutItemHeader-title", {
         hasText: /^Template A$/,
       })
-      .locator("xpath=../..");
+      .locator(gridLayoutItemAncestor);
     await expect(templateItem).toHaveCount(1);
     await expect(templateItem).toBeVisible();
     await expect(
@@ -1079,7 +1083,7 @@ test.describe("GridLayout browser interactions", () => {
     );
     const firstTemplate = component
       .locator(".vuuGridLayoutItemHeader-title", { hasText: /^Template A$/ })
-      .locator("xpath=../..");
+      .locator(gridLayoutItemAncestor);
     await firstTemplate.locator(".vuuGridLayoutItemHeader-close").click();
 
     await expect(firstTemplate).toHaveCount(0);
@@ -1092,7 +1096,7 @@ test.describe("GridLayout browser interactions", () => {
     );
     const secondTemplate = component
       .locator(".vuuGridLayoutItemHeader-title", { hasText: /^Template B$/ })
-      .locator("xpath=../..");
+      .locator(gridLayoutItemAncestor);
     const secondTemplateId = await secondTemplate.getAttribute("id");
     if (!secondTemplateId) {
       throw Error("Palette-created item has no id");
@@ -1253,7 +1257,7 @@ test.describe("GridLayout browser interactions", () => {
     await expect(placeholder).toHaveCount(0);
     const template = component
       .locator(".vuuGridLayoutItemHeader-title", { hasText: /^Template A$/ })
-      .locator("xpath=../..");
+      .locator(gridLayoutItemAncestor);
     await expect(template).toBeVisible();
     await expect(template).toHaveCSS("grid-area", placeholderArea);
     await expect(component.getByTestId("template-content")).toHaveText(

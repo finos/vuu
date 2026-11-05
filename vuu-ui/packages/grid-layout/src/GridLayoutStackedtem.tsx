@@ -17,6 +17,7 @@ import {
   useGridSnapshot,
 } from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
+import { GridLayoutHeaderSlot } from "./GridLayoutItemHeader";
 import { resolveMinimumGridItemSize } from "./GridModel";
 import { TabMenu } from "./TabMenu";
 import { useEditTabName } from "./useEditTabName";
@@ -130,6 +131,11 @@ export const GridLayoutStackedItem = ({
       >
         <Tabs onChange={handleTabSelectionChange} value={stack.selectedItemId}>
           <TabBar divider>
+            <GridLayoutHeaderSlot
+              className={`${classBaseItem}-start`}
+              itemId={stack.selectedItemId}
+              location="start"
+            />
             <TabList
               appearance="transparent"
               className="vuuDragContainer"
@@ -149,7 +155,17 @@ export const GridLayoutStackedItem = ({
                     value={gridLayoutItemId}
                     key={gridLayoutItemId}
                   >
+                    <GridLayoutHeaderSlot
+                      className={`${classBaseItem}-tabStart`}
+                      itemId={gridLayoutItemId}
+                      location="tab-start"
+                    />
                     <TabTrigger>{label}</TabTrigger>
+                    <GridLayoutHeaderSlot
+                      className={`${classBaseItem}-tabEnd`}
+                      itemId={gridLayoutItemId}
+                      location="tab-end"
+                    />
                     {showMenu ? (
                       <TabMenu
                         layoutItemId={gridLayoutItemId}
@@ -173,6 +189,16 @@ export const GridLayoutStackedItem = ({
                 tabIndex={-1}
               />
             ) : null}
+            <GridLayoutHeaderSlot
+              className={`${classBaseItem}-center`}
+              itemId={stack.selectedItemId}
+              location="center"
+            />
+            <GridLayoutHeaderSlot
+              className={`${classBaseItem}-end`}
+              itemId={stack.selectedItemId}
+              location="end"
+            />
           </TabBar>
         </Tabs>
       </div>

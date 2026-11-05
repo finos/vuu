@@ -32,10 +32,6 @@
   }
 }
 
-.vuuGridLayoutItemHeader-close {
-  margin-left: auto;
-}
-
 .vuuGridLayoutStackedItemContent,
 .vuuGridLayoutItemContent {
   flex: 1 1 auto;
