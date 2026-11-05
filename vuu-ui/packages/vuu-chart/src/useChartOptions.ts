@@ -181,6 +181,9 @@ export const useChartOptions = ({
       }
       : undefined,
     xAxis: {
+      // The axis pointer would otherwise highlight the symbols under it,
+      // overriding the hover and selection styling (see ChartSeries).
+      axisPointer: { triggerEmphasis: false },
       data: chartSeries.categories,
     },
     yAxis: {

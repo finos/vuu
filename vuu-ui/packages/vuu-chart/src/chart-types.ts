@@ -38,6 +38,7 @@ export interface SeriesBase {
 
 export interface LineSeries extends SeriesBase {
   connectNulls?: boolean;
+  emphasis?: { disabled: boolean };
   lineStyle: {
     color?: string;
     width: number;

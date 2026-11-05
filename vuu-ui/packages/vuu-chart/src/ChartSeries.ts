@@ -248,6 +248,9 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
             label: seriesColumn,
             connectNulls: true,
             data: [],
+            // Hover and selection styling is applied by symbolSize and
+            // itemStyle callbacks, ECharts' own emphasis styling is not used.
+            emphasis: { disabled: true },
             type: "line",
             itemStyle: {
               color: itemColorFunction,
