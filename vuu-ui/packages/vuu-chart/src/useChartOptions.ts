@@ -12,13 +12,32 @@ import type {
 import { ChartSeries } from "./ChartSeries";
 import { chartTooltip } from "./chartTooltip";
 
+/**
+ * Hex values of the theme's categorical palette, --salt-palette-categorical-1
+ * to -20 (the -500 shade of each colour). ECharts derives hover colours by
+ * parsing these, which fails for css var() values.
+ */
 const defaultPalette = [
-  "#4676bf",
-  "#ab6528",
-  "#9f55c2",
-  "#2a8285",
-  "#697694",
-  "#B0549d",
+  "#4676bf", // cobalt
+  "#ab6528", // cider
+  "#9f55c2", // plum
+  "#2a8285", // aqua
+  "#697694", // slate
+  "#b0549d", // rose
+  "#6d7c4d", // olive
+  "#bd5558", // salmon
+  "#7665cf", // indigo
+  "#2d8543", // jade
+  "#877410", // citrine
+  "#bd5a13", // autumn
+  "#946694", // lavender
+  "#008094", // ocean
+  "#72757a", // smoke
+  "#c24795", // fuchsia
+  "#667d15", // lime
+  "#996a45", // fur
+  "#636ebf", // violet
+  "#23855e", // forest
 ];
 
 export interface ChartConfig {
