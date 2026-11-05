@@ -19,3 +19,33 @@
         }
     }
 }
+
+/* Header contribution slots in the tab bar and in each tab. */
+.vuuGridLayoutStackedItem {
+  .vuuGridLayoutStackedItem-start {
+    padding-inline-start: var(--salt-spacing-100);
+  }
+
+  /*
+    Auto margins, not flex-grow, place these: the TabList measures the space
+    its siblings take to decide which tabs overflow, so a slot must not grow.
+  */
+  .vuuGridLayoutStackedItem-center {
+    flex: 0 1 auto;
+    margin-inline: auto;
+  }
+
+  .vuuGridLayoutStackedItem-end {
+    flex: 0 1 auto;
+    margin-inline-start: auto;
+    padding-inline-end: var(--salt-spacing-100);
+  }
+
+  .vuuGridLayoutStackedItem-tabStart {
+    padding-inline-start: var(--salt-spacing-75);
+  }
+
+  .vuuGridLayoutStackedItem-tabEnd {
+    padding-inline-end: var(--salt-spacing-75);
+  }
+}

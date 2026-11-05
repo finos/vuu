@@ -63,6 +63,18 @@ export {
 export { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 export { GridLayoutItem } from "./GridLayoutItem";
 export {
+  GridLayoutItemHeader,
+  type GridLayoutItemHeaderProps,
+} from "./GridLayoutItemHeader";
+export {
+  GridLayoutHeaderContribution,
+  type GridLayoutHeaderContributionProps,
+} from "./GridLayoutHeaderContribution";
+export {
+  useGridLayoutItem,
+  type GridLayoutHeaderLocation,
+} from "./GridLayoutHeaderSlots";
+export {
   GridLayoutCommandsRegistry,
   type GridLayoutCommands,
   type GridTemplatePlacement,

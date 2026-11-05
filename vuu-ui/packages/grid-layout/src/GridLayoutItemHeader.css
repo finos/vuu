@@ -1,0 +1,104 @@
+/*
+  Override any of these on .vuuGridLayoutItemHeader (or an ancestor) to restyle
+  the header:
+
+  --vuuGridLayoutItemHeader-height
+  --vuuGridLayoutItemHeader-background
+  --vuuGridLayoutItemHeader-background-active   (item has focus within)
+  --vuuGridLayoutItemHeader-color
+  --vuuGridLayoutItemHeader-borderColor
+  --vuuGridLayoutItemHeader-borderWidth
+  --vuuGridLayoutItemHeader-gap
+  --vuuGridLayoutItemHeader-paddingInline
+  --vuuGridLayoutItemHeader-fontFamily
+  --vuuGridLayoutItemHeader-fontSize
+  --vuuGridLayoutItemHeader-title-fontWeight
+  --vuuGridLayoutItemHeader-title-color
+*/
+.vuuGridLayoutItemHeader {
+  align-items: center;
+  background: var(--vuuGridLayoutItemHeader-background, var(--salt-container-secondary-background));
+  border-bottom: var(--vuuGridLayoutItemHeader-borderWidth, var(--salt-size-border)) solid var(--vuuGridLayoutItemHeader-borderColor, var(--salt-separable-primary-borderColor));
+  box-sizing: border-box;
+  color: var(--vuuGridLayoutItemHeader-color, var(--salt-content-primary-foreground));
+  cursor: grab;
+  display: flex;
+  flex: 0 0 var(--vuuGridLayoutItemHeader-height, var(--vuu-grid-header-height));
+  font-family: var(--vuuGridLayoutItemHeader-fontFamily, var(--salt-text-fontFamily));
+  font-size: var(--vuuGridLayoutItemHeader-fontSize, var(--salt-text-label-fontSize));
+  gap: var(--vuuGridLayoutItemHeader-gap, var(--salt-spacing-100));
+  height: var(--vuuGridLayoutItemHeader-height, var(--vuu-grid-header-height));
+  min-width: 0;
+  padding-inline: var(--vuuGridLayoutItemHeader-paddingInline, var(--salt-spacing-100));
+  position: relative;
+}
+
+.vuuGridLayoutItem:focus-within > .vuuGridLayoutItemHeader {
+  background: var(--vuuGridLayoutItemHeader-background-active, var(--vuuGridLayoutItemHeader-background, var(--salt-container-secondary-background)));
+}
+
+.vuuGridLayoutItemHeader-slot {
+  align-items: center;
+  display: flex;
+  gap: var(--vuuGridLayoutItemHeader-gap, var(--salt-spacing-100));
+  height: 100%;
+  min-width: 0;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.vuuGridLayoutItemHeader-titleContainer {
+  align-items: center;
+  display: flex;
+  flex: 0 1 auto;
+  height: 100%;
+  min-width: 0;
+}
+
+.vuuGridLayoutItemHeader-title {
+  color: var(--vuuGridLayoutItemHeader-title-color, inherit);
+  font-weight: var(--vuuGridLayoutItemHeader-title-fontWeight, var(--salt-text-label-fontWeight-strong));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A title contribution replaces the default title. */
+.vuuGridLayoutItemHeader-titleSlot:not(:empty) + .vuuGridLayoutItemHeader-title {
+  display: none;
+}
+
+/* Center fills the free space, so it is kept even when empty to push end and actions right. */
+.vuuGridLayoutItemHeader-center {
+  flex: 1 1 0;
+  justify-content: center;
+
+  &:empty {
+    display: flex;
+  }
+}
+
+.vuuGridLayoutItemHeader-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--salt-spacing-50);
+
+  &:empty {
+    display: none;
+  }
+
+  .saltButton {
+    cursor: pointer;
+  }
+}
+
+.vuuGridLayoutHeaderContribution {
+  align-items: center;
+  cursor: default;
+  display: flex;
+  gap: var(--salt-spacing-50);
+  min-width: 0;
+}

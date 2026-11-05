@@ -10,6 +10,7 @@ import type { GridLayoutDragStartHandler } from "./useDraggable";
 import type { GridLayoutModel } from "./GridLayoutModel";
 import type { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
 import type { GridController } from "./GridController";
+import type { GridLayoutHeaderSlots } from "./GridLayoutHeaderSlots";
 import type { GridSnapshot } from "./GridSnapshot";
 import type { JsonValue } from "./json-value";
 
@@ -186,6 +187,7 @@ export interface GridLayoutContextProps {
   gridLayoutModel?: GridLayoutModel;
   gridModel?: GridModel;
   gridSnapshot?: GridSnapshot;
+  headerSlots?: GridLayoutHeaderSlots;
   id: string;
   onDragEnd?: GridLayoutDragEndHandler;
   onDragLeave: GridLayoutDragLeaveHandler;
