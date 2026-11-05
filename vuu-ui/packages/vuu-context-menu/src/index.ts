@@ -11,3 +11,4 @@ export {
   type ContextMenuItemDescriptor,
 } from "./menu-utils";
 export { useContextMenu } from "./useContextMenu";
+export { useHideContextMenu } from "./useHideContextMenu";

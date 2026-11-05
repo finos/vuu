@@ -114,7 +114,10 @@ export const Chart = ({
     [dataSource.columns],
   );
 
-  const onContextMenu = useChartContextMenu({ categoryColumnName, columnMap });
+  const { onContextMenu, onMouseMove } = useChartContextMenu({
+    categoryColumnName,
+    columnMap,
+  });
   const {
     itemColorFunction,
     onClick,
@@ -169,9 +172,11 @@ export const Chart = ({
     chart.on("click", onClick);
     chart.on("mouseover", onMouseOver);
     chart.on("mouseout", onMouseOut);
+    chart.getZr().on("mousemove", onMouseMove);
 
     return () => {
       if (!chart.isDisposed()) {
+        chart.getZr().off("mousemove", onMouseMove);
         chart.off("contextmenu", onContextMenu);
         chart.off("click", onClick);
         chart.off("mouseover", onMouseOver);
@@ -182,6 +187,7 @@ export const Chart = ({
     chartElement,
     onClick,
     onContextMenu,
+    onMouseMove,
     onMouseOver,
     onMouseOut,
     renderer,
