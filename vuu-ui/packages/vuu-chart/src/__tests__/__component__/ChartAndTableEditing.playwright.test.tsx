@@ -8,7 +8,7 @@ const showView = (page: Page, view: "Table" | "Chart") =>
   page.getByRole("radio", { name: view }).click();
 
 const valueCell = (page: Page, value: string) =>
-  page.locator(".ExcludableCell", { hasText: new RegExp(`^${value}$`) });
+  page.getByText(value, { exact: true }).and(page.locator(".ExcludableCell"));
 
 const isCellExcluded = async (page: Page, value: string) =>
   (await valueCell(page, value).getAttribute("data-excluded")) === "true";
