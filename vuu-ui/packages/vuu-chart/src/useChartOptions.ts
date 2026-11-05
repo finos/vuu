@@ -121,18 +121,19 @@ export const useChartOptions = ({
         cancelAnimationFrame(frameRef.current);
         frameRef.current = undefined;
       }
-      // If the DataSource is being replaced, leave it subscribed, the
-      // caller owns it and may still depend on it.
-      chartSeries.detach();
+      // When the replacement is a session DataSource of this one (an edit
+      // session has started), the source must stay suspended for the
+      // duration of the session, not be disabled.
+      const { dataSource } = chartSeries;
+      const replacement = chartSeriesRef.current.dataSource;
+      const escalateToDisable =
+        replacement !== dataSource &&
+        replacement.isSessionDataSourceOf?.(dataSource)
+          ? false
+          : undefined;
+      chartSeries.release(escalateToDisable);
     };
   }, [chartSeries]);
-
-  useEffect(
-    () => () => {
-      chartSeriesRef.current.dispose();
-    },
-    [],
-  );
 
   useMemo(() => {
     if (categoryColumnName !== chartSeries.categoryColumn) {

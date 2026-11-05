@@ -21,6 +21,8 @@ import type { ChartConfig, DataExclusionOptions } from "./useChartOptions";
 
 const { KEY } = metadataKeys;
 
+const CHART_RANGE = Range(0, 1000);
+
 export type DataSourceValue = {
   key: string;
   readonly row: DataSourceRow;
@@ -53,7 +55,8 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
   #dataExclusions: DataExclusionOptions | undefined;
   #dataSource: DataSource;
   #subscribed = false;
-  #dataWindow = new MovingDataRowWindow(Range(0, 1000));
+  #previousRange: Range | undefined;
+  #dataWindow = new MovingDataRowWindow(CHART_RANGE);
 
   #dates: string[] = [];
   #palette: string[];
@@ -101,35 +104,63 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
     this.#dataExclusions = dataExclusions;
     this.#palette = palette;
     this.#dataSource = dataSource;
-    this.subscribe();
+  }
+
+  get dataSource() {
+    return this.#dataSource;
   }
 
   /**
-   * Subscribes to the DataSource. Invoked by the constructor, only needs to
-   * be invoked again after dispose.
+   * Starts receiving data from the DataSource. A new DataSource is
+   * subscribed. A DataSource already in use, e.g. one suspended by a Table
+   * showing the same data, is resumed with the chart's range. The previous
+   * range is restored by release.
    */
   subscribe() {
-    if (!this.#subscribed) {
-      this.#subscribed = true;
-      this.#dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);
+    if (this.#subscribed) {
+      return;
+    }
+    this.#subscribed = true;
+    const dataSource = this.#dataSource;
+    const { status } = dataSource;
+    if (status === "initialising" || status === "unsubscribed") {
+      dataSource.subscribe({ range: CHART_RANGE }, this.handleData);
+    } else {
+      // A resumed DataSource sends no subscribed message
+      const columns =
+        dataSource.columns.length > 0
+          ? dataSource.columns
+          : dataSource.tableSchema?.columns;
+      this.#columnMap = buildColumnMap(columns);
+      this.#previousRange = dataSource.range;
+      dataSource.range = CHART_RANGE;
+      if (status === "subscribed") {
+        // Suspend first, so resume sends the rows in range
+        dataSource.suspend?.(false);
+      }
+      dataSource.resume?.(this.handleData);
     }
   }
 
   /**
-   * Stops processing data from the DataSource, without unsubscribing it.
-   * Used when the DataSource is replaced, the caller may still be using
-   * the previous DataSource (e.g. as the source of an edit session).
+   * Stops processing data and suspends the DataSource, restoring the range
+   * it had when the chart took it over. The DataSource is never
+   * unsubscribed, the caller owns it. Unsubscribing a session DataSource
+   * would end its edit session.
+   * @param escalateToDisable pass false when another component will resume
+   * the DataSource, so the suspend is not promoted to a disable.
    */
-  detach() {
+  release(escalateToDisable?: boolean) {
+    if (!this.#subscribed) {
+      return;
+    }
     this.#subscribed = false;
-  }
-
-  /**
-   * Stops processing data and unsubscribes from the DataSource.
-   */
-  dispose() {
-    this.#subscribed = false;
-    this.#dataSource.unsubscribe();
+    const dataSource = this.#dataSource;
+    dataSource.suspend?.(escalateToDisable);
+    if (this.#previousRange) {
+      dataSource.range = this.#previousRange;
+      this.#previousRange = undefined;
+    }
   }
 
   get palette() {

@@ -11,6 +11,7 @@ describe("ChartSeries", () => {
       dataSource,
       palette: ["red", "white", "blue"],
     });
+    cs.subscribe();
 
     cs.categoryColumn = "date";
     cs.seriesColumnNames = ["price"];
@@ -35,6 +36,7 @@ describe("ChartSeries", () => {
         dataSource: testModule.createDataSource("ChartVariantTable"),
         palette,
       });
+      cs.subscribe();
       cs.categoryColumn = "date";
       return cs;
     };
