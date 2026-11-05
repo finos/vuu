@@ -16,7 +16,7 @@
   ],
   "devDependencies": {},
   "dependencies": {
-    "@fontsource/open-sans": "^4.5.13",
+    "@fontsource/open-sans": "^5.0.0",
     "@vuu-ui/vuu-icons": "4.2.0",
     "@vuu-ui/vuu-layout": "4.2.0",
     "@vuu-ui/vuu-shell": "4.2.0",
