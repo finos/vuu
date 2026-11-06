@@ -35,8 +35,8 @@ export type GridLayoutModelPosition = {
 };
 
 export type ResizeState = {
-  maxMousePos: number;
-  minMousePos: number;
+  maxPosition: number;
+  minPosition: number;
   proportionalTrackGroups?: {
     after: number[];
     before: number[];
@@ -48,7 +48,7 @@ export type ResizeState = {
   proportionalInitialTrackSizes?: number[];
   proportionalMoveBy?: number;
   resizeTrackIsShared: boolean;
-  mousePos: number;
+  position: number;
   splitter: ISplitter;
 };
 

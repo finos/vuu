@@ -196,36 +196,48 @@ const PaletteTargetLayout = () => (
   </GridLayout>
 );
 
-const ResizableLayout = () => (
-  <GridLayout
-    colsAndRows={{ cols: ["1fr", "2fr"], rows: ["1fr"] }}
-    data-testid="grid-layout"
-    id="ct-grid"
-    style={{ height: 320, width: 612 }}
-  >
-    <GridLayoutItem
-      data-drop-target
-      header
-      id="fixed"
-      minWidth={150}
-      resizeable="h"
-      style={{ gridArea: "1/1/2/2" }}
-      title="Fixed"
+const ResizableLayout = () => {
+  const commitCountRef = useRef(0);
+  const handleChange = useCallback(() => {
+    commitCountRef.current += 1;
+    document
+      .getElementById("ct-grid")
+      ?.setAttribute("data-commit-count", String(commitCountRef.current));
+  }, []);
+
+  return (
+    <GridLayout
+      colsAndRows={{ cols: ["1fr", "2fr"], rows: ["1fr"] }}
+      data-commit-count="0"
+      data-testid="grid-layout"
+      id="ct-grid"
+      onChange={handleChange}
+      style={{ height: 320, width: 612 }}
     >
-      <TestContent label="Fixed" />
-    </GridLayoutItem>
-    <GridLayoutItem
-      data-drop-target
-      header
-      id="flexible"
-      resizeable="h"
-      style={{ gridArea: "1/2/2/3" }}
-      title="Flexible"
-    >
-      <TestContent label="Flexible" />
-    </GridLayoutItem>
-  </GridLayout>
-);
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="fixed"
+        minWidth={150}
+        resizeable="h"
+        style={{ gridArea: "1/1/2/2" }}
+        title="Fixed"
+      >
+        <TestContent label="Fixed" />
+      </GridLayoutItem>
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="flexible"
+        resizeable="h"
+        style={{ gridArea: "1/2/2/3" }}
+        title="Flexible"
+      >
+        <TestContent label="Flexible" />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
 
 const MixedResizableBoundaryLayout = () => (
   <GridLayout
