@@ -40,7 +40,7 @@ export const GridSplitter = ({
       // useGridSplitterResizing sets them when the splitter receives focus.
       // biome-ignore lint/a11y/useAriaPropsForRole: values are set on focus
       role="separator"
-      tabIndex={-1}
+      tabIndex={0}
     >
       <div className={`vuu-grab-zone`} />
     </div>

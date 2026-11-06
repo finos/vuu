@@ -1,5 +1,5 @@
 import { queryClosest } from "@vuu-ui/vuu-utils";
-import type { DragEvent } from "react";
+import type { DragEvent, ReactNode } from "react";
 import { useCallback, useRef, useState } from "react";
 import {
   GridLayout,
@@ -13,6 +13,9 @@ import {
 
 export type GridLayoutFixtureVariant =
   | "basic"
+  | "focus-order"
+  | "focus-order-nested"
+  | "focus-order-stacked"
   | "change-rerender"
   | "irregular-removal"
   | "mixed-resizable-boundary"
@@ -886,6 +889,113 @@ const NestedPaletteTabsLayout = () => (
   </GridLayout>
 );
 
+/* Focus order fixtures --------------------------------------------------- */
+
+const FocusOrderFrame = ({ children }: { children: ReactNode }) => (
+  <>
+    <button type="button">Before</button>
+    {children}
+    <button type="button">After</button>
+  </>
+);
+
+/**
+ * A resizable item with a header. Called as a function: GridLayout only
+ * recognises GridLayoutItem elements among its children.
+ */
+const focusOrderItem = (id: string, area: string, children?: ReactNode) => (
+  <GridLayoutItem
+    header
+    id={id}
+    resizeable="hv"
+    style={{ gridArea: area }}
+    title={id}
+  >
+    {children ?? <TestContent label={id} />}
+  </GridLayoutItem>
+);
+
+/** Items are declared in reverse of their visual order. */
+const FocusOrderLayout = () => (
+  <FocusOrderFrame>
+    <GridLayout
+      colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr", "1fr"] }}
+      data-testid="grid-layout"
+      id="ct-grid"
+      style={{ height: 400, width: 640 }}
+    >
+      {focusOrderItem("d", "2/2/3/3")}
+      {focusOrderItem("c", "2/1/3/2")}
+      {focusOrderItem("b", "1/2/2/3")}
+      {focusOrderItem(
+        "a",
+        "1/1/2/2",
+        <div>
+          <button type="button">A one</button>
+          <button type="button">A two</button>
+        </div>,
+      )}
+    </GridLayout>
+  </FocusOrderFrame>
+);
+
+const FocusOrderNestedLayout = () => (
+  <FocusOrderFrame>
+    <GridLayout
+      colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+      data-testid="grid-layout"
+      id="ct-grid"
+      style={{ height: 400, width: 640 }}
+    >
+      {focusOrderItem("right", "1/2/2/3")}
+      {focusOrderItem(
+        "host",
+        "1/1/2/2",
+        <GridLayout
+          colsAndRows={{ cols: ["1fr"], rows: ["1fr", "1fr"] }}
+          id="inner-grid"
+          style={{ height: "100%", width: "100%" }}
+        >
+          {focusOrderItem("inner-bottom", "2/1/3/2")}
+          {focusOrderItem("inner-top", "1/1/2/2")}
+        </GridLayout>,
+      )}
+    </GridLayout>
+  </FocusOrderFrame>
+);
+
+const FocusOrderStackedLayout = () => (
+  <FocusOrderFrame>
+    <GridLayout
+      colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+      data-testid="grid-layout"
+      id="ct-grid"
+      style={{ height: 400, width: 640 }}
+    >
+      <GridLayoutStackedItem id="tabs" style={{ gridArea: "1/2/2/3" }} />
+      <GridLayoutItem
+        contentVisible
+        id="alpha"
+        stackId="tabs"
+        style={{ gridArea: "1/2/2/3" }}
+        title="Alpha"
+      >
+        <button type="button">Alpha action</button>
+      </GridLayoutItem>
+      <GridLayoutItem
+        contentVisible={false}
+        id="beta"
+        stackId="tabs"
+        style={{ gridArea: "1/2/2/3" }}
+        title="Beta"
+      >
+        <button type="button">Beta action</button>
+      </GridLayoutItem>
+      {focusOrderItem("first", "1/1/2/2")}
+    </GridLayout>
+  </FocusOrderFrame>
+);
+
 export const GridLayoutTestFixture = ({
   variant,
 }: {
@@ -893,6 +1003,9 @@ export const GridLayoutTestFixture = ({
 }) => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     {variant === "basic" ? <BasicLayout /> : null}
+    {variant === "focus-order" ? <FocusOrderLayout /> : null}
+    {variant === "focus-order-nested" ? <FocusOrderNestedLayout /> : null}
+    {variant === "focus-order-stacked" ? <FocusOrderStackedLayout /> : null}
     {variant === "change-rerender" ? <ChangeRerenderLayout /> : null}
     {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
     {variant === "mixed-resizable-boundary" ? (

@@ -7,11 +7,15 @@ import {
   cloneElement,
   type CSSProperties,
   type HTMLAttributes,
+  type KeyboardEvent,
   type ReactElement,
   type ReactNode,
+  useCallback,
+  useMemo,
   useState,
 } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
+import { computeFocusOrder } from "./grid-focus-order";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutHeaderSlots } from "./GridLayoutHeaderSlots";
@@ -23,6 +27,7 @@ import type {
   ISplitter,
 } from "./GridModel";
 import { GridPlaceholder } from "./GridPlaceholder";
+import { useGridFocusOrder } from "./useGridFocusOrder";
 import { useGridLayout } from "./useGridLayout";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 import { GridSplitter } from "./GridSplitter";
@@ -141,6 +146,23 @@ export const GridLayout = ({
     onChange,
   });
 
+  const focusOrder = useMemo(
+    () => computeFocusOrder(gridSnapshot, splitters),
+    [gridSnapshot, splitters],
+  );
+  const {
+    headSentinelProps,
+    onKeyDown: onFocusOrderKeyDown,
+    tailSentinelProps,
+  } = useGridFocusOrder({ focusOrder });
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(e);
+      onFocusOrderKeyDown(e);
+    },
+    [onFocusOrderKeyDown, onKeyDown],
+  );
+
   const splitterLayoutProps = useGridSplitterResizing({
     gridLayoutModel,
     gridModel,
@@ -149,7 +171,7 @@ export const GridLayout = ({
     onBlur,
     onClick,
     onFocus,
-    onKeyDown,
+    onKeyDown: handleKeyDown,
     onKeyUp,
     onMouseDown,
     rowResizeDistribution,
@@ -204,6 +226,7 @@ export const GridLayout = ({
             vuuFullPage: fullPage,
           })}
         >
+          <div {...headSentinelProps} />
           {stackIds.map((stackId) => {
             const template = stackTemplates.get(stackId);
             return template ? (
@@ -253,6 +276,7 @@ export const GridLayout = ({
               }}
             />
           ))}
+          <div {...tailSentinelProps} />
         </div>
       </DragDropProviderNext>
     </GridLayoutContext.Provider>

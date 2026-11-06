@@ -19,6 +19,16 @@
   }
 }
 
+.vuuGridLayout-focusSentinel {
+  /* Out of grid flow: an absolutely positioned child takes no grid cell. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .vuu-detached {
   visibility: hidden;
 }

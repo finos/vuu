@@ -9,7 +9,7 @@ const height = async (grid: GridLayoutDriver, id: string) =>
   (await grid.item(id).boundingBox())?.height ?? 0;
 
 test.describe("GridLayout splitter keyboard resizing", () => {
-  test("splitter can be focused but is not a Tab stop", async ({
+  test("splitter is a Tab stop with an accessible name", async ({
     mount,
     page,
   }) => {
@@ -17,7 +17,7 @@ test.describe("GridLayout splitter keyboard resizing", () => {
     const grid = new GridLayoutDriver(component, page);
     const splitter = grid.separator();
 
-    await expect(splitter).toHaveAttribute("tabindex", "-1");
+    await expect(splitter).toHaveAttribute("tabindex", "0");
     await expect(splitter).toHaveAccessibleName("Resize Fixed and Flexible");
     await splitter.focus();
     await expect(splitter).toBeFocused();
