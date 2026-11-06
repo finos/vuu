@@ -505,11 +505,14 @@ export const useGridSplitterResizing = ({
   /**
    * Starts a resize transaction for a splitter. `position` is the starting
    * point on the resize axis; later calls to `resizeTo` are relative to it.
+   * Resizes with the same `historyKey` in quick succession are one undo step.
    */
   const beginResize = useCallback(
-    (splitterElement: HTMLElement, position: number) => {
+    (splitterElement: HTMLElement, position: number, historyKey?: string) => {
       const gridLayout = queryClosest(splitterElement, ".vuuGridLayout", true);
-      const transactionResult = gridController.beginTransaction("resize");
+      const transactionResult = gridController.beginTransaction("resize", {
+        historyKey,
+      });
       if (!transactionResult.ok) {
         return transactionResult;
       }
@@ -651,7 +654,9 @@ export const useGridSplitterResizing = ({
       }
       e.preventDefault();
       if (resizingState.current === undefined) {
-        if (!beginResize(splitterElement, 0).ok) {
+        if (
+          !beginResize(splitterElement, 0, `keyboard:${splitterElement.id}`).ok
+        ) {
           return;
         }
         keyboardResizeRef.current = true;

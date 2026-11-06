@@ -10,11 +10,13 @@ import {
   type TemplateSource,
   useDraggable,
   useGridLayoutDragStartHandler,
+  useGridLayoutHistory,
   useGridLayoutItemMaximizable,
 } from "../../index";
 
 export type GridLayoutFixtureVariant =
   | "basic"
+  | "undo-nested"
   | "focus-order"
   | "focus-order-nested"
   | "focus-order-stacked"
@@ -1020,6 +1022,54 @@ const maximizeItem = (
   </GridLayoutItem>
 );
 
+/**
+ * "outer-a" has a text input. "host" holds a nested grid of "inner-a" and
+ * "inner-b". Both grids share the provider's history.
+ */
+const UndoNestedLayout = () => {
+  const { canRedo, canUndo, redo, undo } = useGridLayoutHistory();
+  return (
+    <>
+      <div>
+        <button disabled={!canUndo} onClick={undo} type="button">
+          Undo
+        </button>
+        <button disabled={!canRedo} onClick={redo} type="button">
+          Redo
+        </button>
+      </div>
+      <GridLayout
+        colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+        data-testid="grid-layout"
+        id="ct-grid"
+        style={{ height: 400, width: 640 }}
+      >
+        {maximizeItem(
+          "outer-a",
+          "1/1/2/2",
+          <input aria-label="Notes" defaultValue="" />,
+        )}
+        {maximizeItem(
+          "host",
+          "1/2/2/3",
+          <GridLayout
+            colsAndRows={{ cols: ["1fr"], rows: ["1fr", "1fr"] }}
+            id="inner-grid"
+            style={{ height: "100%", width: "100%" }}
+          >
+            {maximizeItem(
+              "inner-a",
+              "1/1/2/2",
+              <button type="button">Inner A</button>,
+            )}
+            {maximizeItem("inner-b", "2/1/3/2")}
+          </GridLayout>,
+        )}
+      </GridLayout>
+    </>
+  );
+};
+
 /** Counts layout commits in data-commit-count on the grid. */
 const useCommitCount = (gridId: string) => {
   const commitCountRef = useRef(0);
@@ -1249,6 +1299,7 @@ export const GridLayoutTestFixture = ({
 }) => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     {variant === "basic" ? <BasicLayout /> : null}
+    {variant === "undo-nested" ? <UndoNestedLayout /> : null}
     {variant === "focus-order" ? <FocusOrderLayout /> : null}
     {variant === "focus-order-nested" ? <FocusOrderNestedLayout /> : null}
     {variant === "focus-order-stacked" ? <FocusOrderStackedLayout /> : null}

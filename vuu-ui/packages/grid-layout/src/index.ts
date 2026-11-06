@@ -37,6 +37,12 @@ export {
   type GridTransaction,
 } from "./GridController";
 export {
+  DEFAULT_GRID_HISTORY_LIMIT,
+  GridHistory,
+  type GridHistoryKind,
+  type GridHistoryOptions,
+} from "./GridHistory";
+export {
   GridCommandExecutionError,
   throwForGridCommandFailure,
   type GridCommand,
@@ -86,7 +92,9 @@ export {
   GridLayoutDocumentController,
   useGridComponentSettingsUpdater,
   useGridLayoutCommands,
+  useGridLayoutHistory,
   type GridComponentSettingsUpdater,
+  type GridLayoutHistory,
   type GridLayoutDocumentChange,
   type GridLayoutDocumentChangeHandler,
   type GridLayoutDocumentStoreListener,
