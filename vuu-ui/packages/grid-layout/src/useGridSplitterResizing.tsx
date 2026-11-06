@@ -470,13 +470,18 @@ export const useGridSplitterResizing = ({
 
         const tracks = gridModel.tracks.getTracks(trackType);
 
-        // this gets tricky when reduced track is a fractional value
         const reducedTrack =
           directionOfTravel === "fwd"
             ? tracks[contraTrackIndex]
             : tracks[resizeTrackIndex];
 
-        if (reducedTrack.isFraction) {
+        // A resize turns a fractional track into pixels from its measured
+        // size. Measure now, as a change elsewhere in the grid, such as a
+        // docked track, can leave the last measurement out of date.
+        if (
+          tracks[contraTrackIndex].isFraction ||
+          tracks[resizeTrackIndex].isFraction
+        ) {
           gridModel.tracks.measure(trackType);
         }
 

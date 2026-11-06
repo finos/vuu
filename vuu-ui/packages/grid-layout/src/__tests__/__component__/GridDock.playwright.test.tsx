@@ -136,6 +136,65 @@ test.describe("GridLayout edge docking", () => {
     expect(docked.width).toBeLessThan(gridWidth * 0.25 + 15);
   });
 
+  test("a splitter beside a docked item stays within the grid", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "dock" });
+    const layout = component.locator('[id="ct-grid"]');
+    const content = await contentBox(layout);
+    const template = component
+      .getByTestId("palette-item-1")
+      .getByRole("button");
+
+    await dragTo(page, template, content.x + 4, content.y + content.height / 2);
+    await expect(layout.getByTestId("template-content")).toHaveCount(1);
+    await dragTo(
+      page,
+      template,
+      content.right - 4,
+      content.y + content.height / 2,
+    );
+    await expect(layout.getByTestId("template-content")).toHaveCount(2);
+
+    const east = layout
+      .locator(".vuuGridLayoutItem", {
+        has: page.getByTestId("template-content"),
+      })
+      .last();
+    const docked = await box(east);
+    expect(docked.x + docked.width).toBeCloseTo(content.right, 0);
+
+    const splitters = layout.locator(
+      ':scope > .vuuGridSplitter[aria-orientation="vertical"]',
+    );
+    const boxes = await splitters.evaluateAll((elements) =>
+      elements.map((element) => element.getBoundingClientRect().toJSON()),
+    );
+    const index = boxes.findIndex(
+      ({ height, width, x }) =>
+        Math.abs(x + width / 2 - docked.x) < 10 && height > content.height / 2,
+    );
+    expect(index).not.toBe(-1);
+    const splitter = boxes[index];
+    const y = splitter.y + splitter.height / 2;
+    await page.mouse.move(splitter.x + splitter.width / 2, y);
+    await page.mouse.down();
+    await page.mouse.move(splitter.x + splitter.width / 2 + 60, y, {
+      steps: 6,
+    });
+    await page.mouse.up();
+
+    const resized = await box(east);
+    expect(resized.x + resized.width).toBeCloseTo(content.right, 0);
+    expect(resized.width).toBeCloseTo(docked.width - 60, -1);
+    expect(
+      await layout.evaluate(
+        (element) => element.scrollWidth - element.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(1);
+  });
+
   test("Undo reverts a dock", async ({ mount, page }) => {
     const component = await mount(fixture, { variant: "dock" });
     const grid = new GridLayoutDriver(component, page);
