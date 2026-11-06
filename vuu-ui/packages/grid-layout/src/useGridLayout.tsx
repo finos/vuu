@@ -396,8 +396,15 @@ export const useGridLayout = ({
     [gridLayoutModel, gridModel],
   );
   const snapshot = useGridControllerSnapshot(gridController);
-  const { maximize, maximizedId, maximizedIdRef, restore, toggleMaximized } =
-    useGridMaximize({ gridSnapshot: snapshot, onMaximizedChange });
+  const {
+    maximize,
+    maximizedId,
+    maximizedIdRef,
+    refusedIds: maximizeRefusedIds,
+    restore,
+    setContentMaximizable,
+    toggleMaximized,
+  } = useGridMaximize({ gridSnapshot: snapshot, onMaximizedChange });
   const dragCoordinator = useMemo(
     () => new GridDragCoordinator(id, gridController),
     [gridController, id],
@@ -1248,7 +1255,7 @@ export const useGridLayout = ({
       maximize: (itemId) => {
         if (!maximize(itemId)) {
           throw Error(
-            `[useGridLayout#${id}] maximize, no item or stack #${itemId}`,
+            `[useGridLayout#${id}] maximize, #${itemId} is not a maximizable item or stack`,
           );
         }
       },
@@ -1288,6 +1295,7 @@ export const useGridLayout = ({
     gridLayoutModel,
     gridModel,
     gridSnapshot: snapshot,
+    maximizeRefusedIds,
     maximizedId,
     nonContentGridItems,
     onCancelDrag: handleCancelDrag,
@@ -1300,6 +1308,7 @@ export const useGridLayout = ({
     onDrop: handleDrop,
     onDropStackedItem: handleDropStackedItem,
     restore,
+    setContentMaximizable,
     stackTemplates,
     toggleMaximized,
   };

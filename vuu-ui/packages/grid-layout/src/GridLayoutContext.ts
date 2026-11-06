@@ -191,6 +191,8 @@ export interface GridLayoutContextProps {
   id: string;
   /** Default for items that don't set `maximizable` themselves. */
   maximizable?: boolean;
+  /** Items whose content refuses to be maximized. */
+  maximizeRefusedIds?: ReadonlySet<string>;
   /** The item or stack filling the grid, if any. */
   maximizedId?: string;
   onDragEnd?: GridLayoutDragEndHandler;
@@ -198,6 +200,8 @@ export interface GridLayoutContextProps {
   onDragPreview: GridLayoutDropHandler;
   onDragStart: GridLayoutDragStartHandler;
   onDrop: GridLayoutDropHandler;
+  /** Records whether the content of item `itemId` allows maximize. */
+  setContentMaximizable?: (itemId: string, maximizable: boolean) => void;
   /** Maximizes the item or stack `id`, or restores it if already maximized. */
   toggleMaximized?: (id: string) => void;
 }
@@ -279,7 +283,18 @@ export const useGridLayoutId = () => {
 };
 
 export const useGridLayoutMaximize = () => {
-  const { maximizable, maximizedId, toggleMaximized } =
-    useContext(GridLayoutContext);
-  return { maximizable, maximizedId, toggleMaximized };
+  const {
+    maximizable,
+    maximizeRefusedIds,
+    maximizedId,
+    setContentMaximizable,
+    toggleMaximized,
+  } = useContext(GridLayoutContext);
+  return {
+    maximizable,
+    maximizeRefusedIds,
+    maximizedId,
+    setContentMaximizable,
+    toggleMaximized,
+  };
 };

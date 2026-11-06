@@ -161,9 +161,24 @@ export const GridLayoutItem = ({
     [dispatch, id],
   );
 
-  const { maximizable: maximizableDefault, toggleMaximized } =
-    useGridLayoutMaximize();
-  const maximizable = maximizableProp ?? maximizableDefault ?? false;
+  const {
+    maximizable: maximizableDefault,
+    maximizeRefusedIds,
+    setContentMaximizable: setGridContentMaximizable,
+    toggleMaximized,
+  } = useGridLayoutMaximize();
+  // A fixed-size item isn't offered maximize unless it asks for it.
+  const fixedSize = width !== undefined && height !== undefined;
+  const maximizable =
+    (maximizableProp ?? (fixedSize ? false : maximizableDefault) ?? false) &&
+    !maximizeRefusedIds?.has(id);
+  const setContentMaximizable = useMemo(
+    () =>
+      setGridContentMaximizable
+        ? (value: boolean) => setGridContentMaximizable(id, value)
+        : undefined,
+    [id, setGridContentMaximizable],
+  );
   const onToggleMaximized = useCallback(
     () => toggleMaximized?.(id),
     [id, toggleMaximized],
@@ -171,8 +186,14 @@ export const GridLayoutItem = ({
 
   const slots = useGridLayoutHeaderSlots();
   const itemContext = useMemo(
-    () => ({ id, slots, stacked: stacked && !contentDetached, title }),
-    [contentDetached, id, slots, stacked, title],
+    () => ({
+      id,
+      setContentMaximizable,
+      slots,
+      stacked: stacked && !contentDetached,
+      title,
+    }),
+    [contentDetached, id, setContentMaximizable, slots, stacked, title],
   );
 
   const useDropTargetHook = dropTarget ? useAsDropTarget : useNotDropTarget;

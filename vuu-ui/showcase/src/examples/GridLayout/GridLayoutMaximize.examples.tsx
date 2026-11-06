@@ -5,6 +5,7 @@ import {
   GridLayoutProvider,
   GridLayoutStackedItem,
   useGridLayoutCommands,
+  useGridLayoutItemMaximizable,
 } from "@vuu-ui/grid-layout";
 import { useCallback, useState } from "react";
 
@@ -19,10 +20,19 @@ const Panel = ({ label }: { label: string }) => (
   <div style={panelStyle}>{label}</div>
 );
 
+/** Content that refuses to be maximized, e.g. because it has a fixed size. */
+const FixedSizePanel = ({ label }: { label: string }) => {
+  useGridLayoutItemMaximizable(false);
+  return <Panel label={`${label} refuses maximize`} />;
+};
+
 /**
  * Maximize from an item's header, a stack's tab strip, or by double-clicking
  * a header. Restore, double-click again or press Escape to put the grid
- * back. "Fixed" opts out; the nested grid maximizes within its own cell.
+ * back. "Fixed" opts out with the item's maximizable prop. The Positions
+ * tab's content opts out with useGridLayoutItemMaximizable, so the stack
+ * offers Maximize only while Trades is selected. The nested grid maximizes
+ * within its own cell.
  */
 export const MaximizeItems = () => (
   // prettier-ignore
@@ -40,7 +50,7 @@ export const MaximizeItems = () => (
       <Panel label="Trades" />
     </GridLayoutItem>
     <GridLayoutItem id="positions" title="Positions" stackId="blotters" header resizeable="hv" style={{ gridArea: "1/2/2/3" }}>
-      <Panel label="Positions" />
+      <FixedSizePanel label="Positions" />
     </GridLayoutItem>
     <GridLayoutItem id="fixed" title="Fixed" maximizable={false} header resizeable="hv" style={{ gridArea: "2/1/3/2" }}>
       <Panel label="Can't be maximized" />

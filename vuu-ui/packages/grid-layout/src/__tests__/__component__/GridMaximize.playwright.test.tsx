@@ -260,4 +260,83 @@ test.describe("GridLayout maximize", () => {
     await expect(log).toHaveAttribute("data-maximized-log", "first,restored");
     await expect(item(page, "tabs")).toBeVisible();
   });
+
+  test.describe("content opt-out", () => {
+    test("content that refuses has no Maximize button until it allows it", async ({
+      mount,
+      page,
+    }) => {
+      await mount(fixture, { variant: "maximize-content" });
+
+      await expect(button(page, "content", "Maximize")).toHaveCount(0);
+      await page
+        .getByRole("button", { name: "Allow maximize content" })
+        .click();
+      await button(page, "content", "Maximize").click();
+      await expect(item(page, "fixed")).toBeHidden();
+    });
+
+    test("refusing while maximized restores the grid", async ({
+      mount,
+      page,
+    }) => {
+      await mount(fixture, { variant: "maximize-content" });
+
+      await page
+        .getByRole("button", { name: "Allow maximize content" })
+        .click();
+      await button(page, "content", "Maximize").click();
+      await page
+        .getByRole("button", { name: "Refuse maximize content" })
+        .click();
+
+      await expect(item(page, "fixed")).toBeVisible();
+      await expect(button(page, "content", "Maximize")).toHaveCount(0);
+      await page
+        .getByRole("button", { name: "Allow maximize content" })
+        .click();
+      await expect(item(page, "fixed")).toBeVisible();
+    });
+
+    test("the commands API can't maximize refused content", async ({
+      mount,
+      page,
+    }) => {
+      await mount(fixture, { variant: "maximize-content" });
+
+      await page.getByRole("button", { name: "API maximize content" }).click();
+
+      await expect(page.getByTestId("api-error")).toHaveAttribute(
+        "data-api-error",
+        /not a maximizable item or stack/,
+      );
+      await expect(item(page, "fixed")).toBeVisible();
+    });
+
+    test("a stack follows the content of its selected tab", async ({
+      mount,
+      page,
+    }) => {
+      await mount(fixture, { variant: "maximize-content" });
+      const strip = item(page, "tabs");
+      const maximizeButton = strip.getByRole("button", {
+        exact: true,
+        name: "Maximize",
+      });
+
+      await expect(maximizeButton).toHaveCount(0);
+      await strip.getByRole("tab", { name: "Table" }).click();
+      await expect(maximizeButton).toHaveCount(1);
+    });
+
+    test("fixed-size items aren't offered maximize unless they opt in", async ({
+      mount,
+      page,
+    }) => {
+      await mount(fixture, { variant: "maximize-content" });
+
+      await expect(button(page, "fixed", "Maximize")).toHaveCount(0);
+      await expect(button(page, "fixed-opt-in", "Maximize")).toHaveCount(1);
+    });
+  });
 });

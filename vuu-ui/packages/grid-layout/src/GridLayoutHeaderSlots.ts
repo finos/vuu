@@ -3,6 +3,7 @@ import {
   type RefCallback,
   useCallback,
   useContext,
+  useEffect,
 } from "react";
 import { GridLayoutContext } from "./GridLayoutContext";
 
@@ -123,6 +124,11 @@ export interface GridLayoutItemContextValue {
    * nested GridLayout still targets the item that hosts it.
    */
   slots: GridLayoutHeaderSlots;
+  /**
+   * Records whether the hosted content allows the item to be maximized, in
+   * the GridLayout that owns the item.
+   */
+  setContentMaximizable?: (maximizable: boolean) => void;
   stacked: boolean;
   title?: string;
 }
@@ -141,4 +147,22 @@ export const useGridLayoutItem = () => {
     const { id, stacked, title } = context;
     return { id, stacked, title };
   }
+};
+
+/**
+ * Lets a hosted component refuse to be maximized, e.g. because it has a
+ * fixed size. While `maximizable` is false the hosting item, or a stack with
+ * the item selected, offers no Maximize button and can't be maximized by
+ * GridLayoutCommands; if it is maximized, the grid is restored.
+ */
+export const useGridLayoutItemMaximizable = (maximizable: boolean) => {
+  const setContentMaximizable = useContext(
+    GridLayoutItemContext,
+  )?.setContentMaximizable;
+  useEffect(() => {
+    if (setContentMaximizable && !maximizable) {
+      setContentMaximizable(false);
+      return () => setContentMaximizable(true);
+    }
+  }, [maximizable, setContentMaximizable]);
 };

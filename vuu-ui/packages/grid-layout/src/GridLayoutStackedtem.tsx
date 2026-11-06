@@ -80,9 +80,11 @@ export const GridLayoutStackedItem = ({
       type: "stacked-content",
     });
 
-  const { maximizable: maximizableDefault, toggleMaximized } =
-    useGridLayoutMaximize();
-  const maximizable = maximizableProp ?? maximizableDefault ?? false;
+  const {
+    maximizable: maximizableDefault,
+    maximizeRefusedIds,
+    toggleMaximized,
+  } = useGridLayoutMaximize();
   const handleToggleMaximized = useCallback(
     () => toggleMaximized?.(id),
     [id, toggleMaximized],
@@ -95,6 +97,9 @@ export const GridLayoutStackedItem = ({
     throw Error(`[GridLayoutStackedItem] canonical stack #${id} not found`);
   }
   const itemById = new Map(snapshot.items.map((item) => [item.id, item]));
+  const maximizable =
+    (maximizableProp ?? maximizableDefault ?? false) &&
+    !maximizeRefusedIds?.has(stack.selectedItemId);
   const tabOrderKey = stack.itemIds.join("\u0000");
 
   useEffect(() => {

@@ -141,6 +141,7 @@ export const GridLayout = ({
     gridLayoutModel,
     gridModel,
     gridSnapshot,
+    maximizeRefusedIds,
     maximizedId,
     nonContentGridItems: { placeholders, splitters, stackIds },
     onCancelDrag,
@@ -153,6 +154,7 @@ export const GridLayout = ({
     onDrop,
     onDropStackedItem,
     restore,
+    setContentMaximizable,
     stackTemplates,
     toggleMaximized,
   } = useGridLayout({
@@ -224,12 +226,14 @@ export const GridLayout = ({
         headerSlots,
         id,
         maximizable,
+        maximizeRefusedIds,
         maximizedId,
         onDragEnd,
         onDragLeave,
         onDragPreview,
         onDragStart,
         onDrop,
+        setContentMaximizable,
         toggleMaximized,
       }}
     >

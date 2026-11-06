@@ -10,6 +10,7 @@ import {
   type TemplateSource,
   useDraggable,
   useGridLayoutDragStartHandler,
+  useGridLayoutItemMaximizable,
 } from "../../index";
 
 export type GridLayoutFixtureVariant =
@@ -20,6 +21,7 @@ export type GridLayoutFixtureVariant =
   | "maximize"
   | "maximize-nested"
   | "maximize-stacked"
+  | "maximize-content"
   | "change-rerender"
   | "irregular-removal"
   | "mixed-resizable-boundary"
@@ -1093,6 +1095,98 @@ const MaximizeNestedLayout = () => (
  * A stack beside an item, with buttons outside the grid that use the
  * commands API. onMaximizedChange calls are logged in data-maximized-log.
  */
+/** Content that refuses maximize until "Allow maximize" is clicked. */
+const RefusingContent = ({ label }: { label: string }) => {
+  const [maximizable, setMaximizable] = useState(false);
+  useGridLayoutItemMaximizable(maximizable);
+  return (
+    <button type="button" onClick={() => setMaximizable((value) => !value)}>
+      {maximizable ? `Refuse maximize ${label}` : `Allow maximize ${label}`}
+    </button>
+  );
+};
+
+/**
+ * "content" refuses maximize until allowed. In the stack, "chart" refuses
+ * and "table" doesn't. "fixed" has a fixed size; "fixed-opt-in" also sets
+ * maximizable. An API attempt to maximize "content" records its error.
+ */
+const MaximizeContentLayout = () => {
+  const commands = useGridLayoutCommands("ct-grid");
+  const [error, setError] = useState("");
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          try {
+            commands?.maximize("content");
+            setError("");
+          } catch (cause) {
+            setError(cause instanceof Error ? cause.message : String(cause));
+          }
+        }}
+      >
+        API maximize content
+      </button>
+      <div data-api-error={error} data-testid="api-error" />
+      <GridLayout
+        colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr", "1fr"] }}
+        data-testid="grid-layout"
+        id="ct-grid"
+        maximizable
+        style={{ height: 400, width: 640 }}
+      >
+        {maximizeItem(
+          "content",
+          "1/1/2/2",
+          <RefusingContent label="content" />,
+        )}
+        <GridLayoutStackedItem id="tabs" style={{ gridArea: "1/2/2/3" }} />
+        <GridLayoutItem
+          contentVisible
+          id="chart"
+          stackId="tabs"
+          style={{ gridArea: "1/2/2/3" }}
+          title="Chart"
+        >
+          <RefusingContent label="chart" />
+        </GridLayoutItem>
+        <GridLayoutItem
+          contentVisible={false}
+          id="table"
+          stackId="tabs"
+          style={{ gridArea: "1/2/2/3" }}
+          title="Table"
+        >
+          <TestContent label="Table" />
+        </GridLayoutItem>
+        <GridLayoutItem
+          header
+          height={120}
+          id="fixed"
+          style={{ gridArea: "2/1/3/2" }}
+          title="fixed"
+          width={200}
+        >
+          <TestContent label="fixed" />
+        </GridLayoutItem>
+        <GridLayoutItem
+          header
+          height={120}
+          id="fixed-opt-in"
+          maximizable
+          style={{ gridArea: "2/2/3/3" }}
+          title="fixed-opt-in"
+          width={200}
+        >
+          <TestContent label="fixed-opt-in" />
+        </GridLayoutItem>
+      </GridLayout>
+    </>
+  );
+};
+
 const MaximizeStackedLayout = () => {
   const commands = useGridLayoutCommands("ct-grid");
   const [log, setLog] = useState<string[]>([]);
@@ -1161,6 +1255,7 @@ export const GridLayoutTestFixture = ({
     {variant === "maximize" ? <MaximizeLayout /> : null}
     {variant === "maximize-nested" ? <MaximizeNestedLayout /> : null}
     {variant === "maximize-stacked" ? <MaximizeStackedLayout /> : null}
+    {variant === "maximize-content" ? <MaximizeContentLayout /> : null}
     {variant === "change-rerender" ? <ChangeRerenderLayout /> : null}
     {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
     {variant === "mixed-resizable-boundary" ? (

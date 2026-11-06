@@ -72,6 +72,7 @@ export {
 } from "./GridLayoutHeaderContribution";
 export {
   useGridLayoutItem,
+  useGridLayoutItemMaximizable,
   type GridLayoutHeaderLocation,
 } from "./GridLayoutHeaderSlots";
 export {
