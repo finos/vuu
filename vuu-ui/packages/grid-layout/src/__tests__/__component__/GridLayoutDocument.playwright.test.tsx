@@ -1054,6 +1054,34 @@ test.describe("GridLayout stack splitter", () => {
   }
 });
 
+test("a stack restored from a document takes resizeable from its members", async ({
+  mount,
+  page,
+}) => {
+  const component = await mount(fixture, { variant: "document-change" });
+  const grid = new GridLayoutDriver(component, page);
+  await expect(grid.layout("change-grid")).toBeVisible();
+
+  const separator = grid
+    .separator("vertical")
+    .and(component.locator('[data-resized-child-items-before="solo"]'));
+  await expect(separator).toHaveCount(1);
+  await expect(separator).toHaveAttribute(
+    "data-resized-child-items-after",
+    "stack-1",
+  );
+
+  const columns = () =>
+    grid
+      .layout("change-grid")
+      .evaluate((element) =>
+        element.style.getPropertyValue("grid-template-columns"),
+      );
+  const columnsBefore = await columns();
+  await grid.resize(separator, -20);
+  await expect.poll(columns).not.toBe(columnsBefore);
+});
+
 test("GridLayoutItem passes its className through", async ({ mount, page }) => {
   const component = await mount(fixture, { variant: "class-name" });
   const item = new GridLayoutDriver(component, page).item("item");

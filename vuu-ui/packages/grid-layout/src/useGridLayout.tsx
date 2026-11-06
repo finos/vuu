@@ -346,14 +346,20 @@ export const useGridLayout = ({
             (element) =>
               isGridLayoutStackedItem(element) && element.props.id === stackId,
           );
+          // A layout restored from a document has no stack template. Members
+          // share one grid area, so the first member supplies the metadata,
+          // as it does in gridSnapshotToGridStackStates.
+          const [firstMember] = items;
           gridModel.setTabState(stackId, items, getActiveIndex(items));
           gridModel.addChildItem(
             new GridModelChildItem({
               column,
               id: stackId,
-              minHeight: stackTemplate?.props.minHeight,
-              minWidth: stackTemplate?.props.minWidth,
-              resizeable: stackTemplate?.props.resizeable,
+              minHeight:
+                stackTemplate?.props.minHeight ?? firstMember?.minHeight,
+              minWidth: stackTemplate?.props.minWidth ?? firstMember?.minWidth,
+              resizeable:
+                stackTemplate?.props.resizeable ?? firstMember?.resizeable,
               row,
               type: "stacked-content",
             }),
