@@ -79,6 +79,7 @@ export {
   type GridLayoutCommands,
   type GridTemplatePlacement,
 } from "./GridLayoutCommands";
+export type { GridMaximisedChangeHandler } from "./useGridMaximise";
 export {
   GridLayoutProvider,
   GridLayoutDocumentController,

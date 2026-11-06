@@ -31,6 +31,8 @@ export interface GridLayoutCommands {
   getContentItemIds: () => readonly GridItemId[];
   /** Ids of empty (placeholder) items, in snapshot order. */
   getPlaceholderIds: () => readonly GridItemId[];
+  /** The item or stack filling the grid, if any. */
+  getMaximisedId: () => GridItemId | undefined;
   getSnapshot: () => GridSnapshot;
   /**
    * Insert a component rendered from template. Returns the id of the new
@@ -40,6 +42,13 @@ export interface GridLayoutCommands {
     template: ComponentTemplate,
     placement: GridTemplatePlacement,
   ) => GridItemId;
+  /**
+   * Make an item or stack fill the grid. A stack member's id maximises its
+   * stack. Throws if there is no such item or stack.
+   */
+  maximise: (id: GridItemId) => void;
+  /** Undo maximise. Does nothing if no item is maximised. */
+  restore: () => void;
   /** Subscribe to snapshot changes. */
   subscribe: (listener: () => void) => () => void;
 }

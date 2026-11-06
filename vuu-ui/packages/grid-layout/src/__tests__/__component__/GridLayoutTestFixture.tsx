@@ -5,6 +5,7 @@ import {
   GridLayout,
   GridLayoutItem,
   GridLayoutProvider,
+  useGridLayoutCommands,
   GridLayoutStackedItem,
   type TemplateSource,
   useDraggable,
@@ -18,6 +19,7 @@ export type GridLayoutFixtureVariant =
   | "focus-order-stacked"
   | "maximise"
   | "maximise-nested"
+  | "maximise-stacked"
   | "change-rerender"
   | "irregular-removal"
   | "mixed-resizable-boundary"
@@ -1087,6 +1089,65 @@ const MaximiseNestedLayout = () => (
   </GridLayout>
 );
 
+/**
+ * A stack beside an item, with buttons outside the grid that use the
+ * commands API. onMaximisedChange calls are logged in data-maximised-log.
+ */
+const MaximiseStackedLayout = () => {
+  const commands = useGridLayoutCommands("ct-grid");
+  const [log, setLog] = useState<string[]>([]);
+  const handleMaximisedChange = useCallback((id: string | undefined) => {
+    setLog((entries) => [...entries, id ?? "restored"]);
+  }, []);
+  return (
+    <>
+      <button type="button" onClick={() => commands?.maximise("beta")}>
+        API maximise beta
+      </button>
+      <button type="button" onClick={() => commands?.maximise("first")}>
+        API maximise first
+      </button>
+      <button type="button" onClick={() => commands?.restore()}>
+        API restore
+      </button>
+      <div
+        data-maximised-id={commands?.getMaximisedId() ?? ""}
+        data-maximised-log={log.join(",")}
+        data-testid="maximise-log"
+      />
+      <GridLayout
+        colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+        data-testid="grid-layout"
+        id="ct-grid"
+        maximisable
+        onMaximisedChange={handleMaximisedChange}
+        style={{ height: 400, width: 640 }}
+      >
+        <GridLayoutStackedItem id="tabs" style={{ gridArea: "1/2/2/3" }} />
+        <GridLayoutItem
+          contentVisible
+          id="alpha"
+          stackId="tabs"
+          style={{ gridArea: "1/2/2/3" }}
+          title="Alpha"
+        >
+          <TestContent label="Alpha" />
+        </GridLayoutItem>
+        <GridLayoutItem
+          contentVisible={false}
+          id="beta"
+          stackId="tabs"
+          style={{ gridArea: "1/2/2/3" }}
+          title="Beta"
+        >
+          <TestContent label="Beta" />
+        </GridLayoutItem>
+        {maximiseItem("first", "1/1/2/2")}
+      </GridLayout>
+    </>
+  );
+};
+
 export const GridLayoutTestFixture = ({
   variant,
 }: {
@@ -1099,6 +1160,7 @@ export const GridLayoutTestFixture = ({
     {variant === "focus-order-stacked" ? <FocusOrderStackedLayout /> : null}
     {variant === "maximise" ? <MaximiseLayout /> : null}
     {variant === "maximise-nested" ? <MaximiseNestedLayout /> : null}
+    {variant === "maximise-stacked" ? <MaximiseStackedLayout /> : null}
     {variant === "change-rerender" ? <ChangeRerenderLayout /> : null}
     {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
     {variant === "mixed-resizable-boundary" ? (

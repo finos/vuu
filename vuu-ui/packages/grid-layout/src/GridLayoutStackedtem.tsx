@@ -14,11 +14,13 @@ import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   type ComponentTemplateWithoutLabel,
   useGridLayoutDispatch,
+  useGridLayoutMaximise,
   useGridSnapshot,
 } from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { GridLayoutHeaderSlot } from "./GridLayoutItemHeader";
 import { resolveMinimumGridItemSize } from "./GridModel";
+import { IconButton as HeaderButton } from "./IconButton";
 import { TabMenu } from "./TabMenu";
 import { useEditTabName } from "./useEditTabName";
 import { useGridChildProps } from "./useGridChildProps";
@@ -40,6 +42,7 @@ export const GridLayoutStackedItem = ({
   header,
   id,
   getNewComponent,
+  maximisable: maximisableProp,
   minHeight,
   minWidth,
   resizeable,
@@ -76,6 +79,14 @@ export const GridLayoutStackedItem = ({
       style: styleProp,
       type: "stacked-content",
     });
+
+  const { maximisable: maximisableDefault, toggleMaximised } =
+    useGridLayoutMaximise();
+  const maximisable = maximisableProp ?? maximisableDefault ?? false;
+  const handleToggleMaximised = useCallback(
+    () => toggleMaximised?.(id),
+    [id, toggleMaximised],
+  );
 
   const dispatch = useGridLayoutDispatch();
   const snapshot = useGridSnapshot();
@@ -201,6 +212,16 @@ export const GridLayoutStackedItem = ({
               itemId={stack.selectedItemId}
               location="end"
             />
+            {maximisable && toggleMaximised ? (
+              <HeaderButton
+                appearance="transparent"
+                aria-label={maximised ? "Restore" : "Maximise"}
+                className={`${classBaseItem}-maximise`}
+                icon={maximised ? "restore" : "maximise"}
+                onClick={handleToggleMaximised}
+                sentiment="neutral"
+              />
+            ) : null}
           </TabBar>
         </Tabs>
       </div>

@@ -29,6 +29,7 @@ import type {
 import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridFocusOrder } from "./useGridFocusOrder";
 import { useGridLayout } from "./useGridLayout";
+import type { GridMaximisedChangeHandler } from "./useGridMaximise";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 import { GridSplitter } from "./GridSplitter";
 
@@ -89,6 +90,11 @@ export interface GridLayoutProps
   maximisable?: boolean;
   /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
+  /**
+   * Called when an item or stack is maximised (with its id) or the grid is
+   * restored (with undefined).
+   */
+  onMaximisedChange?: GridMaximisedChangeHandler;
   /** Content rendered inside canonical placeholders without obscuring their drop target. */
   placeholderContent?: ReactNode;
   /** Coupled boundaries with partial cross-group spans retain adjacent resizing. */
@@ -110,6 +116,7 @@ export const GridLayout = ({
   onFocus,
   onKeyDown,
   onKeyUp,
+  onMaximisedChange,
   onMouseDown,
   placeholderContent,
   rowResizeDistribution = "adjacent",
@@ -134,6 +141,7 @@ export const GridLayout = ({
     gridLayoutModel,
     gridModel,
     gridSnapshot,
+    maximisedId,
     nonContentGridItems: { placeholders, splitters, stackIds },
     onCancelDrag,
     onCancelTabDrag,
@@ -144,36 +152,16 @@ export const GridLayout = ({
     onDragStart,
     onDrop,
     onDropStackedItem,
+    restore,
     stackTemplates,
+    toggleMaximised,
   } = useGridLayout({
     children: childrenProp,
     id,
     colsAndRows,
     onChange,
+    onMaximisedChange,
   });
-
-  // Maximising is view state, not part of the layout. Any change to the
-  // set of items or stacks restores the grid.
-  const layoutKey = [
-    ...gridSnapshot.items.map(({ id: itemId }) => itemId),
-    ...gridSnapshot.stacks.map(({ id: stackId }) => stackId),
-  ].join("\u0000");
-  const [maximised, setMaximised] = useState<{
-    id: string;
-    layoutKey: string;
-  }>();
-  const maximisedId =
-    maximised?.layoutKey === layoutKey ? maximised.id : undefined;
-  const toggleMaximised = useCallback(
-    (itemId: string) => {
-      setMaximised((current) =>
-        current?.id === itemId && current.layoutKey === layoutKey
-          ? undefined
-          : { id: itemId, layoutKey },
-      );
-    },
-    [layoutKey],
-  );
 
   const focusOrder = useMemo(
     () => computeFocusOrder(gridSnapshot, splitters),
@@ -189,11 +177,11 @@ export const GridLayout = ({
       onKeyDown?.(e);
       if (maximisedId && e.key === "Escape" && !e.defaultPrevented) {
         e.preventDefault();
-        setMaximised(undefined);
+        restore();
       }
       onFocusOrderKeyDown(e);
     },
-    [maximisedId, onFocusOrderKeyDown, onKeyDown],
+    [maximisedId, onFocusOrderKeyDown, onKeyDown, restore],
   );
 
   const splitterLayoutProps = useGridSplitterResizing({

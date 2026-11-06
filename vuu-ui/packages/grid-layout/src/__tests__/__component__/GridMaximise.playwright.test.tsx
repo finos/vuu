@@ -194,4 +194,70 @@ test.describe("GridLayout maximise", () => {
     await page.keyboard.press("Escape");
     await expect(item(page, "right")).toBeVisible();
   });
+
+  test("a stack maximises with its tab strip and stays maximised across tabs", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "maximise-stacked" });
+    const grid = component.locator('[id="ct-grid"]');
+    const strip = item(page, "tabs");
+
+    await strip.getByRole("button", { exact: true, name: "Maximise" }).click();
+
+    const stripBox = await box(strip);
+    const gridBox = await contentBox(grid);
+    expect(stripBox.x).toBeCloseTo(gridBox.x, 0);
+    expect(stripBox.width).toBeCloseTo(gridBox.width, 0);
+    expect((await box(item(page, "alpha"))).width).toBeCloseTo(
+      gridBox.width,
+      0,
+    );
+    await expect(item(page, "first")).toBeHidden();
+    await expect(
+      strip.getByRole("button", { exact: true, name: "Restore" }),
+    ).toBeFocused();
+
+    await strip.getByRole("tab", { name: "Beta" }).click();
+    await expect(item(page, "beta")).toBeVisible();
+    expect((await box(item(page, "beta"))).width).toBeCloseTo(gridBox.width, 0);
+    await expect(item(page, "first")).toBeHidden();
+
+    await strip.getByRole("button", { exact: true, name: "Restore" }).click();
+    await expect(item(page, "first")).toBeVisible();
+  });
+
+  test("the commands API maximises and restores", async ({ mount, page }) => {
+    await mount(fixture, { variant: "maximise-stacked" });
+    const log = page.getByTestId("maximise-log");
+
+    await page.getByRole("button", { name: "API maximise beta" }).click();
+    await expect(item(page, "first")).toBeHidden();
+    await expect(log).toHaveAttribute("data-maximised-id", "tabs");
+
+    await page.getByRole("button", { name: "API maximise first" }).click();
+    await expect(item(page, "tabs")).toBeHidden();
+    await expect(log).toHaveAttribute("data-maximised-id", "first");
+
+    await page.getByRole("button", { name: "API restore" }).click();
+    await expect(item(page, "tabs")).toBeVisible();
+    await expect(log).toHaveAttribute(
+      "data-maximised-log",
+      "tabs,first,restored",
+    );
+  });
+
+  test("onMaximisedChange reports a restore caused by closing", async ({
+    mount,
+    page,
+  }) => {
+    await mount(fixture, { variant: "maximise-stacked" });
+    const log = page.getByTestId("maximise-log");
+
+    await button(page, "first", "Maximise").click();
+    await button(page, "first", "Close").click();
+
+    await expect(log).toHaveAttribute("data-maximised-log", "first,restored");
+    await expect(item(page, "tabs")).toBeVisible();
+  });
 });

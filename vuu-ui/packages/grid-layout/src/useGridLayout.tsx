@@ -82,12 +82,17 @@ import {
 import { gridSnapshotToGridLayoutDescriptor } from "./grid-snapshot-adapters";
 import { isGridLayoutStackedItem } from "./GridLayoutStackedtem";
 import { useGridControllerSnapshot } from "./useGridControllerSnapshot";
+import {
+  type GridMaximisedChangeHandler,
+  useGridMaximise,
+} from "./useGridMaximise";
 
 export type GridLayoutHookProps = {
   children: ReactNode;
   id: string;
   colsAndRows?: GridColumnsAndRows;
   onChange?: GridLayoutChangeHandler;
+  onMaximisedChange?: GridMaximisedChangeHandler;
 };
 
 type GridLayoutItemElements = Array<ReactElement<GridLayoutItemProps>>;
@@ -226,6 +231,7 @@ export const useGridLayout = ({
   id,
   colsAndRows,
   onChange,
+  onMaximisedChange,
 }: GridLayoutHookProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const {
@@ -390,6 +396,8 @@ export const useGridLayout = ({
     [gridLayoutModel, gridModel],
   );
   const snapshot = useGridControllerSnapshot(gridController);
+  const { maximise, maximisedId, maximisedIdRef, restore, toggleMaximised } =
+    useGridMaximise({ gridSnapshot: snapshot, onMaximisedChange });
   const dragCoordinator = useMemo(
     () => new GridDragCoordinator(id, gridController),
     [gridController, id],
@@ -1233,13 +1241,30 @@ export const useGridLayout = ({
             ({ id: itemId }) => !contentRegistryRef.current.has(itemId),
           )
           .map(({ id: itemId }) => itemId),
+      getMaximisedId: () => maximisedIdRef.current,
       getSnapshot: gridController.getSnapshot,
       gridId: id,
       insertTemplate,
+      maximise: (itemId) => {
+        if (!maximise(itemId)) {
+          throw Error(
+            `[useGridLayout#${id}] maximise, no item or stack #${itemId}`,
+          );
+        }
+      },
+      restore,
       subscribe: gridController.subscribe,
     };
     return commandsRegistry.register(commands);
-  }, [commandsRegistry, gridController, id, insertTemplate]);
+  }, [
+    commandsRegistry,
+    gridController,
+    id,
+    insertTemplate,
+    maximise,
+    maximisedIdRef,
+    restore,
+  ]);
 
   useEffect(() => {
     return gridController.subscribeCommitted((transition) => {
@@ -1263,6 +1288,7 @@ export const useGridLayout = ({
     gridLayoutModel,
     gridModel,
     gridSnapshot: snapshot,
+    maximisedId,
     nonContentGridItems,
     onCancelDrag: handleCancelDrag,
     onCancelTabDrag: handleCancelTabDrag,
@@ -1273,6 +1299,8 @@ export const useGridLayout = ({
     onDragStart: handleDragStart,
     onDrop: handleDrop,
     onDropStackedItem: handleDropStackedItem,
+    restore,
     stackTemplates,
+    toggleMaximised,
   };
 };
