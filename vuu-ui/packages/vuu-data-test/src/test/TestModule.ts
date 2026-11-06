@@ -21,6 +21,7 @@ export type TestTableName =
   | "LinkParent"
   | "LinkChild"
   | "ChartTable"
+  | "ChartVariantTable"
   | "MaxScrollEndTable"
   | "TestEditEmpty"
   | "TestEdit"
@@ -32,6 +33,42 @@ const generateRows = (tableSchema: TableSchema, count: number) => {
   const columnGenerator = RowGenerator(tableSchema.columns.map((c) => c.name));
   return new Array(count).fill(1).map((_, i) => columnGenerator(i));
 };
+
+export const CHART_VARIANT_MAX_SERIES = 50;
+export const CHART_VARIANT_PREFIXES = Array.from(
+  { length: CHART_VARIANT_MAX_SERIES },
+  (_, i) => `series_${String(i + 1).padStart(2, "0")}`,
+);
+export const CHART_VARIANT_SUFFIXES = ["set_a", "set_b", "set_c"];
+
+const chartVariantColumns: TableSchema["columns"] = [
+  { name: "id", serverDataType: "string" },
+  { name: "date", serverDataType: "string" },
+  ...CHART_VARIANT_PREFIXES.flatMap((prefix) =>
+    CHART_VARIANT_SUFFIXES.map((suffix) => ({
+      name: `${prefix}_${suffix}`,
+      serverDataType: "double" as const,
+    })),
+  ),
+];
+
+// Each set is a fixed fraction of the set_a value for the same prefix.
+const chartVariantScale = [1, 0.6, 0.3];
+
+/**
+ * 25 days of deterministic values for each <prefix>_set_<x> column.
+ */
+const chartVariantRows = () =>
+  Array.from({ length: 25 }, (_, day) => {
+    const date = new Date(Date.UTC(2026, 3, 2 + day))
+      .toISOString()
+      .slice(0, 10);
+    const values = CHART_VARIANT_PREFIXES.flatMap((_, p) => {
+      const base = 100 + p * 20 + Math.round(15 * Math.sin((day + p * 3) / 4));
+      return chartVariantScale.map((scale) => Math.round(base * scale));
+    });
+    return [String(day + 1).padStart(3, "0"), date, ...values];
+  });
 
 const testEditColumns: TableSchema["columns"] = [
   { name: "id", serverDataType: "string" },
@@ -136,6 +173,12 @@ class TestModule extends VuuModule<TestTableName> {
       key: "id",
       rangeLimits: DEFAULT_RANGE_LIMITS,
       table: { module: "TEST", table: "ChartTable" },
+    },
+    ChartVariantTable: {
+      columns: chartVariantColumns,
+      key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
+      table: { module: "TEST", table: "ChartVariantTable" },
     },
     MaxScrollEndTable: {
       columns: DefaultColumnGenerator(6).map((col) => toSchemaColumn({
@@ -247,6 +290,11 @@ class TestModule extends VuuModule<TestTableName> {
         ["025", "2026-04-26", 120, false, 1350, false],
       ],
       buildDataColumnMap(this.#schemas, "ChartTable"),
+    ),
+    ChartVariantTable: tableContainer.createTable(
+      this.#schemas.ChartVariantTable,
+      chartVariantRows(),
+      buildDataColumnMap(this.#schemas, "ChartVariantTable"),
     ),
     MaxScrollEndTable: tableContainer.createTable(
       this.#schemas.MaxScrollEndTable,

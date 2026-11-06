@@ -1,6 +1,6 @@
-import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
-import { ColumnMap, itemsChanged } from "@vuu-ui/vuu-utils";
-import { type EChartsCoreOption } from "echarts/core";
+import type { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { type ColumnMap, itemsChanged } from "@vuu-ui/vuu-utils";
+import type { EChartsCoreOption } from "echarts/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ChartSelectionModel,
@@ -12,13 +12,32 @@ import type {
 import { ChartSeries } from "./ChartSeries";
 import { chartTooltip } from "./chartTooltip";
 
+/**
+ * Hex values of the theme's categorical palette, --salt-palette-categorical-1
+ * to -20 (the -500 shade of each colour). ECharts derives hover colours by
+ * parsing these, which fails for css var() values.
+ */
 const defaultPalette = [
-  "#4676bf",
-  "#ab6528",
-  "#9f55c2",
-  "#2a8285",
-  "#697694",
-  "#B0549d",
+  "#4676bf", // cobalt
+  "#ab6528", // cider
+  "#9f55c2", // plum
+  "#2a8285", // aqua
+  "#697694", // slate
+  "#b0549d", // rose
+  "#6d7c4d", // olive
+  "#bd5558", // salmon
+  "#7665cf", // indigo
+  "#2d8543", // jade
+  "#877410", // citrine
+  "#bd5a13", // autumn
+  "#946694", // lavender
+  "#008094", // ocean
+  "#72757a", // smoke
+  "#c24795", // fuchsia
+  "#667d15", // lime
+  "#996a45", // fur
+  "#636ebf", // violet
+  "#23855e", // forest
 ];
 
 export interface ChartConfig {
@@ -102,18 +121,19 @@ export const useChartOptions = ({
         cancelAnimationFrame(frameRef.current);
         frameRef.current = undefined;
       }
-      // If the DataSource is being replaced, leave it subscribed, the
-      // caller owns it and may still depend on it.
-      chartSeries.detach();
+      // When the replacement is a session DataSource of this one (an edit
+      // session has started), the source must stay suspended for the
+      // duration of the session, not be disabled.
+      const { dataSource } = chartSeries;
+      const replacement = chartSeriesRef.current.dataSource;
+      const escalateToDisable =
+        replacement !== dataSource &&
+        replacement.isSessionDataSourceOf?.(dataSource)
+          ? false
+          : undefined;
+      chartSeries.release(escalateToDisable);
     };
   }, [chartSeries]);
-
-  useEffect(
-    () => () => {
-      chartSeriesRef.current.dispose();
-    },
-    [],
-  );
 
   useMemo(() => {
     if (categoryColumnName !== chartSeries.categoryColumn) {
@@ -150,18 +170,21 @@ export const useChartOptions = ({
     series: chartSeries.series,
     tooltip: showTooltip
       ? {
-          alwaysShowContent: true,
-          backgroundColor: "",
-          borderColor: "",
-          // borderWidth: "",
-          className: "vuuChartTooltip",
-          enterable: true,
-          formatter: chartTooltip,
-          // padding: "",
-          trigger: "axis",
-        }
+        alwaysShowContent: true,
+        backgroundColor: "",
+        borderColor: "",
+        // borderWidth: "",
+        className: "vuuChartTooltip",
+        enterable: true,
+        formatter: chartTooltip,
+        // padding: "",
+        trigger: "axis",
+      }
       : undefined,
     xAxis: {
+      // The axis pointer would otherwise highlight the symbols under it,
+      // overriding the hover and selection styling (see ChartSeries).
+      axisPointer: { triggerEmphasis: false },
       data: chartSeries.categories,
     },
     yAxis: {

@@ -1,11 +1,11 @@
-import {
+import type {
   DataSource,
   DataSourceRow,
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
 import {
   buildColumnMap,
-  ColumnMap,
+  type ColumnMap,
   EventEmitter,
   metadataKeys,
   Range,
@@ -13,13 +13,15 @@ import {
 import { MovingDataRowWindow } from "./DataRowMovingWindow";
 import {
   defaultItemColorFunction,
-  LineSeries,
-  ScatterSeries,
-  Series,
+  type LineSeries,
+  type ScatterSeries,
+  type Series,
 } from "./chart-types";
-import { ChartConfig, DataExclusionOptions } from "./useChartOptions";
+import type { ChartConfig, DataExclusionOptions } from "./useChartOptions";
 
 const { KEY } = metadataKeys;
+
+const CHART_RANGE = Range(0, 1000);
 
 export type DataSourceValue = {
   key: string;
@@ -53,7 +55,8 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
   #dataExclusions: DataExclusionOptions | undefined;
   #dataSource: DataSource;
   #subscribed = false;
-  #dataWindow = new MovingDataRowWindow(Range(0, 1000));
+  #previousRange: Range | undefined;
+  #dataWindow = new MovingDataRowWindow(CHART_RANGE);
 
   #dates: string[] = [];
   #palette: string[];
@@ -101,35 +104,63 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
     this.#dataExclusions = dataExclusions;
     this.#palette = palette;
     this.#dataSource = dataSource;
-    this.subscribe();
+  }
+
+  get dataSource() {
+    return this.#dataSource;
   }
 
   /**
-   * Subscribes to the DataSource. Invoked by the constructor, only needs to
-   * be invoked again after dispose.
+   * Starts receiving data from the DataSource. A new DataSource is
+   * subscribed. A DataSource already in use, e.g. one suspended by a Table
+   * showing the same data, is resumed with the chart's range. The previous
+   * range is restored by release.
    */
   subscribe() {
-    if (!this.#subscribed) {
-      this.#subscribed = true;
-      this.#dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);
+    if (this.#subscribed) {
+      return;
+    }
+    this.#subscribed = true;
+    const dataSource = this.#dataSource;
+    const { status } = dataSource;
+    if (status === "initialising" || status === "unsubscribed") {
+      dataSource.subscribe({ range: CHART_RANGE }, this.handleData);
+    } else {
+      // A resumed DataSource sends no subscribed message
+      const columns =
+        dataSource.columns.length > 0
+          ? dataSource.columns
+          : dataSource.tableSchema?.columns;
+      this.#columnMap = buildColumnMap(columns);
+      this.#previousRange = dataSource.range;
+      dataSource.range = CHART_RANGE;
+      if (status === "subscribed") {
+        // Suspend first, so resume sends the rows in range
+        dataSource.suspend?.(false);
+      }
+      dataSource.resume?.(this.handleData);
     }
   }
 
   /**
-   * Stops processing data from the DataSource, without unsubscribing it.
-   * Used when the DataSource is replaced, the caller may still be using
-   * the previous DataSource (e.g. as the source of an edit session).
+   * Stops processing data and suspends the DataSource, restoring the range
+   * it had when the chart took it over. The DataSource is never
+   * unsubscribed, the caller owns it. Unsubscribing a session DataSource
+   * would end its edit session.
+   * @param escalateToDisable pass false when another component will resume
+   * the DataSource, so the suspend is not promoted to a disable.
    */
-  detach() {
+  release(escalateToDisable?: boolean) {
+    if (!this.#subscribed) {
+      return;
+    }
     this.#subscribed = false;
-  }
-
-  /**
-   * Stops processing data and unsubscribes from the DataSource.
-   */
-  dispose() {
-    this.#subscribed = false;
-    this.#dataSource.unsubscribe();
+    const dataSource = this.#dataSource;
+    dataSource.suspend?.(escalateToDisable);
+    if (this.#previousRange) {
+      dataSource.range = this.#previousRange;
+      this.#previousRange = undefined;
+    }
   }
 
   get palette() {
@@ -153,9 +184,57 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
 
   set seriesColumnNames(seriesColumnNames: string[]) {
     this.#seriesColumns = seriesColumnNames;
+    this.assignColors();
     if (this.#categoryColumn) {
       this.buildCategoriesAndSeries();
     }
+  }
+
+  /**
+   * Assigns a colour to each series column that does not yet have one.
+   * Colours are taken from a runtime palette with one slot per charted
+   * column, filled from the palette (repeating if there are more columns
+   * than palette colours). A new column takes the slot matching its
+   * position in the charted columns. When the user switches between sets
+   * of columns, e.g. alpha_set_a, beta_set_a and alpha_set_b, beta_set_b,
+   * the nth column of each set gets the same colour, whatever the number
+   * of columns. Colour assignments are retained, so a column keeps its
+   * colour when it is charted again. If that colour is already used by
+   * another charted series, the next unused slot is taken.
+   */
+  private assignColors() {
+    const colorMap = this.#colorMap;
+    const seriesColumns = this.#seriesColumns;
+    const count = seriesColumns.length;
+    if (count === 0 || this.#palette.length === 0) {
+      return;
+    }
+    const runtimePalette = Array.from(
+      { length: count },
+      (_, i) => this.#palette[i % this.#palette.length],
+    );
+    const usedColors = new Set<string>();
+    for (const column of seriesColumns) {
+      const color = colorMap.get(column);
+      if (color !== undefined) {
+        usedColors.add(color);
+      }
+    }
+    seriesColumns.forEach((column, preferredSlot) => {
+      if (!colorMap.has(column)) {
+        let slot = preferredSlot;
+        for (let i = 0; i < count; i++) {
+          const candidate = (preferredSlot + i) % count;
+          if (!usedColors.has(runtimePalette[candidate])) {
+            slot = candidate;
+            break;
+          }
+        }
+        const color = runtimePalette[slot];
+        usedColors.add(color);
+        colorMap.set(column, color);
+      }
+    });
   }
 
   get categories() {
@@ -167,7 +246,6 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
   }
 
   private getCategoriesAndSeries(): [string[], Series[]] {
-    const colorMap = this.#colorMap;
     const columnMap = this.#columnMap;
     const data = this.#dataWindow.data;
     const categoryColumn = this.#categoryColumn;
@@ -194,12 +272,6 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
         if (seriesTuple) {
           [lineSeries, scatterSeries] = seriesTuple;
         } else {
-          if (!colorMap.has(seriesColumn)) {
-            // Record palette color used for each series so we can preserve the color
-            // associations even if some series are hidden by user.
-            colorMap.set(seriesColumn, this.#palette[this.#colorMap.size]);
-          }
-
           lineSeries = {
             //any reason we can't simply use col name here ?
             id: seriesColumn,
@@ -207,6 +279,9 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
             label: seriesColumn,
             connectNulls: true,
             data: [],
+            // Hover and selection styling is applied by symbolSize and
+            // itemStyle callbacks, ECharts' own emphasis styling is not used.
+            emphasis: { disabled: true },
             type: "line",
             itemStyle: {
               color: itemColorFunction,
