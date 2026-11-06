@@ -9,9 +9,9 @@ import {
 const expectedCaptures = characterization as unknown as GeometryCaseCapture[];
 
 /**
- * The fixture was captured from the legacy mutable engine before geometry was
- * extracted into pure transitions. Every geometry family must keep producing
- * exactly the same canonical state, splitters and typed command results.
+ * The fixture records the canonical state, splitters and typed command
+ * results of every geometry family. Any change to it is a deliberate change
+ * of behaviour.
  */
 describe("grid geometry characterization", () => {
   it("covers every case exactly once", () => {

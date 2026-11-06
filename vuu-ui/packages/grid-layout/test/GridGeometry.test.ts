@@ -793,6 +793,53 @@ describe("GridGeometry item transitions", () => {
     ]);
   });
 
+  it("computes the same splitters whatever order items are declared in", () => {
+    const splittersById = (items: GridGeometryItem[]) =>
+      Object.fromEntries(
+        computeSplitters(
+          geometry(["1fr", "1fr", "1fr"], ["1fr", "1fr", "1fr"], items),
+        ).splitters.map(({ id, resizedChildItems, row, column }) => [
+          id,
+          { column, resizedChildItems, row },
+        ]),
+      );
+    const items = [
+      item("a", "1/1/2/2"),
+      item("b", "1/2/2/3"),
+      item("c", "1/3/3/4"),
+      item("d", "2/1/3/2"),
+      item("e", "2/2/3/3"),
+      item("f", "3/1/4/2"),
+      item("g", "3/2/4/4"),
+    ];
+
+    const expected = splittersById(items);
+    expect(expected["b-splitter-h"].resizedChildItems).toEqual({
+      after: ["b"],
+      before: ["a"],
+    });
+    expect(expected["e-splitter-h"].resizedChildItems).toEqual({
+      after: ["e"],
+      before: ["d"],
+    });
+    expect(expected["c-splitter-h"].resizedChildItems).toEqual({
+      after: ["c"],
+      before: ["b", "e"],
+    });
+    expect(expected["f-splitter-v"].resizedChildItems).toEqual({
+      after: ["f"],
+      before: ["d"],
+    });
+    expect(expected["g-splitter-v"].resizedChildItems).toEqual({
+      after: ["g"],
+      before: ["e", "c"],
+    });
+    expect(splittersById(items.slice().reverse())).toEqual(expected);
+    expect(
+      splittersById([4, 0, 6, 2, 5, 1, 3].map((index) => items[index])),
+    ).toEqual(expected);
+  });
+
   it("does not offer splitters for fixed items or stack members", () => {
     const { splitters } = computeSplitters(
       geometry(

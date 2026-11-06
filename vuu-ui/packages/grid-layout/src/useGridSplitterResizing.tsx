@@ -552,9 +552,12 @@ export const useGridSplitterResizing = ({
           const moveBy = position - newPosition;
           state.position = newPosition;
           if (resizeTrackIsShared) {
+            // The new track takes its size from a neighbour, which moves
+            // the boundary by moveBy.
             createNewTrackForResize(moveBy);
+          } else {
+            moveSplitter(moveBy);
           }
-          moveSplitter(moveBy);
           const transaction = transactionRef.current;
           if (transaction) {
             throwForGridCommandFailure(

@@ -200,6 +200,39 @@ test.describe("GridLayout splitter keyboard resizing", () => {
     expect(toolbar?.x).toBeCloseTo(content?.x ?? 0, 0);
   });
 
+  test("a column splitter in a 2x2 grid resizes only its own row", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "focus-order" });
+    const grid = new GridLayoutDriver(component, page);
+    const [a, b, c, d] = await Promise.all(
+      ["a", "b", "c", "d"].map((id) => width(grid, id)),
+    );
+    const expectWidths = async (shift: number) => {
+      expect(await width(grid, "a")).toBeCloseTo(a + shift, 0);
+      expect(await width(grid, "b")).toBeCloseTo(b - shift, 0);
+      expect(await width(grid, "c")).toBeCloseTo(c, 0);
+      expect(await width(grid, "d")).toBeCloseTo(d, 0);
+    };
+    const splitter = grid.item("b-splitter-h");
+
+    await splitter.focus();
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press("ArrowRight");
+    }
+    await expectWidths(30);
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press("ArrowLeft");
+    }
+    await expectWidths(-20);
+
+    await grid.resize(splitter, 50);
+    await expectWidths(30);
+    await grid.resize(splitter, -60);
+    await expectWidths(-30);
+  });
+
   test("proportional row resize works from the keyboard", async ({
     mount,
     page,

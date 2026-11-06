@@ -2117,73 +2117,65 @@ const getMatchingRowspan = (
   }
 };
 
+/**
+ * The items in `candidates`, sorted into track order, from the first one
+ * that `isAligned` onwards. Empty if none is aligned.
+ */
+const fromAlignedItem = (
+  candidates: readonly GridGeometryItem[] | undefined,
+  compare: (item1: GridGeometryItem, item2: GridGeometryItem) => number,
+  isAligned: (item: GridGeometryItem) => boolean,
+) => {
+  const sorted = [...(candidates ?? [])].sort(compare);
+  const indexOfAligned = sorted.findIndex(isAligned);
+  return indexOfAligned === -1 ? [] : sorted.slice(indexOfAligned);
+};
+
 const getContrasAbove = (
   items: readonly GridGeometryItem[],
   { column, row }: GridGeometryItem,
-) => {
-  const allContrasAbove = findByRowEnd(items, row.start);
-  if (allContrasAbove) {
-    const indexOfAlignedContra = allContrasAbove.findIndex(
-      (item) => item.column.start === column.start,
-    );
-    if (indexOfAlignedContra !== -1) {
-      return [...allContrasAbove]
-        .sort(byColumnStart)
-        .slice(indexOfAlignedContra);
-    }
-  }
-  return [];
-};
+) =>
+  fromAlignedItem(
+    findByRowEnd(items, row.start),
+    byColumnStart,
+    (item) => item.column.start === column.start,
+  );
 
 const getContrasBelow = (
   items: readonly GridGeometryItem[],
   { column, row }: GridGeometryItem,
-) => {
-  const allContrasBelow = findByRowStart(items, row.end);
-  if (allContrasBelow) {
-    const indexOfAlignedContra = allContrasBelow.findIndex(
-      (item) => item.column.start === column.start,
-    );
-    if (indexOfAlignedContra !== -1) {
-      return [...allContrasBelow]
-        .sort(byColumnStart)
-        .slice(indexOfAlignedContra);
-    }
-  }
-  return [];
-};
+) =>
+  fromAlignedItem(
+    findByRowStart(items, row.end),
+    byColumnStart,
+    (item) => item.column.start === column.start,
+  );
 
 const getSiblingsRight = (
   items: readonly GridGeometryItem[],
   { column, row }: GridGeometryItem,
 ) =>
-  findByRowStart(items, row.start)?.filter(
-    (item) => item.column.start > column.start,
-  ) ?? [];
+  (findByRowStart(items, row.start) ?? [])
+    .filter((item) => item.column.start > column.start)
+    .sort(byColumnStart);
 
 const getContrasLeft = (
   items: readonly GridGeometryItem[],
   { column, row }: GridGeometryItem,
-) => {
-  const allContrasLeft = findByColumnEnd(items, column.start);
-  if (allContrasLeft) {
-    const indexOfAlignedContra = allContrasLeft.findIndex(
-      (item) => item.row.start === row.start,
-    );
-    if (indexOfAlignedContra !== -1) {
-      return [...allContrasLeft].sort(byRowStart).slice(indexOfAlignedContra);
-    }
-  }
-  return [];
-};
+) =>
+  fromAlignedItem(
+    findByColumnEnd(items, column.start),
+    byRowStart,
+    (item) => item.row.start === row.start,
+  );
 
 const getSiblingsBelow = (
   items: readonly GridGeometryItem[],
   { column, row }: GridGeometryItem,
 ) =>
-  findByColumnStart(items, column.start)?.filter(
-    (item) => item.row.start > row.start,
-  ) ?? [];
+  (findByColumnStart(items, column.start) ?? [])
+    .filter((item) => item.row.start > row.start)
+    .sort(byRowStart);
 
 const findColumnContrasAndSiblings = (
   items: readonly GridGeometryItem[],

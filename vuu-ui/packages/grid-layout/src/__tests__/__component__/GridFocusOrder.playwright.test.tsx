@@ -144,14 +144,18 @@ test.describe("GridLayout focus order", () => {
     page,
   }) => {
     const component = await mount(fixture, { variant: "focus-order" });
-    const splitter = component.locator('[id="b-splitter-h"]');
-    const before = (await splitter.boundingBox())?.x ?? 0;
+    const width = async (id: string) =>
+      (await component.locator(`[id="${id}"]`).boundingBox())?.width ?? 0;
+    const [a, b, c, d] = await Promise.all(["a", "b", "c", "d"].map(width));
 
     await page.getByRole("button", { name: "A two" }).focus();
     await page.keyboard.press("Tab");
     await page.keyboard.press("ArrowRight");
 
-    expect((await splitter.boundingBox())?.x).toBeGreaterThan(before);
     expect(await describeFocus(page)).toBe("b-splitter-h");
+    expect(await width("a")).toBeCloseTo(a + 10, 0);
+    expect(await width("b")).toBeCloseTo(b - 10, 0);
+    expect(await width("c")).toBeCloseTo(c, 0);
+    expect(await width("d")).toBeCloseTo(d, 0);
   });
 });
