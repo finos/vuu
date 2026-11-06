@@ -95,6 +95,13 @@
   }
 }
 
+/* Header buttons are square at the base size. */
+.vuuGridLayoutItemHeader-actions .vuuIconButton,
+.vuuGridLayoutStackedItem-maximise {
+  --saltButton-height: var(--salt-size-base);
+  --saltButton-width: var(--salt-size-base);
+}
+
 .vuuGridLayoutHeaderContribution {
   align-items: center;
   cursor: default;
