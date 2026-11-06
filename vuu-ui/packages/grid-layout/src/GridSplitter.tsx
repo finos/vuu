@@ -36,7 +36,11 @@ export const GridSplitter = ({
       className={`vuuGridSplitter${offsetStart ? " vuuGridSplitter-offset-start" : ""}`}
       draggable
       id={id}
+      // aria-valuenow/min/max depend on measured item sizes, so
+      // useGridSplitterResizing sets them when the splitter receives focus.
+      // biome-ignore lint/a11y/useAriaPropsForRole: values are set on focus
       role="separator"
+      tabIndex={0}
     >
       <div className={`vuu-grab-zone`} />
     </div>

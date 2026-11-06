@@ -29,6 +29,17 @@
 .vuuGridSplitter-active {
     --splitter-background: var(--salt-separable-primary-borderColor);
   }
+
+.vuuGridSplitter:focus {
+    outline: none;
+}
+
+.vuuGridSplitter:focus-visible {
+    --splitter-background: var(--salt-separable-primary-borderColor);
+    outline: var(--salt-focused-outlineWidth) var(--salt-focused-outlineStyle)
+        var(--salt-focused-outlineColor);
+    outline-offset: calc(-1 * var(--splitter-borderWidth));
+}
   
 .vuuGridSplitter[aria-orientation="vertical"] {
     --splitter-borderStyle: none solid;

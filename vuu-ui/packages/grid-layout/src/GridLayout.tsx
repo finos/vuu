@@ -7,11 +7,15 @@ import {
   cloneElement,
   type CSSProperties,
   type HTMLAttributes,
+  type KeyboardEvent,
   type ReactElement,
   type ReactNode,
+  useCallback,
+  useMemo,
   useState,
 } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
+import { computeFocusOrder } from "./grid-focus-order";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutHeaderSlots } from "./GridLayoutHeaderSlots";
@@ -23,6 +27,7 @@ import type {
   ISplitter,
 } from "./GridModel";
 import { GridPlaceholder } from "./GridPlaceholder";
+import { useGridFocusOrder } from "./useGridFocusOrder";
 import { useGridLayout } from "./useGridLayout";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 import { GridSplitter } from "./GridSplitter";
@@ -43,6 +48,29 @@ const startsAtHorizontalSplitter = (
       candidate.column.start <= splitter.column.start &&
       candidate.column.end > splitter.column.start,
   );
+
+/**
+ * Accessible name for a splitter, from the titles of the items either side
+ * of it, e.g. "Resize Blotter and Orders".
+ */
+const getSplitterLabel = (
+  splitter: ISplitter,
+  getItemTitle: (itemId: string) => string | undefined,
+) => {
+  const titles = (ids: string[]) =>
+    ids
+      .map(getItemTitle)
+      .filter((title): title is string => !!title)
+      .join(", ");
+  const before = titles(splitter.resizedChildItems.before);
+  const after = titles(splitter.resizedChildItems.after);
+  if (before && after) {
+    return `Resize ${before} and ${after}`;
+  }
+  return splitter.ariaOrientation === "vertical"
+    ? "Resize columns"
+    : "Resize rows";
+};
 
 export type GridResizeable = "h" | "v" | "hv";
 export type GridResizeDistribution = "adjacent" | "proportional";
@@ -70,8 +98,13 @@ export const GridLayout = ({
   className,
   "full-page": fullPage,
   colsAndRows,
+  onBlur,
   onClick,
   onChange,
+  onFocus,
+  onKeyDown,
+  onKeyUp,
+  onMouseDown,
   placeholderContent,
   rowResizeDistribution = "adjacent",
   style: styleProp,
@@ -113,12 +146,34 @@ export const GridLayout = ({
     onChange,
   });
 
+  const focusOrder = useMemo(
+    () => computeFocusOrder(gridSnapshot, splitters),
+    [gridSnapshot, splitters],
+  );
+  const {
+    headSentinelProps,
+    onKeyDown: onFocusOrderKeyDown,
+    tailSentinelProps,
+  } = useGridFocusOrder({ focusOrder });
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(e);
+      onFocusOrderKeyDown(e);
+    },
+    [onFocusOrderKeyDown, onKeyDown],
+  );
+
   const splitterLayoutProps = useGridSplitterResizing({
     gridLayoutModel,
     gridModel,
     gridController,
     id,
+    onBlur,
     onClick,
+    onFocus,
+    onKeyDown: handleKeyDown,
+    onKeyUp,
+    onMouseDown,
     rowResizeDistribution,
   });
 
@@ -132,6 +187,10 @@ export const GridLayout = ({
   const snapshotItemById = new Map(
     gridSnapshot.items.map((item) => [item.id, item]),
   );
+  const getItemTitle = (itemId: string) => {
+    const stack = gridSnapshot.stacks.find((s) => s.id === itemId);
+    return snapshotItemById.get(stack ? stack.selectedItemId : itemId)?.title;
+  };
 
   return (
     <GridLayoutContext.Provider
@@ -167,6 +226,7 @@ export const GridLayout = ({
             vuuFullPage: fullPage,
           })}
         >
+          <div {...headSentinelProps} />
           {stackIds.map((stackId) => {
             const template = stackTemplates.get(stackId);
             return template ? (
@@ -199,6 +259,7 @@ export const GridLayout = ({
             <GridSplitter
               // {...splitterProps}
               aria-controls={splitter.controls}
+              aria-label={getSplitterLabel(splitter, getItemTitle)}
               ariaOrientation={splitter.ariaOrientation}
               data-resized-child-items-after={splitter.resizedChildItems.after.join(
                 " ",
@@ -215,6 +276,7 @@ export const GridLayout = ({
               }}
             />
           ))}
+          <div {...tailSentinelProps} />
         </div>
       </DragDropProviderNext>
     </GridLayoutContext.Provider>

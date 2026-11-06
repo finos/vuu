@@ -587,9 +587,9 @@ export const geometryCases: readonly GeometryCase[] = [
         "expand",
         splitter.resizedGridTracks[1],
         {
-          maxMousePos: 0,
-          minMousePos: 0,
-          mousePos: 0,
+          maxPosition: 0,
+          minPosition: 0,
+          position: 0,
           resizeTrackIsShared: true,
           splitter,
         },
