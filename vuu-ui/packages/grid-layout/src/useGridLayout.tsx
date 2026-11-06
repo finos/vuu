@@ -75,6 +75,8 @@ import {
   throwForGridCommandFailure,
 } from "./GridCommand";
 import { GridController } from "./GridController";
+import { GridHistory } from "./GridHistory";
+import type { GridSnapshot } from "./GridSnapshot";
 import {
   GridDragCoordinator,
   type GridDropIntent,
@@ -235,10 +237,15 @@ export const useGridLayout = ({
 }: GridLayoutHookProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const {
+    history: providerHistory,
     onCommittedSnapshot,
     releaseTemplateComponent,
     renderTemplateComponent,
   } = useGridChangeHandler();
+  const gridHistory = useMemo(
+    () => providerHistory ?? new GridHistory(),
+    [providerHistory],
+  );
   const layoutOptions = useGridLayoutOptions();
 
   const getSavedGrid = useSavedGrid();
@@ -290,6 +297,10 @@ export const useGridLayout = ({
   const contentRegistryRef = useRef(
     new Map(children.map((element) => [element.props.id, element])),
   );
+  /** Elements of removed items that undo or redo can restore. */
+  const retainedContentRef = useRef(
+    new Map<string, ReactElement<GridLayoutItemProps>>(),
+  );
   const savedGridReaderRef = useRef(getSavedGrid);
 
   useEffect(() => {
@@ -319,11 +330,21 @@ export const useGridLayout = ({
         | GridLayoutItemElements
         | SetStateAction<GridLayoutItemElements>,
     ) => {
-      if (isSimpleStateValue(newChildren)) {
-        childrenRef.current = newChildren;
-      } else {
-        const { current: prev } = childrenRef;
-        childrenRef.current = newChildren(prev);
+      const { current: prev } = childrenRef;
+      childrenRef.current = isSimpleStateValue(newChildren)
+        ? newChildren
+        : newChildren(prev);
+
+      const nextIds = new Set(
+        childrenRef.current.map((element) => element.props.id),
+      );
+      for (const element of prev) {
+        if (!nextIds.has(element.props.id)) {
+          retainedContentRef.current.set(element.props.id, element);
+        }
+      }
+      for (const id of nextIds) {
+        retainedContentRef.current.delete(id);
       }
 
       contentRegistryRef.current = new Map(
@@ -332,6 +353,32 @@ export const useGridLayout = ({
       setChildElements(childrenRef.current);
     },
     [],
+  );
+
+  /**
+   * Matches the item elements to a layout restored by undo or redo: elements
+   * of items it doesn't have are retained, retained elements of items it has
+   * are restored.
+   */
+  const restoreChildren = useCallback(
+    ({ items }: GridSnapshot) => {
+      const itemIds = new Set(items.map(({ id: itemId }) => itemId));
+      const current = childrenRef.current;
+      const currentIds = new Set(current.map(({ props }) => props.id));
+      const kept = current.filter(
+        (child) => !isGridLayoutItem(child) || itemIds.has(child.props.id),
+      );
+      const restored = items.flatMap(({ id: itemId }) => {
+        const element = currentIds.has(itemId)
+          ? undefined
+          : retainedContentRef.current.get(itemId);
+        return element ? [element] : [];
+      });
+      if (kept.length !== current.length || restored.length > 0) {
+        setChildren(kept.concat(restored));
+      }
+    },
+    [setChildren],
   );
 
   const [gridModel, gridLayoutModel, containerCallback] = useMemo(
@@ -392,8 +439,13 @@ export const useGridLayout = ({
         gridModel,
         0,
         new LegacyGridCommandExecutor(gridModel, gridLayoutModel),
+        { history: gridHistory },
       ),
-    [gridLayoutModel, gridModel],
+    [gridHistory, gridLayoutModel, gridModel],
+  );
+  useEffect(
+    () => () => gridHistory.clear(gridController),
+    [gridController, gridHistory],
   );
   const snapshot = useGridControllerSnapshot(gridController);
   const {
@@ -1275,19 +1327,38 @@ export const useGridLayout = ({
 
   useEffect(() => {
     return gridController.subscribeCommitted((transition) => {
-      const { snapshot } = transition;
+      const { kind, snapshot } = transition;
+      if (kind === "undo" || kind === "redo") {
+        restoreChildren(snapshot);
+      }
+      const historyItemIds = gridHistory.getItemIds(gridController);
+      for (const itemId of retainedContentRef.current.keys()) {
+        if (!historyItemIds.has(itemId)) {
+          retainedContentRef.current.delete(itemId);
+        }
+      }
       saveGridLayout(id, gridSnapshotToGridLayoutDescriptor(snapshot));
       onCommittedSnapshot?.(
         transition,
         gridModel
           .getPlaceholders()
           .map(({ id: placeholderId }) => placeholderId),
+        historyItemIds,
       );
     });
-  }, [gridController, gridModel, id, onCommittedSnapshot, saveGridLayout]);
+  }, [
+    gridController,
+    gridHistory,
+    gridModel,
+    id,
+    onCommittedSnapshot,
+    restoreChildren,
+    saveGridLayout,
+  ]);
 
   return {
     children: renderedChildren,
+    history: gridHistory,
     containerCallback,
     containerRef,
     dispatchGridLayoutAction,

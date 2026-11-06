@@ -103,6 +103,33 @@ export interface GridLayoutProps
 
 const NO_DRAG_SOURCES = {} as const;
 
+/** Ctrl/Cmd+Z undoes, Ctrl/Cmd+Shift+Z or Ctrl+Y redoes. */
+const getHistoryShortcut = ({
+  altKey,
+  ctrlKey,
+  key,
+  metaKey,
+  shiftKey,
+}: KeyboardEvent): "undo" | "redo" | undefined => {
+  if (altKey || !(ctrlKey || metaKey)) {
+    return undefined;
+  }
+  const lowerKey = key.toLowerCase();
+  if (lowerKey === "z") {
+    return shiftKey ? "redo" : "undo";
+  }
+  if (lowerKey === "y" && ctrlKey && !shiftKey) {
+    return "redo";
+  }
+  return undefined;
+};
+
+/** Text fields keep their own undo. */
+const isEditableElement = (target: EventTarget) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable ||
+    target.matches("input, textarea, select, [contenteditable]"));
+
 export const GridLayout = ({
   id: idProp,
   children: childrenProp,
@@ -155,6 +182,7 @@ export const GridLayout = ({
     onDropStackedItem,
     restore,
     setContentMaximizable,
+    history,
     stackTemplates,
     toggleMaximized,
   } = useGridLayout({
@@ -181,9 +209,22 @@ export const GridLayout = ({
         e.preventDefault();
         restore();
       }
+      const historyShortcut = getHistoryShortcut(e);
+      if (
+        historyShortcut &&
+        !e.defaultPrevented &&
+        !isEditableElement(e.target)
+      ) {
+        e.preventDefault();
+        if (historyShortcut === "undo") {
+          history.undo();
+        } else {
+          history.redo();
+        }
+      }
       onFocusOrderKeyDown(e);
     },
-    [maximizedId, onFocusOrderKeyDown, onKeyDown, restore],
+    [history, maximizedId, onFocusOrderKeyDown, onKeyDown, restore],
   );
 
   const splitterLayoutProps = useGridSplitterResizing({

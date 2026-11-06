@@ -41,6 +41,7 @@ import {
 import type { ComponentTemplate } from "./GridLayoutContext";
 import { isTypedComponentTemplate } from "./GridLayoutContext";
 import type { GridCommittedTransition } from "./GridController";
+import { GridHistory } from "./GridHistory";
 import {
   type GridLayoutCommands,
   GridLayoutCommandsRegistry,
@@ -65,10 +66,17 @@ interface GridLayoutProviderContext {
    * child gridItems have already been reconstituted as React Elements
    */
   getSavedGrid?: (id: string) => LegacyDeserializedGridLayout | undefined;
+  /** Shared by every GridLayout within the provider. */
+  history?: GridHistory;
   options?: GridLayoutOptions;
+  /**
+   * `historyItemIds` are the ids of the grid's items that undo or redo can
+   * restore, see GridHistory.getItemIds.
+   */
   onCommittedSnapshot?: (
     transition: GridCommittedTransition,
     placeholderIds: readonly string[],
+    historyItemIds: ReadonlySet<string>,
   ) => void;
   releaseTemplateComponent?: (id: string) => void;
   updateComponentSettings?: GridComponentSettingsUpdater;
@@ -100,6 +108,11 @@ export interface GridLayoutProviderProps {
   componentSettings?: readonly GridComponentSettingsInput[];
   document?: unknown;
   documentController?: GridLayoutDocumentController;
+  /**
+   * The most undo steps kept, see `useGridLayoutHistory`. A provider nested
+   * within another shares the outer provider's history and ignores this.
+   */
+  historyLimit?: number;
   onDocumentChange?: GridLayoutDocumentChangeHandler;
   onDocumentError?: (error: GridLayoutDocumentError) => void;
   options?: GridLayoutOptions;
@@ -259,6 +272,7 @@ export const GridLayoutProvider = (
     componentSettings,
     document,
     documentController,
+    historyLimit,
     onDocumentChange,
     onDocumentError,
     serializedLayout,
@@ -273,6 +287,27 @@ export const GridLayoutProvider = (
     new Map<string, GridComponentSettingsInput>(),
   );
   const templateComponentIds = useRef(new Set<string>());
+  /**
+   * Settings of removed components that undo or redo can restore, with the
+   * grid and item that hosted them.
+   */
+  const retiredComponentSettings = useRef(
+    new Map<
+      string,
+      {
+        gridId: string;
+        itemId: string;
+        settings: GridComponentSettingsInput;
+        template: boolean;
+      }
+    >(),
+  );
+  const inheritedHistory = useContext(GridLayoutProviderContext).history;
+  const localHistory = useMemo(
+    () => new GridHistory({ limit: historyLimit }),
+    [historyLimit],
+  );
+  const history = inheritedHistory ?? localHistory;
   const lastDocument = useRef<
     { document: GridLayoutDocument; revision: number } | undefined
   >(undefined);
@@ -425,6 +460,7 @@ export const GridLayoutProvider = (
     (
       transition: GridCommittedTransition,
       placeholderIds: readonly string[],
+      historyItemIds: ReadonlySet<string>,
     ) => {
       if (!onDocumentChange && !documentController) {
         return;
@@ -442,6 +478,19 @@ export const GridLayoutProvider = (
         throw new GridLayoutDocumentCodecError(error);
       }
       const { previous, snapshot } = transition;
+      for (const { componentInstanceId, id: itemId } of snapshot.items) {
+        const componentId = componentInstanceId ?? itemId;
+        const retired = retiredComponentSettings.current.get(componentId);
+        if (retired) {
+          retiredComponentSettings.current.delete(componentId);
+          if (!runtimeComponentSettings.current.has(componentId)) {
+            runtimeComponentSettings.current.set(componentId, retired.settings);
+            if (retired.template) {
+              templateComponentIds.current.add(componentId);
+            }
+          }
+        }
+      }
       const availableSettings = [...runtimeComponentSettings.current.values()];
       const referencedComponentIds = new Set(
         snapshot.items.map(
@@ -480,7 +529,23 @@ export const GridLayoutProvider = (
         };
         documentController?.publish(change);
         onDocumentChange?.(encoded.value, change);
+        const removedItemIds = new Map(
+          previous.items.map(({ componentInstanceId, id }) => [
+            componentInstanceId ?? id,
+            id,
+          ]),
+        );
         for (const componentId of removedComponentInstanceIds) {
+          const settings = runtimeComponentSettings.current.get(componentId);
+          const itemId = removedItemIds.get(componentId);
+          if (settings && itemId !== undefined) {
+            retiredComponentSettings.current.set(componentId, {
+              gridId: snapshot.gridId,
+              itemId,
+              settings,
+              template: templateComponentIds.current.has(componentId),
+            });
+          }
           runtimeComponentSettings.current.delete(componentId);
           templateComponentIds.current.delete(componentId);
         }
@@ -488,6 +553,14 @@ export const GridLayoutProvider = (
         onDocumentError(encoded.error);
       } else {
         throw new GridLayoutDocumentCodecError(encoded.error);
+      }
+      for (const [componentId, retired] of retiredComponentSettings.current) {
+        if (
+          retired.gridId === snapshot.gridId &&
+          !historyItemIds.has(retired.itemId)
+        ) {
+          retiredComponentSettings.current.delete(componentId);
+        }
       }
     },
     [documentController, onDocumentChange, onDocumentError, settingsCodecs],
@@ -552,6 +625,7 @@ export const GridLayoutProvider = (
         value={{
           commandsRegistry,
           getSavedGrid,
+          history,
           onCommittedSnapshot,
           options,
           releaseTemplateComponent,
@@ -569,11 +643,13 @@ export const GridLayoutProvider = (
 
 export const useGridChangeHandler = () => {
   const {
+    history,
     onCommittedSnapshot,
     releaseTemplateComponent,
     renderTemplateComponent,
   } = useContext(GridLayoutProviderContext);
   return {
+    history,
     onCommittedSnapshot,
     releaseTemplateComponent,
     renderTemplateComponent,
@@ -602,6 +678,47 @@ export const useGridLayoutCommands = (
     registry?.getVersion ?? NO_COMMANDS_VERSION,
   );
   return registry?.get(gridId);
+};
+
+export interface GridLayoutHistory {
+  canRedo: boolean;
+  canUndo: boolean;
+  /** Reapplies the last undone change. Returns false if there is none. */
+  redo: () => boolean;
+  /** Reverts the last change to any GridLayout within the provider. */
+  undo: () => boolean;
+}
+
+const NO_HISTORY: GridLayoutHistory = {
+  canRedo: false,
+  canUndo: false,
+  redo: () => false,
+  undo: () => false,
+};
+
+const NO_HISTORY_STATE = () => 0;
+
+/**
+ * Undo and redo for the layouts within the nearest GridLayoutProvider, e.g.
+ * for toolbar buttons. Outside a GridLayoutProvider nothing can be undone.
+ */
+export const useGridLayoutHistory = (): GridLayoutHistory => {
+  const { history } = useContext(GridLayoutProviderContext);
+  const state = useSyncExternalStore(
+    history?.subscribe ?? NO_SUBSCRIPTION,
+    history
+      ? () => (history.canUndo() ? 1 : 0) + (history.canRedo() ? 2 : 0)
+      : NO_HISTORY_STATE,
+  );
+  const undo = useCallback(() => history?.undo() ?? false, [history]);
+  const redo = useCallback(() => history?.redo() ?? false, [history]);
+  return useMemo(
+    () =>
+      history
+        ? { canRedo: (state & 2) !== 0, canUndo: (state & 1) !== 0, redo, undo }
+        : NO_HISTORY,
+    [history, redo, state, undo],
+  );
 };
 
 const NO_SETTINGS_UPDATE: GridComponentSettingsUpdater = () => false;

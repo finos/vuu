@@ -32,6 +32,7 @@ import {
   useGridLayoutCommands,
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
+  useGridLayoutHistory,
   useGridModel,
   useTemplateDragState,
 } from "../..";
@@ -58,6 +59,7 @@ export type GridLayoutDocumentFixtureVariant =
   | "persistence-children"
   | "persistence-document"
   | "remountable-stack"
+  | "history"
   | "settings"
   | "settings-outside-provider"
   | "stack-splitter-east"
@@ -217,6 +219,20 @@ const ControllerCapture = ({ gridId }: { gridId: string }) => {
 const CommandsCapture = () => {
   harness().commands = useGridLayoutCommands();
   return null;
+};
+
+const HistoryToolbar = () => {
+  const { canRedo, canUndo, redo, undo } = useGridLayoutHistory();
+  return (
+    <div>
+      <button disabled={!canUndo} onClick={undo} type="button">
+        Undo
+      </button>
+      <button disabled={!canRedo} onClick={redo} type="button">
+        Redo
+      </button>
+    </div>
+  );
 };
 
 const UpdaterCapture = () => {
@@ -896,6 +912,16 @@ const renderVariant = (variant: GridLayoutDocumentFixtureVariant) => {
   switch (variant) {
     case "class-name":
       return <ClassNameFixture />;
+    case "history":
+      return (
+        <DocumentGrid
+          gridId="history-grid"
+          initialDocument={stackDocument("history-grid", ["a", "b"])}
+        >
+          <CommandsCapture />
+          <HistoryToolbar />
+        </DocumentGrid>
+      );
     case "commands":
       return (
         <DocumentGrid
