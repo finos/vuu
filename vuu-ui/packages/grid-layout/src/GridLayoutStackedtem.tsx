@@ -67,14 +67,15 @@ export const GridLayoutStackedItem = ({
     styleProp?.minWidth,
   );
 
-  const { gridArea, horizontalSplitter, verticalSplitter } = useGridChildProps({
-    id,
-    minHeight: modelMinHeight,
-    minWidth: modelMinWidth,
-    resizeable,
-    style: styleProp,
-    type: "stacked-content",
-  });
+  const { gridArea, horizontalSplitter, maximised, verticalSplitter } =
+    useGridChildProps({
+      id,
+      minHeight: modelMinHeight,
+      minWidth: modelMinWidth,
+      resizeable,
+      style: styleProp,
+      type: "stacked-content",
+    });
 
   const dispatch = useGridLayoutDispatch();
   const snapshot = useGridSnapshot();
@@ -125,6 +126,7 @@ export const GridLayoutStackedItem = ({
       <div
         {...htmlAttributes}
         className={cx(className)}
+        data-maximised={maximised || undefined}
         id={id}
         key={id}
         style={style}

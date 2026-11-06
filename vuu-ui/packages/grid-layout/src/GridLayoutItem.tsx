@@ -17,6 +17,7 @@ import {
   useGridLayoutDispatch,
   useGridLayoutDragEndHandler,
   useGridLayoutDragStartHandler,
+  useGridLayoutMaximise,
 } from "./GridLayoutContext";
 import {
   type GridChildItemStyle,
@@ -50,6 +51,11 @@ export interface GridLayoutItemProps
    */
   height?: number;
   label?: string;
+  /**
+   * Whether the header offers to maximise the item to fill the grid.
+   * Defaults to the GridLayout's `maximisable`.
+   */
+  maximisable?: boolean;
   /**
    * style.gridArea is optional only if stackId is provided and a separate declaration
    * of a GridLayoutStackedItem child is included within GridLayout
@@ -91,6 +97,7 @@ export const GridLayoutItem = ({
   header: headerProp,
   height,
   id,
+  maximisable: maximisableProp,
   minHeight,
   minWidth,
   stackId,
@@ -125,6 +132,7 @@ export const GridLayoutItem = ({
     gridArea,
     header,
     horizontalSplitter,
+    maximised,
     stacked,
     title,
     verticalSplitter,
@@ -151,6 +159,14 @@ export const GridLayoutItem = ({
       dispatch({ type: "close", id });
     },
     [dispatch, id],
+  );
+
+  const { maximisable: maximisableDefault, toggleMaximised } =
+    useGridLayoutMaximise();
+  const maximisable = maximisableProp ?? maximisableDefault ?? false;
+  const onToggleMaximised = useCallback(
+    () => toggleMaximised?.(id),
+    [id, toggleMaximised],
   );
 
   const slots = useGridLayoutHeaderSlots();
@@ -188,12 +204,21 @@ export const GridLayoutItem = ({
       {...draggableProps}
       {...droppableProps}
       className={cx(className, classNameProp)}
+      data-maximised={maximised || undefined}
       id={id}
       key={id}
       style={style}
     >
       {header && !stacked ? (
-        <GridLayoutItemHeader itemId={id} onClose={onClose} title={title} />
+        <GridLayoutItemHeader
+          itemId={id}
+          maximised={maximised}
+          onClose={onClose}
+          onToggleMaximised={
+            maximisable && toggleMaximised ? onToggleMaximised : undefined
+          }
+          title={title}
+        />
       ) : null}
       <div
         className={cx(`${classBaseItem}Content`)}

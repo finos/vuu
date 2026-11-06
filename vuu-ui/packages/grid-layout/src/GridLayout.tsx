@@ -82,6 +82,11 @@ export interface GridLayoutProps
     | ReactElement<GridLayoutItemProps>[];
   "full-page"?: boolean;
   colsAndRows?: GridColumnsAndRows;
+  /**
+   * Default for items that don't set `maximisable`: whether their header
+   * offers to maximise them to fill the grid.
+   */
+  maximisable?: boolean;
   /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
   /** Content rendered inside canonical placeholders without obscuring their drop target. */
@@ -98,6 +103,7 @@ export const GridLayout = ({
   className,
   "full-page": fullPage,
   colsAndRows,
+  maximisable,
   onBlur,
   onClick,
   onChange,
@@ -146,6 +152,29 @@ export const GridLayout = ({
     onChange,
   });
 
+  // Maximising is view state, not part of the layout. Any change to the
+  // set of items or stacks restores the grid.
+  const layoutKey = [
+    ...gridSnapshot.items.map(({ id: itemId }) => itemId),
+    ...gridSnapshot.stacks.map(({ id: stackId }) => stackId),
+  ].join("\u0000");
+  const [maximised, setMaximised] = useState<{
+    id: string;
+    layoutKey: string;
+  }>();
+  const maximisedId =
+    maximised?.layoutKey === layoutKey ? maximised.id : undefined;
+  const toggleMaximised = useCallback(
+    (itemId: string) => {
+      setMaximised((current) =>
+        current?.id === itemId && current.layoutKey === layoutKey
+          ? undefined
+          : { id: itemId, layoutKey },
+      );
+    },
+    [layoutKey],
+  );
+
   const focusOrder = useMemo(
     () => computeFocusOrder(gridSnapshot, splitters),
     [gridSnapshot, splitters],
@@ -158,9 +187,13 @@ export const GridLayout = ({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       onKeyDown?.(e);
+      if (maximisedId && e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        setMaximised(undefined);
+      }
       onFocusOrderKeyDown(e);
     },
-    [onFocusOrderKeyDown, onKeyDown],
+    [maximisedId, onFocusOrderKeyDown, onKeyDown],
   );
 
   const splitterLayoutProps = useGridSplitterResizing({
@@ -202,11 +235,14 @@ export const GridLayout = ({
         gridSnapshot,
         headerSlots,
         id,
+        maximisable,
+        maximisedId,
         onDragEnd,
         onDragLeave,
         onDragPreview,
         onDragStart,
         onDrop,
+        toggleMaximised,
       }}
     >
       <DragDropProviderNext
@@ -224,6 +260,7 @@ export const GridLayout = ({
           style={style}
           className={cx(classBase, className, {
             vuuFullPage: fullPage,
+            [`${classBase}-maximised`]: maximisedId !== undefined,
           })}
         >
           <div {...headSentinelProps} />

@@ -133,3 +133,13 @@
   transition-timing-function: ease-in-out;
   z-index: 100;
 }
+
+/* One item or stack fills the grid; everything else stays mounted but is
+   hidden, which also takes it out of the Tab order. */
+.vuuGridLayout-maximised > :not([data-maximised]):not(.vuuGridLayout-focusSentinel) {
+  visibility: hidden;
+}
+
+.vuuGridLayout-maximised > [data-maximised] {
+  z-index: 1;
+}

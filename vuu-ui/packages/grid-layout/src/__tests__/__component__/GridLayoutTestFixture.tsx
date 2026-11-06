@@ -16,6 +16,8 @@ export type GridLayoutFixtureVariant =
   | "focus-order"
   | "focus-order-nested"
   | "focus-order-stacked"
+  | "maximise"
+  | "maximise-nested"
   | "change-rerender"
   | "irregular-removal"
   | "mixed-resizable-boundary"
@@ -996,6 +998,95 @@ const FocusOrderStackedLayout = () => (
   </FocusOrderFrame>
 );
 
+const maximiseItem = (
+  id: string,
+  area: string,
+  children?: ReactNode,
+  maximisable?: boolean,
+) => (
+  <GridLayoutItem
+    header
+    id={id}
+    maximisable={maximisable}
+    resizeable="hv"
+    style={{ gridArea: area }}
+    title={id}
+  >
+    {children ?? <TestContent label={id} />}
+  </GridLayoutItem>
+);
+
+/** Counts layout commits in data-commit-count on the grid. */
+const useCommitCount = (gridId: string) => {
+  const commitCountRef = useRef(0);
+  return useCallback(() => {
+    commitCountRef.current += 1;
+    document
+      .getElementById(gridId)
+      ?.setAttribute("data-commit-count", String(commitCountRef.current));
+  }, [gridId]);
+};
+
+/** "b" has scrollable content, "d" opts out of maximising. */
+const MaximiseLayout = () => {
+  const handleChange = useCommitCount("ct-grid");
+  return (
+    <FocusOrderFrame>
+      <GridLayout
+        colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr", "1fr"] }}
+        data-commit-count="0"
+        data-testid="grid-layout"
+        id="ct-grid"
+        maximisable
+        onChange={handleChange}
+        style={{ height: 400, width: 640 }}
+      >
+        {maximiseItem(
+          "a",
+          "1/1/2/2",
+          <div>
+            <button type="button">A one</button>
+          </div>,
+        )}
+        {maximiseItem(
+          "b",
+          "1/2/2/3",
+          <div data-testid="b-scroller" style={{ overflow: "auto" }}>
+            <div style={{ height: 2000 }}>Tall content</div>
+          </div>,
+        )}
+        {maximiseItem("c", "2/1/3/2")}
+        {maximiseItem("d", "2/2/3/3", undefined, false)}
+      </GridLayout>
+    </FocusOrderFrame>
+  );
+};
+
+const MaximiseNestedLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    maximisable
+    style={{ height: 400, width: 640 }}
+  >
+    {maximiseItem("right", "1/2/2/3")}
+    {maximiseItem(
+      "host",
+      "1/1/2/2",
+      <GridLayout
+        colsAndRows={{ cols: ["1fr"], rows: ["1fr", "1fr"] }}
+        id="inner-grid"
+        maximisable
+        style={{ height: "100%", width: "100%" }}
+      >
+        {maximiseItem("inner-top", "1/1/2/2")}
+        {maximiseItem("inner-bottom", "2/1/3/2")}
+      </GridLayout>,
+    )}
+  </GridLayout>
+);
+
 export const GridLayoutTestFixture = ({
   variant,
 }: {
@@ -1006,6 +1097,8 @@ export const GridLayoutTestFixture = ({
     {variant === "focus-order" ? <FocusOrderLayout /> : null}
     {variant === "focus-order-nested" ? <FocusOrderNestedLayout /> : null}
     {variant === "focus-order-stacked" ? <FocusOrderStackedLayout /> : null}
+    {variant === "maximise" ? <MaximiseLayout /> : null}
+    {variant === "maximise-nested" ? <MaximiseNestedLayout /> : null}
     {variant === "change-rerender" ? <ChangeRerenderLayout /> : null}
     {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
     {variant === "mixed-resizable-boundary" ? (
