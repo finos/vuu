@@ -17,7 +17,7 @@ import {
   useGridLayoutDispatch,
   useGridLayoutDragEndHandler,
   useGridLayoutDragStartHandler,
-  useGridLayoutMaximise,
+  useGridLayoutMaximize,
 } from "./GridLayoutContext";
 import {
   type GridChildItemStyle,
@@ -52,10 +52,10 @@ export interface GridLayoutItemProps
   height?: number;
   label?: string;
   /**
-   * Whether the header offers to maximise the item to fill the grid.
-   * Defaults to the GridLayout's `maximisable`.
+   * Whether the header offers to maximize the item to fill the grid.
+   * Defaults to the GridLayout's `maximizable`.
    */
-  maximisable?: boolean;
+  maximizable?: boolean;
   /**
    * style.gridArea is optional only if stackId is provided and a separate declaration
    * of a GridLayoutStackedItem child is included within GridLayout
@@ -97,7 +97,7 @@ export const GridLayoutItem = ({
   header: headerProp,
   height,
   id,
-  maximisable: maximisableProp,
+  maximizable: maximizableProp,
   minHeight,
   minWidth,
   stackId,
@@ -132,7 +132,7 @@ export const GridLayoutItem = ({
     gridArea,
     header,
     horizontalSplitter,
-    maximised,
+    maximized,
     stacked,
     title,
     verticalSplitter,
@@ -161,12 +161,12 @@ export const GridLayoutItem = ({
     [dispatch, id],
   );
 
-  const { maximisable: maximisableDefault, toggleMaximised } =
-    useGridLayoutMaximise();
-  const maximisable = maximisableProp ?? maximisableDefault ?? false;
-  const onToggleMaximised = useCallback(
-    () => toggleMaximised?.(id),
-    [id, toggleMaximised],
+  const { maximizable: maximizableDefault, toggleMaximized } =
+    useGridLayoutMaximize();
+  const maximizable = maximizableProp ?? maximizableDefault ?? false;
+  const onToggleMaximized = useCallback(
+    () => toggleMaximized?.(id),
+    [id, toggleMaximized],
   );
 
   const slots = useGridLayoutHeaderSlots();
@@ -204,7 +204,7 @@ export const GridLayoutItem = ({
       {...draggableProps}
       {...droppableProps}
       className={cx(className, classNameProp)}
-      data-maximised={maximised || undefined}
+      data-maximized={maximized || undefined}
       id={id}
       key={id}
       style={style}
@@ -212,10 +212,10 @@ export const GridLayoutItem = ({
       {header && !stacked ? (
         <GridLayoutItemHeader
           itemId={id}
-          maximised={maximised}
+          maximized={maximized}
           onClose={onClose}
-          onToggleMaximised={
-            maximisable && toggleMaximised ? onToggleMaximised : undefined
+          onToggleMaximized={
+            maximizable && toggleMaximized ? onToggleMaximized : undefined
           }
           title={title}
         />

@@ -64,25 +64,25 @@ export interface GridLayoutItemHeaderProps
    */
   itemId: string;
   /** The item fills the grid. Dragging is disabled while it does. */
-  maximised?: boolean;
+  maximized?: boolean;
   onClose?: MouseEventHandler<HTMLButtonElement>;
   /**
-   * Shows a Maximise (or Restore) button. Double-clicking the header
+   * Shows a Maximize (or Restore) button. Double-clicking the header
    * does the same.
    */
-  onToggleMaximised?: () => void;
+  onToggleMaximized?: () => void;
   title?: string;
 }
 
 export const GridLayoutItemHeader = ({
   className,
   itemId,
-  maximised = false,
+  maximized = false,
   onClose,
   onDoubleClick,
   onDragStart,
   onPointerDown,
-  onToggleMaximised,
+  onToggleMaximized,
   title,
   ...htmlAttributes
 }: GridLayoutItemHeaderProps) => {
@@ -108,14 +108,14 @@ export const GridLayoutItemHeader = ({
 
   const handleDragStart = useCallback<DragEventHandler<HTMLDivElement>>(
     (evt) => {
-      if (dragBlockedRef.current || maximised) {
+      if (dragBlockedRef.current || maximized) {
         evt.preventDefault();
         evt.stopPropagation();
       } else {
         onDragStart?.(evt);
       }
     },
-    [maximised, onDragStart],
+    [maximized, onDragStart],
   );
 
   const handleDoubleClick = useCallback<MouseEventHandler<HTMLDivElement>>(
@@ -123,14 +123,14 @@ export const GridLayoutItemHeader = ({
       onDoubleClick?.(evt);
       const target = evt.target as HTMLElement;
       if (
-        onToggleMaximised &&
+        onToggleMaximized &&
         !evt.defaultPrevented &&
         target.closest(NO_DRAG_SELECTOR) === null
       ) {
-        onToggleMaximised();
+        onToggleMaximized();
       }
     },
-    [onDoubleClick, onToggleMaximised],
+    [onDoubleClick, onToggleMaximized],
   );
 
   return (
@@ -139,7 +139,7 @@ export const GridLayoutItemHeader = ({
       className={cx(classBase, className)}
       data-drop-target="header"
       data-title={title}
-      draggable={!maximised}
+      draggable={!maximized}
       onDoubleClick={handleDoubleClick}
       onDragStart={handleDragStart}
       onPointerDown={handlePointerDown}
@@ -168,13 +168,13 @@ export const GridLayoutItemHeader = ({
         location="end"
       />
       <div className={`${classBase}-actions`}>
-        {onToggleMaximised ? (
+        {onToggleMaximized ? (
           <IconButton
             appearance="transparent"
-            aria-label={maximised ? "Restore" : "Maximise"}
-            className={`${classBase}-maximise`}
-            icon={maximised ? "restore" : "maximise"}
-            onClick={onToggleMaximised}
+            aria-label={maximized ? "Restore" : "Maximize"}
+            className={`${classBase}-maximize`}
+            icon={maximized ? "restore" : "maximize"}
+            onClick={onToggleMaximized}
             sentiment="neutral"
           />
         ) : null}

@@ -189,17 +189,17 @@ export interface GridLayoutContextProps {
   gridSnapshot?: GridSnapshot;
   headerSlots?: GridLayoutHeaderSlots;
   id: string;
-  /** Default for items that don't set `maximisable` themselves. */
-  maximisable?: boolean;
+  /** Default for items that don't set `maximizable` themselves. */
+  maximizable?: boolean;
   /** The item or stack filling the grid, if any. */
-  maximisedId?: string;
+  maximizedId?: string;
   onDragEnd?: GridLayoutDragEndHandler;
   onDragLeave: GridLayoutDragLeaveHandler;
   onDragPreview: GridLayoutDropHandler;
   onDragStart: GridLayoutDragStartHandler;
   onDrop: GridLayoutDropHandler;
-  /** Maximises the item or stack `id`, or restores it if already maximised. */
-  toggleMaximised?: (id: string) => void;
+  /** Maximizes the item or stack `id`, or restores it if already maximized. */
+  toggleMaximized?: (id: string) => void;
 }
 
 export const GridLayoutContext = createContext<GridLayoutContextProps>({
@@ -278,8 +278,8 @@ export const useGridLayoutId = () => {
   return id;
 };
 
-export const useGridLayoutMaximise = () => {
-  const { maximisable, maximisedId, toggleMaximised } =
+export const useGridLayoutMaximize = () => {
+  const { maximizable, maximizedId, toggleMaximized } =
     useContext(GridLayoutContext);
-  return { maximisable, maximisedId, toggleMaximised };
+  return { maximizable, maximizedId, toggleMaximized };
 };

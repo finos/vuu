@@ -6,7 +6,7 @@ import { useContext } from "react";
 export const useGridChildProps = (props: GridModelChildItemProps) => {
   const { contentVisible, dropTarget, header, id, stackId, style, title } =
     props;
-  const { gridModel, gridSnapshot, maximisedId } =
+  const { gridModel, gridSnapshot, maximizedId } =
     useContext(GridLayoutContext);
   const snapshotItem = gridSnapshot?.items.find((item) => item.id === id);
   const stack =
@@ -46,9 +46,9 @@ export const useGridChildProps = (props: GridModelChildItemProps) => {
         })()
       : fallbackPosition;
   const isStackMember = stack !== undefined && stack.id !== id;
-  const maximised =
-    maximisedId !== undefined &&
-    (maximisedId === id || maximisedId === stack?.id);
+  const maximized =
+    maximizedId !== undefined &&
+    (maximizedId === id || maximizedId === stack?.id);
 
   return {
     contentDetached: modelItem?.contentDetached,
@@ -57,14 +57,14 @@ export const useGridChildProps = (props: GridModelChildItemProps) => {
       : (snapshotItem?.contentVisible ?? contentVisible),
     dragging: modelItem?.dragging,
     dropTarget: snapshotItem?.dropTarget ?? dropTarget,
-    gridArea: maximised
+    gridArea: maximized
       ? "1/1/-1/-1"
       : `${position.row.start}/${position.column.start}/${position.row.end}/${position.column.end}`,
     header: snapshotItem?.header ?? header,
-    horizontalSplitter: !maximised && modelItem?.horizontalSplitter,
-    maximised,
+    horizontalSplitter: !maximized && modelItem?.horizontalSplitter,
+    maximized,
     stacked: isStackMember || stackId !== undefined,
     title: snapshotItem?.title ?? title,
-    verticalSplitter: !maximised && modelItem?.verticalSplitter,
+    verticalSplitter: !maximized && modelItem?.verticalSplitter,
   };
 };

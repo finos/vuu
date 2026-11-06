@@ -17,9 +17,9 @@ export type GridLayoutFixtureVariant =
   | "focus-order"
   | "focus-order-nested"
   | "focus-order-stacked"
-  | "maximise"
-  | "maximise-nested"
-  | "maximise-stacked"
+  | "maximize"
+  | "maximize-nested"
+  | "maximize-stacked"
   | "change-rerender"
   | "irregular-removal"
   | "mixed-resizable-boundary"
@@ -1000,16 +1000,16 @@ const FocusOrderStackedLayout = () => (
   </FocusOrderFrame>
 );
 
-const maximiseItem = (
+const maximizeItem = (
   id: string,
   area: string,
   children?: ReactNode,
-  maximisable?: boolean,
+  maximizable?: boolean,
 ) => (
   <GridLayoutItem
     header
     id={id}
-    maximisable={maximisable}
+    maximizable={maximizable}
     resizeable="hv"
     style={{ gridArea: area }}
     title={id}
@@ -1029,8 +1029,8 @@ const useCommitCount = (gridId: string) => {
   }, [gridId]);
 };
 
-/** "b" has scrollable content, "d" opts out of maximising. */
-const MaximiseLayout = () => {
+/** "b" has scrollable content, "d" opts out of maximizing. */
+const MaximizeLayout = () => {
   const handleChange = useCommitCount("ct-grid");
   return (
     <FocusOrderFrame>
@@ -1039,51 +1039,51 @@ const MaximiseLayout = () => {
         data-commit-count="0"
         data-testid="grid-layout"
         id="ct-grid"
-        maximisable
+        maximizable
         onChange={handleChange}
         style={{ height: 400, width: 640 }}
       >
-        {maximiseItem(
+        {maximizeItem(
           "a",
           "1/1/2/2",
           <div>
             <button type="button">A one</button>
           </div>,
         )}
-        {maximiseItem(
+        {maximizeItem(
           "b",
           "1/2/2/3",
           <div data-testid="b-scroller" style={{ overflow: "auto" }}>
             <div style={{ height: 2000 }}>Tall content</div>
           </div>,
         )}
-        {maximiseItem("c", "2/1/3/2")}
-        {maximiseItem("d", "2/2/3/3", undefined, false)}
+        {maximizeItem("c", "2/1/3/2")}
+        {maximizeItem("d", "2/2/3/3", undefined, false)}
       </GridLayout>
     </FocusOrderFrame>
   );
 };
 
-const MaximiseNestedLayout = () => (
+const MaximizeNestedLayout = () => (
   <GridLayout
     colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
     data-testid="grid-layout"
     id="ct-grid"
-    maximisable
+    maximizable
     style={{ height: 400, width: 640 }}
   >
-    {maximiseItem("right", "1/2/2/3")}
-    {maximiseItem(
+    {maximizeItem("right", "1/2/2/3")}
+    {maximizeItem(
       "host",
       "1/1/2/2",
       <GridLayout
         colsAndRows={{ cols: ["1fr"], rows: ["1fr", "1fr"] }}
         id="inner-grid"
-        maximisable
+        maximizable
         style={{ height: "100%", width: "100%" }}
       >
-        {maximiseItem("inner-top", "1/1/2/2")}
-        {maximiseItem("inner-bottom", "2/1/3/2")}
+        {maximizeItem("inner-top", "1/1/2/2")}
+        {maximizeItem("inner-bottom", "2/1/3/2")}
       </GridLayout>,
     )}
   </GridLayout>
@@ -1091,36 +1091,36 @@ const MaximiseNestedLayout = () => (
 
 /**
  * A stack beside an item, with buttons outside the grid that use the
- * commands API. onMaximisedChange calls are logged in data-maximised-log.
+ * commands API. onMaximizedChange calls are logged in data-maximized-log.
  */
-const MaximiseStackedLayout = () => {
+const MaximizeStackedLayout = () => {
   const commands = useGridLayoutCommands("ct-grid");
   const [log, setLog] = useState<string[]>([]);
-  const handleMaximisedChange = useCallback((id: string | undefined) => {
+  const handleMaximizedChange = useCallback((id: string | undefined) => {
     setLog((entries) => [...entries, id ?? "restored"]);
   }, []);
   return (
     <>
-      <button type="button" onClick={() => commands?.maximise("beta")}>
-        API maximise beta
+      <button type="button" onClick={() => commands?.maximize("beta")}>
+        API maximize beta
       </button>
-      <button type="button" onClick={() => commands?.maximise("first")}>
-        API maximise first
+      <button type="button" onClick={() => commands?.maximize("first")}>
+        API maximize first
       </button>
       <button type="button" onClick={() => commands?.restore()}>
         API restore
       </button>
       <div
-        data-maximised-id={commands?.getMaximisedId() ?? ""}
-        data-maximised-log={log.join(",")}
-        data-testid="maximise-log"
+        data-maximized-id={commands?.getMaximizedId() ?? ""}
+        data-maximized-log={log.join(",")}
+        data-testid="maximize-log"
       />
       <GridLayout
         colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
         data-testid="grid-layout"
         id="ct-grid"
-        maximisable
-        onMaximisedChange={handleMaximisedChange}
+        maximizable
+        onMaximizedChange={handleMaximizedChange}
         style={{ height: 400, width: 640 }}
       >
         <GridLayoutStackedItem id="tabs" style={{ gridArea: "1/2/2/3" }} />
@@ -1142,7 +1142,7 @@ const MaximiseStackedLayout = () => {
         >
           <TestContent label="Beta" />
         </GridLayoutItem>
-        {maximiseItem("first", "1/1/2/2")}
+        {maximizeItem("first", "1/1/2/2")}
       </GridLayout>
     </>
   );
@@ -1158,9 +1158,9 @@ export const GridLayoutTestFixture = ({
     {variant === "focus-order" ? <FocusOrderLayout /> : null}
     {variant === "focus-order-nested" ? <FocusOrderNestedLayout /> : null}
     {variant === "focus-order-stacked" ? <FocusOrderStackedLayout /> : null}
-    {variant === "maximise" ? <MaximiseLayout /> : null}
-    {variant === "maximise-nested" ? <MaximiseNestedLayout /> : null}
-    {variant === "maximise-stacked" ? <MaximiseStackedLayout /> : null}
+    {variant === "maximize" ? <MaximizeLayout /> : null}
+    {variant === "maximize-nested" ? <MaximizeNestedLayout /> : null}
+    {variant === "maximize-stacked" ? <MaximizeStackedLayout /> : null}
     {variant === "change-rerender" ? <ChangeRerenderLayout /> : null}
     {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
     {variant === "mixed-resizable-boundary" ? (

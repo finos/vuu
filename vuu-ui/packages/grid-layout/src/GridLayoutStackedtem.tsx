@@ -14,7 +14,7 @@ import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   type ComponentTemplateWithoutLabel,
   useGridLayoutDispatch,
-  useGridLayoutMaximise,
+  useGridLayoutMaximize,
   useGridSnapshot,
 } from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
@@ -42,7 +42,7 @@ export const GridLayoutStackedItem = ({
   header,
   id,
   getNewComponent,
-  maximisable: maximisableProp,
+  maximizable: maximizableProp,
   minHeight,
   minWidth,
   resizeable,
@@ -70,7 +70,7 @@ export const GridLayoutStackedItem = ({
     styleProp?.minWidth,
   );
 
-  const { gridArea, horizontalSplitter, maximised, verticalSplitter } =
+  const { gridArea, horizontalSplitter, maximized, verticalSplitter } =
     useGridChildProps({
       id,
       minHeight: modelMinHeight,
@@ -80,12 +80,12 @@ export const GridLayoutStackedItem = ({
       type: "stacked-content",
     });
 
-  const { maximisable: maximisableDefault, toggleMaximised } =
-    useGridLayoutMaximise();
-  const maximisable = maximisableProp ?? maximisableDefault ?? false;
-  const handleToggleMaximised = useCallback(
-    () => toggleMaximised?.(id),
-    [id, toggleMaximised],
+  const { maximizable: maximizableDefault, toggleMaximized } =
+    useGridLayoutMaximize();
+  const maximizable = maximizableProp ?? maximizableDefault ?? false;
+  const handleToggleMaximized = useCallback(
+    () => toggleMaximized?.(id),
+    [id, toggleMaximized],
   );
 
   const dispatch = useGridLayoutDispatch();
@@ -137,7 +137,7 @@ export const GridLayoutStackedItem = ({
       <div
         {...htmlAttributes}
         className={cx(className)}
-        data-maximised={maximised || undefined}
+        data-maximized={maximized || undefined}
         id={id}
         key={id}
         style={style}
@@ -212,13 +212,13 @@ export const GridLayoutStackedItem = ({
               itemId={stack.selectedItemId}
               location="end"
             />
-            {maximisable && toggleMaximised ? (
+            {maximizable && toggleMaximized ? (
               <HeaderButton
                 appearance="transparent"
-                aria-label={maximised ? "Restore" : "Maximise"}
-                className={`${classBaseItem}-maximise`}
-                icon={maximised ? "restore" : "maximise"}
-                onClick={handleToggleMaximised}
+                aria-label={maximized ? "Restore" : "Maximize"}
+                className={`${classBaseItem}-maximize`}
+                icon={maximized ? "restore" : "maximize"}
+                onClick={handleToggleMaximized}
                 sentiment="neutral"
               />
             ) : null}

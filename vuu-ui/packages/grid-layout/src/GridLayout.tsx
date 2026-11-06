@@ -29,7 +29,7 @@ import type {
 import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridFocusOrder } from "./useGridFocusOrder";
 import { useGridLayout } from "./useGridLayout";
-import type { GridMaximisedChangeHandler } from "./useGridMaximise";
+import type { GridMaximizedChangeHandler } from "./useGridMaximize";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 import { GridSplitter } from "./GridSplitter";
 
@@ -84,17 +84,17 @@ export interface GridLayoutProps
   "full-page"?: boolean;
   colsAndRows?: GridColumnsAndRows;
   /**
-   * Default for items that don't set `maximisable`: whether their header
-   * offers to maximise them to fill the grid.
+   * Default for items that don't set `maximizable`: whether their header
+   * offers to maximize them to fill the grid.
    */
-  maximisable?: boolean;
+  maximizable?: boolean;
   /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
   /**
-   * Called when an item or stack is maximised (with its id) or the grid is
+   * Called when an item or stack is maximized (with its id) or the grid is
    * restored (with undefined).
    */
-  onMaximisedChange?: GridMaximisedChangeHandler;
+  onMaximizedChange?: GridMaximizedChangeHandler;
   /** Content rendered inside canonical placeholders without obscuring their drop target. */
   placeholderContent?: ReactNode;
   /** Coupled boundaries with partial cross-group spans retain adjacent resizing. */
@@ -109,14 +109,14 @@ export const GridLayout = ({
   className,
   "full-page": fullPage,
   colsAndRows,
-  maximisable,
+  maximizable,
   onBlur,
   onClick,
   onChange,
   onFocus,
   onKeyDown,
   onKeyUp,
-  onMaximisedChange,
+  onMaximizedChange,
   onMouseDown,
   placeholderContent,
   rowResizeDistribution = "adjacent",
@@ -141,7 +141,7 @@ export const GridLayout = ({
     gridLayoutModel,
     gridModel,
     gridSnapshot,
-    maximisedId,
+    maximizedId,
     nonContentGridItems: { placeholders, splitters, stackIds },
     onCancelDrag,
     onCancelTabDrag,
@@ -154,13 +154,13 @@ export const GridLayout = ({
     onDropStackedItem,
     restore,
     stackTemplates,
-    toggleMaximised,
+    toggleMaximized,
   } = useGridLayout({
     children: childrenProp,
     id,
     colsAndRows,
     onChange,
-    onMaximisedChange,
+    onMaximizedChange,
   });
 
   const focusOrder = useMemo(
@@ -175,13 +175,13 @@ export const GridLayout = ({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       onKeyDown?.(e);
-      if (maximisedId && e.key === "Escape" && !e.defaultPrevented) {
+      if (maximizedId && e.key === "Escape" && !e.defaultPrevented) {
         e.preventDefault();
         restore();
       }
       onFocusOrderKeyDown(e);
     },
-    [maximisedId, onFocusOrderKeyDown, onKeyDown, restore],
+    [maximizedId, onFocusOrderKeyDown, onKeyDown, restore],
   );
 
   const splitterLayoutProps = useGridSplitterResizing({
@@ -223,14 +223,14 @@ export const GridLayout = ({
         gridSnapshot,
         headerSlots,
         id,
-        maximisable,
-        maximisedId,
+        maximizable,
+        maximizedId,
         onDragEnd,
         onDragLeave,
         onDragPreview,
         onDragStart,
         onDrop,
-        toggleMaximised,
+        toggleMaximized,
       }}
     >
       <DragDropProviderNext
@@ -248,7 +248,7 @@ export const GridLayout = ({
           style={style}
           className={cx(classBase, className, {
             vuuFullPage: fullPage,
-            [`${classBase}-maximised`]: maximisedId !== undefined,
+            [`${classBase}-maximized`]: maximizedId !== undefined,
           })}
         >
           <div {...headSentinelProps} />
