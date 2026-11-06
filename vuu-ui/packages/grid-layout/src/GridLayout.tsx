@@ -16,6 +16,7 @@ import {
 } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 import { computeFocusOrder } from "./grid-focus-order";
+import { GridDockZones } from "./GridDockZones";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutHeaderSlots } from "./GridLayoutHeaderSlots";
@@ -88,6 +89,12 @@ export interface GridLayoutProps
    * offers to maximize them to fill the grid.
    */
   maximizable?: boolean;
+  /**
+   * Whether the grid's own items, and templates, can be docked against its
+   * outer edges: dragged close to an edge, an item takes a new column or row
+   * along the whole of that edge.
+   */
+  dockable?: boolean;
   /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
   /**
@@ -136,6 +143,7 @@ export const GridLayout = ({
   className,
   "full-page": fullPage,
   colsAndRows,
+  dockable = false,
   maximizable,
   onBlur,
   onClick,
@@ -174,6 +182,8 @@ export const GridLayout = ({
     onCancelDrag,
     onCancelTabDrag,
     onDetachTab,
+    onDockDrop,
+    onDockPreview,
     onDragEnd,
     onDragLeave,
     onDragPreview,
@@ -346,6 +356,14 @@ export const GridLayout = ({
               }}
             />
           ))}
+          {dockable ? (
+            <GridDockZones
+              gridId={id}
+              onDockDrop={onDockDrop}
+              onDockPreview={onDockPreview}
+              onDragLeave={onDragLeave}
+            />
+          ) : null}
           <div {...tailSentinelProps} />
         </div>
       </DragDropProviderNext>

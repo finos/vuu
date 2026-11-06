@@ -181,6 +181,18 @@ export type GridLayoutDropHandler = (
 
 export type GridLayoutDragLeaveHandler = () => void;
 
+export type GridLayoutDockEdge = "east" | "north" | "south" | "west";
+
+/**
+ * Previews or drops the dragged item against an outer edge of the grid,
+ * `size` pixels across it. Returns false if it can't dock there.
+ */
+export type GridLayoutDockHandler = (
+  edge: GridLayoutDockEdge,
+  dragSource: DragSource,
+  size: number,
+) => boolean;
+
 export interface GridLayoutContextProps {
   dispatchGridLayoutAction: GridLayoutDispatch;
   gridController?: GridController;

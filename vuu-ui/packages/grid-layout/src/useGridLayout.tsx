@@ -29,6 +29,7 @@ import {
 } from "./grid-layout-utils";
 import {
   type GridLayoutDispatch,
+  type GridLayoutDockHandler,
   type GridLayoutDropHandler,
   sourceIsComponent,
   sourceIsTabbedComponent,
@@ -923,6 +924,79 @@ export const useGridLayout = ({
     ],
   );
 
+  /**
+   * Checks that the dragged item can dock against `edge`, `size` pixels across
+   * it. Stack tabs can't be docked.
+   */
+  const handleDockPreview = useCallback<GridLayoutDockHandler>(
+    (edge, dragSource, size) => {
+      if (sourceIsTabbedComponent(dragSource)) {
+        return false;
+      }
+      prepareDragSource(dragSource);
+      const previewed = dragCoordinator.preview({
+        gridId: id,
+        intent: { edge, kind: "dock", size },
+        targetId: id,
+      });
+      if (!previewed.ok) {
+        return false;
+      }
+      const cleared = dragCoordinator.clearPreview();
+      if (!cleared.ok) {
+        throw Error(cleared.error.message);
+      }
+      return true;
+    },
+    [dragCoordinator, id, prepareDragSource],
+  );
+
+  const handleDockDrop = useCallback<GridLayoutDockHandler>(
+    (edge, dragSource, size) => {
+      containerRef.current?.classList.remove("vuuDragging");
+      if (sourceIsTabbedComponent(dragSource)) {
+        handleCancelDrag();
+        return false;
+      }
+      prepareDragSource(dragSource);
+      const previewed = dragCoordinator.preview({
+        gridId: id,
+        intent: { edge, kind: "dock", size },
+        targetId: id,
+      });
+      if (!previewed.ok) {
+        handleCancelDrag();
+        return false;
+      }
+      const committed = dragCoordinator.commit();
+      if (!committed.ok) {
+        throw Error(committed.error.message);
+      }
+      clearDragAppearance();
+      if (sourceIsTemplate(dragSource)) {
+        const provisional = provisionalTemplateRef.current;
+        if (!provisional) {
+          throw Error(`[useGridLayout#${id}] template item id not allocated`);
+        }
+        addChildComponent(
+          provisional.component,
+          gridModel.getChildItem(provisional.itemId, true),
+        );
+        provisionalTemplateRef.current = undefined;
+      }
+      return true;
+    },
+    [
+      addChildComponent,
+      clearDragAppearance,
+      dragCoordinator,
+      gridModel,
+      handleCancelDrag,
+      id,
+      prepareDragSource,
+    ],
+  );
+
   const handleDetachTab = useCallback<DragContextDetachTabHandler>(
     ({ gridId, itemId, tabsId }) => {
       if (gridId === id) {
@@ -1372,6 +1446,8 @@ export const useGridLayout = ({
     onCancelDrag: handleCancelDrag,
     onCancelTabDrag: handleCancelTabDrag,
     onDetachTab: handleDetachTab,
+    onDockDrop: handleDockDrop,
+    onDockPreview: handleDockPreview,
     onDragEnd: handleDragEnd,
     onDragLeave: handleDragLeave,
     onDragPreview: handleDragPreview,

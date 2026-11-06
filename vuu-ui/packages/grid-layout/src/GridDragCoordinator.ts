@@ -41,6 +41,15 @@ export type GridDropIntent =
       readonly position: "east" | "north" | "south" | "west";
     }
   | { readonly kind: "create-stack" }
+  /**
+   * Dock against an outer edge of the grid. The target is the grid itself,
+   * its id is the grid id. `size` is in pixels across the edge.
+   */
+  | {
+      readonly edge: "east" | "north" | "south" | "west";
+      readonly kind: "dock";
+      readonly size: number;
+    }
   | {
       readonly kind: "stack";
       readonly position?: "after" | "before";
@@ -153,6 +162,20 @@ export const createGridDropPlan = (
   const itemId =
     source.kind === "palette-template" ? source.item.id : source.itemId;
   switch (target.intent.kind) {
+    case "dock":
+      if (source.kind === "stack-member") {
+        return {
+          code: "UNSUPPORTED_DROP",
+          message: "A stack member cannot be docked",
+        };
+      }
+      commands.push({
+        edge: target.intent.edge,
+        itemId,
+        size: target.intent.size,
+        type: "dock-item",
+      });
+      break;
     case "split":
       if (source.kind === "stack-member") {
         commands.push({

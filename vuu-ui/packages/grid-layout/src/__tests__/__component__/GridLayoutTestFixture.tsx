@@ -16,6 +16,7 @@ import {
 
 export type GridLayoutFixtureVariant =
   | "basic"
+  | "dock"
   | "undo-nested"
   | "focus-order"
   | "focus-order-nested"
@@ -1070,6 +1071,56 @@ const UndoNestedLayout = () => {
   );
 };
 
+/**
+ * A dockable grid, "ct-grid", of "a" and "b" over "c", beside a palette in
+ * a grid that isn't dockable.
+ */
+const DockLayout = () => {
+  const { canUndo, undo } = useGridLayoutHistory();
+  return (
+    <>
+      <button disabled={!canUndo} onClick={undo} type="button">
+        Undo
+      </button>
+      <GridLayout
+        colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
+        id="ct-shell"
+        style={{ height: 400, width: 800 }}
+      >
+        <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
+          <TemplatePalette />
+        </GridLayoutItem>
+        <GridLayoutItem id="host" style={{ gridArea: "1/2/2/3" }}>
+          <GridLayout
+            colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr", "1fr"] }}
+            data-testid="grid-layout"
+            dockable
+            id="ct-grid"
+            style={{ height: "100%", width: "100%" }}
+          >
+            {["a/1/1/2/2", "b/1/2/2/3", "c/2/1/3/3"].map((spec) => {
+              const [id, ...area] = spec.split("/");
+              return (
+                <GridLayoutItem
+                  data-drop-target
+                  header
+                  id={id}
+                  key={id}
+                  resizeable="hv"
+                  style={{ gridArea: area.join("/") }}
+                  title={id}
+                >
+                  <TestContent label={id} />
+                </GridLayoutItem>
+              );
+            })}
+          </GridLayout>
+        </GridLayoutItem>
+      </GridLayout>
+    </>
+  );
+};
+
 /** Counts layout commits in data-commit-count on the grid. */
 const useCommitCount = (gridId: string) => {
   const commitCountRef = useRef(0);
@@ -1299,6 +1350,7 @@ export const GridLayoutTestFixture = ({
 }) => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     {variant === "basic" ? <BasicLayout /> : null}
+    {variant === "dock" ? <DockLayout /> : null}
     {variant === "undo-nested" ? <UndoNestedLayout /> : null}
     {variant === "focus-order" ? <FocusOrderLayout /> : null}
     {variant === "focus-order-nested" ? <FocusOrderNestedLayout /> : null}

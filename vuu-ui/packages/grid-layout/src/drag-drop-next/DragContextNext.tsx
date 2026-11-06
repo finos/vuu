@@ -72,6 +72,7 @@ export type DragContextEvents = {
 };
 
 export class DragContext extends EventEmitter<DragContextEvents> {
+  #dragElementHeight?: number;
   #dragElementWidth?: number;
   #dragLabelWidth?: number;
   #dragStateCleanups = new Set<() => void>();
@@ -117,6 +118,7 @@ export class DragContext extends EventEmitter<DragContextEvents> {
       this.#dragSource = dragSource;
       this.#dropped = false;
       this.#dropPending = false;
+      this.#dragElementHeight = height;
       this.#dragElementWidth = width;
       this.#dragLabelWidth = dragLabelWidth;
       this.#mouseX = x;
@@ -141,6 +143,7 @@ export class DragContext extends EventEmitter<DragContextEvents> {
     this.#dropZoneCache.clear();
     this.#dragSource = undefined;
     this.#element = undefined;
+    this.#dragElementHeight = undefined;
     this.#dragElementWidth = undefined;
   }
 
@@ -255,6 +258,11 @@ export class DragContext extends EventEmitter<DragContextEvents> {
         "dragged element is unavailable because beginDrag was not called",
       );
     }
+  }
+
+  /** The height of the dragged element when the drag began. */
+  get dragElementHeight() {
+    return this.#dragElementHeight;
   }
 
   get dragElementWidth() {
