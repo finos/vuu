@@ -1,9 +1,8 @@
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { ToggleButton } from "@salt-ds/core";
-import type { MouseEvent } from "react";
+import { type MouseEvent, useLayoutEffect, useRef } from "react";
 import { ChromeIcon } from "../chrome/ChromeIcon";
 import { useDocTabs } from "../doc-tabs/doc-tabs-store";
-import { useExampleDragSource } from "../workspace/workspace-drag";
 import { isWorkspaceExample } from "../workspace/workspace-model";
 import { favouritesStore, useFavourites } from "./nav-store";
 import type { NavIndex, NavNodeData } from "./nav-tree";
@@ -43,15 +42,27 @@ const FavouriteToggle = ({ label, path }: { label: string; path: string }) => {
   );
 };
 
-/** Drag handle, an example can be dropped onto another to make a workspace */
-const DragGrip = ({ label, path }: { label: string; path: string }) => {
-  const dragProps = useExampleDragSource({ path, title: label });
+/**
+ * Marks the row as draggable, an example can be dropped onto another to make
+ * a workspace. The whole cell is the drag source, the drag itself is handled
+ * by ShowcaseNav. TreeTable offers no way to set props on a cell, so the
+ * attribute is set here.
+ */
+const DragGrip = () => {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const cell = ref.current?.closest<HTMLElement>(".vuuTableGroupCell");
+    if (cell) {
+      cell.draggable = true;
+      return () => cell.removeAttribute("draggable");
+    }
+  }, []);
   return (
     <span
-      {...dragProps}
       aria-hidden
       className={`${classBase}-grip`}
       onClick={(evt) => evt.stopPropagation()}
+      ref={ref}
       title="Drag onto the example, or a workspace, to combine"
     >
       <ChromeIcon name="grip" size={14} />
@@ -101,7 +112,7 @@ export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
         <>
           <DocumentMarker label={title} path={path} />
           {/* positioned before the label by css */}
-          <DragGrip label={title} path={path} />
+          <DragGrip />
         </>
       ) : null}
       {nodeData.fixtureFor?.length ? (
