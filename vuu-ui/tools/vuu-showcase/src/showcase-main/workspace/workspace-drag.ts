@@ -62,22 +62,28 @@ const createDragImage = ({ path, title }: ExampleDrag) => {
 };
 
 /**
- * Event handlers that make an element the drag source for an example. The
- * drag is registered with the GridLayout DragContext, so it can be dropped
- * into a workspace GridLayout, as well as with the ExampleDragStore.
+ * Begins the drag of an example, from a dragstart event. The drag is
+ * registered with the GridLayout DragContext, so it can be dropped into a
+ * workspace GridLayout, as well as with the ExampleDragStore. Used directly by
+ * drag sources that serve many examples, e.g. the nav tree rows, via a
+ * delegated handler.
+ *
+ * The drag ends on the dragend event at the source element. That is listened
+ * for on the element itself, as a drop can navigate and unmount the source,
+ * and dragend at a detached element does not reach React's handlers.
  */
-export const useExampleDragSource = (drag: ExampleDrag) => {
+export const useBeginExampleDrag = () => {
   const dragContext = useDragContext();
 
-  const onDragStart = useCallback(
-    (evt: DragEvent<HTMLElement>) => {
+  return useCallback(
+    (evt: DragEvent<HTMLElement>, drag: ExampleDrag, element: HTMLElement) => {
       evt.stopPropagation();
       const source: TemplateSource = {
         ...workspacePanelTemplate({
           examplePath: drag.path,
           title: drag.title,
         }),
-        element: evt.currentTarget,
+        element,
         layoutId: NAV_LAYOUT_ID,
         type: "template",
       };
@@ -87,27 +93,34 @@ export const useExampleDragSource = (drag: ExampleDrag) => {
       evt.dataTransfer.setDragImage(chip, 12, 16);
       requestAnimationFrame(() => chip.remove());
       document.body.classList.add("ShowcaseExampleDragging");
-      evt.currentTarget
-        .closest(".vuuTableRow")
-        ?.classList.add("ShowcaseDragSource");
+      element.closest(".vuuTableRow")?.classList.add("ShowcaseDragSource");
       // deferred, changing the DOM during dragstart can abort the drag
       requestAnimationFrame(() => exampleDragStore.set(drag));
-    },
-    [dragContext, drag],
-  );
-
-  const onDragEnd = useCallback(
-    (evt: DragEvent<HTMLElement>) => {
-      evt.stopPropagation();
-      dragContext.endDrag();
-      document.body.classList.remove("ShowcaseExampleDragging");
-      document
-        .querySelectorAll(".ShowcaseDragSource")
-        .forEach((el) => el.classList.remove("ShowcaseDragSource"));
-      exampleDragStore.set(undefined);
+      element.addEventListener(
+        "dragend",
+        (endEvt) => {
+          endEvt.stopPropagation();
+          dragContext.endDrag();
+          document.body.classList.remove("ShowcaseExampleDragging");
+          document
+            .querySelectorAll(".ShowcaseDragSource")
+            .forEach((el) => el.classList.remove("ShowcaseDragSource"));
+          exampleDragStore.set(undefined);
+        },
+        { once: true },
+      );
     },
     [dragContext],
   );
+};
 
-  return { draggable: true, onDragEnd, onDragStart };
+/** Event handlers that make an element the drag source for one example */
+export const useExampleDragSource = (drag: ExampleDrag) => {
+  const beginExampleDrag = useBeginExampleDrag();
+  const onDragStart = useCallback(
+    (evt: DragEvent<HTMLElement>) =>
+      beginExampleDrag(evt, drag, evt.currentTarget),
+    [beginExampleDrag, drag],
+  );
+  return { draggable: true, onDragStart };
 };

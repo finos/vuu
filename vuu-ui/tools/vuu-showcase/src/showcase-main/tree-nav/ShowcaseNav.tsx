@@ -2,6 +2,7 @@ import type { TreeNodeFilterProps } from "@vuu-ui/vuu-data-local";
 import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import {
+  type DragEvent,
   type KeyboardEvent,
   type MouseEvent,
   type SyntheticEvent,
@@ -36,6 +37,7 @@ import { TreeNavPanel } from "./TreeNavPanel";
 import { openInNewTab } from "../doc-tabs/doc-tabs-actions";
 import { docTabHref } from "../doc-tabs/doc-tabs-model";
 import { docTabsStore } from "../doc-tabs/doc-tabs-store";
+import { useBeginExampleDrag } from "../workspace/workspace-drag";
 import { WorkspacesNav } from "../workspace/WorkspacesNav";
 
 export const NAV_FILTER_INPUT_SELECTOR = ".ShowcaseNavFilter-input";
@@ -250,6 +252,24 @@ export const ShowcaseNav = ({
       evt.preventDefault();
     }
   }, []);
+  // example rows are draggable (see DragGrip), the drag starts on the cell
+  const beginExampleDrag = useBeginExampleDrag();
+  const handleDragStart = useCallback(
+    (evt: DragEvent<HTMLElement>) => {
+      const example = exampleFromEvent(evt);
+      const cell = (evt.target as HTMLElement).closest<HTMLElement>(
+        ".vuuTableGroupCell[draggable='true']",
+      );
+      if (example && cell) {
+        beginExampleDrag(
+          evt,
+          { path: example.path, title: example.label },
+          cell,
+        );
+      }
+    },
+    [beginExampleDrag],
+  );
   const handleKeyDownCapture = useCallback(
     (evt: KeyboardEvent) => {
       if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) {
@@ -275,6 +295,7 @@ export const ShowcaseNav = ({
       onAuxClick={handleAuxClick}
       onClickCapture={handleClickCapture}
       onContextMenuCapture={handleContextMenu}
+      onDragStart={handleDragStart}
       onKeyDownCapture={handleKeyDownCapture}
       onMouseDown={handleMouseDown}
     >
