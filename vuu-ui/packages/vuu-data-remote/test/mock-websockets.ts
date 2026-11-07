@@ -166,3 +166,49 @@ export class MockWebSocketInvalidToken extends MockWebSocketOpenFirstTime {
     }
   }
 }
+
+const loginSuccess = () =>
+  JSON.stringify({
+    requestId: "req-1",
+    sessionId: "sess-1",
+    module: "CORE",
+    body: { type: "LOGIN_SUCCESS" },
+  });
+
+/** Logs in, then the server evicts the session: the user logged in again. */
+export class MockWebSocketLoginSucceedsThenEvicted extends MockWebSocketOpenFirstTime {
+  send(msg: string) {
+    super.send(msg);
+    if (msg.includes('"LOGIN"')) {
+      setTimeout(() => {
+        this.messageHandler({ data: loginSuccess() });
+      }, 0);
+      vi.advanceTimersByTime(1);
+      setTimeout(() => {
+        this.closeHandler({
+          code: 4001,
+          reason: "session evicted: user logged in again",
+        });
+      }, 100);
+    }
+  }
+}
+
+/**
+ * The server refuses the login, the user has maxSessionsPerUser sessions:
+ * a plain text reason, then a close with the session-limit code.
+ */
+export class MockWebSocketSessionLimitReached extends MockWebSocketOpenFirstTime {
+  send(msg: string) {
+    super.send(msg);
+    if (msg.includes('"LOGIN"')) {
+      setTimeout(() => {
+        this.messageHandler({
+          data: "maximum sessions (1) reached for user steve",
+        });
+        this.closeHandler({ code: 4003, reason: "" });
+      }, 0);
+      vi.advanceTimersByTime(1);
+    }
+  }
+}

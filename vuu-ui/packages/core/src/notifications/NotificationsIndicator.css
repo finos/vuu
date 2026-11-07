@@ -1,0 +1,78 @@
+.vuuNotificationsIndicator {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-50);
+  min-width: 0;
+
+  .vuuNotificationsIndicator-ticker {
+    gap: var(--salt-spacing-75);
+    max-width: var(--vuuNotificationsIndicator-tickerWidth, 480px);
+    min-width: 0;
+  }
+
+  .vuuNotificationsIndicator-tickerTitle {
+    flex: none;
+    font-weight: var(--salt-text-fontWeight-strong);
+  }
+
+  .vuuNotificationsIndicator-tickerMessage {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .vuuNotificationsIndicator-tickerAge {
+    color: var(--salt-content-secondary-foreground);
+    flex: none;
+  }
+
+  .vuuNotificationsIndicator-announcer {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+}
+
+.vuuNotificationsIndicator-bellIcon {
+  display: inline-flex;
+  position: relative;
+}
+
+/* Do not disturb: a stroke through the bell, edged in the background
+   colour so it reads over the bell's outline. */
+.vuuNotificationsIndicator-bell[data-do-not-disturb] .vuuNotificationsIndicator-bellIcon::after {
+  background: currentColor;
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px var(--salt-container-primary-background);
+  content: "";
+  height: 1.5px;
+  left: -2px;
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  transform: rotate(-45deg);
+}
+
+/* In the PortalNav brand slot: after the brand, bell only. */
+.vuuPortalNav-brand > .vuuNotificationsIndicator {
+  flex: none;
+  margin-left: auto;
+
+  .vuuNotificationsIndicator-ticker {
+    display: none;
+  }
+
+  /* Compact, so the title keeps its room; the right padding leaves space
+     for the unread badge, which sits over the bell's top right corner. */
+  .vuuNotificationsIndicator-bell {
+    min-width: 0;
+    padding: 0 14px 0 6px;
+  }
+}
+
+.vuuPortalNav-icons .vuuPortalNav-brand > .vuuNotificationsIndicator {
+  margin-left: 0;
+}

@@ -44,15 +44,27 @@ async function createTypeDefs() {
 function writePackageJSON() {
   return new Promise((resolve, reject) => {
     const packageJson = readPackageJson(`${outdir}/package.json`);
+    const exports = {
+      ...packageJson.exports,
+      ".": {
+        types: "./types/index.d.ts",
+        ...packageJson.exports["."],
+      },
+    };
+    if (packageJson.exports["./portal"]) {
+      exports["./portal"] = {
+        types: "./types/portal.d.ts",
+        ...packageJson.exports["./portal"],
+      };
+    }
     const newPackage = {
       ...packageJson,
       files: (packageJson.files || []).concat("/types"),
       exports: {
-        ...packageJson.exports,
+        ...exports,
         ".": {
-          ...packageJson.exports["."],
+          ...exports["."],
           default: "./src/index.js",
-          types: "./types/index.d.ts",
         },
       },
       types: "types/index.d.ts",
@@ -66,7 +78,7 @@ function writePackageJSON() {
         } else {
           resolve();
         }
-      }
+      },
     );
   });
 }

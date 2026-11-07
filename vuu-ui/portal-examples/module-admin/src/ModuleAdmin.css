@@ -1,0 +1,840 @@
+/*
+ * Module Admin: a read-only view of the module config published by module
+ * discovery. A fixed toolbar sits above the content; the content's own panes
+ * scroll. Every flex and grid ancestor of a scrolling pane sets
+ * `min-height: 0` so the pane, not the page, overflows.
+ */
+.vuuModuleAdmin {
+  --module-admin-border: var(--salt-separable-tertiary-borderColor);
+  --module-admin-border-strong: var(--salt-separable-primary-borderColor);
+  --module-admin-fg: var(--salt-content-primary-foreground);
+  --module-admin-dim: var(--salt-content-secondary-foreground);
+  --module-admin-raised: var(--salt-container-secondary-background);
+  --module-admin-surface: var(--salt-container-primary-background);
+  --module-admin-accent: var(--vuu-selected-accent, var(--salt-content-accent-foreground));
+  --module-admin-mono: var(--salt-typography-fontFamily-code);
+  --module-admin-gutter: 12px;
+  --module-admin-radius: 8px;
+  --module-admin-reading-width: 720px;
+  --module-admin-row-height: 28px;
+  --vuu-icon-size: 12px;
+
+  background: var(--module-admin-surface);
+  color: var(--module-admin-fg);
+  container: module-admin / inline-size;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--salt-text-fontSize);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+
+  code {
+    font-family: var(--module-admin-mono);
+    font-size: 0.95em;
+  }
+}
+
+/* Icons the Vuu icon set doesn't have. */
+.vuuModuleAdmin [data-icon="module-copy"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-refresh"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-lock"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-signpost"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 6h12l3 3-3 3H5z"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-nested"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v9a3 3 0 0 0 3 3h10"/><path d="m15 12 4 4-4 4"/></svg>');
+}
+.vuuModuleAdmin [data-icon="module-power"] {
+  --vuu-icon-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg>');
+}
+
+/* ───────── Toolbar ───────── */
+
+/* Same height and type as the portal's workspace header, so titles line up. */
+.vuuModuleAdmin-header {
+  align-items: center;
+  border-bottom: 1px solid var(--module-admin-border);
+  display: flex;
+  flex: none;
+  height: 52px;
+  padding: 0 16px;
+}
+
+.vuuModuleAdmin-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vuuModuleAdmin-toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--module-admin-border);
+  display: flex;
+  flex: none;
+  gap: var(--salt-spacing-200, 8px);
+  min-height: 36px;
+  min-width: 0;
+  padding: 0 var(--salt-spacing-300, 12px);
+}
+
+/* Wide enough for both tabs, so the tab bar never moves one into overflow. */
+.vuuModuleAdmin-tabs {
+  align-self: stretch;
+  flex: none;
+  min-width: 168px;
+}
+
+.vuuModuleAdmin-count,
+.vuuModuleAdmin-toggleCount {
+  color: var(--module-admin-dim);
+  font-size: var(--salt-text-label-fontSize);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.vuuModuleAdmin-count {
+  background: var(--module-admin-raised);
+  border-radius: 8px;
+  line-height: 15px;
+  margin-left: 4px;
+  padding: 0 5px;
+}
+
+.vuuModuleAdmin-filter {
+  flex: 0 1 220px;
+  min-width: 120px;
+}
+
+.vuuModuleAdmin-status {
+  flex: none;
+
+  [aria-checked="true"] .vuuModuleAdmin-toggleCount,
+  [aria-pressed="true"] .vuuModuleAdmin-toggleCount {
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  .vuuIcon {
+    --vuu-icon-color: var(--salt-status-warning-foreground-decorative);
+  }
+}
+
+.vuuModuleAdmin-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.vuuModuleAdmin-message {
+  display: grid;
+  flex: 1;
+  padding: var(--salt-spacing-300, 12px);
+  place-items: start center;
+}
+
+/* ───────── Shared pieces ───────── */
+
+.vuuModuleAdmin-muted {
+  color: var(--module-admin-dim);
+}
+
+.vuuModuleAdmin-visuallyHidden {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.vuuModuleAdmin-navIcon {
+  align-items: center;
+  background: var(--module-category-bg);
+  border-radius: var(--salt-palette-corner, 4px);
+  color: var(--module-category-fg);
+  display: inline-flex;
+  flex: none;
+  justify-content: center;
+}
+
+.vuuModuleAdmin-navIcon-small {
+  height: 18px;
+  width: 18px;
+}
+
+.vuuModuleAdmin-navIcon-medium {
+  height: 28px;
+  width: 28px;
+}
+
+.vuuModuleAdmin-navIconGlyph {
+  background-color: currentColor;
+  height: 64%;
+  mask: var(--module-icon) center / contain no-repeat;
+  width: 64%;
+}
+
+.vuuModuleAdmin-navIconLetter {
+  font-size: 0.85em;
+  font-weight: 700;
+}
+
+.vuuModuleAdmin-dot {
+  background: var(--salt-status-success-foreground-decorative);
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+  height: 7px;
+  width: 7px;
+}
+
+.vuuModuleAdmin-dot-disabled {
+  background: color-mix(in srgb, var(--module-admin-dim) 55%, transparent);
+}
+
+.vuuModuleAdmin-dot-warning {
+  background: var(--salt-status-warning-foreground-decorative);
+}
+
+.vuuModuleAdmin-pill {
+  align-items: center;
+  border-radius: 9px;
+  display: inline-flex;
+  font-size: var(--salt-text-label-fontSize);
+  font-weight: 600;
+  gap: 4px;
+  height: 18px;
+  padding: 0 7px;
+  white-space: nowrap;
+
+  .vuuIcon {
+    --vuu-icon-color: currentColor;
+    --vuu-icon-size: 10px;
+  }
+}
+
+.vuuModuleAdmin-pill-positive {
+  background: color-mix(in srgb, var(--salt-status-success-foreground-decorative) 14%, transparent);
+  color: var(--salt-status-success-foreground-informative);
+}
+
+.vuuModuleAdmin-pill-neutral {
+  background: var(--module-admin-raised);
+  color: var(--module-admin-dim);
+}
+
+.vuuModuleAdmin-pill-warning {
+  background: color-mix(in srgb, var(--salt-status-warning-foreground-decorative) 16%, transparent);
+  color: var(--salt-status-warning-foreground-informative);
+}
+
+.vuuModuleAdmin-role {
+  align-items: center;
+  border: 1px solid var(--module-admin-border-strong);
+  border-radius: 3px;
+  display: inline-flex;
+  gap: 4px;
+  line-height: 16px;
+  padding: 0 5px;
+}
+
+.vuuModuleAdmin-menuLocation {
+  align-items: center;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.vuuModuleAdmin-chevron {
+  --vuu-icon-size: 10px;
+}
+
+.vuuModuleAdmin-section {
+  padding-top: 0;
+
+  > p {
+    margin: 4px 0;
+  }
+}
+
+.vuuModuleAdmin-sectionHeading {
+  align-items: center;
+  border-bottom: 1px solid var(--module-admin-border);
+  color: var(--module-admin-dim);
+  display: flex;
+  font-size: var(--salt-text-label-fontSize);
+  font-weight: 700;
+  gap: 6px;
+  letter-spacing: 0.06em;
+  margin: 0 0 6px;
+  min-height: 26px;
+  text-transform: uppercase;
+}
+
+/* Which file a section's values come from. */
+.vuuModuleAdmin-sourceTag {
+  background: var(--module-admin-raised);
+  border: 1px solid var(--module-admin-border);
+  border-radius: 3px;
+  color: var(--module-admin-dim);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 16px;
+  padding: 0 5px;
+  text-transform: none;
+}
+
+.vuuModuleAdmin-sectionNote {
+  font-weight: 400;
+  letter-spacing: 0;
+  margin-left: auto;
+  text-transform: none;
+}
+
+.vuuModuleAdmin-facts {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  margin: 0;
+
+  dt {
+    color: var(--module-admin-dim);
+    padding: 3px 8px 3px 0;
+  }
+
+  dd {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding: 3px 0;
+  }
+}
+
+.vuuModuleAdmin-fact {
+  display: contents;
+}
+
+.vuuModuleAdmin-empty {
+  align-content: center;
+  color: var(--module-admin-dim);
+  display: grid;
+  gap: 6px;
+  height: 100%;
+  justify-items: center;
+  padding: var(--salt-spacing-400, 16px);
+  text-align: center;
+
+  strong {
+    color: var(--module-admin-fg);
+  }
+}
+
+/* ───────── Modules: list beside detail ───────── */
+
+/* The list and the detail are separate panels, with a gutter around them. */
+.vuuModulesPage {
+  background: var(--module-admin-raised);
+  display: grid;
+  flex: 1 1 auto;
+  gap: var(--module-admin-gutter);
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  min-height: 0;
+  padding: var(--module-admin-gutter);
+}
+
+.vuuModulesPage-list,
+.vuuModulesPage-detail {
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.vuuModulesPage-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.vuuModulesPage-listScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 6px;
+}
+
+.vuuModulesPage-listFooter {
+  align-items: center;
+  border-top: 1px solid var(--module-admin-border);
+  color: var(--module-admin-dim);
+  display: flex;
+  flex: none;
+  font-size: var(--salt-text-label-fontSize);
+  height: 28px;
+  padding: 0 var(--salt-spacing-300, 12px);
+}
+
+.vuuModulesPage-detail {
+  overflow: auto;
+}
+
+.vuuModuleList {
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.vuuModuleList-group {
+  align-items: center;
+  background: var(--module-admin-surface);
+  color: var(--module-admin-dim);
+  display: flex;
+  font-size: var(--salt-text-label-fontSize);
+  font-weight: 700;
+  gap: 6px;
+  height: 28px;
+  letter-spacing: 0.06em;
+  margin: 0;
+  padding: 6px var(--salt-spacing-300, 12px) 0;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+  z-index: 1;
+
+  .vuuModuleAdmin-count {
+    letter-spacing: 0;
+    margin-left: auto;
+  }
+}
+
+.vuuModuleList-row {
+  align-items: center;
+  border-radius: var(--salt-palette-corner, 4px);
+  color: var(--module-admin-fg);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  height: var(--module-admin-row-height);
+  margin: 1px 6px;
+  padding: 0 6px;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--salt-selectable-background-hover);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+    outline-offset: -2px;
+  }
+}
+
+.vuuModuleList-row-selected {
+  background: var(--salt-selectable-background-selected);
+  box-shadow: inset 2px 0 0 var(--module-admin-accent);
+
+  &:hover {
+    background: var(--salt-selectable-background-selected);
+  }
+}
+
+.vuuModuleList-row-child {
+  padding-left: 26px;
+}
+
+.vuuModuleList-row-disabled .vuuModuleList-title {
+  color: var(--module-admin-dim);
+}
+
+.vuuModuleList-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  code {
+    color: var(--module-admin-dim);
+    margin-left: 6px;
+  }
+}
+
+.vuuModuleList-route {
+  color: var(--module-admin-dim);
+  white-space: nowrap;
+}
+
+/* ───────── Module detail ───────── */
+
+.vuuModuleDetail {
+  container: module-detail / inline-size;
+}
+
+.vuuModuleDetail-header {
+  align-items: center;
+  background: var(--module-admin-surface);
+  border-bottom: 1px solid var(--module-admin-border);
+  display: flex;
+  gap: 10px;
+  padding: 12px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.vuuModuleDetail-heading {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+
+  h2 {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 14px;
+    font-weight: 700;
+    gap: 6px;
+    line-height: 18px;
+    margin: 0;
+  }
+}
+
+.vuuModuleDetail-identity {
+  color: var(--module-admin-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vuuModuleDetail-actions {
+  align-items: center;
+  display: flex;
+  flex: none;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.vuuModuleDetail-back,
+.vuuModuleDetail-open {
+  align-items: center;
+  border-radius: var(--salt-palette-corner, 4px);
+  color: var(--module-admin-dim);
+  display: inline-flex;
+  flex: none;
+  height: var(--salt-size-base, 20px);
+  justify-content: center;
+  width: var(--salt-size-base, 20px);
+
+  &:hover {
+    background: var(--salt-selectable-background-hover);
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+/* The back link shows only when the list and detail stack. */
+.vuuModuleDetail-back {
+  display: none;
+}
+
+.vuuModuleDetail-description {
+  color: var(--module-admin-dim);
+  margin: 0;
+  max-width: var(--module-admin-reading-width);
+  padding: 12px 20px 0;
+}
+
+.vuuModuleDetail-issues {
+  display: grid;
+  gap: 4px;
+  max-width: var(--module-admin-reading-width);
+  padding: 12px 20px 0;
+}
+
+.vuuModuleDetail-issueDetail {
+  color: var(--module-admin-dim);
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.vuuModuleDetail-sections {
+  display: grid;
+  gap: 18px;
+  max-width: var(--module-admin-reading-width);
+  padding: 6px 20px 20px;
+}
+
+.vuuModuleDetail-children {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.vuuModuleDetail-remoteConfigMessage,
+.vuuModuleDetail-remoteConfigSource {
+  color: var(--module-admin-dim);
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.vuuModuleDetail-remoteConfigSource {
+  font-size: var(--salt-text-label-fontSize);
+  margin-top: 6px;
+}
+
+/* The access role, the only fact in the Access section, spans the column. */
+.vuuModuleDetail-accessRole {
+  box-sizing: border-box;
+  display: flex;
+  margin: 4px 0 2px;
+  overflow-wrap: anywhere;
+  padding: 2px 6px;
+  width: 100%;
+
+  .vuuIcon {
+    flex: none;
+  }
+}
+
+.vuuModuleDetail-link {
+  align-items: center;
+  color: var(--module-admin-accent);
+  display: inline-flex;
+  font-weight: 600;
+  gap: 4px;
+  margin-top: 2px;
+  text-decoration: none;
+
+  .vuuIcon {
+    --vuu-icon-color: currentColor;
+    --vuu-icon-size: 10px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* YAML source: the caption stays put, the source scrolls on both axes. */
+.vuuModuleDetail-sourceView {
+  max-width: var(--module-admin-reading-width);
+  padding: 12px 20px 20px;
+}
+
+.vuuModuleDetail-sourceCaption {
+  align-items: center;
+  color: var(--module-admin-dim);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.vuuModuleDetail-source {
+  background: var(--module-admin-raised);
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--salt-palette-corner, 4px);
+  overflow: auto;
+
+  pre {
+    counter-reset: line;
+    font-family: var(--module-admin-mono);
+    font-size: 0.95em;
+    line-height: 17px;
+    margin: 0;
+    padding: 8px 12px 8px 0;
+    width: max-content;
+  }
+}
+
+.vuuModuleDetail-line {
+  display: block;
+  white-space: pre;
+
+  &::before {
+    color: var(--module-admin-dim);
+    content: counter(line);
+    counter-increment: line;
+    display: inline-block;
+    padding-right: 12px;
+    text-align: right;
+    user-select: none;
+    width: 30px;
+  }
+}
+
+/* ───────── Remote check ───────── */
+
+.vuuModuleCheck {
+  background: var(--module-admin-raised);
+  border-radius: var(--salt-palette-corner, 4px);
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 5px 8px;
+}
+
+.vuuModuleCheck-items {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuModuleCheck-item {
+  align-items: baseline;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: auto auto minmax(0, 1fr);
+
+  .vuuIcon {
+    --vuu-icon-color: var(--salt-status-success-foreground-decorative);
+    align-self: center;
+  }
+
+  code {
+    overflow-wrap: anywhere;
+  }
+}
+
+.vuuModuleCheck-item-failed .vuuIcon {
+  --vuu-icon-color: var(--salt-status-error-foreground-decorative);
+}
+
+.vuuModuleCheck-label {
+  white-space: nowrap;
+}
+
+.vuuModuleCheck-footer {
+  align-items: center;
+  color: var(--module-admin-dim);
+  display: flex;
+  font-size: var(--salt-text-label-fontSize);
+  gap: 8px;
+  justify-content: space-between;
+}
+
+/* ───────── Menu ───────── */
+
+.vuuMenuPage {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.vuuMenuPage-table {
+  border-collapse: collapse;
+  width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--module-admin-border);
+    height: var(--module-admin-row-height);
+    padding: 0 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead th {
+    background: var(--module-admin-raised);
+    border-bottom-color: var(--module-admin-border-strong);
+    color: var(--module-admin-dim);
+    font-size: var(--salt-text-label-fontSize);
+    font-weight: 700;
+    height: 24px;
+    letter-spacing: 0.06em;
+    position: sticky;
+    text-transform: uppercase;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody th {
+    font-weight: 400;
+  }
+
+  td code {
+    color: var(--module-admin-dim);
+  }
+}
+
+.vuuMenuPage-section th {
+  font-weight: 700;
+  padding-left: var(--salt-spacing-300, 12px);
+}
+
+.vuuMenuPage-entry {
+  align-items: center;
+  color: var(--module-admin-fg);
+  display: inline-flex;
+  gap: 6px;
+  padding-left: 16px;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--module-admin-accent);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: var(--salt-focused-outline);
+  }
+}
+
+.vuuMenuPage-nested .vuuMenuPage-entry {
+  color: var(--module-admin-dim);
+  padding-left: 38px;
+}
+
+.vuuMenuPage-disabled .vuuMenuPage-entry {
+  color: var(--module-admin-dim);
+}
+
+.vuuMenuPage-dim {
+  color: var(--module-admin-dim);
+}
+
+/* ───────── Narrow workspace: the list and detail stack ───────── */
+
+@container module-admin (max-width: 640px) {
+  .vuuModuleAdmin-status {
+    display: none;
+  }
+
+  .vuuModulesPage {
+    --module-admin-gutter: 8px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .vuuModulesPage-routed .vuuModulesPage-list,
+  .vuuModulesPage:not(.vuuModulesPage-routed) .vuuModulesPage-detail {
+    display: none;
+  }
+
+  /* With only the list showing, no module is open, so none is selected. */
+  .vuuModulesPage:not(.vuuModulesPage-routed) .vuuModuleList-row-selected {
+    background: none;
+    box-shadow: none;
+  }
+
+  .vuuModuleDetail-back {
+    display: inline-flex;
+  }
+}

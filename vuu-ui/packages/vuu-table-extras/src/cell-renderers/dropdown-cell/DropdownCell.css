@@ -1,9 +1,5 @@
 .vuuTableCell {
   .vuuTableDropdownCell {
-    --vuu-icon-height: 15px;
-    --vuu-icon-left: calc(100% - var(--salt-spacing-300));
-    --vuu-icon-size: 8px;
-    --vuu-icon-top: -3px;
     --salt-focused-outlineStyle: none;
     --saltButton-borderRadius: 2px;
 
@@ -14,6 +10,14 @@
     height: var(--vuu-table-embedded-control-height);
     min-height: var(--vuu-table-embedded-control-height);
     text-align: left;
+    padding: 0 3px 0 4px;
+    gap: 3px;
+    font-size: inherit;
+    line-height: normal;
+
+    .saltDropdown-content {
+      min-width: 0;
+    }
 
     button:focus-visible {
       --saltButton-borderColor: var(--salt-focused-outlineColor);
@@ -30,8 +34,22 @@
   }
 }
 
-/* .vuuTableCell:focus .vuuTableInputCell.saltInput-primary,
-.vuuTableInputCell.saltInput-primary.saltInput-focused {
-  border: solid 2px var(--salt-focused-outlineColor);
-  padding: 0 3px;
-} */
+.salt-theme.vuu-theme .vuuTableCell .vuuTableDropdownCell .saltDropdown-toggle {
+  display: inline-block;
+  flex: 0 0 12px;
+  height: 12px;
+  width: 12px;
+  margin-left: 0;
+}
+
+.vuuTableDropdownCell-options .saltOption {
+  align-items: center;
+  font-size: 11px;
+  line-height: 17px;
+  min-height: 21px;
+  padding: 2px 8px;
+}
+
+.salt-theme.vuu-theme .saltOptionList.vuuTableDropdownCell-options .saltOption[aria-selected="true"] {
+  box-shadow: inset calc(var(--salt-spacing-100) / 2) 0 0 0 var(--salt-selectable-borderColor-selected);
+}

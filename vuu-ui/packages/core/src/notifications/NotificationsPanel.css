@@ -1,0 +1,169 @@
+.vuuNotificationsPanel.saltDrawer {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  width: var(--vuuNotificationsPanel-width, 420px);
+}
+
+.vuuNotificationsPanel {
+  .vuuNotificationsPanel-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .vuuNotificationsPanel-header {
+    align-items: center;
+    display: flex;
+    gap: var(--salt-spacing-50);
+    padding: var(--salt-spacing-100) var(--salt-spacing-100) 0
+      var(--salt-spacing-200);
+  }
+
+  .vuuNotificationsPanel-title {
+    flex: 1;
+    margin: 0;
+  }
+
+  .vuuNotificationsPanel-filters {
+    align-items: center;
+    border-bottom: var(--salt-size-border) var(--salt-separable-borderStyle)
+      var(--salt-separable-primary-borderColor);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--salt-spacing-100);
+    padding: var(--salt-spacing-100) var(--salt-spacing-200);
+  }
+
+  .vuuNotificationsPanel-search {
+    flex-basis: 100%;
+  }
+
+  .vuuNotificationsPanel-filters .saltDropdown {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .vuuNotificationsPanel-list {
+    flex: 1;
+    overflow: auto;
+    padding: var(--salt-spacing-100) 0;
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .vuuNotificationsPanel-empty,
+  .vuuNotificationsPanel-day {
+    display: block;
+    padding: var(--salt-spacing-50) var(--salt-spacing-200);
+  }
+
+  .vuuNotificationsPanel-item {
+    align-items: flex-start;
+    cursor: pointer;
+    display: flex;
+    gap: var(--salt-spacing-75);
+    padding: var(--salt-spacing-75) var(--salt-spacing-200)
+      var(--salt-spacing-75) var(--salt-spacing-100);
+
+    &:hover {
+      background: var(--salt-actionable-subtle-background-hover);
+    }
+
+    &:focus-visible {
+      outline: var(--salt-focused-outline);
+      outline-offset: calc(-1 * var(--salt-size-border-strong));
+    }
+  }
+
+  .vuuNotificationsPanel-unreadDot {
+    border-radius: 50%;
+    flex: none;
+    height: 6px;
+    margin-top: calc(var(--salt-text-lineHeight) / 2 - 3px);
+    width: 6px;
+  }
+
+  .vuuNotificationsPanel-item-unread .vuuNotificationsPanel-unreadDot {
+    background: var(--salt-accent-background);
+  }
+
+  .vuuNotificationsPanel-item-expired {
+    opacity: 0.7;
+  }
+
+  .vuuNotificationsPanel-itemBody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--salt-spacing-25);
+    min-width: 0;
+  }
+
+  .vuuNotificationsPanel-itemHeader {
+    display: flex;
+    gap: var(--salt-spacing-100);
+    justify-content: space-between;
+  }
+
+  .vuuNotificationsPanel-itemSource {
+    flex: none;
+  }
+
+  .vuuNotificationsPanel-itemMessage {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    overflow: hidden;
+  }
+
+  .vuuNotificationsPanel-item-expanded .vuuNotificationsPanel-itemMessage {
+    -webkit-line-clamp: unset;
+    display: block;
+  }
+
+  .vuuNotificationsPanel-itemActions {
+    align-items: center;
+    display: flex;
+    gap: var(--salt-spacing-50);
+  }
+
+  .vuuNotificationsPanel-itemActionsEnd {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .vuuNotificationsPanel-footer {
+    align-items: center;
+    border-top: var(--salt-size-border) var(--salt-separable-borderStyle)
+      var(--salt-separable-primary-borderColor);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--salt-spacing-100);
+    justify-content: space-between;
+    padding: var(--salt-spacing-100) var(--salt-spacing-200);
+  }
+
+  .vuuNotificationsPanel-servers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--salt-spacing-100);
+  }
+
+  .vuuNotificationsPanel-serverPresence {
+    color: var(--salt-content-secondary-foreground);
+  }
+
+  .vuuNotificationsPanel-server-offline,
+  .vuuNotificationsPanel-server-unauthorized,
+  .vuuNotificationsPanel-server-unavailable {
+    .vuuNotificationsPanel-serverPresence {
+      color: var(--salt-status-error-foreground-decorative);
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "standalone-table",
+  "version": "3.3.2",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ./scripts/build.ts",
+    "start": "serve -p 5002 ../../dist_portal/app-vuu-example"
+  },
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "devDependencies": {},
+  "dependencies": {
+    "@fontsource/open-sans": "^4.5.13",
+    "@vuu-ui/vuu-icons": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-layout": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-shell": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-table": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-theme": "5.0.0-alpha.1",
+    "@vuu-ui/vuu-utils": "5.0.0-alpha.1",
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

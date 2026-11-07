@@ -7,6 +7,7 @@ import {
   LocalDataSourceProvider,
   simulModule,
   testModule,
+  userAdminModule,
 } from "@vuu-ui/vuu-data-test";
 import themeCss from "@vuu-ui/vuu-theme/index.css";
 import iconsCss from "@vuu-ui/vuu-icons/index.css";
@@ -14,6 +15,7 @@ import iconsCss from "@vuu-ui/vuu-icons/index.css";
 void simulModule;
 void basketModule;
 void testModule;
+void userAdminModule;
 
 for (const css of [themeCss, iconsCss]) {
   const style = document.createElement("style");

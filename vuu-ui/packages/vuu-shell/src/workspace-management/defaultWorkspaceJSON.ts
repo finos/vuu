@@ -1,10 +1,10 @@
-import { StackProps } from "@vuu-ui/vuu-layout";
-import { LayoutJSON, VuuShellLocation } from "@vuu-ui/vuu-utils";
+import type { HTMLAttributes } from "react";
+import { type LayoutJSON, VuuShellLocation } from "@vuu-ui/vuu-utils";
 
-export type WorkspaceStackProps = Pick<
-  StackProps,
-  "showTabs" | "TabstripProps"
->;
+export interface WorkspaceStackProps {
+  readonly showTabs?: boolean | "left" | "right";
+  readonly TabstripProps?: HTMLAttributes<HTMLDivElement>;
+}
 
 export const warningLayout: LayoutJSON = {
   type: "View",
@@ -27,9 +27,7 @@ export const loadingJSON: Readonly<LayoutJSON> = {
   props: {},
 };
 
-export const defaultWorkspaceJSON: LayoutJSON<
-  StackProps & { preserve: boolean }
-> = {
+export const defaultWorkspaceJSON: LayoutJSON = {
   type: "Stack",
   id: VuuShellLocation.Workspace,
   props: {

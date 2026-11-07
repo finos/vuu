@@ -10,6 +10,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
+  RpcResultSuccess,
   VuuSortCol,
 } from "@vuu-ui/vuu-protocol-types";
 import { VuuDataSource } from "../src/VuuDataSource";
@@ -19,8 +20,8 @@ import { Range } from "@vuu-ui/vuu-utils";
 type ConfigType = WithBaseFilter<WithFullConfig>;
 
 vi.mock("../src/ConnectionManager", () => ({
-  default: {
-    serverAPI: new Promise<ServerAPI>((resolve) => {
+  default: (() => {
+    const serverAPI = new Promise<ServerAPI>((resolve) => {
       // @ts-expect-error
       resolve({
         destroy: vi.fn(),
@@ -29,8 +30,13 @@ vi.mock("../src/ConnectionManager", () => ({
         subscribe: vi.fn(),
         unsubscribe: vi.fn(),
       });
-    }),
-  },
+    });
+
+    return {
+      serverAPI,
+      serverAPIFor: () => serverAPI,
+    };
+  })(),
 }));
 
 const defaultSubscribeOptions = {
@@ -54,6 +60,7 @@ describe("VuuDataSource", () => {
   describe("constructor", () => {
     it("cannot be created without table", () => {
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource();
         throw Error("RemoteDataSource was created without table");
@@ -64,6 +71,7 @@ describe("VuuDataSource", () => {
         );
       }
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource({});
         throw Error("RemoteDataSource was created without table");
@@ -74,6 +82,7 @@ describe("VuuDataSource", () => {
         );
       }
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource({
           bufferSize: 100,
@@ -114,6 +123,27 @@ describe("VuuDataSource", () => {
     });
   });
 
+  describe("addRow", () => {
+    it("returns the successful RPC result", async () => {
+      const dataSource = new VuuDataSource({ table });
+      const response = { data: undefined, type: "SUCCESS_RESULT" } as const;
+      vi.spyOn(dataSource, "rpcRequest").mockResolvedValue(response);
+
+      await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
+    });
+
+    it("returns the failed RPC result", async () => {
+      const dataSource = new VuuDataSource({ table });
+      const response = {
+        errorMessage: "Insert rejected",
+        type: "ERROR_RESULT",
+      } as const;
+      vi.spyOn(dataSource, "rpcRequest").mockResolvedValue(response);
+
+      await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
+    });
+  });
+
   describe("subscribe", () => {
     const callback = () => undefined;
 
@@ -133,6 +163,57 @@ describe("VuuDataSource", () => {
         },
         expect.any(Function),
       );
+    });
+
+    describe("session editing", () => {
+      it("keeps the source cache live without a range refresh during standalone session editing", async () => {
+        const source = new VuuDataSource({ table, viewport: "source-vp" });
+        await source.subscribe({}, vi.fn());
+        source.handleMessageFromServer({
+          type: "subscribed",
+          tableSchema: {},
+        } as any);
+
+        vi.spyOn(source, "rpcRequest").mockResolvedValue({
+          type: "SUCCESS_RESULT",
+          data: {
+            table: { module: "SIMUL", table: "session-vp" },
+          },
+        } as RpcResultSuccess);
+        const session = await source.createSessionDataSource("Empty");
+        expect(session?.isSessionDataSourceOf(source)).toBe(true);
+        await session!.subscribe({}, vi.fn());
+        vi.spyOn(session!, "rpcRequest").mockResolvedValue({
+          type: "SUCCESS_RESULT",
+        } as RpcResultSuccess);
+
+        const serverAPI = await ConnectionManager.serverAPI;
+        vi.mocked(serverAPI.send).mockClear();
+        source.suspend(false);
+
+        expect(serverAPI.send).toHaveBeenLastCalledWith({
+          escalateDelay: undefined,
+          escalateToDisable: false,
+          type: "suspend",
+          viewport: "source-vp",
+        });
+
+        vi.mocked(serverAPI.send).mockClear();
+        await session!.endEditSession(true);
+        expect(serverAPI.send).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: "setViewRange" }),
+        );
+
+        source.resume();
+        expect(serverAPI.send).toHaveBeenCalledWith({
+          type: "resume",
+          viewport: "source-vp",
+        });
+        expect(serverAPI.send).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: "setViewRange" }),
+        );
+      });
+
     });
 
     it("uses options supplied at creation, if not passed with subscription", async () => {
@@ -906,4 +987,3 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     expect(onSourceUnsubscribed).not.toHaveBeenCalled();
   });
 });
-

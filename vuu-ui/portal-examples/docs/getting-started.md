@@ -1,0 +1,833 @@
+# Getting started with a VUU portal
+
+This guide explains how to create a React portal host and Module Federation
+remote applications with both:
+
+- **remote mode**: Keycloak authentication and data from remote VUU servers;
+- **local mode**: no external authentication and data from browser-local VUU
+  test modules.
+
+It also describes how to migrate an existing suite of standalone React/VUU
+SPAs. The examples assume that all applications already use compatible React,
+React DOM, React Router, and VUU package versions.
+
+For the underlying runtime behavior, see
+[Module Federation runtime integration](../portal-host/docs/module-federation-runtime.md).
+For the design rationale, see
+[Local and remote portal architecture](../portal-host/docs/local-portal-architecture.md).
+
+## Architecture at a glance
+
+Each application is split into a provider-neutral feature and thin
+environment-specific adapters:
+
+```text
+application package
+├── src/Application.tsx          shared feature component
+├── src/ApplicationLocal.ts      local data registration adapter
+├── src/index.tsx                standalone remote entry
+└── src/index-local.tsx          standalone local entry
+```
+
+The portal uses the same Module Federation host and producer manifests in both
+modes:
+
+```mermaid
+flowchart LR
+    remoteHost["Remote host"] --> remoteRegistry["LOGIN_SUCCESS registry"]
+    localHost["Local host"] --> localRegistry["Checked-in local registry"]
+
+    remoteRegistry --> loader["RemoteModule"]
+    localRegistry --> loader
+
+    loader --> production["scope/Application"]
+    loader --> local["scope/ApplicationLocal"]
+
+    production --> feature["Shared Application component"]
+    local --> localModule["Install local VUU module"]
+    localModule --> feature
+
+    feature --> remoteData["Scoped VUU websocket"]
+    feature --> localData["LocalDataSourceProvider"]
+```
+
+The important boundaries are:
+
+- the **host** owns authentication, module discovery, routing, and the active
+  data-source provider;
+- a **remote descriptor** says where and how to load an application;
+- the **remote feature component** consumes contexts but does not install
+  authentication or data providers;
+- a **local adapter** registers browser-local VUU tables and then exports the
+  same feature component; and
+- the host and local remotes share one local VUU module container.
+
+## 1. Create the workspace
+
+A typical workspace contains one host package and one package per remote:
+
+```text
+portal/
+├── package.json
+├── portal-host/
+│   ├── package.json
+│   ├── public/index.html
+│   ├── scripts/rsbuild.ts
+│   └── src/
+│       ├── App.tsx
+│       ├── bootstrap.tsx
+│       ├── index.tsx
+│       ├── local-bootstrap.tsx
+│       ├── local-index.tsx
+│       ├── local-module-registry.json
+│       └── local-module-registry.ts
+├── orders/
+│   ├── package.json
+│   └── src/
+│       ├── Orders.tsx
+│       └── OrdersLocal.ts
+└── risk/
+    └── ...
+```
+
+Use workspaces or another package-management arrangement that guarantees
+compatible package versions. The host and producers must agree on the required
+versions of all shared packages.
+
+Install the build/runtime dependencies used by the examples:
+
+```sh
+npm install --save-dev \
+  @module-federation/enhanced \
+  @rsbuild/core \
+  @rsbuild/plugin-react
+```
+
+The host and remotes also need their normal React and VUU dependencies. A
+local-capable host or remote needs `@vuu-ui/vuu-data-test` until the reusable
+local VUU runtime is moved into `@vuu-ui/vuu-data-local`.
+
+## 2. Define strict shared dependencies
+
+Host and producers must use compatible share declarations. At minimum, share
+the packages that contain React contexts or process-wide registries:
+
+```ts
+const shared = {
+  react: {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: reactVersion,
+  },
+  "react-dom": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: reactVersion,
+  },
+  "react-router-dom": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: reactRouterVersion,
+  },
+  "@vuu-ui/core": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
+  "@vuu-ui/core/portal": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
+  "@vuu-ui/vuu-data-editing": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
+  "@vuu-ui/vuu-data-test": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
+  "@vuu-ui/vuu-data-remote": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
+  "@vuu-ui/vuu-notifications": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
+};
+```
+
+Use the complete consumer/producer declarations from
+`vuu-ui/scripts/module-federation-utils.ts` when working in this repository.
+In a separate repository, create an equivalent helper that reads versions from
+your dependency manifests.
+
+`@vuu-ui/core` must be a singleton because it owns authentication and data
+contexts. `@vuu-ui/vuu-data-test` must be a singleton in local mode because it
+owns the local `ModuleContainer`. Duplicating either package can produce a
+successfully loaded remote that cannot see the host's context or registered
+local modules.
+
+`@vuu-ui/vuu-data-remote` and `@vuu-ui/vuu-notifications` must be singletons
+for the portal's server status and notifications. The first owns the
+connections the portal monitors and the second the notifications context, so
+a duplicate copy would hide a remote's connections or notifications from the
+portal.
+
+Keep `strictVersion: true`. An incompatible React or VUU version should fail
+during shared-module negotiation instead of silently creating a second
+runtime.
+
+## 3. Build the portal host
+
+### Configure Module Federation
+
+Install `ModuleFederationPlugin` in the host's Rsbuild configuration:
+
+```ts
+import { createRsbuild } from "@rsbuild/core";
+import { pluginReact } from "@rsbuild/plugin-react";
+import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
+
+const isLocal = process.argv.includes("--local");
+
+const rsbuild = await createRsbuild({
+  config: {
+    html: {
+      template: "./public/index.html",
+    },
+    output: {
+      module: true,
+      target: "web",
+    },
+    plugins: [pluginReact()],
+    source: {
+      entry: {
+        index: isLocal ? "./src/local-index.tsx" : "./src/index.tsx",
+      },
+    },
+    tools: {
+      rspack: {
+        output: {
+          chunkFormat: "module",
+          chunkLoading: "import",
+          library: { type: "module" },
+        },
+        plugins: [
+          new ModuleFederationPlugin({
+            name: "host",
+            remoteType: "module",
+            shared: getSharedDependencies("consumer"),
+          }),
+        ],
+      },
+    },
+  },
+});
+
+await rsbuild.build();
+```
+
+Do not statically configure `remotes`. The portal receives remote descriptors
+at runtime.
+
+The host output is ESM. Ensure the generated script is loaded as a module; the
+portal example's `public/index.html` and Rsbuild integration handle this.
+
+### Preserve the asynchronous entry boundary
+
+The remote and local entries should contain only a dynamic import:
+
+```ts
+// src/index.tsx
+import("./bootstrap");
+```
+
+```ts
+// src/local-index.tsx
+import("./local-bootstrap");
+```
+
+This lets the plugin initialize the federation runtime and share scope before
+React, VUU, and application imports are evaluated.
+
+### Create the shared portal application
+
+The application obtains descriptors from the active authentication provider
+and injects the selected data provider into `PortalShell`:
+
+```tsx
+import { useModuleRegistry } from "@vuu-ui/core";
+import { PortalShell } from "@vuu-ui/core/portal";
+import type { ComponentType, ReactNode } from "react";
+import { BrowserRouter } from "react-router-dom";
+
+export interface AppProps {
+  DataSourceProvider?: ComponentType<{ children: ReactNode }>;
+}
+
+export const App = ({ DataSourceProvider }: AppProps) => {
+  const { modules } = useModuleRegistry();
+
+  return (
+    <BrowserRouter>
+      <PortalShell
+        DataSourceProvider={DataSourceProvider}
+        remoteModules={modules}
+        title="My Portal"
+      />
+    </BrowserRouter>
+  );
+};
+```
+
+If `DataSourceProvider` is omitted, `PortalShell` uses
+`VuuDataSourceProvider`. This preserves the remote-mode default.
+
+### Configure remote mode
+
+The production bootstrap initializes the imperative federation API, then
+installs identity authentication:
+
+```tsx
+import { init } from "@module-federation/enhanced/runtime";
+import {
+  AuthenticationErrorBoundary,
+  AuthenticationProvider,
+  KeycloakAuthHandler,
+} from "@vuu-ui/core";
+import { createRoot } from "react-dom/client";
+import { App } from "./App";
+
+init({ name: "host", remotes: [] });
+
+const config = await vuuConfig;
+const root = document.getElementById("root");
+if (!root) throw new Error("No React root defined in page");
+
+createRoot(root).render(
+  <AuthenticationErrorBoundary
+    fallback={(error) => (
+      <div role="alert">Unable to authenticate: {error.message}</div>
+    )}
+  >
+    <AuthenticationProvider
+      authConfig={config}
+      authHandlerClass={KeycloakAuthHandler}
+      mode="identity"
+    >
+      <App />
+    </AuthenticationProvider>
+  </AuthenticationErrorBoundary>,
+);
+```
+
+The active sequence is:
+
+1. authenticate the browser with Keycloak;
+2. exchange the identity token for a portal VUU token;
+3. open the portal VUU websocket;
+4. receive `LOGIN_SUCCESS.moduleRegistry`;
+5. render navigation and routes from the registry;
+6. load every navigable module's `config.json`; and
+7. connect to the Vuu servers those configs name, the open module's first,
+   to show their status in the navigation and collect their notifications.
+   A remote that opens uses the connection already made.
+
+The portal server is responsible for returning only modules the user is
+authorized to access.
+
+### Configure local mode
+
+The local bootstrap supplies a deterministic identity, a checked-in registry,
+the in-browser Vuu servers, and `LocalDataSourceProvider`:
+
+```tsx
+import { init } from "@module-federation/enhanced/runtime";
+import { AuthenticationProvider } from "@vuu-ui/core";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { createRoot } from "react-dom/client";
+import { App } from "./App";
+import { localPortalModuleRegistry } from "./local-module-registry";
+import { localVuuServers } from "./local-vuu-servers";
+
+init({ name: "host", remotes: [] });
+
+const root = document.getElementById("root");
+if (!root) throw new Error("No React root defined in page");
+
+createRoot(root).render(
+  <AuthenticationProvider
+    authorizations={["local-developer"]}
+    localServers={localVuuServers}
+    mode="local"
+    registry={localPortalModuleRegistry}
+    user={{ userName: "local-user" }}
+  >
+    <App DataSourceProvider={LocalDataSourceProvider} />
+  </AuthenticationProvider>,
+);
+```
+
+Local authentication publishes a synthetic VUU session, so
+`useAuthenticatedUser()`, `useModuleRegistry()`, `useVuuConnectionId()`, and
+`useVuuAccessToken()` remain structurally available. It does not contact
+Keycloak, exchange tokens, or open a websocket.
+
+### Simulate Vuu servers in local mode
+
+A remote's required `config.json` names the Vuu server it talks to. Local mode
+uses the same remote config but resolves its `connectionId` to an in-browser
+server supplied by the host with `createLocalVuuServer` from
+`@vuu-ui/vuu-data-test`. For example, the basket-trading remote publishes this
+`config.json` next to its `mf-manifest.json`:
+
+```json
+{
+  "connectionId": "basket",
+  "restUrl": "https://localhost:8445/api/authn",
+  "websocketUrl": "wss://localhost:8093/websocket-basket-trading"
+}
+```
+
+```ts
+// local-vuu-servers.ts
+import {
+  basketModule,
+  createLocalVuuServer,
+  simulModule,
+} from "@vuu-ui/vuu-data-test";
+
+export const localVuuServers = [
+  createLocalVuuServer({ connectionId: "basket", modules: [basketModule] }),
+  createLocalVuuServer({ connectionId: "simul", modules: [simulModule] }),
+];
+```
+
+Pass them to the local `AuthenticationProvider` as `localServers`. A remote
+whose config `connectionId` matches a local server gets that server's data
+context instead of a websocket: its `getTableList`, `getTableSchema`, and
+`VuuDataSource` cover only the server's own modules. A connection with no
+matching local server fails with an `AuthenticationConfigurationError`.
+Remotes with an empty `{}` config keep using the host's `DataSourceProvider`.
+Test packages other than `vuu-data-test` can implement `LocalVuuServer`
+directly: a `connectionId` plus a `DataSourceProvider` component.
+
+`useVuuServers()` loads registered modules' remote configs and returns the
+distinct configured servers, with the titles of the modules that use each one.
+It returns `[]` until configs have loaded and skips modules whose config fails
+to load. The developer modules `vuu-table-browser` and `vuu-table-viewer` use
+it to browse every server's tables. Under Tables › Browse, the nav lists the
+servers (`PortalNavVuuServers`, rendered through `PortalNav
+renderItemChildren`), with their status. The host recognises the Browse item
+by the module's `mfScope` (`vuuTableBrowser`), not its `moduleId`: a
+server-supplied registry assigns its own, often numeric, ids. Selecting a
+server opens its Browse page,
+`/tables/browse/<server>`: an unsaved workspace with the Panels palette pinned
+on the Tables tab and that server selected. Click, drag or **+** a table to
+open it as a `vuu-table` item, then **Save as workspace** to keep the layout
+as a named workspace. The viewer shows one table, from its props (`serverId`,
+`module`, `table`) or from its own route,
+`/tables/view/<server>/<module>/<table>`. It is registered as a nested module,
+with an empty `navLocation`, so it has no navigation entry of its own.
+
+To browse a Vuu server that no module uses, choose **Add server** under
+Tables › Browse and enter a name, the server's WebSocket URL, and its
+authentication (REST) URL. The name must differ from the servers already
+listed. `PortalShell` saves these servers in the user's saved portal state,
+under the key `servers/manual`, so they are restored next time, and each one
+can be removed from its navigation entry. They are known only to the portal:
+nothing is added to the module registry or the Vuu protocol. The portal
+authenticates to them with the same token exchange as any other server, so the
+server must accept it. In local mode, a manually added server is offline
+unless its name matches a local server.
+
+### Server status and notifications
+
+`PortalShell` connects to every application's Vuu server, up to
+`maxMonitoredServers` (default 8), not just the open application's. The
+AppSwitcher then:
+
+- greys out applications whose server is offline, refuses the user, or whose
+  `config.json` can't be loaded, with a status badge and an overlay
+  explaining why and offering **Retry now**;
+- shows each application's unread notification count as a badge.
+
+If the open application's server goes down, a frosted overlay covers the
+application until it's back. Notifications also appear in a bell in
+`PortalHeader`, a notifications panel, toasts for the open application, and
+portal-wide banners.
+
+Notifications come from each server's `NOTIFICATIONS/notifications` table.
+No server or remote changes are needed. To tune or turn this off, pass
+`serverMonitor` and `notifications` options to `PortalShell`, for example:
+
+```tsx
+<PortalShell
+  notifications={{ maxNotifications: 200 }}
+  remoteModules={modules}
+  serverMonitor={{ maxMonitoredServers: 12, offlineAfterMs: 5_000 }}
+  title="My Portal"
+/>
+```
+
+`serverMonitor={false}` stops the portal connecting to servers for
+monitoring, and `notifications={false}` turns notifications off. See the
+[portal reference](../../packages/core/docs/portal-design.md#server-status-and-notifications)
+for all options.
+
+In local mode, every local server is online. To simulate notifications, add
+a `SimulatedNotificationsModule()` from `@vuu-ui/vuu-data-test` to a local
+server's `modules`. Use a separate instance per server, so each server's
+notifications only badge its own applications. Pass `{ simulate: false }` to
+turn off random notifications. The portal-host example gives every local
+server its own notifications module, with random notifications on `basket`
+and `simul`.
+
+To create a notification at runtime, call `publish` on the module. In the
+portal-host local mode, you can do this from the devtools console:
+
+```js
+vuuNotifications.servers(); // ["module-admin", "user-admin", "basket", "simul"]
+vuuNotifications.publish("basket", {
+  title: "Order filled",
+  message: "ORD-1234 filled",
+  level: "WARNING", // INFO | WARNING | ERROR
+  type: "toast", // toast | banner
+  expiresInMs: 30_000, // optional, the server deletes it after this delay
+});
+vuuNotifications.delete("basket", id);
+vuuNotifications.stopSimulation(); // stop random notifications on every server
+vuuNotifications.startSimulation("simul");
+```
+
+## 6. Build and run
+
+From `vuu-ui`, build the portal example's local host and all producers:
+
+```sh
+npm run build:mf:local
+```
+
+Build only the local host:
+
+```sh
+npm run build:mf -- --portal-host --local
+```
+
+Build the authenticated host and restore it at the standard host output path:
+
+```sh
+npm run build:mf -- --portal-host
+```
+
+The local and authenticated host builds both write
+`dist_portal/portal-host`. Building one replaces the other.
+
+The current local example uses:
+
+| Port | Artifact |
+| --- | --- |
+| 5001 | portal host |
+| 5002 | module-admin |
+| 5003 | user-admin |
+| 5004 | vuu-table-browser |
+| 5005 | vuu-table-viewer |
+| 5006 | basket-trading |
+| 5007 | feature-simple-div |
+
+To start the complete local example from `vuu-ui`, run:
+
+```sh
+npm run portal:serve
+```
+
+This command stays in the foreground and starts the host plus the remotes in
+the local registry. In another terminal, run `npm run portal:stop` to stop
+those instances. Pressing Ctrl+C in the `portal:serve` terminal also stops
+them. Build the local artifacts first with `npm run build:mf:local`.
+
+The `@vuu-ui/portal-build` package provides the `portal-serve` executable
+and `portal:start`/`portal:stop` package scripts for other portal projects.
+See the [portal build tool guide](../../tools/portal-build-tool/README.md#serving-a-portal)
+for setup and configuration details.
+
+The default service list is in `vuu-ui/portal-serve.config.json`. To start the
+host with only selected remotes, pass their configured names:
+
+```sh
+npm run portal:serve -- --remotes module-admin,basket-trading
+```
+
+Start just the configured host with:
+
+```sh
+npm run portal:serve -- --host-only
+```
+
+For another portal setup, provide a config file and select a host and remotes:
+
+```sh
+npm run portal:serve -- --config configs/another-portal.json --host demo-host --remotes orders,risk
+```
+
+Each config lists `defaultHost`, `hosts`, and `remotes`; every host/remote entry
+has a unique `name`, `port`, and `directory`. Directories are resolved relative
+to the config file. Add or change entries in `portal-serve.config.json` to
+configure this example, or pass another config to launch a different portal.
+The selected output directories must contain the built `index.html` and
+`serve.json`. After starting the default setup, open `http://localhost:5001`.
+
+Each remote's build writes a default `serve.json` into its `dist_portal`
+folder. It configures SPA fallback for root and nested routes and sets a
+development CORS header so the host can load the remote's federation manifest
+and chunks. The host supplies its own `public/serve.json`, which is copied
+into its output instead; a remote can do the same to override the default. These settings only affect the local Vercel
+`serve` example.
+
+When using nginx, map its host listener to `dist_portal/portal-host` and map
+each remote origin to its corresponding `dist_portal/<package>` directory. The
+standard example deployment uses port 5001 for the host. Remote origins must
+allow the host origin through CORS.
+
+Use unique ports and keep these values aligned:
+
+- producer `vuu.module-federation.port`;
+- producer `output.publicPath`;
+- portal serve configuration;
+- local registry `mfUrl`; and
+- nginx/development-server mapping.
+
+### Choose the portal Vuu server ports
+
+The authenticated build connects portal-host and module-admin to the portal
+Vuu server at `wss://localhost:8091/websocket-portal`, with REST on
+`https://localhost:8443`. To use other ports without rebuilding, run
+`portal:launch`:
+
+```sh
+npm run portal:launch -- --ws-port 9091 --https-port 9443
+```
+
+It sets the URLs in `dist_portal/portal-host/config.json` and
+`dist_portal/module-admin/config.json`. Whatever serves `dist_portal`, such
+as nginx, picks them up on the next page load. Start the portal Vuu server on
+the same ports. `--ws-path` and `--hostname` change the rest of the URL. Only
+the parts given change. Each option can also be set with an env var
+(`VUU_WEBSOCKET_PORT`, `VUU_HTTPS_PORT`, `VUU_WEBSOCKET_PATH`,
+`VUU_HOSTNAME`).
+
+The options are saved in `portal-examples/.portal-urls.json` (gitignored),
+merged with those saved before, and a run with no options applies the saved
+ones. The portal builds (`npm run build:mf`, and the portal-host and
+module-admin builds) run it afterwards, so a rebuild keeps the chosen ports.
+`npm run portal:launch -- --reset` forgets them; the next build then leaves
+the defaults.
+
+`portal:serve` runs the same step before it starts serving, reading the env
+vars:
+
+```sh
+VUU_WEBSOCKET_PORT=9091 VUU_HTTPS_PORT=9443 npm run portal:serve
+```
+
+## 7. Migrate existing standalone SPAs
+
+Migrate incrementally. A remote SPA can continue to run standalone while it is
+also loaded by the portal.
+
+### Step 1: establish version compatibility
+
+Confirm that every SPA uses the same compatible versions of:
+
+- React and React DOM;
+- React Router;
+- `@vuu-ui/core` and `@vuu-ui/core/portal`;
+- shared VUU editing/shell packages; and
+- the local VUU runtime when local mode is required.
+
+The premise for this migration is that React versions already agree. Keep
+strict federation version checks so future drift is detected.
+
+### Step 2: extract the provider-neutral application
+
+Move the existing application UI beneath a component that assumes its
+authentication, router where appropriate, and data provider already exist.
+
+Before:
+
+```tsx
+createRoot(root).render(
+  <VuuDataSourceProvider>
+    <ExistingApp />
+  </VuuDataSourceProvider>,
+);
+```
+
+After:
+
+```tsx
+export default function ExistingApp() {
+  // Existing application UI only.
+}
+```
+
+Keep the old provider composition in standalone bootstrap files.
+
+### Step 3: add the production exposure
+
+Assign a stable federation scope and exposure:
+
+```json
+"module-federation": {
+  "name": "existingOrders",
+  "port": 5010,
+  "exposes": {
+    "./ExistingOrders": "./src/ExistingApp"
+  }
+}
+```
+
+Add a production descriptor with the remote's loading, routing, navigation,
+and authorization metadata. At this point, the application can run both
+standalone and as a remote without any local-mode work.
+
+### Step 4: preserve per-application VUU servers
+
+Give each remote a `portal-build.json` manifest that emits a required
+`config.json` next to `mf-manifest.json`. Put the stable connection ID and its
+own token exchange and websocket endpoints in that config:
+
+```json
+"manifest": {
+  "filename": "./config.json",
+  "remote": {
+    "connectionId": "existing-orders",
+    "restUrl": "https://existing-orders.example.com/api/authn",
+    "websocketUrl": "wss://existing-orders.example.com/websocket"
+  }
+}
+```
+
+Use `"remote": {}` when a remote has no dedicated VUU server and should use the
+portal connection. The portal browser identity is reused, but each VUU target
+exchanges its own token and owns an independently scoped connection. Do not
+move all remote data through the portal server unless that is an intentional
+backend redesign.
+
+### Step 5: port local data behavior
+
+Convert the SPA's current local fixtures into a `VuuModule`:
+
+1. match the production module/table identifiers;
+2. reproduce schemas and keys;
+3. port mutations, edit sessions, menus, and RPC results;
+4. keep fixtures deterministic;
+5. add tests for table projection and RPC behavior; and
+6. explicitly register the module from a local adapter.
+
+When several tables represent one domain, keep one normalized in-memory store
+and project all tables from it. This prevents a successful RPC from updating
+one local table while leaving related tables stale.
+
+### Step 6: add the local exposure and descriptor
+
+Expose `<Application>Local` and add it to the checked-in local registry.
+Local registry descriptors never include `vuu`; they keep the same `mfScope`,
+URL, route, and navigation metadata unless the local scenario intentionally
+differs. Local mode uses the remote `config.json` connection ID to select an
+in-browser local server.
+
+### Step 7: migrate application by application
+
+Do not wait for every SPA to have complete local fixtures. A useful order is:
+
+1. migrate a read-only application with existing local tables;
+2. migrate an application with edit sessions;
+3. migrate one with domain RPCs;
+4. migrate authentication/administration applications last; and
+5. only then remove obsolete standalone deployment paths.
+
+The portal can mix:
+
+- fully migrated local/remote applications;
+- remote-only applications omitted from the local registry; and
+- applications whose local descriptor temporarily selects a reduced fixture
+  set.
+
+### Step 8: retire duplicated composition
+
+After portal deployment is stable:
+
+- keep standalone bootstraps only where independent execution is useful;
+- move duplicated descriptor data into a generated/shared metadata source;
+- generate development server and nginx mappings from the same metadata;
+- keep production authorization and registry filtering on the portal server;
+  and
+- do not use the checked-in local registry in production.
+
+## 8. Validation checklist
+
+### Host
+
+- Both entries are asynchronous dynamic imports.
+- Both bootstraps call `init({ name: "host", remotes: [] })`.
+- Remote mode receives its registry from portal `LOGIN_SUCCESS`.
+- Local mode receives a checked-in `PortalModuleRegistry`.
+- Local mode installs `LocalDataSourceProvider`.
+- Remote mode retains `VuuDataSourceProvider`.
+- Local mode makes no Keycloak, token-exchange, or websocket request.
+- In remote mode, with a server stopped, its application is greyed out in the
+  AppSwitcher, and the open application is covered by the connection lost
+  overlay.
+
+### Remote
+
+- The production exposure default-exports the provider-neutral React feature.
+- `mfScope` exactly matches the producer name.
+- `mfComponent` exactly matches an exposure without its leading `./`.
+- `mfUrl/mf-manifest.json` is reachable from the host.
+- The remote build emits `config.json` next to `mf-manifest.json`.
+- The remote config has the correct VUU target, or `{}` for no dedicated
+  server.
+- Descriptors do not include `vuu`.
+- The local adapter calls `ensureVuuModule()` and exports the same feature.
+- Every table and RPC used by the feature has a tested local implementation.
+- Values to keep are saved with `usePersistedState` (`load`/`save`), with
+  labels. A release that changes saved values bumps `version` and exports
+  `stateMigrations`, from both exposures.
+
+### Federation and deployment
+
+- React, core VUU contexts, the local module runtime, `@vuu-ui/vuu-data-remote`
+  and `@vuu-ui/vuu-notifications` are strict compatible shares.
+- Host and remote artifacts were built with compatible federation tooling.
+- Manifest URLs, public paths, server ports, and proxy/nginx mappings agree.
+- CORS permits the host origin to load remote manifests and chunks.
+- The production host does not request local adapter chunks.
+- Both portal modes can navigate away from and back to a remote without
+  duplicate module-registration errors.
+
+## Reference examples
+
+The following portal examples demonstrate the complete pattern:
+
+- `portal-examples/portal-host`: remote and local host entries;
+- `portal-examples/portal-host/src/local-module-registry.json`: checked-in local
+  descriptors;
+- `portal-examples/basket-trading`: production and local basket exposures;
+- `portal-examples/user-admin`: production and local user-admin exposures;
+- `portal-examples/feature-simple-div`: saved state with `usePersistedState`
+  and an exported `stateMigrations`;
+- `portal-examples/vuu-table-browser` and `vuu-table-viewer`: developer
+  modules that browse the tables of every server as an unsaved workspace of
+  `vuu-table` items, and show a single table given by props or route;
+- `portal-examples/portal-host/src/local-vuu-servers.ts`: local servers built
+  with `createLocalVuuServer`; and
+- `packages/vuu-data-test/src/user-admin`: a browser-local multi-table VUU
+  module with domain RPC behavior.

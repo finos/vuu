@@ -21,9 +21,8 @@ export {
 export * from "./icon-button";
 export * from "./instrument-picker";
 export { ItemPicker, type ItemPickerProps } from "./item-picker/ItemPicker";
-export { type ItemDescriptor } from "./item-picker/useItemPicker";
+export type { ItemDescriptor, SelectedItemsChangeHandler as SelectedItemChangeHandler } from "./item-picker/useItemPicker";
 export * from "./measured-container";
-export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
 export * from "./overflow-container";
 export * from "./price-ticker";
 export { Prompt, type PromptProps } from "./prompt/Prompt";
