@@ -54,14 +54,6 @@
   min-width: 200px;
 }
 
-.vuuIdentityAdmin-workspace {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-}
-
 .vuuIdentityAdmin-content {
   display: flex;
   flex-direction: column;
@@ -70,29 +62,9 @@
   min-height: 0;
 }
 
-.vuuIdentityAdmin-navigation {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  flex: 0 0 216px;
-  padding: var(--salt-spacing-200) 0;
-  border-right: 1px solid var(--admin-border);
-  background: var(--salt-container-primary-background);
-  overflow-y: auto;
-}
-
-.vuuIdentityAdmin a:not(.saltVerticalNavigationItemTrigger, .saltLink, .vuuAdminUi-buttonLink) {
+.vuuIdentityAdmin a:not(.saltLink, .vuuAdminUi-buttonLink) {
   color: var(--salt-content-accent-foreground);
   text-underline-offset: 4px;
-}
-
-.vuuIdentityAdmin-navigation .saltVerticalNavigationItemTrigger {
-  gap: var(--salt-spacing-150);
-  text-decoration: none;
-}
-
-.vuuIdentityAdmin-navigation a[aria-disabled="true"] {
-  opacity: 0.5;
 }
 
 .vuuIdentityAdmin main {
@@ -354,12 +326,6 @@
 }
 
 @container identity-admin (max-width: 760px) {
-  .vuuIdentityAdmin-navigation {
-    flex-basis: 56px;
-  }
-  .vuuIdentityAdmin-navigation .saltVerticalNavigationItemLabel {
-    display: none;
-  }
   .vuuIdentityAdmin-page {
     padding: var(--salt-spacing-200);
   }

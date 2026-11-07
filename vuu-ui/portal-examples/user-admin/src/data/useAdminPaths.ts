@@ -29,12 +29,9 @@ export const useAdminPaths = () => {
     () => ({
       application: (name: string, tab?: ApplicationTab) =>
         `${base}/applications/${encodeURIComponent(name)}${tab && tab !== "groups" ? `?tab=${tab}` : ""}`,
-      applications: `${base}/applications`,
       newUser: `${base}/users/new`,
       overview: `${base}/overview`,
-      page: (page: string) => `${base}/${page}`,
       user: (userId: string) => `${base}/users/${encodeURIComponent(userId)}`,
-      users: `${base}/users`,
     }),
     [base],
   );
