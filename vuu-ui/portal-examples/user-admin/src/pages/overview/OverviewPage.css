@@ -1,47 +1,106 @@
-.vuuAdminOverview-starts {
-  display: grid;
-  gap: var(--salt-spacing-200);
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
-
-.vuuAdminOverview-start {
-  align-items: flex-start;
-  display: flex;
+.vuuAdminOverview.vuuIdentityAdmin-page {
   gap: var(--salt-spacing-200);
 }
 
-.vuuAdminOverview-startBody {
+.vuuAdminOverview-panels {
   display: flex;
   flex: 1;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-300);
+  min-height: 560px;
+}
+
+.vuuAdminOverview-panel.saltCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Few applications, many users: the users list gets more room. */
+.vuuAdminOverview-applications {
+  flex: 5 1 340px;
+}
+
+.vuuAdminOverview-users {
+  flex: 7 1 480px;
+}
+
+.vuuAdminOverview-panelHeader {
+  border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
   flex-direction: column;
   gap: var(--salt-spacing-150);
-  min-width: 0;
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
 }
 
-.vuuAdminOverview-picker {
-  min-width: 220px;
-}
-
-.vuuAdminOverview-sectionHeader {
-  align-items: baseline;
+.vuuAdminOverview-titleRow {
+  align-items: flex-start;
   display: flex;
   gap: var(--salt-spacing-200);
   justify-content: space-between;
 }
 
-.vuuAdminOverview-users {
-  flex: none;
-  height: 320px;
-}
-
-.vuuAdminOverview-section {
+.vuuAdminOverview-toolbar {
+  align-items: center;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: var(--salt-spacing-150);
 }
 
-.vuuAdminOverview-cards {
-  display: grid;
+.vuuAdminOverview-search {
+  flex: 1 1 260px;
+}
+
+/* Room for the label and the longest option, "Most applications". */
+.vuuAdminOverview-sort.saltFormField {
+  flex: none;
+  width: 280px;
+}
+
+.vuuAdminOverview-list {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+}
+
+.vuuAdminOverview-application {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
   gap: var(--salt-spacing-200);
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+}
+
+.vuuAdminOverview-application > .vuuAdminUi-stack {
+  flex: 1;
+  min-width: 0;
+}
+
+.vuuAdminOverview-applicationTitle {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100);
+  justify-content: space-between;
+}
+
+.vuuAdminOverview-applicationLinks {
+  display: flex;
+  gap: var(--salt-spacing-200);
+  padding-top: var(--salt-spacing-50);
+}
+
+.vuuAdminOverview-empty {
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+}
+
+.vuuAdminOverview-table.vuuIdentityAdmin-tableCard {
+  border: 0;
+  border-radius: 0;
+  flex: 1;
+  min-height: 280px;
 }
