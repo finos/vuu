@@ -1,224 +1,305 @@
 import {
   Banner,
   BannerContent,
-  Button,
   Card,
+  ComboBox,
   Dropdown,
+  FormField,
+  FormFieldLabel,
+  H2,
   H3,
+  Input,
   Option,
   Text,
 } from "@salt-ds/core";
-import { AddIcon, AddUserIcon, AppSwitcherIcon } from "@salt-ds/icons";
-import { type SyntheticEvent, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { AddIcon, SearchIcon } from "@salt-ds/icons";
+import {
+  type ChangeEvent,
+  type SyntheticEvent,
+  useDeferredValue,
+  useMemo,
+  useState,
+} from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   AdminButtonLink,
   AdminLink,
-  IconTile,
-  PageHeader,
+  AppAvatar,
+  plural,
+  StatusText,
 } from "../../components/admin-ui/AdminUi";
-import { ApplicationCard } from "../../components/ApplicationCard";
+import { formatCount, useUserCount } from "../../components/ApplicationCard";
 import { UsersTable } from "../../components/UsersTable";
 import type { ApplicationDetails } from "../../data/applications";
+import { USER_ADMIN_TABLES } from "../../data/user-admin-tables";
 import { useAdminPaths } from "../../data/useAdminPaths";
-import { userSearchFilter } from "../../data/useApplicationUsers";
 import { useApplicationModel } from "../../data/useApplicationModel";
+import { userSearchFilter } from "../../data/useApplicationUsers";
+import { useFilteredCount } from "../../data/useFilteredCount";
+import {
+  allApplicationsFilter,
+  allOf,
+  USER_SORT_OPTIONS,
+  type UserSort,
+} from "../../data/userList";
 import { SEARCH_PARAM } from "../../UserAdmin";
 
 import "./OverviewPage.css";
 
 const classBase = "vuuAdminOverview";
 
-const ApplicationStart = () => {
-  const { loading, model } = useApplicationModel();
-  const navigate = useNavigate();
+const matches = (entry: ApplicationDetails, needle: string) => {
+  const { accessRole, description = "", name, title } = entry.application;
+  return [title, name, accessRole, description].some((value) =>
+    value.toLocaleLowerCase().includes(needle),
+  );
+};
+
+const ApplicationItem = ({ entry }: { entry: ApplicationDetails }) => {
+  const { application, groups, issues, roles } = entry;
+  const users = useUserCount(application.accessRole);
   const paths = useAdminPaths();
-  const [selected, setSelected] = useState<ApplicationDetails>();
   return (
-    <Card className={`${classBase}-start`}>
-      <IconTile size="large">
-        <AppSwitcherIcon aria-hidden size={1.5} />
-      </IconTile>
-      <div className={`${classBase}-startBody`}>
-        <H3>Set up an application</H3>
-        <Text color="secondary">
-          Define its groups and roles, then grant users access and put them in
-          the right groups, one at a time or in batches.
+    <li className={`${classBase}-application`}>
+      <AppAvatar application={application} size={2} />
+      <div className="vuuAdminUi-stack">
+        <span className={`${classBase}-applicationTitle`}>
+          <strong>{application.title}</strong>
+          {issues.length > 0 ? (
+            <span title={issues.map(({ message }) => message).join("\n")}>
+              <StatusText status="warning">
+                {plural(issues.length, "issue")}
+              </StatusText>
+            </span>
+          ) : null}
+        </span>
+        <Text color="secondary" styleAs="label">
+          {formatCount(users)} users · {plural(groups.length, "group")} ·{" "}
+          {plural(roles.length, "role")}
         </Text>
-        <div className="vuuAdminUi-actions">
-          <Dropdown<ApplicationDetails>
-            aria-label="Application"
-            bordered
-            className={`${classBase}-picker`}
-            disabled={loading}
-            onSelectionChange={(_event: SyntheticEvent, [entry]) =>
-              setSelected(entry)
-            }
-            placeholder="Choose an application"
-            value={selected?.application.title ?? ""}
+        <span className={`${classBase}-applicationLinks`}>
+          <AdminLink
+            aria-label={`${application.title} groups and roles`}
+            to={paths.application(application.name)}
           >
-            {model.applications.map((entry) => (
-              <Option key={entry.application.name} value={entry}>
-                {entry.application.title}
-              </Option>
-            ))}
-          </Dropdown>
-          <Button
-            disabled={!selected}
-            onClick={() => {
-              if (selected) {
-                navigate(paths.application(selected.application.name));
-              }
-            }}
-            sentiment="accented"
+            Groups &amp; roles
+          </AdminLink>
+          <AdminLink
+            aria-label={`${application.title} users`}
+            to={paths.application(application.name, "users")}
           >
-            Open
-          </Button>
-        </div>
+            Users
+          </AdminLink>
+        </span>
       </div>
+    </li>
+  );
+};
+
+const ApplicationsPanel = ({ initialSearch }: { initialSearch: string }) => {
+  const { loading, model } = useApplicationModel();
+  const [search, setSearch] = useState(initialSearch);
+  const needle = search.trim().toLocaleLowerCase();
+  const applications = model.applications.filter((entry) =>
+    matches(entry, needle),
+  );
+  return (
+    <Card
+      aria-labelledby="overview-applications"
+      className={`${classBase}-panel ${classBase}-applications`}
+      role="region"
+    >
+      <div className={`${classBase}-panelHeader`}>
+        <H3 id="overview-applications">Set up an application</H3>
+        <Text color="secondary">
+          Define its groups and roles, or manage who can use it.
+        </Text>
+        <Input
+          bordered
+          inputProps={{ "aria-label": "Filter applications" }}
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            setSearch(event.target.value)
+          }
+          placeholder="Filter applications"
+          startAdornment={<SearchIcon aria-hidden />}
+          value={search}
+        />
+      </div>
+      {loading ? (
+        <Text className={`${classBase}-empty`} color="secondary">
+          Loading applications…
+        </Text>
+      ) : applications.length === 0 ? (
+        <Text className={`${classBase}-empty`} color="secondary">
+          {model.applications.length === 0
+            ? "No applications are registered with the portal."
+            : "No matching applications."}
+        </Text>
+      ) : (
+        <ul aria-label="Applications" className={`${classBase}-list`}>
+          {applications.map((entry) => (
+            <ApplicationItem entry={entry} key={entry.application.name} />
+          ))}
+        </ul>
+      )}
     </Card>
   );
 };
 
-const UserStart = () => {
+const sortLabel = (sort: UserSort) =>
+  USER_SORT_OPTIONS.find(({ value }) => value === sort)?.label ?? sort;
+
+const UsersPanel = ({ initialSearch }: { initialSearch: string }) => {
   const paths = useAdminPaths();
+  const { model } = useApplicationModel();
+  const [searchText, setSearchText] = useState(initialSearch);
+  const search = useDeferredValue(searchText);
+  const [sort, setSort] = useState<UserSort>("changed");
+  const [applicationText, setApplicationText] = useState("");
+  const [applicationNames, setApplicationNames] = useState<string[]>([]);
+
+  const chosen = useMemo(
+    () =>
+      applicationNames.flatMap((name) => {
+        const entry = model.byName.get(name);
+        return entry ? [entry.application] : [];
+      }),
+    [applicationNames, model],
+  );
+  const accessRoles = useMemo(
+    () => chosen.map(({ accessRole }) => accessRole),
+    [chosen],
+  );
+  const searchFilter = useMemo(() => userSearchFilter(search), [search]);
+  const filter = useMemo(
+    () => allOf(searchFilter.filter, allApplicationsFilter(accessRoles)),
+    [accessRoles, searchFilter.filter],
+  );
+  const count = useFilteredCount(USER_ADMIN_TABLES.users, "user_id", filter);
+
+  const titleOf = (name: string) =>
+    model.byName.get(name)?.application.title ?? name;
+  const needle = applicationText.trim().toLocaleLowerCase();
+  const options = model.applications.filter((entry) => matches(entry, needle));
+
   return (
-    <Card className={`${classBase}-start`}>
-      <IconTile size="large">
-        <AddUserIcon aria-hidden size={1.5} />
-      </IconTile>
-      <div className={`${classBase}-startBody`}>
-        <H3>Set up a user</H3>
-        <Text color="secondary">
-          Create a user, or find one, and give them access to applications with
-          the groups they need in each.
-        </Text>
-        <div className="vuuAdminUi-actions">
+    <Card
+      aria-labelledby="overview-users"
+      className={`${classBase}-panel ${classBase}-users`}
+      role="region"
+    >
+      <div className={`${classBase}-panelHeader`}>
+        <div className={`${classBase}-titleRow`}>
+          <div className="vuuAdminUi-stack">
+            <H3 id="overview-users">Set up a user</H3>
+            <Text color="secondary">
+              Create a user, or open one to change the applications they can
+              use.
+            </Text>
+          </div>
           <AdminButtonLink sentiment="accented" to={paths.newUser}>
             <AddIcon aria-hidden /> New user
           </AdminButtonLink>
-          <AdminButtonLink to={paths.users}>Find a user</AdminButtonLink>
         </div>
+        <div className={`${classBase}-toolbar`}>
+          <Input
+            bordered
+            className={`${classBase}-search`}
+            inputProps={{ "aria-label": "Find a user" }}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setSearchText(event.target.value)
+            }
+            placeholder="Find a user by name, username or email"
+            startAdornment={<SearchIcon aria-hidden />}
+            value={searchText}
+          />
+          <FormField className={`${classBase}-sort`} labelPlacement="left">
+            <FormFieldLabel>Sort by</FormFieldLabel>
+            <Dropdown<UserSort>
+              bordered
+              onSelectionChange={(_event: SyntheticEvent, [value]) => {
+                if (value) setSort(value);
+              }}
+              selected={[sort]}
+              valueToString={sortLabel}
+            >
+              {USER_SORT_OPTIONS.map(({ label, value }) => (
+                <Option key={value} value={value}>
+                  {label}
+                </Option>
+              ))}
+            </Dropdown>
+          </FormField>
+        </div>
+        <ComboBox<string>
+          bordered
+          className={`${classBase}-applicationFilter`}
+          inputProps={{ "aria-label": "Find a user by application" }}
+          multiselect
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            setApplicationText(event.target.value)
+          }
+          onSelectionChange={(_event: SyntheticEvent, names: string[]) => {
+            setApplicationText("");
+            setApplicationNames(names);
+          }}
+          placeholder="Find a user by application(s)"
+          selected={applicationNames}
+          truncate
+          value={applicationText}
+          valueToString={titleOf}
+        >
+          {options.map(({ application }) => (
+            <Option key={application.name} value={application.name}>
+              {application.title}
+            </Option>
+          ))}
+        </ComboBox>
+        <Text aria-live="polite" color="secondary" styleAs="label">
+          {count.count === undefined
+            ? formatCount(count)
+            : plural(count.count, "user")}
+          {chosen.length > 0
+            ? ` · with access to ${chosen.map(({ title }) => title).join(" and ")}`
+            : ""}
+        </Text>
       </div>
+      {searchFilter.error ? (
+        <Banner status="error">
+          <BannerContent role="alert">{searchFilter.error}</BannerContent>
+        </Banner>
+      ) : null}
+      <UsersTable
+        aria-label="Users"
+        className={`vuuIdentityAdmin-tableCard ${classBase}-table`}
+        filter={filter}
+        firstAccessRoles={accessRoles}
+        sort={sort}
+      />
     </Card>
   );
 };
 
-const ApplicationCards = ({
-  applications,
-  title,
-}: {
-  applications: readonly ApplicationDetails[];
-  title: string;
-}) => {
-  const paths = useAdminPaths();
-  return (
-    <section aria-label={title} className={`${classBase}-section`}>
-      <div className={`${classBase}-sectionHeader`}>
-        <H3>{title}</H3>
-        <AdminLink to={paths.applications}>All applications</AdminLink>
-      </div>
-      {applications.length === 0 ? (
-        <Text color="secondary">No matching applications.</Text>
-      ) : (
-        <div className={`${classBase}-cards`}>
-          {applications.map((entry) => (
-            <ApplicationCard entry={entry} key={entry.application.name} />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-};
-
-const SearchResults = ({ search }: { search: string }) => {
-  const { model } = useApplicationModel();
-  const needle = search.toLocaleLowerCase();
-  const applications = model.applications.filter(({ application }) =>
-    [application.title, application.name, application.accessRole].some(
-      (value) => value.toLocaleLowerCase().includes(needle),
-    ),
-  );
-  const { error, filter } = useMemo(() => userSearchFilter(search), [search]);
-  return (
-    <>
-      <ApplicationCards
-        applications={applications}
-        title={`Applications matching "${search}"`}
-      />
-      <section aria-label="Matching users" className={`${classBase}-section`}>
-        <H3>Users matching "{search}"</H3>
-        {error ? <p role="alert">{error}</p> : null}
-        <UsersTable
-          aria-label="Users"
-          className={`vuuIdentityAdmin-tableCard ${classBase}-users`}
-          filter={filter}
-        />
-      </section>
-    </>
-  );
-};
-
+/** Two lists: applications to set up, and users to create or change. */
 export const OverviewPage = () => {
   const [params] = useSearchParams();
   const search = params.get(SEARCH_PARAM)?.trim() ?? "";
-  const { error, loading, model } = useApplicationModel();
-  const paths = useAdminPaths();
-  const issueCount = model.issues.length;
+  const { error } = useApplicationModel();
   return (
-    <section className={`vuuIdentityAdmin-page ${classBase}`}>
-      <PageHeader
-        description="Start from an application or from a user. Groups and roles are set up inside each application."
-        title="Overview"
-      />
+    <section
+      aria-labelledby="overview-title"
+      className={`vuuIdentityAdmin-page ${classBase}`}
+    >
+      <H2 id="overview-title">Overview</H2>
       {error ? (
         <Banner status="error">
           <BannerContent role="alert">{error}</BannerContent>
         </Banner>
       ) : null}
-      {search ? (
-        <SearchResults key={search} search={search} />
-      ) : (
-        <>
-          <div className={`${classBase}-starts`}>
-            <ApplicationStart />
-            <UserStart />
-          </div>
-          {!loading && issueCount > 0 ? (
-            <Banner status="warning">
-              <BannerContent role="status">
-                {issueCount} configuration{" "}
-                {issueCount === 1 ? "issue" : "issues"} found. Open an
-                application to review its checks.
-              </BannerContent>
-            </Banner>
-          ) : null}
-          {model.applications.length === 0 && !loading ? (
-            <p className="vuuIdentityAdmin-empty">
-              No applications are registered with the portal.
-            </p>
-          ) : (
-            <ApplicationCards
-              applications={model.applications}
-              title="Applications"
-            />
-          )}
-          <section
-            aria-label="Recently changed users"
-            className={`${classBase}-section`}
-          >
-            <div className={`${classBase}-sectionHeader`}>
-              <H3>Recently changed users</H3>
-              <AdminLink to={paths.users}>All users</AdminLink>
-            </div>
-            <UsersTable
-              aria-label="Users"
-              className={`vuuIdentityAdmin-tableCard ${classBase}-users`}
-              recent
-            />
-          </section>
-        </>
-      )}
+      <div className={`${classBase}-panels`}>
+        <ApplicationsPanel initialSearch={search} key={`apps:${search}`} />
+        <UsersPanel initialSearch={search} key={`users:${search}`} />
+      </div>
     </section>
   );
 };
