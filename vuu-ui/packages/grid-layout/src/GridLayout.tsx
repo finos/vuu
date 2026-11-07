@@ -16,6 +16,7 @@ import {
 } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 import { computeFocusOrder } from "./grid-focus-order";
+import { GridDockZones } from "./GridDockZones";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutHeaderSlots } from "./GridLayoutHeaderSlots";
@@ -88,6 +89,12 @@ export interface GridLayoutProps
    * offers to maximize them to fill the grid.
    */
   maximizable?: boolean;
+  /**
+   * Whether the grid's own items, and templates, can be docked against its
+   * outer edges: dragged close to an edge, an item takes a new column or row
+   * along the whole of that edge.
+   */
+  dockable?: boolean;
   /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
   /**
@@ -103,12 +110,40 @@ export interface GridLayoutProps
 
 const NO_DRAG_SOURCES = {} as const;
 
+/** Ctrl/Cmd+Z undoes, Ctrl/Cmd+Shift+Z or Ctrl+Y redoes. */
+const getHistoryShortcut = ({
+  altKey,
+  ctrlKey,
+  key,
+  metaKey,
+  shiftKey,
+}: KeyboardEvent): "undo" | "redo" | undefined => {
+  if (altKey || !(ctrlKey || metaKey)) {
+    return undefined;
+  }
+  const lowerKey = key.toLowerCase();
+  if (lowerKey === "z") {
+    return shiftKey ? "redo" : "undo";
+  }
+  if (lowerKey === "y" && ctrlKey && !shiftKey) {
+    return "redo";
+  }
+  return undefined;
+};
+
+/** Text fields keep their own undo. */
+const isEditableElement = (target: EventTarget) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable ||
+    target.matches("input, textarea, select, [contenteditable]"));
+
 export const GridLayout = ({
   id: idProp,
   children: childrenProp,
   className,
   "full-page": fullPage,
   colsAndRows,
+  dockable = false,
   maximizable,
   onBlur,
   onClick,
@@ -147,6 +182,8 @@ export const GridLayout = ({
     onCancelDrag,
     onCancelTabDrag,
     onDetachTab,
+    onDockDrop,
+    onDockPreview,
     onDragEnd,
     onDragLeave,
     onDragPreview,
@@ -155,6 +192,7 @@ export const GridLayout = ({
     onDropStackedItem,
     restore,
     setContentMaximizable,
+    history,
     stackTemplates,
     toggleMaximized,
   } = useGridLayout({
@@ -181,9 +219,22 @@ export const GridLayout = ({
         e.preventDefault();
         restore();
       }
+      const historyShortcut = getHistoryShortcut(e);
+      if (
+        historyShortcut &&
+        !e.defaultPrevented &&
+        !isEditableElement(e.target)
+      ) {
+        e.preventDefault();
+        if (historyShortcut === "undo") {
+          history.undo();
+        } else {
+          history.redo();
+        }
+      }
       onFocusOrderKeyDown(e);
     },
-    [maximizedId, onFocusOrderKeyDown, onKeyDown, restore],
+    [history, maximizedId, onFocusOrderKeyDown, onKeyDown, restore],
   );
 
   const splitterLayoutProps = useGridSplitterResizing({
@@ -305,6 +356,14 @@ export const GridLayout = ({
               }}
             />
           ))}
+          {dockable ? (
+            <GridDockZones
+              gridId={id}
+              onDockDrop={onDockDrop}
+              onDockPreview={onDockPreview}
+              onDragLeave={onDragLeave}
+            />
+          ) : null}
           <div {...tailSentinelProps} />
         </div>
       </DragDropProviderNext>

@@ -7,11 +7,29 @@ import {
   gridLayoutDescriptorToSnapshot,
   normalizeGridSnapshot,
 } from "./grid-snapshot-adapters";
+import {
+  GridHistory,
+  type GridHistoryKind,
+  type GridHistoryTarget,
+} from "./GridHistory";
 import type { GridModel, GridModelCheckpoint } from "./GridModel";
 import type { GridSnapshot } from "./GridSnapshot";
 import { toGridStackSnapshot } from "./GridStack";
 
 export type GridTransactionKind = "drag" | "resize";
+
+export interface GridTransactionOptions {
+  /**
+   * Consecutive commits with the same key, each within
+   * `GRID_HISTORY_COALESCE_MS` of the last, are undone as one step.
+   */
+  readonly historyKey?: string;
+}
+
+export interface GridControllerOptions {
+  /** Shared with other grids, see GridHistory. Defaults to a new history. */
+  readonly history?: GridHistory;
+}
 export type GridControllerListener = () => void;
 
 export type GridControllerErrorCode =
@@ -43,7 +61,7 @@ export interface GridTransaction {
 
 export interface GridCommittedTransition {
   readonly commands: readonly GridCommand[];
-  readonly kind: "dispatch" | GridTransactionKind;
+  readonly kind: "dispatch" | GridTransactionKind | GridHistoryKind;
   readonly previous: GridSnapshot;
   readonly snapshot: GridSnapshot;
 }
@@ -55,15 +73,24 @@ export type GridCommittedTransitionListener = (
 const semanticSnapshot = ({ revision: _revision, ...snapshot }: GridSnapshot) =>
   JSON.stringify(snapshot);
 
+/**
+ * Dispatches that only select a stack tab or regenerate placeholders are not
+ * undo steps of their own. A committed transaction always is: a resize changes
+ * tracks without commands.
+ */
+const isUntrackedCommand = ({ type }: GridCommand) =>
+  type === "select-stack-item" || type === "regenerate-placeholders";
+
 const transactionError = (
   code: GridControllerErrorCode,
   message: string,
 ): GridControllerError => ({ code, message });
 
-export class GridController {
+export class GridController implements GridHistoryTarget {
   readonly #executor: LegacyGridCommandExecutor;
   readonly #listeners = new Set<GridControllerListener>();
   readonly #commitListeners = new Set<GridCommittedTransitionListener>();
+  readonly #history: GridHistory;
   #activeTransaction: GridControllerTransaction | undefined;
   #snapshot: GridSnapshot;
 
@@ -71,9 +98,31 @@ export class GridController {
     private readonly gridModel: GridModel,
     revision = 0,
     executor = new LegacyGridCommandExecutor(gridModel),
+    { history = new GridHistory() }: GridControllerOptions = {},
   ) {
     this.#executor = executor;
+    this.#history = history;
     this.#snapshot = this.#readSnapshot(revision);
+  }
+
+  get history() {
+    return this.#history;
+  }
+
+  isTransactionActive = () => this.#activeTransaction !== undefined;
+
+  /** Restores a layout recorded in the history. */
+  restoreFromHistory(checkpoint: GridModelCheckpoint, kind: GridHistoryKind) {
+    const previous = this.#snapshot;
+    this.gridModel.restoreCheckpoint(checkpoint);
+    this.#snapshot = this.#readSnapshot(previous.revision + 1);
+    this.#notifyState();
+    this.#notifyCommitted({
+      commands: [],
+      kind,
+      previous,
+      snapshot: this.#snapshot,
+    });
   }
 
   getSnapshot = (): GridSnapshot => this.#snapshot;
@@ -116,6 +165,11 @@ export class GridController {
     if (semanticSnapshot(candidate) === semanticSnapshot(previous)) {
       return result;
     }
+    if (isUntrackedCommand(command)) {
+      this.#history.recordUntracked(this, this.gridModel.createCheckpoint());
+    } else {
+      this.#recordHistory(checkpoint);
+    }
     this.#snapshot = this.#readSnapshot(previous.revision + 1);
     this.#notifyState();
     this.#notifyCommitted({
@@ -127,7 +181,10 @@ export class GridController {
     return result;
   }
 
-  beginTransaction(kind: GridTransactionKind): GridTransactionStartResult {
+  beginTransaction(
+    kind: GridTransactionKind,
+    { historyKey }: GridTransactionOptions = {},
+  ): GridTransactionStartResult {
     if (this.#activeTransaction) {
       return {
         error: transactionError(
@@ -152,6 +209,7 @@ export class GridController {
           kind,
           transaction.baseline,
           commands,
+          historyKey,
         ),
       () =>
         this.#rollbackTransaction(
@@ -328,6 +386,7 @@ export class GridController {
     kind: GridTransactionKind,
     baseline: GridSnapshot,
     commands: readonly GridCommand[],
+    historyKey: string | undefined,
   ): GridTransactionCloseResult {
     if (this.#activeTransaction !== transaction) {
       return this.#closedResult("commit");
@@ -339,6 +398,7 @@ export class GridController {
       this.#snapshot = baseline;
       return { ok: true, snapshot: this.#snapshot };
     }
+    this.#recordHistory(transaction.checkpoint, historyKey);
     this.#snapshot = this.#readSnapshot(baseline.revision + 1);
     this.#notifyState();
     this.#notifyCommitted({
@@ -393,6 +453,19 @@ export class GridController {
       this.gridModel.restoreCheckpoint(checkpoint);
       throw error;
     }
+  }
+
+  /**
+   * Records a committed change, given the model checkpoint from before it.
+   * The model holds the state after it.
+   */
+  #recordHistory(before: GridModelCheckpoint, historyKey?: string) {
+    this.#history.record(
+      this,
+      before,
+      this.gridModel.createCheckpoint(),
+      historyKey,
+    );
   }
 
   #readSnapshot(revision: number): GridSnapshot {

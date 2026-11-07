@@ -6,6 +6,7 @@ import {
   resizeTrackTo,
   resizeTracksAdjacent,
   resizeTracksProportionally,
+  dockGridItem,
   splitGridItem,
   type GridGeometryError,
 } from "./GridGeometry";
@@ -66,6 +67,16 @@ export type GridTrackResize =
 
 export type GridCommand =
   | { readonly item: GridCommandItem; readonly type: "add-item" }
+  /**
+   * Dock an item, or a stack, against an outer edge of the grid, see
+   * dockGridItem. `size` is the requested size in pixels across the edge.
+   */
+  | {
+      readonly edge: GridLayoutSplitDirection;
+      readonly itemId: GridItemId;
+      readonly size: number;
+      readonly type: "dock-item";
+    }
   | {
       readonly itemId: GridItemId;
       readonly position: GridLayoutSplitDirection;
@@ -277,6 +288,37 @@ export class LegacyGridCommandExecutor {
           return invalid;
         }
         this.gridModel.addChildItem(toChildItem(command.item));
+        return success(command);
+      }
+      case "dock-item": {
+        const invalid = this.requireItem(command, command.itemId);
+        if (invalid) {
+          return invalid;
+        }
+        if (this.gridModel.getChildItem(command.itemId, true).stackId) {
+          return failure(
+            command,
+            "INVALID_TARGET",
+            `Grid item #${command.itemId} is a stack member and cannot be docked`,
+          );
+        }
+        const geometry = this.gridModel.toGeometry();
+        const docked = this.gridModel.runGeometry((measurements) =>
+          dockGridItem(
+            geometry,
+            {
+              edge: command.edge,
+              itemId: command.itemId,
+              size: command.size,
+            },
+            measurements,
+          ),
+        );
+        if (!docked.ok) {
+          return geometryFailure(command, docked.error);
+        }
+        this.gridLayoutModel.applySplitTransition(docked.value);
+        this.gridModel.getChildItem(command.itemId, true).dragging = false;
         return success(command);
       }
       case "move-item": {

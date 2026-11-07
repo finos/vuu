@@ -1,0 +1,92 @@
+/* Locates the grid; takes no grid cell. */
+.vuuGridDockZone-anchor {
+  display: none;
+}
+
+/*
+  Each zone is a grid child spanning the outer tracks of its edge, above the
+  items, so it wins the pointer near the edge. It reaches out across the
+  grid's padding. The north zone is shallow, leaving most of the headers of
+  the top row as drop targets.
+*/
+.vuuGridDockZone {
+  --vuuGridDockZone-depth: 24px;
+  --vuuGridDockZone-inset: calc(-1 * var(--vuu-grid-gap));
+  pointer-events: none;
+  position: relative;
+  z-index: 200;
+}
+
+.vuuGridLayout-docking > .vuuGridDockZone {
+  pointer-events: auto;
+}
+
+.vuuGridDockZone-north,
+.vuuGridDockZone-south {
+  grid-column: 1 / -1;
+  height: var(--vuuGridDockZone-depth);
+}
+
+.vuuGridDockZone-east,
+.vuuGridDockZone-west {
+  grid-row: 1 / -1;
+  width: var(--vuuGridDockZone-depth);
+}
+
+.vuuGridDockZone-north {
+  --vuuGridDockZone-depth: 14px;
+  align-self: start;
+  grid-row: 1;
+  margin-top: var(--vuuGridDockZone-inset);
+}
+
+.vuuGridDockZone-south {
+  align-self: end;
+  grid-row: -2;
+  margin-bottom: var(--vuuGridDockZone-inset);
+}
+
+.vuuGridDockZone-west {
+  grid-column: 1;
+  justify-self: start;
+  margin-left: var(--vuuGridDockZone-inset);
+}
+
+.vuuGridDockZone-east {
+  grid-column: -2;
+  justify-self: end;
+  margin-right: var(--vuuGridDockZone-inset);
+}
+
+/* Shows where the docked item will go, at its size across the edge. */
+.vuuGridDockZone-indicator {
+  background-color: cornflowerblue;
+  display: none;
+  opacity: 0.3;
+  pointer-events: none;
+  position: absolute;
+}
+
+.vuuGridDockZone-targeted .vuuGridDockZone-indicator {
+  display: block;
+}
+
+.vuuGridDockZone-north .vuuGridDockZone-indicator {
+  height: var(--vuuGridDockZone-size);
+  inset: 0 0 auto 0;
+}
+
+.vuuGridDockZone-south .vuuGridDockZone-indicator {
+  height: var(--vuuGridDockZone-size);
+  inset: auto 0 0 0;
+}
+
+.vuuGridDockZone-west .vuuGridDockZone-indicator {
+  inset: 0 auto 0 0;
+  width: var(--vuuGridDockZone-size);
+}
+
+.vuuGridDockZone-east .vuuGridDockZone-indicator {
+  inset: 0 0 0 auto;
+  width: var(--vuuGridDockZone-size);
+}

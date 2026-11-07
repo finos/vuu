@@ -2445,3 +2445,104 @@ export const removeGridTrack = (
     updates,
   });
 };
+
+// ---------------------------------------------------------------------------
+// edge docking
+// ---------------------------------------------------------------------------
+
+export type GridDockEdge = GridGeometrySplitDirection;
+
+/** The smallest size, in pixels, of a docked item's track. */
+export const GRID_DOCK_MIN_SIZE = 50;
+
+export interface GridDockItemRequest {
+  readonly edge: GridDockEdge;
+  readonly itemId: GridItemId;
+  /** The requested size, in pixels, of the docked item across the edge. */
+  readonly size: number;
+}
+
+export const gridDockTrackType = (edge: GridDockEdge): GridGeometryTrackType =>
+  edge === "east" || edge === "west" ? "column" : "row";
+
+/**
+ * Dock an item against an outer edge of the grid: a new pixel track is added
+ * at that edge and the item spans the whole of the other axis. Fractional
+ * tracks absorb the new track; when there are none, the pixel tracks shrink
+ * in proportion. The docked size is at least GRID_DOCK_MIN_SIZE and at most
+ * half the space it is taken from. Members of a docked stack move with it.
+ */
+export const dockGridItem = (
+  geometry: GridGeometry,
+  { edge, itemId, size }: GridDockItemRequest,
+  measurements: GridMeasurements = NO_MEASUREMENTS,
+): GridGeometryResult<GridGeometryTransition> => {
+  const item = requireItem(geometry, itemId);
+  if (!item.ok) {
+    return item;
+  }
+  const trackType = gridDockTrackType(edge);
+  const otherTrackType = trackType === "column" ? "row" : "column";
+  const tracks = readTracks(
+    geometryTracks(geometry, trackType),
+    measurements[trackType],
+  );
+  const fractionTracks = tracks.filter(isFraction);
+  if (fractionTracks.some((track) => !isMeasured(track))) {
+    return measurementRequired(trackType);
+  }
+  const available = (
+    fractionTracks.length > 0 ? fractionTracks : tracks
+  ).reduce((total, track) => total + numericValue(track), 0);
+  if (available / 2 < GRID_DOCK_MIN_SIZE) {
+    return failure(
+      "NON_RESIZABLE",
+      `[GridGeometry] no room to dock #${itemId} at the ${edge} edge`,
+      trackType,
+    );
+  }
+  const dockedSize = Math.round(
+    Math.max(GRID_DOCK_MIN_SIZE, Math.min(size, available / 2)),
+  );
+
+  const scale = (available - dockedSize) / available;
+  const keptTracks =
+    fractionTracks.length > 0
+      ? tracks
+      : tracks.map((track) => {
+          const scaled = Math.round(numericValue(track) * scale);
+          return { measured: scaled, size: pixelSize(scaled) };
+        });
+  const dockedTrack = { measured: dockedSize, size: pixelSize(dockedSize) };
+  const atStart = edge === "west" || edge === "north";
+  const sources = identitySources(tracks.length);
+  const trackTransition = atStart
+    ? transition([dockedTrack, ...keptTracks], [-1, ...sources])
+    : transition([...keptTracks, dockedTrack], [...sources, -1]);
+
+  const shiftedItems = atStart
+    ? geometry.items.flatMap<GridGeometryUpdate>(({ id, [trackType]: axis }) =>
+        id === itemId
+          ? []
+          : [{ [trackType]: span(axis.start + 1, axis.end + 1), id }],
+      )
+    : [];
+  const shifted = withTracks(
+    applyGeometryUpdates(geometry, shiftedItems),
+    trackType,
+    trackTransition.tracks,
+  );
+  const dockedLine = atStart ? 1 : tracks.length + 1;
+  const otherTrackCount = geometryTracks(geometry, otherTrackType).length;
+  const dockUpdate: GridGeometryUpdate = {
+    [otherTrackType]: span(1, otherTrackCount + 1),
+    [trackType]: span(dockedLine, dockedLine + 1),
+    id: itemId,
+  };
+  return ok({
+    ...trackTransitionFor(trackType, trackTransition),
+    geometry: applyGeometryUpdates(shifted, [dockUpdate]),
+    silentUpdates: shiftedItems,
+    updates: [dockUpdate],
+  });
+};
