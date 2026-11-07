@@ -7,12 +7,11 @@ import {
   FormField,
   FormFieldLabel,
   H2,
-  H3,
   Input,
   Option,
   Text,
 } from "@salt-ds/core";
-import { AddIcon, SearchIcon } from "@salt-ds/icons";
+import { AddIcon, ChevronRightIcon, SearchIcon } from "@salt-ds/icons";
 import {
   type ChangeEvent,
   type SyntheticEvent,
@@ -28,7 +27,8 @@ import {
   plural,
   StatusText,
 } from "../../components/admin-ui/AdminUi";
-import { formatCount, useUserCount } from "../../components/ApplicationCard";
+import { IssueList } from "../../components/IssueList";
+import { formatCount, useUserCount } from "../../components/userCount";
 import { UsersTable } from "../../components/UsersTable";
 import type { ApplicationDetails } from "../../data/applications";
 import { USER_ADMIN_TABLES } from "../../data/user-admin-tables";
@@ -43,6 +43,7 @@ import {
   type UserSort,
 } from "../../data/userList";
 import { SEARCH_PARAM } from "../../UserAdmin";
+import { UnassignedCard } from "./UnassignedCard";
 
 import "./OverviewPage.css";
 
@@ -55,16 +56,27 @@ const matches = (entry: ApplicationDetails, needle: string) => {
   );
 };
 
+/**
+ * The whole card opens the application. Its title link is stretched over the
+ * card; the count links sit above it and open the matching tab.
+ */
 const ApplicationItem = ({ entry }: { entry: ApplicationDetails }) => {
   const { application, groups, issues, roles } = entry;
   const users = useUserCount(application.accessRole);
   const paths = useAdminPaths();
+  const groupsTab = paths.application(application.name);
+  const userCount =
+    users.count === undefined
+      ? `${formatCount(users)} users`
+      : plural(users.count, "user");
   return (
     <li className={`${classBase}-application`}>
       <AppAvatar application={application} size={2} />
       <div className="vuuAdminUi-stack">
         <span className={`${classBase}-applicationTitle`}>
-          <strong>{application.title}</strong>
+          <AdminLink className={`${classBase}-applicationLink`} to={groupsTab}>
+            {application.title}
+          </AdminLink>
           {issues.length > 0 ? (
             <span title={issues.map(({ message }) => message).join("\n")}>
               <StatusText status="warning">
@@ -73,25 +85,38 @@ const ApplicationItem = ({ entry }: { entry: ApplicationDetails }) => {
             </span>
           ) : null}
         </span>
-        <Text color="secondary" styleAs="label">
-          {formatCount(users)} users · {plural(groups.length, "group")} ·{" "}
-          {plural(roles.length, "role")}
-        </Text>
-        <span className={`${classBase}-applicationLinks`}>
-          <AdminLink
-            aria-label={`${application.title} groups and roles`}
-            to={paths.application(application.name)}
+        {application.description ? (
+          <Text
+            className={`${classBase}-applicationDescription`}
+            color="secondary"
           >
-            Groups &amp; roles
-          </AdminLink>
+            {application.description}
+          </Text>
+        ) : null}
+        <Text className={`${classBase}-counts`} styleAs="label">
           <AdminLink
-            aria-label={`${application.title} users`}
+            aria-label={`${application.title}: ${userCount}`}
             to={paths.application(application.name, "users")}
           >
-            Users
+            {userCount}
           </AdminLink>
-        </span>
+          <span aria-hidden>·</span>
+          <AdminLink
+            aria-label={`${application.title}: ${plural(groups.length, "group")}`}
+            to={groupsTab}
+          >
+            {plural(groups.length, "group")}
+          </AdminLink>
+          <span aria-hidden>·</span>
+          <AdminLink
+            aria-label={`${application.title}: ${plural(roles.length, "role")}`}
+            to={groupsTab}
+          >
+            {plural(roles.length, "role")}
+          </AdminLink>
+        </Text>
       </div>
+      <ChevronRightIcon aria-hidden className={`${classBase}-chevron`} />
     </li>
   );
 };
@@ -110,9 +135,11 @@ const ApplicationsPanel = ({ initialSearch }: { initialSearch: string }) => {
       role="region"
     >
       <div className={`${classBase}-panelHeader`}>
-        <H3 id="overview-applications">Set up an application</H3>
+        <H2 id="overview-applications" styleAs="display4">
+          Set up an application
+        </H2>
         <Text color="secondary">
-          Define its groups and roles, or manage who can use it.
+          Define its groups and roles, and choose who can use it.
         </Text>
         <Input
           bordered
@@ -191,7 +218,9 @@ const UsersPanel = ({ initialSearch }: { initialSearch: string }) => {
       <div className={`${classBase}-panelHeader`}>
         <div className={`${classBase}-titleRow`}>
           <div className="vuuAdminUi-stack">
-            <H3 id="overview-users">Set up a user</H3>
+            <H2 id="overview-users" styleAs="display4">
+              Set up a user
+            </H2>
             <Text color="secondary">
               Create a user, or open one to change the applications they can
               use.
@@ -280,26 +309,45 @@ const UsersPanel = ({ initialSearch }: { initialSearch: string }) => {
   );
 };
 
-/** Two lists: applications to set up, and users to create or change. */
+/**
+ * The module's only landing page: pick a workflow, application or user, and
+ * open the one to change.
+ */
 export const OverviewPage = () => {
   const [params] = useSearchParams();
   const search = params.get(SEARCH_PARAM)?.trim() ?? "";
-  const { error } = useApplicationModel();
+  const { error, model } = useApplicationModel();
+  const globalIssues = model.issues.filter(
+    ({ application }) => !application || !model.byName.has(application),
+  );
   return (
     <section
-      aria-labelledby="overview-title"
+      aria-label="Overview"
       className={`vuuIdentityAdmin-page ${classBase}`}
     >
-      <H2 id="overview-title">Overview</H2>
       {error ? (
         <Banner status="error">
           <BannerContent role="alert">{error}</BannerContent>
+        </Banner>
+      ) : null}
+      {globalIssues.length > 0 ? (
+        <Banner status="warning">
+          <BannerContent>
+            <details>
+              <summary>
+                {plural(globalIssues.length, "configuration issue")} outside any
+                application
+              </summary>
+              <IssueList issues={globalIssues} />
+            </details>
+          </BannerContent>
         </Banner>
       ) : null}
       <div className={`${classBase}-panels`}>
         <ApplicationsPanel initialSearch={search} key={`apps:${search}`} />
         <UsersPanel initialSearch={search} key={`users:${search}`} />
       </div>
+      <UnassignedCard />
     </section>
   );
 };

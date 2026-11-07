@@ -1,6 +1,6 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, Link, RouterProvider } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   PortalModuleRegistryProvider,
@@ -8,6 +8,7 @@ import {
 } from "@vuu-ui/core/portal";
 import UserAdmin from "../src/UserAdmin";
 import { useEditingLock } from "../src/components/EditingContext";
+import { useAdminPaths } from "../src/data/useAdminPaths";
 
 const modal = vi.hoisted(() => ({
   closePrompt: vi.fn(),
@@ -40,12 +41,11 @@ vi.mock("@vuu-ui/core", () => ({
 vi.mock("../src/data/ApplicationModelProvider", () => ({
   ApplicationModelProvider: ({ children }: { children: ReactNode }) => children,
 }));
-vi.mock("../src/pages/applications/ApplicationsPage", () => ({
-  ApplicationsPage: () => <div>Applications page</div>,
-}));
 vi.mock("../src/pages/overview/OverviewPage", () => ({
   OverviewPage: () => {
     const { remoteModules: modules } = usePortalModuleRegistry();
+    const setEditing = useEditingLock();
+    const paths = useAdminPaths();
     return (
       <div>
         Overview page
@@ -54,22 +54,10 @@ vi.mock("../src/pages/overview/OverviewPage", () => ({
             {clientIdentifier}:{accessRole}
           </span>
         ))}
-      </div>
-    );
-  },
-}));
-vi.mock("../src/pages/users/UsersPage", () => ({
-  UsersPage: () => {
-    const setEditing = useEditingLock();
-    return (
-      <div>
-        Users page
         <button type="button" onClick={() => setEditing(true)}>
           Start editing
         </button>
-        <button type="button" onClick={() => setEditing(false)}>
-          Finish editing
-        </button>
+        <Link to={paths.application("basket-trading")}>Basket trading</Link>
       </div>
     );
   },
@@ -132,55 +120,25 @@ describe("embedded identity routes", () => {
       expect(container.textContent).toContain(
         "vuu-user-admin:user-admin-access",
       );
-      const rail = container.querySelector<HTMLElement>(
-        'nav[aria-label="Identity administration"]',
-      );
-      const workspace = container.querySelector<HTMLElement>(
-        ".vuuIdentityAdmin-workspace",
-      );
+      expect(
+        container.querySelector('nav[aria-label="Identity administration"]'),
+      ).toBeNull();
       const content = container.querySelector<HTMLElement>(
         ".vuuIdentityAdmin-content",
       );
-      if (!rail || !workspace || !content)
-        throw new Error("Missing left navigation layout");
-      expect(workspace.children[0]).toBe(rail);
-      expect(workspace.children[1]).toBe(content);
+      if (!content) throw new Error("Missing content layout");
       expect(content.querySelector("main")).not.toBeNull();
-      expect(getComputedStyle(workspace).flexDirection).toBe("row");
-      expect(getComputedStyle(rail).display).toBe("flex");
-      expect(getComputedStyle(rail).flexDirection).toBe("column");
-      expect(
-        [...rail.querySelectorAll("a")].map(({ textContent }) => textContent),
-      ).toEqual(["Overview", "Applications", "Users"]);
-      expect(rail.querySelector('[aria-current="page"]')?.textContent).toBe(
-        "Overview",
+      const applicationLink = container.querySelector<HTMLAnchorElement>(
+        'a[href$="/applications/basket-trading"]',
       );
-      await act(async () =>
-        rail
-          .querySelector<HTMLAnchorElement>('a[href$="/applications"]')
-          ?.click(),
-      );
-      expect(container.textContent).toContain("Applications page");
-      expect(
-        container.querySelector('a[href$="/users"]')?.getAttribute("href"),
-      ).toBe(`${mount}/users`);
-      await act(async () =>
-        container
-          .querySelector<HTMLAnchorElement>('a[href$="/users"]')
-          ?.click(),
-      );
-      expect(container.textContent).toContain("Users page");
-      expect(rail.querySelector('[aria-current="page"]')?.textContent).toBe(
-        "Users",
+      expect(applicationLink?.getAttribute("href")).toBe(
+        `${mount}/applications/basket-trading`,
       );
       await act(async () =>
         container.querySelector<HTMLButtonElement>("button")?.click(),
       );
-      const applicationsLink = rail.querySelector<HTMLAnchorElement>(
-        'a[href$="/applications"]',
-      );
-      await act(async () => applicationsLink?.click());
-      expect(container.textContent).toContain("Users page");
+      await act(async () => applicationLink?.click());
+      expect(container.textContent).toContain("Overview page");
       expect(modal.showPrompt).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -197,18 +155,16 @@ describe("embedded identity routes", () => {
           modal.showPrompt.mock.calls.length - 1
         ]?.[1];
       await act(async () => promptProps?.onCancel?.());
-      expect(container.textContent).toContain("Users page");
-      await act(async () =>
-        container
-          .querySelector<HTMLAnchorElement>('a[href$="/applications"]')
-          ?.click(),
-      );
+      expect(container.textContent).toContain("Overview page");
+      await act(async () => applicationLink?.click());
       const confirmPromptProps =
         modal.showPrompt.mock.calls[
           modal.showPrompt.mock.calls.length - 1
         ]?.[1];
       await act(async () => confirmPromptProps?.onConfirm?.());
-      expect(container.textContent).toContain("Applications page");
+      expect(container.textContent).toContain(
+        "Application page basket-trading",
+      );
     },
   );
 
@@ -247,9 +203,15 @@ describe("embedded identity routes", () => {
       "/admin/roles?application=basket-trading",
       "Application page basket-trading",
     ],
-    ["/admin/groups", "Applications page"],
+    [
+      "/admin/applications?application=basket-trading",
+      "Application page basket-trading",
+    ],
+    ["/admin/groups", "Overview page"],
+    ["/admin/applications", "Overview page"],
+    ["/admin/users", "Overview page"],
   ])(
-    "redirects the old %s page into the application workflow",
+    "redirects the old %s page to its application or Overview",
     async (entry, text) => {
       await renderAt(entry);
       expect(container.textContent).toContain(text);

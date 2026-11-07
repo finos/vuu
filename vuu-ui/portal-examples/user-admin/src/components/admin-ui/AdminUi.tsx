@@ -2,7 +2,6 @@ import {
   Avatar,
   type AvatarProps,
   Code,
-  H2,
   Link,
   type LinkProps,
   SidePanelTitle,
@@ -197,35 +196,6 @@ export const StatusText = ({
   </span>
 );
 
-/** A page title and description. `children` (e.g. buttons) align to the right. */
-export const PageHeader = ({
-  children,
-  description,
-  title,
-}: {
-  children?: ReactNode;
-  description?: string;
-  title: string;
-}) => (
-  <header className={`${classBase}-pageHeader`}>
-    <div className={`${classBase}-stack`}>
-      <H2>{title}</H2>
-      {description ? <Text color="secondary">{description}</Text> : null}
-    </div>
-    {children}
-  </header>
-);
-
-/** A row of actions, e.g. inside a `PageHeader`. */
-export const PageHeaderActions = ({ children }: { children: ReactNode }) => (
-  <div className={`${classBase}-actions`}>{children}</div>
-);
-
-/** A row holding a page's filters, row count etc, above its table. */
-export const AdminToolbar = ({ children }: { children: ReactNode }) => (
-  <div className="vuuIdentityAdmin-toolbar">{children}</div>
-);
-
 /** The live row count of `dataSource`, e.g. "12 users". */
 export const RowCount = ({
   dataSource,
@@ -266,21 +236,6 @@ export const PanelHeadingSubtitle = ({ children }: { children: ReactNode }) => (
 
 export const PanelHeadingTags = ({ children }: { children: ReactNode }) => (
   <div className={`${classBase}-tags`}>{children}</div>
-);
-
-export const Metric = ({
-  label,
-  value,
-}: {
-  label: ReactNode;
-  value: ReactNode;
-}) => (
-  <div className={`${classBase}-metric`}>
-    <span className={`${classBase}-metricValue`}>{value}</span>
-    <Text color="secondary" styleAs="label">
-      {label}
-    </Text>
-  </div>
 );
 
 /** A square tile holding an icon, used by KPI and fact cards. */

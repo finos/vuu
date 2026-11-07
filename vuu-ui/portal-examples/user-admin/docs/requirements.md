@@ -15,19 +15,19 @@ The provider and hook are also the role-check enforcement boundary.
 
 ## Navigation and layout
 
-Every task follows one of two workflows, so the left navigation rail has three
-pages: Overview, Applications and Users. Groups and roles have no pages of
-their own; they are defined and assigned inside an application or a user.
+Every task follows one of two workflows, application or user, so Overview is
+the module's only list page and there is no navigation rail. Overview links
+straight to each application and user; their pages link back to it. Groups
+and roles have no pages of their own; they are defined and assigned inside an
+application or a user.
 
-| Route                           | Page                                                                                   |
-| ------------------------------- | -------------------------------------------------------------------------------------- |
-| `overview` (index)              | Two panels: applications to set up, and users to create or change (see Overview below) |
-| `applications`                  | One card per application, plus Unassigned                                              |
-| `applications/:applicationName` | Application workflow, with `?tab=groups\|users\|checks`                                |
-| `users`                         | All users, filtered by search and `?application=`                                      |
-| `users/new`                     | User workflow: create a user                                                           |
-| `users/:userId`                 | User workflow: an existing user's access and details                                   |
-| `groups`, `roles`               | Redirect to the application named by `?application=`, else to Applications             |
+| Route                                      | Page                                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `overview` (index)                         | Two panels: applications to set up, and users to create or change (see Overview below) |
+| `applications/:applicationName`            | Application workflow, with `?tab=groups\|users\|checks`                                |
+| `users/new`                                | User workflow: create a user                                                           |
+| `users/:userId`                            | User workflow: an existing user's access and details                                   |
+| `applications`, `users`, `groups`, `roles` | Redirect to the application named by `?application=`, else to Overview                 |
 
 Routes are relative to wherever the host mounts the module. Links are built
 from the mount path (`useAdminPaths`), so they work from any nested route.
@@ -45,12 +45,15 @@ Every shared admin table uses `columnDefaultWidth: 120`. Rendered columns named
 
 ## Overview
 
-The overview is two side-by-side panels that fill the page. The users panel
+The overview is two side-by-side panels that fill the page, with large titles:
+it is the entry point where the admin user picks a workflow. The users panel
 is wider, because there are a handful of applications and many users.
 
-- **Set up an application** lists every application, filtered by a search
-  box. Each row shows its user, group and role counts, any configuration
-  issues, and links to its Groups & roles and Users tabs.
+- **Set up an application** lists every application as a card, filtered by a
+  search box. The whole card opens the application and has a hover state. It
+  shows the application's description, any configuration issues, and its
+  user, group and role counts. The counts are links: users open the Users
+  tab, groups and roles the Groups & roles tab.
 - **Set up a user** has New user, a search by name, username or email, a
   Sort by menu (Recently changed, Name, Last sign-in, Most applications) and,
   on its own line, a multiselect combo box of applications. Choosing several
@@ -59,6 +62,10 @@ is wider, because there are a handful of applications and many users.
 
 User rows show at most three application tags, then a "+N more" tag naming
 the rest. Applications chosen in the filter are shown first.
+
+Below the panels, Overview shows the **Unassigned** groups and roles, which
+match no application, and a banner for configuration issues outside any
+application. Both appear only when there is something to show.
 
 ## Applications
 
@@ -134,8 +141,8 @@ An existing user's page has an **Application access** tab, loaded with
 application groups; and a **Details** tab saved with `updateUser`. The header
 enables or disables the user.
 
-The Users page filters on `module_access` for an application, or
-`module_access_count = 0` for users with no application access.
+The Overview users panel filters on `module_access` for each chosen
+application, and an application's Users tab on its own `module_access`.
 
 ## Server-driven data contract
 

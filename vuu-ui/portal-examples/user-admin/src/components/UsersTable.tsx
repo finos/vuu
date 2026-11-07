@@ -15,7 +15,7 @@ import {
   USER_COLUMNS,
   USER_ROW_HEIGHT,
   usersTableConfig,
-} from "../pages/users/usersTable";
+} from "./usersTableConfig";
 import { FirstAccessRolesContext } from "./ModuleAccessCell";
 import { USER_LAST_LOGIN_CELL_RENDERER } from "./UserCells";
 

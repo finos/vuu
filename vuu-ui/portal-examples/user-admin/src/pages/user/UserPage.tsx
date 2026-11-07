@@ -335,7 +335,7 @@ const UserWorkspace = ({ user }: { user: UserSummary }) => {
   return (
     <section aria-label={name} className={`vuuIdentityAdmin-page ${classBase}`}>
       <nav aria-label="Breadcrumb" className="vuuAdminApplication-breadcrumb">
-        <AdminLink to={paths.users}>Users</AdminLink>
+        <AdminLink to={paths.overview}>Overview</AdminLink>
         <Text color="secondary"> / {name}</Text>
       </nav>
       <header className={`${classBase}-header`}>
@@ -404,7 +404,7 @@ export const UserPage = ({ userId }: { userId: string }) => {
   return (
     <section className="vuuIdentityAdmin-page">
       <nav aria-label="Breadcrumb" className="vuuAdminApplication-breadcrumb">
-        <AdminLink to={paths.users}>Users</AdminLink>
+        <AdminLink to={paths.overview}>Overview</AdminLink>
       </nav>
       {error ? (
         <Banner status="error">

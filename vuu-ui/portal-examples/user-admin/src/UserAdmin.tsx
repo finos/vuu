@@ -1,29 +1,8 @@
-import {
-  Avatar,
-  StatusIndicator,
-  Text,
-  VerticalNavigation,
-  VerticalNavigationItem,
-  VerticalNavigationItemContent,
-  VerticalNavigationItemLabel,
-  VerticalNavigationItemTrigger,
-} from "@salt-ds/core";
-import {
-  AppSwitcherIcon,
-  DashboardIcon,
-  UserAdminIcon,
-  UserIcon,
-} from "@salt-ds/icons";
+import { Avatar, StatusIndicator, Text } from "@salt-ds/core";
+import { UserAdminIcon } from "@salt-ds/icons";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { useModal } from "@vuu-ui/core";
-import { PortalLink } from "@vuu-ui/core/portal";
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Link,
   Navigate,
@@ -32,7 +11,6 @@ import {
   Routes,
   useBlocker,
   useBeforeUnload,
-  useMatch,
   useNavigate,
   useParams,
   useSearchParams,
@@ -49,48 +27,13 @@ import {
 } from "./data/useAdminPaths";
 import { APPLICATION_PARAM } from "./data/useApplicationScope";
 import { ApplicationPage } from "./pages/application/ApplicationPage";
-import { ApplicationsPage } from "./pages/applications/ApplicationsPage";
 import { OverviewPage } from "./pages/overview/OverviewPage";
 import { CreateUserPage } from "./pages/user/CreateUserPage";
 import { UserPage } from "./pages/user/UserPage";
-import { UsersPage } from "./pages/users/UsersPage";
 import "./themeFallbacks.css";
 import "./UserAdmin.css";
 
 export const SEARCH_PARAM = "search";
-
-const PAGES: { icon: ReactNode; label: string; page: string }[] = [
-  { icon: <DashboardIcon aria-hidden />, label: "Overview", page: "overview" },
-  {
-    icon: <AppSwitcherIcon aria-hidden />,
-    label: "Applications",
-    page: "applications",
-  },
-  { icon: <UserIcon aria-hidden />, label: "Users", page: "users" },
-];
-
-const NavItem = ({
-  icon,
-  label,
-  page,
-}: {
-  icon: ReactNode;
-  label: string;
-  page: string;
-}) => {
-  const to = useAdminPaths().page(page);
-  const active = useMatch({ end: false, path: to }) !== null;
-  return (
-    <VerticalNavigationItem active={active}>
-      <VerticalNavigationItemContent>
-        <VerticalNavigationItemTrigger render={<PortalLink to={to} />}>
-          {icon}
-          <VerticalNavigationItemLabel>{label}</VerticalNavigationItemLabel>
-        </VerticalNavigationItemTrigger>
-      </VerticalNavigationItemContent>
-    </VerticalNavigationItem>
-  );
-};
 
 const HeaderSearch = () => {
   const navigate = useNavigate();
@@ -116,17 +59,18 @@ const HeaderSearch = () => {
 };
 
 /**
- * Groups and roles are managed inside their application, so the old
- * `groups` and `roles` pages open the application they were scoped to.
+ * Overview is the only list page, so the old `applications`, `users`,
+ * `groups` and `roles` pages open the application they were scoped to, or
+ * Overview.
  */
-const LegacyEntityRedirect = () => {
+const LegacyPageRedirect = () => {
   const paths = useAdminPaths();
   const [params] = useSearchParams();
   const application = params.get(APPLICATION_PARAM);
   return (
     <Navigate
       replace
-      to={application ? paths.application(application) : paths.applications}
+      to={application ? paths.application(application) : paths.overview}
     />
   );
 };
@@ -210,27 +154,16 @@ const AdminLayout = () => {
           </div>
           <HeaderSearch />
         </header>
-        <div className="vuuIdentityAdmin-workspace">
-          <VerticalNavigation
-            appearance="indicator"
-            aria-label="Identity administration"
-            className="vuuIdentityAdmin-navigation"
-          >
-            {PAGES.map((page) => (
-              <NavItem key={page.page} {...page} />
-            ))}
-          </VerticalNavigation>
-          <div className="vuuIdentityAdmin-content">
-            {editing ? (
-              <p role="status" className="vuuIdentityAdmin-editNotice">
-                <StatusIndicator status="warning" />
-                Save or discard your edits before switching pages or identities.
-              </p>
-            ) : null}
-            <main>
-              <Outlet />
-            </main>
-          </div>
+        <div className="vuuIdentityAdmin-content">
+          {editing ? (
+            <p role="status" className="vuuIdentityAdmin-editNotice">
+              <StatusIndicator status="warning" />
+              Save or discard your edits before switching pages or identities.
+            </p>
+          ) : null}
+          <main>
+            <Outlet />
+          </main>
         </div>
       </div>
     </EditingContext.Provider>
@@ -250,16 +183,16 @@ const UserAdmin = ({ config = EMPTY_CONFIG }: UserAdminProps) => (
             <Route element={<AdminLayout />}>
               <Route index element={<Navigate to="overview" replace />} />
               <Route path="overview" element={<OverviewPage />} />
-              <Route path="applications" element={<ApplicationsPage />} />
+              <Route path="applications" element={<LegacyPageRedirect />} />
               <Route
                 path="applications/:applicationName"
                 element={<ApplicationRoute />}
               />
-              <Route path="users" element={<UsersPage />} />
+              <Route path="users" element={<LegacyPageRedirect />} />
               <Route path="users/new" element={<CreateUserPage />} />
               <Route path="users/:userId" element={<UserRoute />} />
-              <Route path="groups" element={<LegacyEntityRedirect />} />
-              <Route path="roles" element={<LegacyEntityRedirect />} />
+              <Route path="groups" element={<LegacyPageRedirect />} />
+              <Route path="roles" element={<LegacyPageRedirect />} />
               <Route
                 path="*"
                 element={

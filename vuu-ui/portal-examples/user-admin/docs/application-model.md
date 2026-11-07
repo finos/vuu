@@ -19,7 +19,7 @@ flowchart LR
   RO[roles] --> B
   GR[group_roles] --> B
   B --> M[ApplicationModel<br/>via ApplicationModelProvider]
-  M --> P[Applications / Overview / Groups / Roles / Users pages and forms]
+  M --> P[Overview, application and user pages and forms]
 ```
 
 1. **Descriptors → `PortalApplication`** (`deriveApplications`).
@@ -65,7 +65,7 @@ flowchart LR
 - **`ApplicationModelProvider`** (wrapped around the routes in `UserAdmin.tsx`) exposes `{ loading, error, model }` through `useApplicationModel()`, and the RPC function through `useAdminRpc()`.
 - **Application workflow:** the groups × roles matrix, the new group panel (fixed prefix, access role always included, only the application's roles) and the batch user actions are built from one `ApplicationDetails`.
 - **User workflow:** each application offers its groups that include the access role; the least-privileged one is the default.
-- **Scoping:** `userScopeFilter` scopes the Users page to an application, using the server's `module_access` column.
+- **Scoping:** user lists are scoped to an application with the server's `module_access` column (`moduleAccessFilter`).
 
 ## Limits
 
