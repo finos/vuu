@@ -1,10 +1,10 @@
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { MODULE_ACCESS_CELL_RENDERER } from "../../components/ModuleAccessCell";
+import { MODULE_ACCESS_CELL_RENDERER } from "./ModuleAccessCell";
 import {
   USER_IDENTITY_CELL_RENDERER,
   USER_LAST_LOGIN_CELL_RENDERER,
   USER_STATUS_CELL_RENDERER,
-} from "../../components/UserCells";
+} from "./UserCells";
 
 /** Columns the user tables subscribe to; most are shown inside other cells. */
 export const USER_COLUMNS = [

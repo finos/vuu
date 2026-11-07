@@ -96,7 +96,7 @@ export const CreateUserPage = () => {
           ? `${details.username} can use ${plural(applicationCount, "application")}.`
           : `${details.username} has no application access yet.`,
     });
-    navigate(paths.users);
+    navigate(paths.overview);
   };
 
   return (
@@ -105,7 +105,7 @@ export const CreateUserPage = () => {
       className={`vuuIdentityAdmin-page ${classBase}`}
     >
       <nav aria-label="Breadcrumb" className="vuuAdminApplication-breadcrumb">
-        <AdminLink to={paths.users}>Users</AdminLink>
+        <AdminLink to={paths.overview}>Overview</AdminLink>
         <Text color="secondary"> / New user</Text>
       </nav>
       <div className={`${classBase}-columns`}>
@@ -162,7 +162,7 @@ export const CreateUserPage = () => {
           )}
         </span>
         <span className="vuuAdminUi-actions">
-          <Button disabled={saving} onClick={() => navigate(paths.users)}>
+          <Button disabled={saving} onClick={() => navigate(paths.overview)}>
             Cancel
           </Button>
           <Button disabled={saving} onClick={save} sentiment="accented">

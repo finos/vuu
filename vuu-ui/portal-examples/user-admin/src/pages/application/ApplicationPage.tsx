@@ -30,7 +30,7 @@ import {
   PanelHeadingText,
   PanelHeadingTitle,
 } from "../../components/admin-ui/AdminUi";
-import { useUserCount } from "../../components/ApplicationCard";
+import { useUserCount } from "../../components/userCount";
 import { IssueList } from "../../components/IssueList";
 import { PORTAL_CLIENT_IDENTIFIER } from "../../data/applications";
 import type { ApplicationDetails } from "../../data/applications";
@@ -86,7 +86,7 @@ const ApplicationWorkspace = ({ entry }: { entry: ApplicationDetails }) => {
           className={`vuuIdentityAdmin-page ${classBase}`}
         >
           <nav aria-label="Breadcrumb" className={`${classBase}-breadcrumb`}>
-            <AdminLink to={paths.applications}>Applications</AdminLink>
+            <AdminLink to={paths.overview}>Overview</AdminLink>
             <Text color="secondary"> / {application.title}</Text>
           </nav>
           <header className={`${classBase}-header`}>
@@ -219,7 +219,7 @@ export const ApplicationPage = ({ name }: { name: string }) => {
       ) : (
         <p>
           No application named "{name}" is registered with the portal.{" "}
-          <AdminLink to={paths.applications}>All applications</AdminLink>
+          <AdminLink to={paths.overview}>Return to Overview</AdminLink>
         </p>
       )}
     </section>
