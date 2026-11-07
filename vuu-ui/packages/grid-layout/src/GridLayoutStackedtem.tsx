@@ -14,11 +14,13 @@ import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   type ComponentTemplateWithoutLabel,
   useGridLayoutDispatch,
+  useGridLayoutMaximize,
   useGridSnapshot,
 } from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { GridLayoutHeaderSlot } from "./GridLayoutItemHeader";
 import { resolveMinimumGridItemSize } from "./GridModel";
+import { IconButton as HeaderButton } from "./IconButton";
 import { TabMenu } from "./TabMenu";
 import { useEditTabName } from "./useEditTabName";
 import { useGridChildProps } from "./useGridChildProps";
@@ -40,6 +42,7 @@ export const GridLayoutStackedItem = ({
   header,
   id,
   getNewComponent,
+  maximizable: maximizableProp,
   minHeight,
   minWidth,
   resizeable,
@@ -67,14 +70,25 @@ export const GridLayoutStackedItem = ({
     styleProp?.minWidth,
   );
 
-  const { gridArea, horizontalSplitter, verticalSplitter } = useGridChildProps({
-    id,
-    minHeight: modelMinHeight,
-    minWidth: modelMinWidth,
-    resizeable,
-    style: styleProp,
-    type: "stacked-content",
-  });
+  const { gridArea, horizontalSplitter, maximized, verticalSplitter } =
+    useGridChildProps({
+      id,
+      minHeight: modelMinHeight,
+      minWidth: modelMinWidth,
+      resizeable,
+      style: styleProp,
+      type: "stacked-content",
+    });
+
+  const {
+    maximizable: maximizableDefault,
+    maximizeRefusedIds,
+    toggleMaximized,
+  } = useGridLayoutMaximize();
+  const handleToggleMaximized = useCallback(
+    () => toggleMaximized?.(id),
+    [id, toggleMaximized],
+  );
 
   const dispatch = useGridLayoutDispatch();
   const snapshot = useGridSnapshot();
@@ -83,6 +97,9 @@ export const GridLayoutStackedItem = ({
     throw Error(`[GridLayoutStackedItem] canonical stack #${id} not found`);
   }
   const itemById = new Map(snapshot.items.map((item) => [item.id, item]));
+  const maximizable =
+    (maximizableProp ?? maximizableDefault ?? false) &&
+    !maximizeRefusedIds?.has(stack.selectedItemId);
   const tabOrderKey = stack.itemIds.join("\u0000");
 
   useEffect(() => {
@@ -125,6 +142,7 @@ export const GridLayoutStackedItem = ({
       <div
         {...htmlAttributes}
         className={cx(className)}
+        data-maximized={maximized || undefined}
         id={id}
         key={id}
         style={style}
@@ -199,6 +217,16 @@ export const GridLayoutStackedItem = ({
               itemId={stack.selectedItemId}
               location="end"
             />
+            {maximizable && toggleMaximized ? (
+              <HeaderButton
+                appearance="transparent"
+                aria-label={maximized ? "Restore" : "Maximize"}
+                className={`${classBaseItem}-maximize`}
+                icon={maximized ? "restore" : "maximize"}
+                onClick={handleToggleMaximized}
+                sentiment="neutral"
+              />
+            ) : null}
           </TabBar>
         </Tabs>
       </div>

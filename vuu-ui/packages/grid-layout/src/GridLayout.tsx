@@ -29,6 +29,7 @@ import type {
 import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridFocusOrder } from "./useGridFocusOrder";
 import { useGridLayout } from "./useGridLayout";
+import type { GridMaximizedChangeHandler } from "./useGridMaximize";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 import { GridSplitter } from "./GridSplitter";
 
@@ -82,8 +83,18 @@ export interface GridLayoutProps
     | ReactElement<GridLayoutItemProps>[];
   "full-page"?: boolean;
   colsAndRows?: GridColumnsAndRows;
+  /**
+   * Default for items that don't set `maximizable`: whether their header
+   * offers to maximize them to fill the grid.
+   */
+  maximizable?: boolean;
   /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
+  /**
+   * Called when an item or stack is maximized (with its id) or the grid is
+   * restored (with undefined).
+   */
+  onMaximizedChange?: GridMaximizedChangeHandler;
   /** Content rendered inside canonical placeholders without obscuring their drop target. */
   placeholderContent?: ReactNode;
   /** Coupled boundaries with partial cross-group spans retain adjacent resizing. */
@@ -98,12 +109,14 @@ export const GridLayout = ({
   className,
   "full-page": fullPage,
   colsAndRows,
+  maximizable,
   onBlur,
   onClick,
   onChange,
   onFocus,
   onKeyDown,
   onKeyUp,
+  onMaximizedChange,
   onMouseDown,
   placeholderContent,
   rowResizeDistribution = "adjacent",
@@ -128,6 +141,8 @@ export const GridLayout = ({
     gridLayoutModel,
     gridModel,
     gridSnapshot,
+    maximizeRefusedIds,
+    maximizedId,
     nonContentGridItems: { placeholders, splitters, stackIds },
     onCancelDrag,
     onCancelTabDrag,
@@ -138,12 +153,16 @@ export const GridLayout = ({
     onDragStart,
     onDrop,
     onDropStackedItem,
+    restore,
+    setContentMaximizable,
     stackTemplates,
+    toggleMaximized,
   } = useGridLayout({
     children: childrenProp,
     id,
     colsAndRows,
     onChange,
+    onMaximizedChange,
   });
 
   const focusOrder = useMemo(
@@ -158,9 +177,13 @@ export const GridLayout = ({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       onKeyDown?.(e);
+      if (maximizedId && e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        restore();
+      }
       onFocusOrderKeyDown(e);
     },
-    [onFocusOrderKeyDown, onKeyDown],
+    [maximizedId, onFocusOrderKeyDown, onKeyDown, restore],
   );
 
   const splitterLayoutProps = useGridSplitterResizing({
@@ -202,11 +225,16 @@ export const GridLayout = ({
         gridSnapshot,
         headerSlots,
         id,
+        maximizable,
+        maximizeRefusedIds,
+        maximizedId,
         onDragEnd,
         onDragLeave,
         onDragPreview,
         onDragStart,
         onDrop,
+        setContentMaximizable,
+        toggleMaximized,
       }}
     >
       <DragDropProviderNext
@@ -224,6 +252,7 @@ export const GridLayout = ({
           style={style}
           className={cx(classBase, className, {
             vuuFullPage: fullPage,
+            [`${classBase}-maximized`]: maximizedId !== undefined,
           })}
         >
           <div {...headSentinelProps} />

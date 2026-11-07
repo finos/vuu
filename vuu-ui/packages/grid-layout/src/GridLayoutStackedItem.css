@@ -49,3 +49,13 @@
     padding-inline-end: var(--salt-spacing-75);
   }
 }
+
+/*
+  The empty end slot isn't displayed, so its auto margin can't push the
+  Maximize button to the end of the tab bar.
+*/
+.vuuGridLayoutStackedItem
+  .vuuGridLayoutStackedItem-end:empty
+  + .vuuGridLayoutStackedItem-maximize {
+  margin-inline-start: auto;
+}

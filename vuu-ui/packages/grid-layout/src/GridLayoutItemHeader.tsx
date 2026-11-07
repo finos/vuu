@@ -63,16 +63,26 @@ export interface GridLayoutItemHeaderProps
    * item render into this header.
    */
   itemId: string;
+  /** The item fills the grid. Dragging is disabled while it does. */
+  maximized?: boolean;
   onClose?: MouseEventHandler<HTMLButtonElement>;
+  /**
+   * Shows a Maximize (or Restore) button. Double-clicking the header
+   * does the same.
+   */
+  onToggleMaximized?: () => void;
   title?: string;
 }
 
 export const GridLayoutItemHeader = ({
   className,
   itemId,
+  maximized = false,
   onClose,
+  onDoubleClick,
   onDragStart,
   onPointerDown,
+  onToggleMaximized,
   title,
   ...htmlAttributes
 }: GridLayoutItemHeaderProps) => {
@@ -98,14 +108,29 @@ export const GridLayoutItemHeader = ({
 
   const handleDragStart = useCallback<DragEventHandler<HTMLDivElement>>(
     (evt) => {
-      if (dragBlockedRef.current) {
+      if (dragBlockedRef.current || maximized) {
         evt.preventDefault();
         evt.stopPropagation();
       } else {
         onDragStart?.(evt);
       }
     },
-    [onDragStart],
+    [maximized, onDragStart],
+  );
+
+  const handleDoubleClick = useCallback<MouseEventHandler<HTMLDivElement>>(
+    (evt) => {
+      onDoubleClick?.(evt);
+      const target = evt.target as HTMLElement;
+      if (
+        onToggleMaximized &&
+        !evt.defaultPrevented &&
+        target.closest(NO_DRAG_SELECTOR) === null
+      ) {
+        onToggleMaximized();
+      }
+    },
+    [onDoubleClick, onToggleMaximized],
   );
 
   return (
@@ -114,7 +139,8 @@ export const GridLayoutItemHeader = ({
       className={cx(classBase, className)}
       data-drop-target="header"
       data-title={title}
-      draggable
+      draggable={!maximized}
+      onDoubleClick={handleDoubleClick}
       onDragStart={handleDragStart}
       onPointerDown={handlePointerDown}
     >
@@ -142,6 +168,16 @@ export const GridLayoutItemHeader = ({
         location="end"
       />
       <div className={`${classBase}-actions`}>
+        {onToggleMaximized ? (
+          <IconButton
+            appearance="transparent"
+            aria-label={maximized ? "Restore" : "Maximize"}
+            className={`${classBase}-maximize`}
+            icon={maximized ? "restore" : "maximize"}
+            onClick={onToggleMaximized}
+            sentiment="neutral"
+          />
+        ) : null}
         {onClose ? (
           <IconButton
             appearance="transparent"

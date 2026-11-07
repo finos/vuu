@@ -72,6 +72,7 @@ export {
 } from "./GridLayoutHeaderContribution";
 export {
   useGridLayoutItem,
+  useGridLayoutItemMaximizable,
   type GridLayoutHeaderLocation,
 } from "./GridLayoutHeaderSlots";
 export {
@@ -79,6 +80,7 @@ export {
   type GridLayoutCommands,
   type GridTemplatePlacement,
 } from "./GridLayoutCommands";
+export type { GridMaximizedChangeHandler } from "./useGridMaximize";
 export {
   GridLayoutProvider,
   GridLayoutDocumentController,
