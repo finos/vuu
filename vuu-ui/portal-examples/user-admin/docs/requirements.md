@@ -19,15 +19,15 @@ Every task follows one of two workflows, so the left navigation rail has three
 pages: Overview, Applications and Users. Groups and roles have no pages of
 their own; they are defined and assigned inside an application or a user.
 
-| Route                           | Page                                                                                            |
-| ------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `overview` (index)              | Start cards for both workflows, configuration issues, application cards, recently changed users |
-| `applications`                  | One card per application, plus Unassigned                                                       |
-| `applications/:applicationName` | Application workflow, with `?tab=groups\|users\|checks`                                         |
-| `users`                         | All users, filtered by search and `?application=`                                               |
-| `users/new`                     | User workflow: create a user                                                                    |
-| `users/:userId`                 | User workflow: an existing user's access and details                                            |
-| `groups`, `roles`               | Redirect to the application named by `?application=`, else to Applications                      |
+| Route                           | Page                                                                                   |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| `overview` (index)              | Two panels: applications to set up, and users to create or change (see Overview below) |
+| `applications`                  | One card per application, plus Unassigned                                              |
+| `applications/:applicationName` | Application workflow, with `?tab=groups\|users\|checks`                                |
+| `users`                         | All users, filtered by search and `?application=`                                      |
+| `users/new`                     | User workflow: create a user                                                           |
+| `users/:userId`                 | User workflow: an existing user's access and details                                   |
+| `groups`, `roles`               | Redirect to the application named by `?application=`, else to Applications             |
 
 Routes are relative to wherever the host mounts the module. Links are built
 from the mount path (`useAdminPaths`), so they work from any nested route.
@@ -35,13 +35,30 @@ The module has no dependency on `@vuu-ui/vuu-layout`; semantic HTML/CSS
 provides the layout, with Salt components throughout.
 
 The header search applies on Enter (typing, blur and clearing do not search)
-and opens Overview with matching applications and users. Vuu's filter grammar
+and opens Overview with both panels filtered by the search text. Vuu's filter grammar
 cannot represent double quotes, backslashes, tabs or line breaks inside string
 values; the UI reports those values as unsupported rather than constructing
 malformed filters.
 
 Every shared admin table uses `columnDefaultWidth: 120`. Rendered columns named
 `email`, either by logical alias or server name, have an explicit width of 150.
+
+## Overview
+
+The overview is two side-by-side panels that fill the page. The users panel
+is wider, because there are a handful of applications and many users.
+
+- **Set up an application** lists every application, filtered by a search
+  box. Each row shows its user, group and role counts, any configuration
+  issues, and links to its Groups & roles and Users tabs.
+- **Set up a user** has New user, a search by name, username or email, a
+  Sort by menu (Recently changed, Name, Last sign-in, Most applications) and,
+  on its own line, a multiselect combo box of applications. Choosing several
+  applications lists the users who can open all of them. The last table
+  column follows the sort: Last sign-in, or Changed for every other sort.
+
+User rows show at most three application tags, then a "+N more" tag naming
+the rest. Applications chosen in the filter are shown first.
 
 ## Applications
 
