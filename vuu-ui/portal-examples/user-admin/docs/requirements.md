@@ -24,7 +24,7 @@ application or a user.
 | Route                                      | Page                                                                                   |
 | ------------------------------------------ | -------------------------------------------------------------------------------------- |
 | `overview` (index)                         | Two panels: applications to set up, and users to create or change (see Overview below) |
-| `applications/:applicationName`            | Application workflow, with `?tab=groups\|users\|checks`                                |
+| `applications/:applicationName`            | Application workflow, with `?tab=users\|groups` (Users is the default)                 |
 | `users/new`                                | User workflow: create a user                                                           |
 | `users/:userId`                            | User workflow: an existing user's access and details                                   |
 | `applications`, `users`, `groups`, `roles` | Redirect to the application named by `?application=`, else to Overview                 |
@@ -34,8 +34,8 @@ from the mount path (`useAdminPaths`), so they work from any nested route.
 The module has no dependency on `@vuu-ui/vuu-layout`; semantic HTML/CSS
 provides the layout, with Salt components throughout.
 
-The header search applies on Enter (typing, blur and clearing do not search)
-and opens Overview with both panels filtered by the search text. Vuu's filter grammar
+The module has no header or global search: the portal's navigation names the
+module, and each Overview panel has its own filter. Vuu's filter grammar
 cannot represent double quotes, backslashes, tabs or line breaks inside string
 values; the UI reports those values as unsupported rather than constructing
 malformed filters.
@@ -98,30 +98,38 @@ application, or as Unassigned when it matches no naming convention.
 
 ### Application workflow
 
-The application page shows the client, access role and group prefix, a Grant
-access button, and three tabs:
+The application page shows the client, access role and group prefix, and two
+tabs, Users first because it is used most:
 
-- **Groups & roles**: a matrix with groups across and roles down. The access
-  role is the first row; once a group has it, it is locked. Ticks are staged
-  locally and saved together with `assignGroupRole`/`removeGroupRole`
-  (`clientId` is `vuu-portal` for the access role, the application's client
-  otherwise). New roles are added inline with `addClientRole` on the
-  application's client, named with the application prefix. **New group**
+- **Users**: everyone with access, with their groups and the roles those
+  grant. Users can be selected in batches to add to, move to or remove from a
+  group, or to have access revoked (confirmed first), using
+  `assignUserToGroup`/`removeUserFromGroup`. **Manage users** opens a dialog to
+  add users or change the groups of existing ones. A toggle filters the
+  user list to All, With access or Without access; each row shows the user's current groups. A click selects one user,
+  Shift extends the selection and Ctrl/Cmd toggles a user. The group
+  checkboxes show the selected users' groups; a group only some of them are in
+  shows a dash, and clicking it puts them all in it, leaving their other
+  groups alone. Changes are kept per user until saved, and each changed user
+  is marked Granted, Updated or Revoked. Saving runs the joins and leaves with
+  `assignUserToGroup`/`removeUserFromGroup`.
+- **Groups & roles**: a card per group, showing its name, description, member
+  count and its roles as chips. The access role chip is locked once the group
+  has it. **Add role** adds an existing role or creates one; × removes a role.
+  Changes are staged locally and saved together with
+  `assignGroupRole`/`removeGroupRole` (`clientId` is `vuu-portal` for the
+  access role, the application's client otherwise). Below the cards, the
+  Roles list shows every application role and the groups it is in. **New
+  role** creates one with `addClientRole` on the application's client, named
+  with the application prefix. **New group**
   opens a side panel: the name is a suffix after the fixed prefix, the access
   role is always included, roles can be copied from an existing group, and
   members can be picked. It runs `addGroup`, then `assignGroupRole` and
   `assignUserToGroup` by `groupName`, because the create RPC returns no ID.
-- **Users**: everyone with access, with their groups and the roles those
-  grant. Users can be selected in batches to add to, move to or remove from a
-  group, or to have access revoked (confirmed first), using
-  `assignUserToGroup`/`removeUserFromGroup`.
-- **Checks**: the configuration issues below.
 
-**Grant access** opens a dialog: pick users (by default only those without
-access) and the groups to put them in, defaulting to the least-privileged
-group, i.e. the one granting access with the fewest other roles.
-
-Checks report: a descriptor access role without the `-access` suffix,
+When an application has configuration issues, a collapsible warning above the
+tabs lists them, as Overview does for issues outside any application. They
+report: a descriptor access role without the `-access` suffix,
 duplicate access roles, ambiguous group prefixes, a missing access role or
 client, an application with no groups, a group missing the access role or
 containing roles from another application, application roles not in any

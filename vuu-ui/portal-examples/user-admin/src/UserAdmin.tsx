@@ -1,5 +1,4 @@
-import { Avatar, StatusIndicator, Text } from "@salt-ds/core";
-import { UserAdminIcon } from "@salt-ds/icons";
+import { StatusIndicator } from "@salt-ds/core";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { useModal } from "@vuu-ui/core";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -11,11 +10,9 @@ import {
   Routes,
   useBlocker,
   useBeforeUnload,
-  useNavigate,
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { AdminSearch } from "./components/AdminSearch";
 import { EditingContext } from "./components/EditingContext";
 import { AdminDataContext } from "./data/AdminDataContext";
 import { EMPTY_CONFIG, type AdminConfig } from "./data/admin-contract";
@@ -32,31 +29,6 @@ import { CreateUserPage } from "./pages/user/CreateUserPage";
 import { UserPage } from "./pages/user/UserPage";
 import "./themeFallbacks.css";
 import "./UserAdmin.css";
-
-export const SEARCH_PARAM = "search";
-
-const HeaderSearch = () => {
-  const navigate = useNavigate();
-  const paths = useAdminPaths();
-  const [params] = useSearchParams();
-  const search = params.get(SEARCH_PARAM) ?? "";
-  return (
-    <AdminSearch
-      className="vuuIdentityAdmin-headerSearch"
-      defaultValue={search}
-      key={search}
-      label="Search applications and users"
-      onSearch={(value) =>
-        navigate(
-          value
-            ? `${paths.overview}?${new URLSearchParams({ [SEARCH_PARAM]: value })}`
-            : paths.overview,
-        )
-      }
-      placeholder="Search applications and users"
-    />
-  );
-};
 
 /**
  * Overview is the only list page, so the old `applications`, `users`,
@@ -137,23 +109,6 @@ const AdminLayout = () => {
   return (
     <EditingContext.Provider value={setEditing}>
       <div className="vuuIdentityAdmin">
-        <header className="vuuIdentityAdmin-header">
-          <div className="vuuIdentityAdmin-brand">
-            <Avatar
-              aria-hidden
-              color="accent"
-              fallbackIcon={<UserAdminIcon />}
-              size={1.5}
-            />
-            <div>
-              <h1>Identity Admin</h1>
-              <Text color="secondary" styleAs="label">
-                Applications and the users who can open them
-              </Text>
-            </div>
-          </div>
-          <HeaderSearch />
-        </header>
         <div className="vuuIdentityAdmin-content">
           {editing ? (
             <p role="status" className="vuuIdentityAdmin-editNotice">

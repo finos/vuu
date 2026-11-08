@@ -20,7 +20,7 @@ export const useMountPath = () => {
   }, [pathname, splat]);
 };
 
-export type ApplicationTab = "groups" | "users" | "checks";
+export type ApplicationTab = "groups" | "users";
 
 /** Absolute paths to the module's pages, so links work from any nested route. */
 export const useAdminPaths = () => {
@@ -28,7 +28,7 @@ export const useAdminPaths = () => {
   return useMemo(
     () => ({
       application: (name: string, tab?: ApplicationTab) =>
-        `${base}/applications/${encodeURIComponent(name)}${tab && tab !== "groups" ? `?tab=${tab}` : ""}`,
+        `${base}/applications/${encodeURIComponent(name)}${tab && tab !== "users" ? `?tab=${tab}` : ""}`,
       newUser: `${base}/users/new`,
       overview: `${base}/overview`,
       user: (userId: string) => `${base}/users/${encodeURIComponent(userId)}`,

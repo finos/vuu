@@ -2,43 +2,38 @@ import {
   Banner,
   BannerContent,
   Button,
-  Checkbox,
-  FormField,
-  FormFieldHelperText,
-  FormFieldLabel,
   H3,
-  Input,
-  Table as SaltTable,
+  Menu,
+  MenuGroup,
+  MenuItem,
+  MenuPanel,
+  MenuTrigger,
   StatusIndicator,
-  TBody,
-  TD,
-  Text,
-  TH,
-  THead,
-  TR,
   Tag,
+  Text,
 } from "@salt-ds/core";
-import { AddIcon, LockedIcon } from "@salt-ds/icons";
+import {
+  AddIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  LockedIcon,
+  UndoIcon,
+} from "@salt-ds/icons";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import cx from "clsx";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  type ChangeEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { plural } from "../../components/admin-ui/AdminUi";
+  GroupName,
+  plural,
+  RoleName,
+  StatusText,
+} from "../../components/admin-ui/AdminUi";
 import { useEditingLock } from "../../components/EditingContext";
 import {
-  createRoleOperation,
   groupLabel,
   groupRoleOperations,
   type GroupRoles,
   groupRolesFor,
-  matrixRoles,
-  roleLabel,
-  validateRoleSuffix,
 } from "../../data/admin-plans";
 import {
   describeFailure,
@@ -47,23 +42,17 @@ import {
 } from "../../data/admin-rpc";
 import type {
   ApplicationDetails,
+  ApplicationGroup,
   ApplicationRole,
 } from "../../data/applications";
+import { NewRoleDialog } from "./NewRoleDialog";
 
 const classBase = "vuuAdminApplication";
-
-/** Issue codes about how the application's groups and roles fit together. */
-const MATRIX_ISSUES = new Set([
-  "group-foreign-roles",
-  "group-missing-access-role",
-  "no-groups",
-  "unused-role",
-]);
 
 const cellKey = (groupId: string, roleId: string) =>
   `${groupId}\u0000${roleId}`;
 
-/** The saved roles with the person's unsaved ticks applied. */
+/** The saved roles with the person's unsaved changes applied. */
 const applyOverrides = (
   saved: GroupRoles,
   overrides: ReadonlyMap<string, boolean>,
@@ -81,115 +70,242 @@ const applyOverrides = (
     }),
   );
 
-const NewRoleRow = ({
-  columns,
-  entry,
+/** Says what a heading or line is, so groups and roles are never confused. */
+const Kind = ({ children }: { children: string }) => (
+  <Text className={`${classBase}-kind`} color="secondary" styleAs="label">
+    {children}
+  </Text>
+);
+
+type RoleChange = "added" | "removed" | undefined;
+
+const RoleChip = ({
+  change,
+  disabled,
+  group,
+  onToggle,
+  role,
 }: {
-  columns: number;
+  change: RoleChange;
+  disabled: boolean;
+  group: string;
+  onToggle: () => void;
+  role: ApplicationRole;
+}) => (
+  <li
+    className={cx(`${classBase}-roleChip`, {
+      [`${classBase}-roleChipAdded`]: change === "added",
+      [`${classBase}-roleChipRemoved`]: change === "removed",
+    })}
+    title={role.description}
+  >
+    <RoleName>{role.roleName}</RoleName>
+    <Button
+      appearance="transparent"
+      aria-label={
+        change === "removed"
+          ? `Keep ${role.roleName} in ${group}`
+          : `Remove ${role.roleName} from ${group}`
+      }
+      disabled={disabled}
+      onClick={onToggle}
+    >
+      {change === "removed" ? (
+        <UndoIcon aria-hidden />
+      ) : (
+        <CloseIcon aria-hidden />
+      )}
+    </Button>
+  </li>
+);
+
+interface GroupCardProps {
+  draft: ReadonlySet<string>;
+  disabled: boolean;
   entry: ApplicationDetails;
-}) => {
-  const rpc = useAdminRpc();
-  const { showNotification } = useNotifications();
-  const [suffix, setSuffix] = useState("");
-  const [error, setError] = useState<string>();
-  const [saving, setSaving] = useState(false);
-  const prefix = entry.application.groupPrefix;
+  group: ApplicationGroup;
+  onCreateRole: (group: ApplicationGroup) => void;
+  onToggle: (roleId: string, checked: boolean) => void;
+  saved: ReadonlySet<string>;
+}
 
-  const create = useCallback(async () => {
-    const trimmed = suffix.trim();
-    const invalid = validateRoleSuffix(entry, trimmed);
-    if (invalid) {
-      setError(invalid);
-      return;
-    }
-    setSaving(true);
-    const result = await runOperations(rpc, [
-      createRoleOperation(entry, trimmed),
-    ]);
-    setSaving(false);
-    if (result.failed) {
-      setError(describeFailure(result));
-    } else {
-      setError(undefined);
-      setSuffix("");
-      showNotification({
-        type: "toast",
-        status: "success",
-        header: "Role created",
-        content: `${prefix}${trimmed} was created. Tick it in a group to grant it.`,
-      });
-    }
-  }, [entry, prefix, rpc, showNotification, suffix]);
-
+/** One group: what it is, and the roles it gives its members. */
+const GroupCard = ({
+  draft,
+  disabled,
+  entry,
+  group,
+  onCreateRole,
+  onToggle,
+  saved,
+}: GroupCardProps) => {
+  const label = groupLabel(entry, group);
+  const access = entry.accessRole;
+  const hasAccess = access ? draft.has(access.roleId) : false;
+  const shown = entry.roles.filter(
+    ({ roleId }) => draft.has(roleId) || saved.has(roleId),
+  );
+  const available = entry.roles.filter(({ roleId }) => !draft.has(roleId));
   return (
-    <TR>
-      <TD colSpan={columns}>
-        <div className={`${classBase}-newRole`}>
-          <FormField validationStatus={error ? "error" : undefined}>
-            <FormFieldLabel>New role</FormFieldLabel>
-            <Input
-              bordered
-              disabled={!entry.client || saving}
-              inputProps={{
-                "aria-label": "New role name",
-                onKeyDown: (event) => {
-                  if (event.key === "Enter") void create();
-                },
-              }}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setSuffix(event.target.value);
-                setError(undefined);
-              }}
-              placeholder="e.g. approve"
-              startAdornment={
-                <span className={`${classBase}-prefix`}>{prefix}</span>
-              }
-              value={suffix}
+    <section aria-label={`Group ${label}`} className={`${classBase}-groupCard`}>
+      <header className={`${classBase}-groupCardHeader`}>
+        <span className="vuuAdminUi-stack">
+          <span className={`${classBase}-groupTitle`}>
+            <Kind>Group</Kind>
+            <GroupName
+              name={group.groupName}
+              prefix={entry.application.groupPrefix}
             />
-            <FormFieldHelperText>
-              {error ??
-                (entry.client
-                  ? `Created on ${entry.application.clientIdentifier}.`
-                  : `Client ${entry.application.clientIdentifier} is missing, so roles cannot be created.`)}
-            </FormFieldHelperText>
-          </FormField>
-          <Button
-            disabled={!entry.client || saving || !suffix.trim()}
-            onClick={() => void create()}
-          >
-            <AddIcon aria-hidden /> Add role
-          </Button>
-        </div>
-      </TD>
-    </TR>
+          </span>
+          {group.description ? (
+            <Text color="secondary">{group.description}</Text>
+          ) : (
+            <Text className={`${classBase}-noDescription`}>No description</Text>
+          )}
+        </span>
+        <Text color="secondary" styleAs="label">
+          {plural(group.userCount, "member")}
+        </Text>
+      </header>
+      <div className={`${classBase}-groupRoles`}>
+        <Kind>Roles</Kind>
+        <ul aria-label={`Roles in ${label}`}>
+          {access && hasAccess ? (
+            <li
+              className={cx(
+                `${classBase}-roleChip`,
+                `${classBase}-roleChipAccess`,
+                {
+                  [`${classBase}-roleChipAdded`]: !saved.has(access.roleId),
+                },
+              )}
+              title="Lets members open the application. Every group needs it."
+            >
+              <LockedIcon aria-hidden />
+              <RoleName>{access.roleName}</RoleName>
+            </li>
+          ) : null}
+          {shown.map((role) => {
+            const inDraft = draft.has(role.roleId);
+            const inSaved = saved.has(role.roleId);
+            const change: RoleChange =
+              inDraft && !inSaved
+                ? "added"
+                : !inDraft && inSaved
+                  ? "removed"
+                  : undefined;
+            return (
+              <RoleChip
+                change={change}
+                disabled={disabled}
+                group={label}
+                key={role.roleId}
+                onToggle={() => onToggle(role.roleId, !inDraft)}
+                role={role}
+              />
+            );
+          })}
+          {group.foreignRoles.map((role) => (
+            <li
+              className={`${classBase}-roleChip ${classBase}-roleChipForeign`}
+              key={role.roleId}
+              title={`From ${role.clientIdentifier}, not ${entry.application.title}`}
+            >
+              <StatusIndicator status="warning" />
+              <RoleName>{role.roleName}</RoleName>
+            </li>
+          ))}
+        </ul>
+        <span className={`${classBase}-groupActions`}>
+          {access && !hasAccess ? (
+            <Button
+              disabled={disabled}
+              onClick={() => onToggle(access.roleId, true)}
+            >
+              <StatusIndicator status="warning" /> Add missing access role
+            </Button>
+          ) : null}
+          <Menu>
+            <MenuTrigger>
+              <Button aria-label={`Add role to ${label}`} disabled={disabled}>
+                <AddIcon aria-hidden /> Add role <ChevronDownIcon aria-hidden />
+              </Button>
+            </MenuTrigger>
+            <MenuPanel>
+              {available.length > 0 ? (
+                <MenuGroup label="Roles not in this group">
+                  {available.map((role) => (
+                    <MenuItem
+                      key={role.roleId}
+                      onClick={() => onToggle(role.roleId, true)}
+                    >
+                      {role.roleName}
+                    </MenuItem>
+                  ))}
+                </MenuGroup>
+              ) : null}
+              <MenuItem
+                disabled={!entry.client}
+                onClick={() => onCreateRole(group)}
+              >
+                <AddIcon aria-hidden /> Create a new role…
+              </MenuItem>
+            </MenuPanel>
+          </Menu>
+        </span>
+      </div>
+    </section>
   );
 };
 
-const RoleHeading = ({
+/** The application's roles, and which groups grant each one. */
+const RolesList = ({
+  draft,
   entry,
-  role,
 }: {
+  draft: GroupRoles;
   entry: ApplicationDetails;
-  role: ApplicationRole;
-}) =>
-  role.kind === "access" ? (
-    <span className={`${classBase}-roleHeading`}>
-      <LockedIcon aria-hidden />
-      <span className="vuuAdminUi-stack">
-        <strong>Access</strong>
-        <Text color="secondary" styleAs="label">
-          {role.roleName} on vuu-portal. Every group needs it.
-        </Text>
-      </span>
-    </span>
-  ) : (
-    <span className="vuuAdminUi-stack">
-      <strong>{roleLabel(entry, role)}</strong>
-      <Text color="secondary" styleAs="label">
-        {role.description || role.roleName}
+}) => {
+  if (entry.roles.length === 0) {
+    return (
+      <Text className={`${classBase}-empty`} color="secondary">
+        {entry.application.title} has no roles of its own yet.
       </Text>
-    </span>
+    );
+  }
+  return (
+    <ul aria-label="Roles" className={`${classBase}-roleList`}>
+      {entry.roles.map((role) => {
+        const groups = entry.groups.filter((group) =>
+          draft.get(group.groupId)?.has(role.roleId),
+        );
+        return (
+          <li className={`${classBase}-roleRow`} key={role.roleId}>
+            <span className="vuuAdminUi-stack">
+              <Kind>Role</Kind>
+              <RoleName>{role.roleName}</RoleName>
+            </span>
+            <Text color="secondary">
+              {role.description || "No description"}
+            </Text>
+            {groups.length > 0 ? (
+              <span className={`${classBase}-roleGroups`}>
+                <Text color="secondary" styleAs="label">
+                  In
+                </Text>
+                {groups.map((group) => (
+                  <Tag key={group.groupId}>{groupLabel(entry, group)}</Tag>
+                ))}
+              </span>
+            ) : (
+              <StatusText status="warning">Not in any group</StatusText>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
+};
 
 export interface GroupsRolesTabProps {
   entry: ApplicationDetails;
@@ -197,9 +313,9 @@ export interface GroupsRolesTabProps {
 }
 
 /**
- * Groups across, roles down: a tick puts a role in a group. Ticks are staged
- * until saved. The access role can be added to a group that lacks it, but not
- * removed.
+ * The application's groups, each with the roles it grants, then its roles.
+ * Role changes are staged until saved. The access role can be added to a
+ * group that lacks it, but not removed.
  */
 export const GroupsRolesTab = ({ entry, onNewGroup }: GroupsRolesTabProps) => {
   const rpc = useAdminRpc();
@@ -211,6 +327,12 @@ export const GroupsRolesTab = ({ entry, onNewGroup }: GroupsRolesTabProps) => {
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  const [newRole, setNewRole] = useState<{ group?: ApplicationGroup }>();
+  /** A role just created for a group, added once it loads. */
+  const [pendingRole, setPendingRole] = useState<{
+    groupId: string;
+    roleName: string;
+  }>();
   const draft = useMemo(
     () => applyOverrides(saved, overrides),
     [overrides, saved],
@@ -219,8 +341,6 @@ export const GroupsRolesTab = ({ entry, onNewGroup }: GroupsRolesTabProps) => {
     () => groupRoleOperations(entry, saved, draft),
     [draft, entry, saved],
   );
-  const roles = matrixRoles(entry);
-  const issues = entry.issues.filter(({ code }) => MATRIX_ISSUES.has(code));
   const dirty = operations.length > 0;
 
   useEffect(() => {
@@ -236,12 +356,23 @@ export const GroupsRolesTab = ({ entry, onNewGroup }: GroupsRolesTabProps) => {
     [],
   );
 
+  useEffect(() => {
+    if (!pendingRole) return;
+    const role = entry.roles.find(
+      ({ roleName }) => roleName === pendingRole.roleName,
+    );
+    if (role) {
+      toggle(pendingRole.groupId, role.roleId, true);
+      setPendingRole(undefined);
+    }
+  }, [entry.roles, pendingRole, toggle]);
+
   const save = useCallback(async () => {
     setSaving(true);
     const result = await runOperations(rpc, operations);
     setSaving(false);
     if (result.failed) {
-      // Saved ticks now match the server; keep the rest for a retry.
+      // Saved changes now match the server; keep the rest for a retry.
       const pending = new Set(
         result.remaining.map(({ params }) =>
           cellKey(String(params.groupId), String(params.roleId)),
@@ -270,116 +401,75 @@ export const GroupsRolesTab = ({ entry, onNewGroup }: GroupsRolesTabProps) => {
   }, [entry.application.title, operations, rpc, showNotification]);
 
   return (
-    <div className={`${classBase}-tab`}>
-      {issues.length > 0 ? (
-        <Banner status="warning">
-          <BannerContent>
-            <ul className={`${classBase}-issueList`}>
-              {issues.map((issue) => (
-                <li key={`${issue.code}:${issue.message}`}>{issue.message}</li>
-              ))}
-            </ul>
-          </BannerContent>
-        </Banner>
-      ) : null}
-      <div className={`${classBase}-tabHeader`}>
-        <div className="vuuAdminUi-stack">
-          <H3>Groups and the roles they grant</H3>
-          <Text color="secondary">
-            Users join groups. Every group includes the access role, so its
-            members can open {entry.application.title}.
-          </Text>
+    <div className={`${classBase}-tab ${classBase}-groupsTab`}>
+      <section aria-labelledby="groups-heading" className="vuuAdminUi-stack">
+        <div className={`${classBase}-tabHeader`}>
+          <div className="vuuAdminUi-stack">
+            <H3 id="groups-heading">Groups</H3>
+            <Text color="secondary">
+              Users join groups. Each group gives its members the roles listed
+              on it.
+            </Text>
+          </div>
+          <Button onClick={onNewGroup}>
+            <AddIcon aria-hidden /> New group
+          </Button>
         </div>
-        <Button onClick={onNewGroup}>
-          <AddIcon aria-hidden /> New group
-        </Button>
-      </div>
-
-      {entry.groups.length === 0 ? (
-        <Banner status="info">
-          <BannerContent>
-            {entry.application.title} has no groups yet. Create one so users can
-            be given access.
-          </BannerContent>
-        </Banner>
-      ) : null}
-
-      <div className={`${classBase}-matrixScroll`}>
-        <SaltTable
-          aria-label={`${entry.application.title} groups and roles`}
-          className={`${classBase}-matrix`}
-          divider="tertiary"
-        >
-          <THead>
-            <TR>
-              <TH className={`${classBase}-roleColumn`}>Role</TH>
-              {entry.groups.map((group) => (
-                <TH className={`${classBase}-groupColumn`} key={group.groupId}>
-                  <span className="vuuAdminUi-stack">
-                    <strong>{groupLabel(entry, group)}</strong>
-                    <Text color="secondary" styleAs="label">
-                      {plural(group.userCount, "member")}
-                    </Text>
-                  </span>
-                </TH>
-              ))}
-            </TR>
-          </THead>
-          <TBody>
-            {roles.map((role) => (
-              <TR
-                className={cx({
-                  [`${classBase}-accessRow`]: role.kind === "access",
-                })}
-                key={role.roleId}
-              >
-                <TD>
-                  <RoleHeading entry={entry} role={role} />
-                </TD>
-                {entry.groups.map((group) => {
-                  const checked =
-                    draft.get(group.groupId)?.has(role.roleId) ?? false;
-                  const changed =
-                    checked !==
-                    (saved.get(group.groupId)?.has(role.roleId) ?? false);
-                  const locked = role.kind === "access" && checked && !changed;
-                  return (
-                    <TD
-                      className={cx(`${classBase}-cell`, {
-                        [`${classBase}-cellChanged`]: changed,
-                      })}
-                      key={group.groupId}
-                    >
-                      <Checkbox
-                        aria-label={`${role.kind === "access" ? "Access" : roleLabel(entry, role)} in ${groupLabel(entry, group)}`}
-                        checked={checked}
-                        disabled={saving || locked}
-                        onChange={(event) =>
-                          toggle(
-                            group.groupId,
-                            role.roleId,
-                            event.target.checked,
-                          )
-                        }
-                      />
-                    </TD>
-                  );
-                })}
-              </TR>
+        {entry.groups.length === 0 ? (
+          <Banner status="info">
+            <BannerContent>
+              {entry.application.title} has no groups yet. Create one so users
+              can be given access.
+            </BannerContent>
+          </Banner>
+        ) : (
+          <div className={`${classBase}-groupCards`}>
+            {entry.groups.map((group) => (
+              <GroupCard
+                disabled={saving}
+                draft={draft.get(group.groupId) ?? new Set()}
+                entry={entry}
+                group={group}
+                key={group.groupId}
+                onCreateRole={(target) => setNewRole({ group: target })}
+                onToggle={(roleId, checked) =>
+                  toggle(group.groupId, roleId, checked)
+                }
+                saved={saved.get(group.groupId) ?? new Set()}
+              />
             ))}
-            {entry.roles.length === 0 ? (
-              <TR>
-                <TD colSpan={entry.groups.length + 1}>
-                  <Text color="secondary">
-                    {entry.application.title} has no roles of its own yet.
-                  </Text>
-                </TD>
-              </TR>
-            ) : null}
-            <NewRoleRow columns={entry.groups.length + 1} entry={entry} />
-          </TBody>
-        </SaltTable>
-      </div>
+          </div>
+        )}
+      </section>
+
+      <section aria-labelledby="roles-heading" className="vuuAdminUi-stack">
+        <div className={`${classBase}-tabHeader`}>
+          <div className="vuuAdminUi-stack">
+            <H3 id="roles-heading">Roles</H3>
+            <Text color="secondary">
+              {entry.client
+                ? `Permissions defined on ${entry.application.clientIdentifier}. Add them to groups above.`
+                : `Client ${entry.application.clientIdentifier} is missing, so roles cannot be created.`}
+            </Text>
+          </div>
+          <Button disabled={!entry.client} onClick={() => setNewRole({})}>
+            <AddIcon aria-hidden /> New role
+          </Button>
+        </div>
+        <RolesList draft={draft} entry={entry} />
+      </section>
+
+      <NewRoleDialog
+        entry={entry}
+        group={newRole?.group}
+        onCreated={(roleName, group) => {
+          if (group) setPendingRole({ groupId: group.groupId, roleName });
+        }}
+        onOpenChange={(open) => {
+          if (!open) setNewRole(undefined);
+        }}
+        open={!!newRole}
+      />
 
       {dirty || error ? (
         <div

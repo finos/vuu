@@ -43,11 +43,31 @@
 .vuuAdminUserPicker-user {
   align-items: center;
   display: flex;
+  flex: 1;
   gap: var(--salt-spacing-100);
   min-width: 0;
 }
 
 .vuuAdminUserPicker-user > .vuuAdminUi-stack {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
+}
+
+.vuuAdminUserPicker-user > :last-child {
+  margin-left: auto;
+}
+
+.vuuAdminUserPicker-listExtended > li {
+  cursor: pointer;
+  display: flex;
+  user-select: none;
+}
+
+.vuuAdminUserPicker-listExtended > li:hover:not(.vuuAdminUserPicker-selected) {
+  background: var(--salt-selectable-background-hover);
+}
+
+.vuuAdminUserPicker-listExtended > li:focus-visible {
+  outline: var(--salt-focused-outline);
+  outline-offset: -2px;
 }
