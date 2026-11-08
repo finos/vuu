@@ -268,7 +268,7 @@ export const getDataItemEditControl = ({
         data-edit-control
       />
     );
-  } else if (showToggleFilter(dataDescriptor, variant, values)) {
+  } else if (showToggleFilter(dataDescriptor, variant, values, table)) {
     return (
       <ToggleFilter
         appearance={appearance !== "transparent" ? appearance : undefined}
