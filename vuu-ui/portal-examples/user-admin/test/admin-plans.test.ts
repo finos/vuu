@@ -5,6 +5,10 @@ import {
   createGroupOperations,
   createRoleOperation,
   createUserOperations,
+  groupDisplayName,
+  groupSelection,
+  pendingGroupOperations,
+  userChange,
   groupRoleOperations,
   groupRolesFor,
   leastPrivilegedGroup,
@@ -14,6 +18,7 @@ import {
   revokeAccessOperations,
   rolesGrantedBy,
   setAccessGroups,
+  toggleGroupFor,
   toggleAccessGroup,
   toggleGroupRole,
   type UserAccess,
@@ -75,7 +80,7 @@ describe("application scope filters", () => {
 });
 
 describe("groups and roles", () => {
-  it("turns matrix ticks into assign and remove calls", () => {
+  it("turns role changes into assign and remove calls", () => {
     const saved = groupRolesFor(basket);
     const draft = toggleGroupRole(
       toggleGroupRole(saved, "g-trade", "r-basket-access"),
@@ -118,13 +123,20 @@ describe("groups and roles", () => {
     expect(
       rpcs(
         createGroupOperations(basket, {
+          description: "Supports basket traders",
           roleIds: ["r-basket-trader"],
           suffix: "support",
           users: [ann],
         }),
       ),
     ).toEqual([
-      { params: { name: "basket-trading-support" }, rpcName: "addGroup" },
+      {
+        params: {
+          description: "Supports basket traders",
+          name: "basket-trading-support",
+        },
+        rpcName: "addGroup",
+      },
       {
         params: {
           clientId: "vuu-portal",
@@ -234,6 +246,79 @@ describe("batch membership changes", () => {
   });
 });
 
+describe("access dialog pending groups", () => {
+  const memberships = membershipsFrom(
+    [
+      { group_id: "g-read", user_id: "u-ann" },
+      { group_id: "g-trade", user_id: "u-ann" },
+      { group_id: "g-read", user_id: "u-bob" },
+    ],
+    new Set(["g-read", "g-trade"]),
+  );
+  const cat = { userId: "u-cat", username: "cat" };
+  const dan = { userId: "u-dan", username: "dan" };
+  const toggle = (
+    userIds: string[],
+    groupId: string,
+    pending: ReturnType<typeof toggleGroupFor> = new Map(),
+  ) => toggleGroupFor(basket, userIds, groupId, pending, memberships);
+  const change = (userId: string, pending: ReturnType<typeof toggle>) =>
+    userChange(basket, userId, pending, memberships);
+
+  it("shows a user without access in no group", () => {
+    expect(
+      groupSelection(basket, ["u-cat"], new Map(), memberships).get("g-read"),
+    ).toEqual({ count: 0, state: "unchecked" });
+  });
+
+  it("marks users given an access group as new", () => {
+    let pending = toggle(["u-cat"], "g-read");
+    pending = toggle(["u-dan"], "g-read", pending);
+    expect(change("u-cat", pending)).toBe("new");
+    expect(change("u-dan", pending)).toBe("new");
+    expect(
+      rpcs(pendingGroupOperations(basket, [cat, dan], pending, memberships)),
+    ).toEqual([
+      {
+        params: { groupId: "g-read", userId: "u-cat" },
+        rpcName: "assignUserToGroup",
+      },
+      {
+        params: { groupId: "g-read", userId: "u-dan" },
+        rpcName: "assignUserToGroup",
+      },
+    ]);
+  });
+
+  it("marks existing users as updated or revoked", () => {
+    let pending = toggle(["u-bob"], "g-trade");
+    pending = toggle(["u-ann"], "g-read", pending);
+    expect(change("u-bob", pending)).toBe("updated");
+    expect(change("u-ann", pending)).toBe("revoked");
+  });
+
+  it("forgets a change that is undone", () => {
+    const pending = toggle(["u-bob"], "g-trade", toggle(["u-bob"], "g-trade"));
+    expect(pending.size).toBe(0);
+    expect(change("u-bob", pending)).toBe("unchanged");
+  });
+
+  it("shows mixed groups and fills them for every selected user", () => {
+    const selected = ["u-ann", "u-bob", "u-cat"];
+    const before = groupSelection(basket, selected, new Map(), memberships);
+    expect(before.get("g-read")).toEqual({ count: 2, state: "mixed" });
+    expect(before.get("g-trade")).toEqual({ count: 1, state: "mixed" });
+    const pending = toggle(selected, "g-read");
+    expect(
+      groupSelection(basket, selected, pending, memberships).get("g-read"),
+    ).toEqual({ count: 3, state: "checked" });
+    // Each user keeps their other groups.
+    expect(pending.get("u-cat")).toEqual(new Set(["g-read"]));
+    expect(pending.has("u-ann")).toBe(false);
+    expect(change("u-cat", pending)).toBe("new");
+  });
+});
+
 describe("user access", () => {
   it("defaults to the least-privileged group that grants access", () => {
     expect(leastPrivilegedGroup(basket)?.groupId).toBe("g-read");
@@ -330,5 +415,20 @@ describe("runOperations", () => {
       "assignGroupRole",
       "assignUserToGroup",
     ]);
+  });
+});
+
+describe("groupDisplayName", () => {
+  it("upper-cases the part after the application prefix", () => {
+    expect(groupDisplayName("basket-trading-read", "basket-trading-")).toBe(
+      "basket-trading-READ",
+    );
+  });
+
+  it("leaves names that do not match the prefix unchanged", () => {
+    expect(groupDisplayName("traders", "basket-trading-")).toBe("traders");
+    expect(groupDisplayName("basket-trading-", "basket-trading-")).toBe(
+      "basket-trading-",
+    );
   });
 });

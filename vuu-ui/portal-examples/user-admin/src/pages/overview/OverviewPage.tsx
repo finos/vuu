@@ -19,7 +19,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useSearchParams } from "react-router-dom";
 import {
   AdminButtonLink,
   AdminLink,
@@ -42,7 +41,6 @@ import {
   USER_SORT_OPTIONS,
   type UserSort,
 } from "../../data/userList";
-import { SEARCH_PARAM } from "../../UserAdmin";
 import { UnassignedCard } from "./UnassignedCard";
 
 import "./OverviewPage.css";
@@ -121,9 +119,9 @@ const ApplicationItem = ({ entry }: { entry: ApplicationDetails }) => {
   );
 };
 
-const ApplicationsPanel = ({ initialSearch }: { initialSearch: string }) => {
+const ApplicationsPanel = () => {
   const { loading, model } = useApplicationModel();
-  const [search, setSearch] = useState(initialSearch);
+  const [search, setSearch] = useState("");
   const needle = search.trim().toLocaleLowerCase();
   const applications = model.applications.filter((entry) =>
     matches(entry, needle),
@@ -176,10 +174,10 @@ const ApplicationsPanel = ({ initialSearch }: { initialSearch: string }) => {
 const sortLabel = (sort: UserSort) =>
   USER_SORT_OPTIONS.find(({ value }) => value === sort)?.label ?? sort;
 
-const UsersPanel = ({ initialSearch }: { initialSearch: string }) => {
+const UsersPanel = () => {
   const paths = useAdminPaths();
   const { model } = useApplicationModel();
-  const [searchText, setSearchText] = useState(initialSearch);
+  const [searchText, setSearchText] = useState("");
   const search = useDeferredValue(searchText);
   const [sort, setSort] = useState<UserSort>("changed");
   const [applicationText, setApplicationText] = useState("");
@@ -314,8 +312,6 @@ const UsersPanel = ({ initialSearch }: { initialSearch: string }) => {
  * open the one to change.
  */
 export const OverviewPage = () => {
-  const [params] = useSearchParams();
-  const search = params.get(SEARCH_PARAM)?.trim() ?? "";
   const { error, model } = useApplicationModel();
   const globalIssues = model.issues.filter(
     ({ application }) => !application || !model.byName.has(application),
@@ -344,8 +340,8 @@ export const OverviewPage = () => {
         </Banner>
       ) : null}
       <div className={`${classBase}-panels`}>
-        <ApplicationsPanel initialSearch={search} key={`apps:${search}`} />
-        <UsersPanel initialSearch={search} key={`users:${search}`} />
+        <ApplicationsPanel />
+        <UsersPanel />
       </div>
       <UnassignedCard />
     </section>

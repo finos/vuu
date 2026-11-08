@@ -162,7 +162,10 @@ export const AccessTag = ({
   </Tag>
 );
 
-/** A group name with its application prefix de-emphasised. */
+/**
+ * A group name as `prefix-NAME`: the application prefix de-emphasised, the
+ * rest in upper case.
+ */
 export const GroupName = ({
   name,
   prefix,
@@ -170,10 +173,10 @@ export const GroupName = ({
   name: string;
   prefix?: string;
 }) =>
-  prefix && name.startsWith(prefix) ? (
+  prefix && name.startsWith(prefix) && name.length > prefix.length ? (
     <span className={`${classBase}-groupName`}>
       <span className={`${classBase}-groupPrefix`}>{prefix}</span>
-      <strong>{name.slice(prefix.length)}</strong>
+      <strong>{name.slice(prefix.length).toUpperCase()}</strong>
     </span>
   ) : (
     <strong className={`${classBase}-groupName`}>{name}</strong>

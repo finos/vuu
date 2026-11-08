@@ -358,7 +358,7 @@ const UserWorkspace = ({ user }: { user: UserSummary }) => {
       </header>
       <Tabs onChange={(_event, value) => setTab(value as UserTab)} value={tab}>
         <TabBar divider>
-          <TabList aria-label={`${name} sections`}>
+          <TabList appearance="transparent" aria-label={`${name} sections`}>
             <Tab value="access">
               <TabTrigger>Application access</TabTrigger>
             </Tab>
