@@ -21,6 +21,19 @@ export type NotificationAnimationType =
   | "slide-out"
   | "slide-in,slide-out";
 
+/**
+ * Where a notification was raised. Filled in by `useNotifications` from the
+ * nearest `NotificationOriginProvider`, e.g. the portal module rendering the
+ * caller.
+ */
+export interface NotificationOrigin {
+  moduleId?: string | number;
+  /** The Vuu server the module uses. */
+  connectionId?: string;
+  /** The module hosting the origin's module, for nested modules. */
+  parentModuleId?: string | number;
+}
+
 interface NotificationDescriptorBase<T extends NotificationType> {
   animationType?: NotificationAnimationType;
   /**
@@ -34,6 +47,13 @@ interface NotificationDescriptorBase<T extends NotificationType> {
    * Default icons will be rendered for the different status values.
    */
   icon?: string | false;
+  /** Set automatically by `useNotifications`, when a provider gives one. */
+  origin?: NotificationOrigin;
+  /**
+   * Whether a host that keeps a notification history (e.g. a portal) should
+   * record this notification. Hosts choose the default.
+   */
+  record?: boolean;
   renderPostRefresh?: boolean;
   showCloseButton?: boolean;
   status: ValidationStatus;
@@ -64,6 +84,15 @@ export const isWorkspaceNotification = (
   n: Notification,
 ): n is WorkspaceNotificationDescriptor =>
   n.type === NotificationType.Workspace;
+
+/**
+ * Decides whether a notification is shown. Given to the outermost
+ * `NotificationsProvider`, it sees every notification raised beneath it,
+ * including those raised inside nested providers.
+ */
+export type NotificationInterceptor = (
+  notification: Notification,
+) => "present" | "suppress";
 
 export type NotificationsContextProps = {
   hideNotification: DispatchHideNotification;
