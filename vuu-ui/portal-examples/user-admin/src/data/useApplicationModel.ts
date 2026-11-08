@@ -16,6 +16,7 @@ export const useApplications = () => {
 
 const CLIENT_COLUMNS = ["client_id", "client_identifier", "client_name"];
 const GROUP_COLUMNS = [
+  "description",
   "group_id",
   "group_display_name",
   "group_path",

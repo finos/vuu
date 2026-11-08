@@ -21,37 +21,10 @@
   margin: 0;
 }
 
-.vuuIdentityAdmin-header,
 .vuuIdentityAdmin-quickActions {
   display: flex;
   align-items: center;
   gap: var(--salt-spacing-200);
-}
-
-.vuuIdentityAdmin-header {
-  flex: none;
-  justify-content: space-between;
-  padding: var(--salt-spacing-150) var(--salt-spacing-300);
-  border-bottom: 1px solid var(--admin-border);
-  background: var(--salt-container-primary-background);
-}
-
-.vuuIdentityAdmin-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--salt-spacing-150);
-  min-width: 0;
-}
-
-.vuuIdentityAdmin h1 {
-  font-size: var(--salt-text-h3-fontSize);
-  font-weight: var(--salt-text-h3-fontWeight);
-  line-height: var(--salt-text-h3-lineHeight);
-}
-
-.vuuIdentityAdmin-headerSearch.saltInput {
-  flex: 0 1 420px;
-  min-width: 200px;
 }
 
 .vuuIdentityAdmin-content {
@@ -328,15 +301,6 @@
 @container identity-admin (max-width: 760px) {
   .vuuIdentityAdmin-page {
     padding: var(--salt-spacing-200);
-  }
-  .vuuIdentityAdmin-header {
-    align-items: stretch;
-    flex-direction: column;
-    gap: var(--salt-spacing-100);
-  }
-  .vuuIdentityAdmin-headerSearch.saltInput {
-    flex: none;
-    min-width: 0;
   }
   .vuuIdentityAdmin-quickActions {
     flex-wrap: wrap;

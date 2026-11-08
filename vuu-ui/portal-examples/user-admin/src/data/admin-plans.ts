@@ -26,10 +26,20 @@ export const shortName = (name: string, prefix: string) =>
     ? name.slice(prefix.length)
     : name;
 
+/**
+ * A group name with the part after its application prefix in upper case, e.g.
+ * `basket-trading-read` → `basket-trading-READ`, so a group is never mistaken
+ * for a role of the same name.
+ */
+export const groupDisplayName = (name: string, prefix: string) =>
+  name.startsWith(prefix) && name.length > prefix.length
+    ? `${prefix}${name.slice(prefix.length).toUpperCase()}`
+    : name;
+
 export const groupLabel = (
   entry: ApplicationDetails,
   group: ApplicationGroup,
-) => shortName(group.groupName, entry.application.groupPrefix);
+) => groupDisplayName(group.groupName, entry.application.groupPrefix);
 
 export const roleLabel = (entry: ApplicationDetails, role: ApplicationRole) =>
   shortName(role.roleName, entry.application.groupPrefix);
@@ -58,8 +68,8 @@ export const toggleGroupRole = (
   return next;
 };
 
-/** The roles the matrix shows: the access role first, then the application's own. */
-export const matrixRoles = (entry: ApplicationDetails) => [
+/** The access role first, then the application's own roles. */
+export const applicationRoles = (entry: ApplicationDetails) => [
   ...(entry.accessRole ? [entry.accessRole] : []),
   ...entry.roles,
 ];
@@ -67,7 +77,7 @@ export const matrixRoles = (entry: ApplicationDetails) => [
 const roleClient = (role: ApplicationRole) =>
   role.kind === "access" ? PORTAL_CLIENT_IDENTIFIER : role.clientIdentifier;
 
-/** Assign/remove operations that turn `saved` into `draft`, for the matrix roles only. */
+/** Assign/remove operations that turn `saved` into `draft`, for the application's own roles. */
 export const groupRoleOperations = (
   entry: ApplicationDetails,
   saved: GroupRoles,
@@ -77,12 +87,12 @@ export const groupRoleOperations = (
   for (const group of entry.groups) {
     const before = saved.get(group.groupId) ?? new Set<string>();
     const after = draft.get(group.groupId) ?? new Set<string>();
-    for (const role of matrixRoles(entry)) {
+    for (const role of applicationRoles(entry)) {
       const had = before.has(role.roleId);
       const has = after.has(role.roleId);
       if (had === has) continue;
       operations.push({
-        label: `${has ? "Add" : "Remove"} ${role.kind === "access" ? "access" : roleLabel(entry, role)} ${has ? "to" : "from"} ${group.groupName}`,
+        label: `${has ? "Add" : "Remove"} ${role.roleName} ${has ? "to" : "from"} ${groupLabel(entry, group)}`,
         params: {
           clientId: roleClient(role),
           groupId: group.groupId,
@@ -118,6 +128,7 @@ export const validateGroupSuffix = (
 };
 
 export interface NewGroup {
+  description?: string;
   /** Roles to include besides the access role, which is always included. */
   roleIds: readonly string[];
   suffix: string;
@@ -131,16 +142,16 @@ export interface NewGroup {
  */
 export const createGroupOperations = (
   entry: ApplicationDetails,
-  { roleIds, suffix, users }: NewGroup,
+  { description, roleIds, suffix, users }: NewGroup,
 ): AdminOperation[] => {
   const groupName = `${entry.application.groupPrefix}${suffix}`;
-  const roles = matrixRoles(entry).filter(
+  const roles = applicationRoles(entry).filter(
     (role) => role.kind === "access" || roleIds.includes(role.roleId),
   );
   return [
     {
       label: `Create group ${groupName}`,
-      params: { name: groupName },
+      params: { name: groupName, ...(description ? { description } : {}) },
       rpcName: "addGroup",
     },
     ...roles.map<AdminOperation>((role) => ({
@@ -282,6 +293,119 @@ export const revokeAccessOperations = (
       isMember(memberships, user, group.groupId) ? [leave(user, group)] : [],
     ),
   );
+
+/** Target groups, by user ID, for users whose groups have been changed. */
+export type PendingGroups = ReadonlyMap<string, ReadonlySet<string>>;
+
+const NO_GROUPS: ReadonlySet<string> = new Set();
+
+const sameGroups = (left: ReadonlySet<string>, right: ReadonlySet<string>) =>
+  left.size === right.size && [...left].every((groupId) => right.has(groupId));
+
+/** A user's groups once pending changes are applied. */
+export const pendingGroupsFor = (
+  userId: string,
+  pending: PendingGroups,
+  memberships: Memberships,
+): ReadonlySet<string> =>
+  pending.get(userId) ?? memberships.get(userId) ?? NO_GROUPS;
+
+export interface GroupSelection {
+  /** Selected users who will be in the group. */
+  count: number;
+  state: "checked" | "mixed" | "unchecked";
+}
+
+/** How each group looks for the selected users. */
+export const groupSelection = (
+  entry: ApplicationDetails,
+  userIds: readonly string[],
+  pending: PendingGroups,
+  memberships: Memberships,
+): ReadonlyMap<string, GroupSelection> => {
+  const groups = userIds.map((userId) =>
+    pendingGroupsFor(userId, pending, memberships),
+  );
+  return new Map(
+    entry.groups.map(({ groupId }) => {
+      const count = groups.filter((g) => g.has(groupId)).length;
+      const state =
+        count === 0
+          ? "unchecked"
+          : count === groups.length
+            ? "checked"
+            : "mixed";
+      return [groupId, { count, state }];
+    }),
+  );
+};
+
+/**
+ * Puts every selected user in the group, or, when they are all in it already,
+ * takes them all out. Their other groups are left as they are.
+ */
+export const toggleGroupFor = (
+  entry: ApplicationDetails,
+  userIds: readonly string[],
+  groupId: string,
+  pending: PendingGroups,
+  memberships: Memberships,
+): PendingGroups => {
+  const join =
+    groupSelection(entry, userIds, pending, memberships).get(groupId)?.state !==
+    "checked";
+  const next = new Map(pending);
+  for (const userId of userIds) {
+    const groups = new Set(pendingGroupsFor(userId, pending, memberships));
+    if (join) groups.add(groupId);
+    else groups.delete(groupId);
+    if (sameGroups(groups, memberships.get(userId) ?? NO_GROUPS)) {
+      next.delete(userId);
+    } else {
+      next.set(userId, groups);
+    }
+  }
+  return next;
+};
+
+export type UserChange = "new" | "updated" | "revoked" | "unchanged";
+
+/** What saving does to one user's access to the application. */
+export const userChange = (
+  entry: ApplicationDetails,
+  userId: string,
+  pending: PendingGroups,
+  memberships: Memberships,
+): UserChange => {
+  const target = pending.get(userId);
+  if (!target) return "unchanged";
+  const current = memberships.get(userId) ?? NO_GROUPS;
+  const access = accessGroups(entry);
+  const hadAccess = access.some(({ groupId }) => current.has(groupId));
+  const willHaveAccess = access.some(({ groupId }) => target.has(groupId));
+  if (!hadAccess) return willHaveAccess ? "new" : "unchanged";
+  if (!willHaveAccess) return "revoked";
+  return sameGroups(current, target) ? "unchanged" : "updated";
+};
+
+/** Joins and leaves that give each user their pending groups. */
+export const pendingGroupOperations = (
+  entry: ApplicationDetails,
+  users: readonly UserRef[],
+  pending: PendingGroups,
+  memberships: Memberships,
+) =>
+  users.flatMap((user) => {
+    const target = pending.get(user.userId);
+    if (!target) return [];
+    return entry.groups.flatMap((group) => {
+      const member = isMember(memberships, user, group.groupId);
+      const wanted = target.has(group.groupId);
+      return member === wanted
+        ? []
+        : [wanted ? join(user, group) : leave(user, group)];
+    });
+  });
 
 /** Roles (excluding access) granted by membership of `groupIds`. */
 export const rolesGrantedBy = (

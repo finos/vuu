@@ -61,6 +61,7 @@ const roles = [
 
 const groups = [
   {
+    description: "Read only view of baskets data",
     group_id: "g-bt-read",
     group_path: "/vuu/basket-trading-read",
     user_count: 2,
@@ -192,6 +193,9 @@ describe("buildApplicationModel", () => {
       "g-bt-read",
       "g-bt-trade",
     ]);
+    expect(basketTrading?.groups.map(({ description }) => description)).toEqual(
+      ["Read only view of baskets data", undefined],
+    );
     expect(model.unmatchedGroups.map(({ groupId }) => groupId)).toEqual([
       "g-other",
     ]);

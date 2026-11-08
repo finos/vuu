@@ -2,7 +2,6 @@ import {
   Badge,
   Banner,
   BannerContent,
-  Button,
   Code,
   H2,
   SidePanel,
@@ -10,7 +9,6 @@ import {
   SidePanelContent,
   SidePanelHeader,
   SidePanelProvider,
-  StatusIndicator,
   Tab,
   TabBar,
   TabList,
@@ -19,7 +17,6 @@ import {
   TabTrigger,
   Text,
 } from "@salt-ds/core";
-import { AddUserIcon } from "@salt-ds/icons";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -29,10 +26,10 @@ import {
   PanelHeadingSubtitle,
   PanelHeadingText,
   PanelHeadingTitle,
+  plural,
 } from "../../components/admin-ui/AdminUi";
 import { useUserCount } from "../../components/userCount";
 import { IssueList } from "../../components/IssueList";
-import { PORTAL_CLIENT_IDENTIFIER } from "../../data/applications";
 import type { ApplicationDetails } from "../../data/applications";
 import { type ApplicationTab, useAdminPaths } from "../../data/useAdminPaths";
 import { useApplicationModel } from "../../data/useApplicationModel";
@@ -45,7 +42,7 @@ import { NewGroupPanel } from "./NewGroupPanel";
 import "./ApplicationPage.css";
 
 const classBase = "vuuAdminApplication";
-const TABS: readonly ApplicationTab[] = ["groups", "users", "checks"];
+const TABS: readonly ApplicationTab[] = ["users", "groups"];
 
 const Fact = ({ label, value }: { label: string; value: string }) => (
   <span className={`${classBase}-fact`}>
@@ -61,7 +58,7 @@ const ApplicationWorkspace = ({ entry }: { entry: ApplicationDetails }) => {
   const paths = useAdminPaths();
   const [params, setParams] = useSearchParams();
   const param = params.get("tab") as ApplicationTab | null;
-  const tab = param && TABS.includes(param) ? param : "groups";
+  const tab = param && TABS.includes(param) ? param : "users";
   const [panelOpen, setPanelOpen] = useState(false);
   const [grantOpen, setGrantOpen] = useState(false);
   const users = useUserCount(application.accessRole);
@@ -71,7 +68,7 @@ const ApplicationWorkspace = ({ entry }: { entry: ApplicationDetails }) => {
     setParams(
       (current) => {
         const next = new URLSearchParams(current);
-        if (value === "groups") next.delete("tab");
+        if (value === "users") next.delete("tab");
         else next.set("tab", value);
         return next;
       },
@@ -105,17 +102,27 @@ const ApplicationWorkspace = ({ entry }: { entry: ApplicationDetails }) => {
                 />
               </div>
             </div>
-            <Button onClick={() => setGrantOpen(true)} sentiment="accented">
-              <AddUserIcon aria-hidden /> Grant access
-            </Button>
           </header>
+
+          {entry.issues.length > 0 ? (
+            <Banner status="warning">
+              <BannerContent>
+                <details>
+                  <summary>
+                    {plural(entry.issues.length, "configuration issue")}
+                  </summary>
+                  <IssueList issues={entry.issues} />
+                </details>
+              </BannerContent>
+            </Banner>
+          ) : null}
 
           <Tabs onChange={(_event, value) => setTab(value)} value={tab}>
             <TabBar divider>
-              <TabList aria-label={`${application.title} sections`}>
-                <Tab value="groups">
-                  <TabTrigger>Groups &amp; roles</TabTrigger>
-                </Tab>
+              <TabList
+                appearance="transparent"
+                aria-label={`${application.title} sections`}
+              >
                 <Tab value="users">
                   <TabTrigger>
                     Users
@@ -127,45 +134,24 @@ const ApplicationWorkspace = ({ entry }: { entry: ApplicationDetails }) => {
                     ) : null}
                   </TabTrigger>
                 </Tab>
-                <Tab value="checks">
-                  <TabTrigger>
-                    Checks
-                    {entry.issues.length > 0 ? (
-                      <Badge
-                        aria-label={`${entry.issues.length} issues`}
-                        value={entry.issues.length}
-                      />
-                    ) : (
-                      <StatusIndicator status="success" />
-                    )}
-                  </TabTrigger>
+                <Tab value="groups">
+                  <TabTrigger>Groups &amp; roles</TabTrigger>
                 </Tab>
               </TabList>
             </TabBar>
-            <TabPanel value="groups">
-              <GroupsRolesTab
-                entry={entry}
-                onNewGroup={() => setPanelOpen(true)}
-              />
-            </TabPanel>
             <TabPanel value="users">
               <ApplicationUsersTab
                 entry={entry}
                 memberships={memberships.memberships}
                 membershipsError={memberships.error}
+                onManageUsers={() => setGrantOpen(true)}
               />
             </TabPanel>
-            <TabPanel value="checks">
-              <div className={`${classBase}-tab`}>
-                <Text color="secondary">
-                  {application.title} uses access role{" "}
-                  <Code>{application.accessRole}</Code> on{" "}
-                  {PORTAL_CLIENT_IDENTIFIER}, roles on{" "}
-                  <Code>{application.clientIdentifier}</Code>, and groups named{" "}
-                  <Code>{application.groupPrefix}*</Code>.
-                </Text>
-                <IssueList issues={entry.issues} />
-              </div>
+            <TabPanel value="groups">
+              <GroupsRolesTab
+                entry={entry}
+                onNewGroup={() => setPanelOpen(true)}
+              />
             </TabPanel>
           </Tabs>
         </section>

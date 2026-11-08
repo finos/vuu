@@ -8,23 +8,30 @@ import {
   DialogHeader,
   Tag,
   Text,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@salt-ds/core";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import { useMemo, useState } from "react";
 import {
   AccessTag,
   AppAvatar,
+  GroupName,
   plural,
 } from "../../components/admin-ui/AdminUi";
-import { UserPicker } from "../../components/UserPicker";
+import { type UserAccessFilter, UserPicker } from "../../components/UserPicker";
 import {
   accessGroups,
-  addToGroupsOperations,
-  groupLabel,
-  leastPrivilegedGroup,
+  groupDisplayName,
+  groupSelection,
   type Memberships,
+  type PendingGroups,
+  pendingGroupOperations,
   roleLabel,
   rolesGrantedBy,
+  toggleGroupFor,
+  type UserChange,
+  userChange,
 } from "../../data/admin-plans";
 import {
   describeFailure,
@@ -32,7 +39,7 @@ import {
   useAdminRpc,
 } from "../../data/admin-rpc";
 import type { ApplicationDetails } from "../../data/applications";
-import type { UserSummary } from "../../data/useApplicationUsers";
+import { type UserSummary, userName } from "../../data/useApplicationUsers";
 
 const classBase = "vuuAdminApplication";
 
@@ -42,6 +49,15 @@ export interface GrantAccessDialogProps {
   onOpenChange: (open: boolean) => void;
   open: boolean;
 }
+
+const STATUS: Record<
+  Exclude<UserChange, "unchanged">,
+  { category: number; label: string }
+> = {
+  new: { category: 1, label: "Granted" },
+  revoked: { category: 7, label: "Revoked" },
+  updated: { category: 3, label: "Updated" },
+};
 
 const GrantAccessContent = ({
   entry,
@@ -54,27 +70,56 @@ const GrantAccessContent = ({
 }) => {
   const rpc = useAdminRpc();
   const { showNotification } = useNotifications();
-  const groups = accessGroups(entry);
-  const [users, setUsers] = useState<ReadonlyMap<string, UserSummary>>(
+  const prefix = entry.application.groupPrefix;
+  const [selected, setSelected] = useState<ReadonlyMap<string, UserSummary>>(
     new Map(),
   );
-  const [groupIds, setGroupIds] = useState<ReadonlySet<string>>(() => {
-    const initial = leastPrivilegedGroup(entry);
-    return new Set(initial ? [initial.groupId] : []);
-  });
-  const [includeExisting, setIncludeExisting] = useState(false);
+  // Every user whose groups have been changed, so they can be saved after
+  // they are deselected.
+  const [touched, setTouched] = useState<ReadonlyMap<string, UserSummary>>(
+    new Map(),
+  );
+  const [pending, setPending] = useState<PendingGroups>(new Map());
+  const [access, setAccess] = useState<UserAccessFilter>("all");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
 
-  const selectedGroups = groups.filter(({ groupId }) => groupIds.has(groupId));
-  const roles = rolesGrantedBy(entry, groupIds);
+  const selectedIds = useMemo(() => [...selected.keys()], [selected]);
+  const selection = groupSelection(entry, selectedIds, pending, memberships);
   const operations = useMemo(
     () =>
-      addToGroupsOperations([...users.values()], selectedGroups, memberships),
-    [memberships, selectedGroups, users],
+      pendingGroupOperations(
+        entry,
+        [...touched.values()],
+        pending,
+        memberships,
+      ),
+    [entry, memberships, pending, touched],
   );
+  const changeOf = (userId: string) =>
+    userChange(entry, userId, pending, memberships);
+  const counts = (["new", "updated", "revoked"] as const)
+    .map((change) => ({
+      change,
+      count: [...pending.keys()].filter((id) => changeOf(id) === change).length,
+    }))
+    .filter(({ count }) => count > 0);
+  const selectedHasChanges = selectedIds.some((id) => pending.has(id));
 
-  const grant = async () => {
+  const toggleGroup = (groupId: string) => {
+    setPending(
+      toggleGroupFor(entry, selectedIds, groupId, pending, memberships),
+    );
+    setTouched(new Map([...touched, ...selected]));
+  };
+
+  const undoSelected = () => {
+    const next = new Map(pending);
+    for (const id of selectedIds) next.delete(id);
+    setPending(next);
+  };
+
+  const save = async () => {
     setSaving(true);
     const result = await runOperations(rpc, operations);
     setSaving(false);
@@ -85,20 +130,54 @@ const GrantAccessContent = ({
     showNotification({
       type: "toast",
       status: "success",
-      header: "Access granted",
-      content: `${plural(users.size, "user")} can now open ${entry.application.title}.`,
+      header: "Users saved",
+      content: `${counts
+        .map(
+          ({ change, count }) =>
+            `${count} ${STATUS[change].label.toLowerCase()}`,
+        )
+        .join(", ")} for ${entry.application.title}.`,
     });
     onClose();
   };
 
+  const renderDetail = (user: UserSummary) => {
+    const change = changeOf(user.userId);
+    const groups = entry.groups.filter((group) =>
+      memberships.get(user.userId)?.has(group.groupId),
+    );
+    return (
+      <>
+        <span className={`${classBase}-pickerGroups`}>
+          {groups.map((group) => (
+            <Tag bordered key={group.groupId}>
+              {groupDisplayName(group.groupName, prefix)}
+            </Tag>
+          ))}
+        </span>
+        {change !== "unchanged" ? (
+          <Tag
+            category={STATUS[change].category}
+            className={`${classBase}-pickerStatus`}
+          >
+            {STATUS[change].label}
+          </Tag>
+        ) : null}
+      </>
+    );
+  };
+
+  const single = selected.size === 1 ? [...selected.values()][0] : undefined;
+  const none = selected.size === 0;
+
   return (
     <>
       <DialogHeader
-        description="Choose users, then the groups they join. Every group already includes the access role."
+        description="Select a user to see and change their groups. Shift or Ctrl/Cmd-click to change several users at once. Changes are kept until you save."
         header={
           <span className={`${classBase}-dialogTitle`}>
             <AppAvatar application={entry.application} size={1.25} />
-            Grant access to {entry.application.title}
+            Manage users of {entry.application.title}
           </span>
         }
       />
@@ -107,57 +186,93 @@ const GrantAccessContent = ({
           <section aria-label="Users" className={`${classBase}-grantColumn`}>
             <Text styleAs="label">
               <strong>1 · Users</strong>{" "}
-              {users.size > 0 ? <Tag>{users.size} selected</Tag> : null}
+              {selected.size > 1 ? <Tag>{selected.size} selected</Tag> : null}
             </Text>
-            <Checkbox
-              checked={includeExisting}
-              label="Include users who already have access"
-              onChange={(event) => setIncludeExisting(event.target.checked)}
-            />
+            <ToggleButtonGroup
+              aria-label="Show users"
+              onChange={(event) =>
+                setAccess(event.currentTarget.value as UserAccessFilter)
+              }
+              value={access}
+            >
+              <ToggleButton value="all">All</ToggleButton>
+              <ToggleButton value="with">With access</ToggleButton>
+              <ToggleButton value="without">Without access</ToggleButton>
+            </ToggleButtonGroup>
             <UserPicker
               accessRole={entry.application.accessRole}
               aria-label="Users"
-              includeExisting={includeExisting}
-              onChange={setUsers}
-              selected={users}
+              access={access}
+              onChange={setSelected}
+              renderDetail={renderDetail}
+              selected={selected}
+              selectionMode="extended"
             />
           </section>
           <section aria-label="Groups" className={`${classBase}-grantColumn`}>
-            <Text styleAs="label">
-              <strong>2 · Groups</strong>
+            <span className={`${classBase}-grantHeading`}>
+              <Text styleAs="label">
+                <strong>2 · Groups</strong>
+              </Text>
+              {selectedHasChanges ? (
+                <Button
+                  appearance="transparent"
+                  disabled={saving}
+                  onClick={undoSelected}
+                >
+                  Undo changes
+                </Button>
+              ) : null}
+            </span>
+            <Text color="secondary" styleAs="label">
+              {none
+                ? "Select a user to see their groups."
+                : single
+                  ? `Groups ${userName(single)} is in.`
+                  : `Groups of ${selected.size} users. A dash means only some are in it. Clicking a group puts them all in it; their other groups are left as they are.`}
             </Text>
-            {groups.length === 0 ? (
+            {accessGroups(entry).length === 0 ? (
               <p role="alert">
                 {entry.application.title} has no group that grants access.
                 Create one on the Groups &amp; roles tab first.
               </p>
             ) : null}
-            {groups.map((group) => {
-              const checked = groupIds.has(group.groupId);
+            {entry.groups.map((group) => {
+              const { count = 0, state = "unchecked" } =
+                selection.get(group.groupId) ?? {};
               return (
                 <div
-                  className={`${classBase}-option${checked ? ` ${classBase}-optionSelected` : ""}`}
+                  className={`${classBase}-option${state !== "unchecked" ? ` ${classBase}-optionSelected` : ""}`}
                   key={group.groupId}
                 >
                   <Checkbox
-                    checked={checked}
+                    checked={state === "checked"}
+                    disabled={saving || none}
+                    indeterminate={state === "mixed"}
                     label={
                       <span className="vuuAdminUi-stack">
-                        <strong>{groupLabel(entry, group)}</strong>
+                        <GroupName name={group.groupName} prefix={prefix} />
                         <Text color="secondary" styleAs="label">
-                          {plural(group.userCount, "member")}
+                          {[
+                            group.description,
+                            plural(group.userCount, "member"),
+                            state === "mixed"
+                              ? `${count} of ${selected.size} selected`
+                              : undefined,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </Text>
                       </span>
                     }
-                    onChange={(event) => {
-                      const next = new Set(groupIds);
-                      if (event.target.checked) next.add(group.groupId);
-                      else next.delete(group.groupId);
-                      setGroupIds(next);
-                    }}
+                    onChange={() => toggleGroup(group.groupId)}
                   />
                   <span className="vuuAdminUi-tags">
-                    <AccessTag />
+                    {group.hasAccessRole ? (
+                      <AccessTag />
+                    ) : (
+                      <Tag category={7}>No access role</Tag>
+                    )}
                     {rolesGrantedBy(entry, [group.groupId]).map((role) => (
                       <Tag key={role.roleId}>{roleLabel(entry, role)}</Tag>
                     ))}
@@ -171,34 +286,25 @@ const GrantAccessContent = ({
       </DialogContent>
       <DialogActions>
         <span className={`${classBase}-grantSummary`} aria-live="polite">
-          {users.size > 0 && selectedGroups.length > 0 ? (
-            <>
-              <strong>{plural(users.size, "user")}</strong> join{" "}
-              <strong>
-                {selectedGroups.map((group) => group.groupName).join(", ")}
-              </strong>{" "}
-              and get <AccessTag />
-              {roles.map((role) => (
-                <Tag key={role.roleId}>{roleLabel(entry, role)}</Tag>
-              ))}
-            </>
+          {counts.length > 0 ? (
+            counts.map(({ change, count }) => (
+              <Tag category={STATUS[change].category} key={change}>
+                {count} {STATUS[change].label.toLowerCase()}
+              </Tag>
+            ))
           ) : (
-            <Text color="secondary">
-              Choose at least one user and one group.
-            </Text>
+            <Text color="secondary">No changes yet.</Text>
           )}
         </span>
         <Button disabled={saving} onClick={onClose}>
           Cancel
         </Button>
         <Button
-          disabled={saving || users.size === 0 || selectedGroups.length === 0}
-          onClick={() => void grant()}
+          disabled={saving || operations.length === 0}
+          onClick={() => void save()}
           sentiment="accented"
         >
-          {saving
-            ? "Granting..."
-            : `Grant access${users.size ? ` to ${plural(users.size, "user")}` : ""}`}
+          {saving ? "Saving..." : "Save changes"}
         </Button>
       </DialogActions>
       <DialogCloseButton onClick={onClose} />
@@ -206,7 +312,7 @@ const GrantAccessContent = ({
   );
 };
 
-/** Picks users and the application groups they join. */
+/** Adds users to the application or changes the groups of existing ones. */
 export const GrantAccessDialog = ({
   entry,
   memberships,

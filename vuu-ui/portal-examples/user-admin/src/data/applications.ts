@@ -207,6 +207,7 @@ export const idsFilter = (column: string, ids: readonly string[]): Filter =>
 
 export interface GroupRow {
   readonly [column: string]: unknown;
+  description?: unknown;
   group_display_name?: unknown;
   group_id?: unknown;
   group_path?: unknown;
@@ -246,6 +247,8 @@ export interface ApplicationRole {
 }
 
 export interface ApplicationGroup {
+  /** The group's description in Keycloak. */
+  description?: string;
   displayName: string;
   /** Roles assigned to the group that belong to another, or no, application. */
   foreignRoles: ApplicationRole[];
@@ -386,6 +389,7 @@ export const buildApplicationModel = ({
     const entry = application ? details.get(application.name) : undefined;
     const roleIds = roleIdsByGroup.get(groupId) ?? [];
     const group: ApplicationGroup = {
+      description: text(row.description) || undefined,
       displayName: text(row.group_display_name) || groupName,
       foreignRoles: roleIds.flatMap((roleId) => {
         if (application && roleApplication.get(roleId) === application.name) {

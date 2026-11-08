@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-table",
-  "version": "5.0.0-alpha.1",
+  "version": "5.0.0-alpha.5",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
@@ -9,22 +9,22 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-playwright-helpers": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-table-types": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-protocol-types": "5.0.0-alpha.1"
+    "@vuu-ui/vuu-data-types": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-playwright-helpers": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-table-types": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-protocol-types": "5.0.0-alpha.5"
   },
   "dependencies": {
     "@salt-ds/core": "1.74.0",
     "@salt-ds/styles": "0.4.2",
     "@salt-ds/window": "0.1.2",
-    "@vuu-ui/vuu-context-menu": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-data-editing": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-data-react": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-popups": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-table-extras": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-ui-controls": "5.0.0-alpha.1",
-    "@vuu-ui/vuu-utils": "5.0.0-alpha.1"
+    "@vuu-ui/vuu-context-menu": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-data-editing": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-data-react": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-popups": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-table-extras": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-ui-controls": "5.0.0-alpha.5",
+    "@vuu-ui/vuu-utils": "5.0.0-alpha.5"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

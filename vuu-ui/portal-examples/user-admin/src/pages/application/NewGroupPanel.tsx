@@ -17,12 +17,17 @@ import {
   useMemo,
   useState,
 } from "react";
-import { AccessTag, plural } from "../../components/admin-ui/AdminUi";
+import {
+  AccessTag,
+  GroupName,
+  plural,
+  RoleName,
+} from "../../components/admin-ui/AdminUi";
 import { UserPicker } from "../../components/UserPicker";
 import {
   createGroupOperations,
+  groupDisplayName,
   groupLabel,
-  roleLabel,
   validateGroupSuffix,
 } from "../../data/admin-plans";
 import {
@@ -52,6 +57,7 @@ export const NewGroupPanel = ({ entry, onClose }: NewGroupPanelProps) => {
   const { model } = useApplicationModel();
   const { showNotification } = useNotifications();
   const [suffix, setSuffix] = useState("");
+  const [description, setDescription] = useState("");
   const [roleIds, setRoleIds] = useState<ReadonlySet<string>>(new Set());
   const [members, setMembers] = useState<ReadonlyMap<string, UserSummary>>(
     new Map(),
@@ -71,11 +77,12 @@ export const NewGroupPanel = ({ entry, onClose }: NewGroupPanelProps) => {
   const operations = useMemo(
     () =>
       createGroupOperations(entry, {
+        description: description.trim(),
         roleIds: [...roleIds],
         suffix: trimmed,
         users: [...members.values()],
       }),
-    [entry, members, roleIds, trimmed],
+    [description, entry, members, roleIds, trimmed],
   );
 
   const startFrom = (
@@ -108,7 +115,7 @@ export const NewGroupPanel = ({ entry, onClose }: NewGroupPanelProps) => {
       type: "toast",
       status: "success",
       header: "Group created",
-      content: `${groupName} was created${members.size ? ` with ${plural(members.size, "member")}` : ""}.`,
+      content: `${groupDisplayName(groupName, prefix)} was created${members.size ? ` with ${plural(members.size, "member")}` : ""}.`,
     });
     onClose();
   };
@@ -151,6 +158,23 @@ export const NewGroupPanel = ({ entry, onClose }: NewGroupPanelProps) => {
         </FormFieldHelperText>
       </FormField>
 
+      <FormField>
+        <FormFieldLabel>Description</FormFieldLabel>
+        <Input
+          bordered
+          disabled={saving || created}
+          inputProps={{ "aria-label": "Group description" }}
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            setDescription(event.target.value)
+          }
+          placeholder="Read only view of baskets data"
+          value={description}
+        />
+        <FormFieldHelperText>
+          Shown on the group in User Admin and in Keycloak.
+        </FormFieldHelperText>
+      </FormField>
+
       {entry.groups.length > 0 ? (
         <FormField>
           <FormFieldLabel>Start from</FormFieldLabel>
@@ -179,7 +203,11 @@ export const NewGroupPanel = ({ entry, onClose }: NewGroupPanelProps) => {
       <fieldset className={`${classBase}-fieldset`}>
         <legend>Roles in this group</legend>
         <div className={`${classBase}-option ${classBase}-optionSelected`}>
-          <Checkbox checked disabled label="Access" />
+          <Checkbox
+            checked
+            disabled
+            label={<RoleName>{entry.application.accessRole}</RoleName>}
+          />
           <Text color="secondary" styleAs="label">
             Always included. Lets members open {entry.application.title}.
           </Text>
@@ -192,7 +220,7 @@ export const NewGroupPanel = ({ entry, onClose }: NewGroupPanelProps) => {
             <Checkbox
               checked={roleIds.has(role.roleId)}
               disabled={saving || created}
-              label={roleLabel(entry, role)}
+              label={<RoleName>{role.roleName}</RoleName>}
               onChange={(event) => {
                 const next = new Set(roleIds);
                 if (event.target.checked) next.add(role.roleId);
@@ -229,11 +257,16 @@ export const NewGroupPanel = ({ entry, onClose }: NewGroupPanelProps) => {
 
       <div className={`${classBase}-summary`} aria-live="polite">
         <Text styleAs="label">
-          <strong>{trimmed ? groupName : `${prefix}…`}</strong> grants{" "}
+          {trimmed ? (
+            <GroupName name={groupName} prefix={prefix} />
+          ) : (
+            <strong>{prefix}…</strong>
+          )}{" "}
+          grants{" "}
         </Text>
         <AccessTag />
         {selectedRoles.map((role) => (
-          <Tag key={role.roleId}>{roleLabel(entry, role)}</Tag>
+          <Tag key={role.roleId}>{role.roleName}</Tag>
         ))}
         <Text styleAs="label">
           {members.size ? ` to ${plural(members.size, "user")}.` : ""}

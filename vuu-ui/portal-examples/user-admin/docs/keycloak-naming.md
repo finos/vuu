@@ -33,8 +33,8 @@ combined with each module descriptor's `accessRole` and `clientIdentifier`.
 
 ## Checks
 
-Each application's Checks tab reports breaches of these rules; Overview
-reports those outside any application:
+Each application's page lists breaches of these rules in a warning above its
+tabs; Overview lists those outside any application:
 
 - a descriptor access role without `-access`, or one used by two descriptors
 - group prefixes that overlap between applications

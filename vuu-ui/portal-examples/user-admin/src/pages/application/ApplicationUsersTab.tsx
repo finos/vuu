@@ -20,7 +20,12 @@ import {
   TR,
   Tag,
 } from "@salt-ds/core";
-import { ChevronDownIcon, ChevronRightIcon, SearchIcon } from "@salt-ds/icons";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  SearchIcon,
+  UserGroupIcon,
+} from "@salt-ds/icons";
 import { useModal } from "@vuu-ui/core";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import {
@@ -95,6 +100,8 @@ export interface ApplicationUsersTabProps {
   entry: ApplicationDetails;
   memberships: Memberships;
   membershipsError?: string;
+  /** Opens the dialog that gives users access. */
+  onManageUsers: () => void;
 }
 
 /** Everyone who can open the application, with batch changes to their groups. */
@@ -102,6 +109,7 @@ export const ApplicationUsersTab = ({
   entry,
   memberships,
   membershipsError,
+  onManageUsers,
 }: ApplicationUsersTabProps) => {
   const rpc = useAdminRpc();
   const paths = useAdminPaths();
@@ -249,6 +257,13 @@ export const ApplicationUsersTab = ({
             ? "Loading users..."
             : `${plural(users.length, "user")} with access`}
         </Text>
+        <Button
+          className={`${classBase}-manageUsers`}
+          onClick={onManageUsers}
+          sentiment="accented"
+        >
+          <UserGroupIcon aria-hidden /> Manage users
+        </Button>
       </div>
 
       {selected.length > 0 ? (
@@ -266,7 +281,7 @@ export const ApplicationUsersTab = ({
             onSelect={(group) =>
               void run(
                 addToGroupsOperations(selected, [group], memberships),
-                `${who} added to ${group.groupName}.`,
+                `${who} added to ${groupLabel(entry, group)}.`,
               )
             }
           />
@@ -278,7 +293,7 @@ export const ApplicationUsersTab = ({
             onSelect={(group) =>
               void run(
                 moveToGroupOperations(entry, selected, group, memberships),
-                `${who} moved to ${group.groupName}.`,
+                `${who} moved to ${groupLabel(entry, group)}.`,
               )
             }
           />
@@ -290,7 +305,7 @@ export const ApplicationUsersTab = ({
             onSelect={(group) =>
               void run(
                 removeFromGroupOperations(selected, group, memberships),
-                `${who} removed from ${group.groupName}.`,
+                `${who} removed from ${groupLabel(entry, group)}.`,
               )
             }
           />
@@ -423,7 +438,7 @@ export const ApplicationUsersTab = ({
         {!loading && visible.length === 0 ? (
           <p className="vuuIdentityAdmin-empty">
             {users.length === 0
-              ? `No one can open ${entry.application.title} yet. Use Grant access to add users.`
+              ? `No one can open ${entry.application.title} yet. Use Manage users to give people access.`
               : "No users match the filter."}
           </p>
         ) : null}
