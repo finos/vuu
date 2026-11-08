@@ -22,7 +22,7 @@ import {
   type TimeString,
   type TimeStringMillis,
 } from "@vuu-ui/vuu-utils";
-import type { InputProps } from "@salt-ds/core";
+import type { ButtonAppearance, InputProps } from "@salt-ds/core";
 import { ToggleFilter, type ToggleFilterValue } from "@vuu-ui/vuu-filters";
 
 /**
@@ -32,6 +32,27 @@ import { ToggleFilter, type ToggleFilterValue } from "@vuu-ui/vuu-filters";
  * 'pick' to show a dropdown list, even before any text is entered, best for smaller lists
  */
 export type FilterControlVariant = "search" | "pick" | "toggle";
+
+const showToggleFilter = (
+  { serverDataType }: DataValueDescriptor,
+  variant?: FilterControlVariant,
+  values?: ToggleFilterValue[],
+  table?: TableSchemaTable,
+) => {
+  if (variant === "toggle") {
+    if (serverDataType === "boolean") {
+      return true;
+    }
+    if (serverDataType === "char" && values?.length) {
+      return true;
+    }
+    if (serverDataType === "string" && table && values?.length) {
+      return true;
+    }
+  }
+
+  return false;
+};
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
   TypeaheadProps?: Pick<
@@ -40,6 +61,10 @@ export interface DataItemEditControlProps {
     | "minCharacterCountToTriggerSuggestions"
     | "selectOnTab"
   >;
+  /**
+   * Appearance only currently honored bu ToggleFilter
+   */
+  appearance?: ButtonAppearance;
   className?: string;
   commitOnBlur?: boolean;
   commitWhenCleared?: boolean;
@@ -135,6 +160,7 @@ export type ValidationStatus = "initial" | true | string;
 export const getDataItemEditControl = ({
   InputProps,
   TypeaheadProps,
+  appearance,
   className,
   commitOnBlur,
   commitWhenCleared,
@@ -150,7 +176,6 @@ export const getDataItemEditControl = ({
   const dataVariant = variant && variant !== "toggle" ? variant : undefined;
   const temporalInfo = getTemporalInfo(dataDescriptor);
 
-  // WOnb't this prevent a filter on an non-editable field ?
   if (!isDataValueEditable(dataDescriptor, editOperation, true)) {
     return (
       <VuuInput
@@ -243,18 +268,14 @@ export const getDataItemEditControl = ({
         data-edit-control
       />
     );
-  } else if (
-    variant === "toggle" &&
-    (dataDescriptor.serverDataType === "boolean" ||
-      (dataDescriptor.serverDataType === "char" && values?.length))
-  ) {
+  } else if (showToggleFilter(dataDescriptor, variant, values)) {
     return (
       <ToggleFilter
+        appearance={appearance !== "transparent" ? appearance : undefined}
         className={className}
         column={dataDescriptor.name}
         data-edit-control
-        // typeahead only supports string columns
-        disableTypeahead
+        disableTypeahead={dataDescriptor.serverDataType !== "string"}
         labels={labels}
         onCommit={onCommit}
         table={table}
@@ -263,33 +284,18 @@ export const getDataItemEditControl = ({
       />
     );
   } else if (dataDescriptor.serverDataType === "string" && table) {
-    if (variant === "toggle" && values?.length) {
-      return (
-        <ToggleFilter
-          className={className}
-          column={dataDescriptor.name}
-          data-edit-control
-          labels={labels}
-          onCommit={onCommit}
-          table={table}
-          values={values}
-          value={InputProps?.inputProps?.value ?? "all"}
-        />
-      );
-    } else {
-      return (
-        <VuuTypeaheadInput
-          {...InputProps}
-          {...TypeaheadProps}
-          className={className}
-          column={dataDescriptor.name}
-          data-edit-control
-          data-variant={dataVariant}
-          onCommit={onCommit}
-          table={table}
-        />
-      );
-    }
+    return (
+      <VuuTypeaheadInput
+        {...InputProps}
+        {...TypeaheadProps}
+        className={className}
+        column={dataDescriptor.name}
+        data-edit-control
+        data-variant={dataVariant}
+        onCommit={onCommit}
+        table={table}
+      />
+    );
   }
 
   return (

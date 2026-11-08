@@ -1,14 +1,19 @@
 import {
   ToggleButton,
   ToggleButtonGroup,
-  ToggleButtonGroupProps,
+  type ToggleButtonGroupProps,
   Tooltip,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
+import type { CommitHandler } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  type SyntheticEvent,
+  useCallback,
+} from "react";
 import { type ToggleFilterHookProps, useToggleFilter } from "./useToggleFilter";
 
 export type ToggleFilterValue = string | number | boolean;
@@ -55,8 +60,7 @@ import toggleFilterCss from "./ToggleFilter.css";
  * disabled for a non-string (e.g. boolean or numeric) column.
  */
 export interface ToggleFilterProps
-  extends
-    Omit<ToggleButtonGroupProps, "defaultValue" | "value">,
+  extends Omit<ToggleButtonGroupProps, "defaultValue" | "value">,
     Omit<ToggleFilterHookProps, "values"> {
   defaultValue?: ToggleFilterValue | Value;
   /**
@@ -79,6 +83,7 @@ const NO_MATCHING_DATA = "No matching data";
 
 export const ToggleFilter = forwardRef(function ToggleFilter(
   {
+    appearance,
     className,
     column,
     defaultValue: defaultValueProp,
@@ -132,6 +137,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
   return (
     <ToggleButtonGroup
       {...ToggleButtonGroupProps}
+      appearance={appearance}
       className={cx(classBase, className)}
       defaultValue={defaultValue}
       onChange={handleChange}
