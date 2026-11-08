@@ -72,6 +72,19 @@ export const NestedProviders = () => {
   );
 };
 
+/**
+ * The button is outside the provider, as vuu-shell's WorkspaceProvider is.
+ * Its notifications are shown by the provider mounted on the page.
+ */
+export const CallerOutsideProvider = () => (
+  <div>
+    <RaiseButton />
+    <NotificationsProvider>
+      <span>Provider</span>
+    </NotificationsProvider>
+  </div>
+);
+
 /** The interceptor suppresses every notification, so no toast appears. */
 export const SuppressedNotifications = () => {
   const { interceptor, log } = useInterceptorLog("suppress");

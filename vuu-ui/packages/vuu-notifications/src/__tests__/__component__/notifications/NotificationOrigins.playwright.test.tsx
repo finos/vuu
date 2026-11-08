@@ -16,6 +16,18 @@ test.describe("NotificationsProvider", () => {
     ).toHaveCount(1);
   });
 
+  test("shows notifications from a caller outside the provider, as before", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Notifications/NotificationOrigins/CallerOutsideProvider",
+    );
+    await component.getByRole("button", { name: "Raise" }).click();
+    await expect(component.page().locator(".vuuToastNotification")).toHaveCount(
+      1,
+    );
+  });
+
   test("does not show notifications the interceptor suppresses", async ({
     mount,
   }) => {

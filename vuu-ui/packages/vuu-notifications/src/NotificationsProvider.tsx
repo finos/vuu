@@ -4,6 +4,7 @@ import {
   createContext,
   type ReactNode,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -83,7 +84,34 @@ const NotificationOriginContext = globalContext<NotificationOrigin | undefined>(
   undefined,
 );
 
+/**
+ * Outermost providers mounted on the page, most recent last. Kept on the
+ * global object for the same reason as the contexts.
+ */
+const globalProviders = globalThis as unknown as Record<
+  symbol,
+  NotificationsContextObject[] | undefined
+>;
+const providersKey = Symbol.for("vuu.notifications.providers");
+globalProviders[providersKey] ??= [];
+const mountedProviders = globalProviders[providersKey];
+
+/**
+ * Used by callers outside every provider: their notifications are shown by
+ * the most recently mounted provider, e.g. a component rendered above the
+ * provider in the same app.
+ */
 const noProvider = new NotificationsContextObject();
+noProvider.setNotify(
+  (notification) => {
+    const provider = mountedProviders.at(-1);
+    if (provider) {
+      return provider.showNotification(notification);
+    }
+    console.log("have you forgotten to provide a NotificationsProvider?");
+  },
+  (id) => mountedProviders.at(-1)?.hideNotification(id),
+);
 
 export interface NotificationsProviderProps {
   children?: ReactNode;
@@ -119,6 +147,12 @@ const OutermostNotificationsProvider = ({
 }: NotificationsProviderProps) => {
   const [context] = useState(() => new NotificationsContextObject());
   context.interceptor = interceptor;
+  useEffect(() => {
+    mountedProviders.push(context);
+    return () => {
+      mountedProviders.splice(mountedProviders.indexOf(context), 1);
+    };
+  }, [context]);
   const startupToastNotification = useMemo<
     ToastNotificationDescriptor | undefined
   >(() => {
