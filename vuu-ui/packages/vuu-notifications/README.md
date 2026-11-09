@@ -110,6 +110,35 @@ Two cases now behave differently. Neither occurs in this repository outside show
 - **Nested providers:** before, all providers shared one notification centre and the last one to mount, usually the innermost, showed every notification. Now the outermost provider shows them.
 - **Sibling providers:** two providers side by side now each show the notifications raised beneath them. Before, the last one to mount showed both sets.
 
+## Vuu server support
+
+The new attributes are filled in on the client, so they work with today's Vuu server. A portal gets more out of them if the server can also say who a notification concerns and how it should be treated. This section describes what the server sends today and what it would need to add.
+
+### What the server sends today
+
+The Vuu server notifies the client in two ways:
+
+- **RPC responses:** a response can carry a `SHOW_NOTIFICATION_ACTION` with `notificationType` (`Error`, `Warning` or `Info`), `title` and `message`. The client shows it as a toast.
+- **The `NOTIFICATIONS` module:** its `notifications` table has the columns `id`, `type`, `expiryTime`, `title`, `message`, `level` and `audience`, plus any columns the application adds. Rows are pushed to subscribers like any other table, so the server can notify users without a request.
+
+### What each attribute is for, and what the server would need
+
+| Attribute | What it's for in a portal | What the server would need |
+| --- | --- | --- |
+| `origin.moduleId` | Says which application a notification belongs to. The portal can then badge that application in its navigation, filter the notification history by application, and let the user mute an application. | **RPC responses:** nothing. The response returns to the application that made the request, and that application's `NotificationOriginProvider` sets the origin.<br>**`notifications` table:** a standard column naming the application, such as `module`, holding the application's client identifier. Without it, a notification can only be attributed to every application using that server. |
+| `origin.connectionId` | Says which Vuu server a notification came from, when a portal uses several. | Nothing: the client knows which connection a message arrived on. |
+| `origin.parentModuleId` | Attributes notifications from an application embedded in another to the outer application too. | Nothing: it comes from the nesting of origin providers on the client. |
+| Topic, for routing | Lets applications declare the kinds of notification they care about (for example `orders`), so the server doesn't need to know application names. | A standard `topic` column on the `notifications` table. |
+| `record` | Tells the portal whether to keep a notification in its history. A confirmation such as "Saved" needn't be kept; a rejected order should be. | An optional `record` field on `SHOW_NOTIFICATION_ACTION`. Rows in the `notifications` table are already a record, so they need nothing. |
+| `status` (level) | Sets the toast's colour and icon. The worst unread level can also badge the portal's notification bell. | A `Success` value in `NotificationType`, which has only `Error`, `Warning` and `Info`. The `level` column should use the same four values. |
+| `dismissal` | `"manual"` keeps a toast on screen until the user closes it. An error that needs acknowledging shouldn't disappear after a few seconds. | An optional `dismissal` field on `SHOW_NOTIFICATION_ACTION`, for example defaulting to manual for errors. |
+
+The interceptor needs nothing from the server: it runs on the client and sees server and client notifications alike.
+
+### Client changes to go with them
+
+The client needs changes too. The protocol type for `SHOW_NOTIFICATION_ACTION` in `@vuu-ui/vuu-protocol-types` has no `notificationType`, and the context-menu RPC handler shows every such notification as a success. Once the server sends the fields above, both should read `notificationType`, `record` and `dismissal` from the action and pass them to `showNotification`.
+
 ## Examples and tests
 
 - **Examples:** the showcase has examples under `Notifications/Toast` and `Notifications/NotificationOrigins`.
