@@ -4,12 +4,12 @@ import {
   useForkRef,
 } from "@salt-ds/core";
 import {
-  DataItemEditControlProps,
+  type DataItemEditControlProps,
   getDataItemEditControl,
 } from "@vuu-ui/vuu-data-react";
 import cx from "clsx";
-import { ForwardedRef, forwardRef, useMemo, useRef } from "react";
-import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
+import { type ForwardedRef, forwardRef, useMemo, useRef } from "react";
+import { type ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -28,7 +28,12 @@ export interface ColumnFilterProps
     Omit<SegmentedButtonGroupProps, "defaultValue">,
     Pick<
       DataItemEditControlProps,
-      "TypeaheadProps" | "labels" | "table" | "values" | "variant"
+      | "TypeaheadProps"
+      | "appearance"
+      | "labels"
+      | "table"
+      | "values"
+      | "variant"
     > {
   /**
    * Temporal columns only. The date/time pattern used by the filter control,
@@ -48,6 +53,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
   {
     InputProps: InputPropsProp,
     TypeaheadProps,
+    appearance,
     className,
     column,
     defaultValue,
@@ -171,6 +177,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       {isBetweenOperator(operator)
         ? getDataItemEditControl({
             InputProps: InputPropsRange,
+            appearance,
             className: `${classBase}-rangeHigh`,
             commitWhenCleared: true,
             variant,
