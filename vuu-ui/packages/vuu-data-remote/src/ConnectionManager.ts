@@ -1,4 +1,4 @@
-import {
+import type {
   ConnectOptions,
   DataSourceCallbackMessage,
   ServerAPI,
@@ -6,7 +6,7 @@ import {
   TableSchema,
   VuuUIMessageIn,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   SelectRequest,
   SelectResponse,
   VuuCreateVisualLink,
@@ -29,14 +29,14 @@ import {
   uuid,
 } from "@vuu-ui/vuu-utils";
 import {
-  ConnectionStatus,
-  WebSocketConnectionEvents,
+  type ConnectionStatus,
+  type WebSocketConnectionEvents,
   isWebSocketConnectionStatus,
 } from "./WebSocketConnection";
 import { DedicatedWorker } from "./DedicatedWorker";
 import { shouldMessageBeRoutedToDataSource } from "./data-source";
 
-import { ConnectionQualityMetrics } from "@vuu-ui/vuu-data-types";
+import type { ConnectionQualityMetrics } from "@vuu-ui/vuu-data-types";
 
 export type PostMessageToClientCallback = (
   msg: DataSourceCallbackMessage,
@@ -63,12 +63,19 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
   #deferredServerAPI = new DeferredPromise<ServerAPI>();
   #pendingRequests = new Map();
   #viewports = new Map<string, RegisteredViewport>();
-  // #worker?: Worker;
-  #worker: DedicatedWorker;
+  #dedicatedWorker: DedicatedWorker | undefined;
 
   private constructor() {
     super();
-    this.#worker = new DedicatedWorker(this.handleMessageFromWorker);
+  }
+
+  /**
+   * The worker is created on first use, so importing this module (e.g. in
+   * tests, or on a page that never connects) doesn't start one.
+   */
+  get #worker() {
+    this.#dedicatedWorker ??= new DedicatedWorker(this.handleMessageFromWorker);
+    return this.#dedicatedWorker;
   }
 
   public static get instance(): ConnectionManager {
@@ -116,12 +123,12 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
   }
 
   disableActiveSubscriptions() {
-    console.log(`[ConnectionManager] disableActiveSubscriptions`);
+    console.log("[ConnectionManager] disableActiveSubscriptions");
     this.#worker.send({ type: "disable-all-active" });
   }
 
   enableActiveSubscriptions() {
-    console.log(`[ConnectionManager] enableActiveSubscriptions`);
+    console.log("[ConnectionManager] enableActiveSubscriptions");
     this.#worker.send({ type: "enable-all-active" });
   }
 
@@ -176,7 +183,7 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     subscribe: (message, callback) => {
       if (this.#viewports.get(message.viewport)) {
         throw Error(
-          `ConnectionManager attempting to subscribe with an existing viewport id`,
+          "ConnectionManager attempting to subscribe with an existing viewport id",
         );
       }
       // TODO we never use this status
@@ -254,7 +261,8 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
   }
 
   destroy() {
-    this.#worker.terminate();
+    this.#dedicatedWorker?.terminate();
+    this.#dedicatedWorker = undefined;
   }
 }
 
