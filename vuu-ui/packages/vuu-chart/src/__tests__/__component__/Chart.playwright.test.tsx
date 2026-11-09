@@ -1,5 +1,5 @@
+import { PwChart } from "@vuu-ui/vuu-playwright-helpers";
 import { expect, test } from "../../../../../playwright/fixtures";
-
 
 test.describe("Chart examples", () => {
   test("renders a chart from the simple line chart example", async ({
@@ -51,5 +51,23 @@ test.describe("Chart examples", () => {
           (await chartElement.locator("svg").boundingBox())?.height ?? 0,
       )
       .toBeLessThan(viewSvgHeight);
+  });
+
+  test("WHEN a data point is hovered THEN its series is emphasised in the tooltip", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Chart/LineChart/SimpleLineChart");
+    const chart = new PwChart(page);
+    const tooltip = page.locator(".vuuChartTooltip");
+    const hoveredEntry = tooltip.locator(".vuuChart-tooltip-entry-hovered");
+
+    await (await chart.dataPoint("price", 3)).hover();
+    await expect(hoveredEntry).toHaveCount(1);
+    await expect(hoveredEntry).toContainText("price");
+
+    await (await chart.dataPoint("volume", 3)).hover();
+    await expect(hoveredEntry).toHaveCount(1);
+    await expect(hoveredEntry).toContainText("volume");
   });
 });

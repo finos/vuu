@@ -119,6 +119,7 @@ export const Chart = ({
     columnMap,
   });
   const {
+    getHoveredSeries,
     itemColorFunction,
     onClick,
     onMouseOut,
@@ -136,6 +137,7 @@ export const Chart = ({
     palette,
     dataExclusions,
     dataSource,
+    getHoveredSeries,
     seriesColumnNames,
     symbolSizeFunction,
     showTooltip,

@@ -10,7 +10,7 @@ import type {
   SymbolType,
 } from "./chart-types";
 import { ChartSeries } from "./ChartSeries";
-import { chartTooltip } from "./chartTooltip";
+import { createChartTooltip, type HoveredSeriesGetter } from "./chartTooltip";
 
 /**
  * Hex values of the theme's categorical palette, --salt-palette-categorical-1
@@ -63,6 +63,10 @@ export interface ChartOptionsProps {
   config: ChartConfig;
   dataExclusions?: DataExclusionOptions;
   dataSource: DataSource;
+  /**
+   * The series under the pointer. Its tooltip entry is emphasised.
+   */
+  getHoveredSeries?: HoveredSeriesGetter;
   itemColorFunction?: ItemColorFunction;
   palette?: string[];
   seriesColumnNames: string[];
@@ -77,11 +81,14 @@ const combineConfig = (config: ChartConfig, overrides: ChartConfig) => {
   };
 };
 
+const noHoveredSeries: HoveredSeriesGetter = () => undefined;
+
 export const useChartOptions = ({
   categoryColumnName,
   config,
   dataExclusions,
   dataSource,
+  getHoveredSeries = noHoveredSeries,
   itemColorFunction,
   palette = defaultPalette,
   seriesColumnNames,
@@ -110,6 +117,11 @@ export const useChartOptions = ({
     });
     return cs;
   }, [dataSource, config]);
+
+  const tooltipFormatter = useMemo(
+    () => createChartTooltip(getHoveredSeries),
+    [getHoveredSeries],
+  );
 
   const chartSeriesRef = useRef(chartSeries);
   chartSeriesRef.current = chartSeries;
@@ -170,16 +182,16 @@ export const useChartOptions = ({
     series: chartSeries.series,
     tooltip: showTooltip
       ? {
-        alwaysShowContent: true,
-        backgroundColor: "",
-        borderColor: "",
-        // borderWidth: "",
-        className: "vuuChartTooltip",
-        enterable: true,
-        formatter: chartTooltip,
-        // padding: "",
-        trigger: "axis",
-      }
+          alwaysShowContent: true,
+          backgroundColor: "",
+          borderColor: "",
+          // borderWidth: "",
+          className: "vuuChartTooltip",
+          enterable: true,
+          formatter: tooltipFormatter,
+          // padding: "",
+          trigger: "axis",
+        }
       : undefined,
     xAxis: {
       // The axis pointer would otherwise highlight the symbols under it,

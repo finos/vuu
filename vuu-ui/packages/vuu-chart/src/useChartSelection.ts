@@ -76,6 +76,11 @@ export const useChartSelection = (_props: ChartSelectionHookProps) => {
     setHighlightedKey((highlightedKeyRef.current = undefined));
   }, []);
 
+  const getHoveredSeries = useCallback(
+    () => highlightedKeyRef.current?.column,
+    [],
+  );
+
   const itemColorFunction = useCallback<ItemColorFunction>(
     ({ color, data, seriesName }) => {
       return dataItemInList(selectedKeysRef.current, seriesName, data.key)
@@ -101,6 +106,7 @@ export const useChartSelection = (_props: ChartSelectionHookProps) => {
   );
 
   return {
+    getHoveredSeries,
     onClick: handleClick,
     onMouseOver: handleMouseOver,
     onMouseOut: handleMouseOut,

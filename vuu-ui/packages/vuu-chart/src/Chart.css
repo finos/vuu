@@ -24,9 +24,16 @@
   --vuuChart-color-7: #c69d26;
   --vuuChart-color-8: #5c8a3a;
 
+  /* Tooltip entry of the series whose data point is under the pointer.
+     Used by css only. Override in application css. */
+  --vuuChart-tooltip-hovered-background: var(--salt-container-tertiary-background);
+  --vuuChart-tooltip-hovered-foreground: var(--salt-content-primary-foreground);
+  --vuuChart-tooltip-hovered-fontWeight: var(--salt-text-fontWeight-strong);
+  --vuuChart-tooltip-hovered-iconOutlineColor: var(--salt-content-primary-foreground);
+
     .vuuChartTooltip {
-        background-color: var(--salt-container-primary-background) !important;
-        border-color:var(--salt-selectable-borderColor-selected) !important;
+        background-color: var(--vuuChart-tooltip-background) !important;
+        border-color: var(--vuuChart-tooltip-borderColor) !important;
         border-radius: 6px !important;
         font-family: var(--salt-text-fontFamily)  !important;
         /* ECharts sets an inline z-index of 9999999. Popout level keeps the
@@ -39,8 +46,13 @@
 
         .vuuChart-tooltip-entry {
             align-items: center;
+            border-radius: 4px;
             display: flex;
             gap: 6px;
+            /* Negative margin keeps text aligned with the title, while the
+               hovered entry's background extends beyond it. */
+            margin: 0 -4px;
+            padding: 0 4px;
 
             .vuuChart-tooltip-icon {
                 border-radius: 12px;
@@ -61,6 +73,21 @@
                 color: var(--salt-content-primary-foreground) !important;
                 font-size: var(--salt-text-label-fontSize) !important;
                 text-align: right;
+            }
+        }
+
+        /* Entry of the series whose data point is under the pointer */
+        .vuuChart-tooltip-entry-hovered {
+            background: var(--vuuChart-tooltip-hovered-background);
+
+            .vuuChart-tooltip-icon {
+                outline: 2px solid var(--vuuChart-tooltip-hovered-iconOutlineColor);
+                outline-offset: 1px;
+            }
+            .vuuChart-tooltip-label,
+            .vuuChart-tooltip-value {
+                color: var(--vuuChart-tooltip-hovered-foreground) !important;
+                font-weight: var(--vuuChart-tooltip-hovered-fontWeight);
             }
         }
     }
