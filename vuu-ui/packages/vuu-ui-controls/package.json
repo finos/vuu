@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-context-menu": "4.2.8",
-    "@vuu-ui/vuu-data-react": "4.2.8",
     "@vuu-ui/vuu-layout": "4.2.8",
     "@vuu-ui/vuu-popups": "4.2.8",
     "@vuu-ui/vuu-table": "4.2.8",
