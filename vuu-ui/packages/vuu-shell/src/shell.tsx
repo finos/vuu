@@ -3,7 +3,10 @@ import { useWindow } from "@salt-ds/window";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
-import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
+import {
+  NotificationsProvider,
+  useServerNotifications,
+} from "@vuu-ui/vuu-notifications";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import {
@@ -29,10 +32,7 @@ import {
   useWorkspaceContextMenuItems,
 } from "./workspace-management";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
-import {
-  useLostConnection,
-  useServerNotifications,
-} from "@vuu-ui/vuu-data-react";
+import { useLostConnection } from "@vuu-ui/vuu-data-react";
 
 import shellCss from "./shell.css";
 

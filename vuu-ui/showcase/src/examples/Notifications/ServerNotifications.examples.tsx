@@ -1,6 +1,8 @@
-import { useServerNotifications } from "@vuu-ui/vuu-data-react";
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
-import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
+import {
+  NotificationsProvider,
+  useServerNotifications,
+} from "@vuu-ui/vuu-notifications";
 import type { ShowNotificationAction } from "@vuu-ui/vuu-protocol-types";
 
 const notifications: Record<string, ShowNotificationAction> = {

@@ -1,8 +1,9 @@
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import type { ShowNotificationAction } from "@vuu-ui/vuu-protocol-types";
-import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { getServerNotificationStatus } from "@vuu-ui/vuu-utils";
 import { useEffect } from "react";
+import { NotificationType } from "./NotificationsContext";
+import { useNotifications } from "./NotificationsProvider";
 
 /**
  * Shows, as toasts, the notifications the server attaches to RPC responses,

@@ -20,3 +20,4 @@ export {
   ToastNotification,
   type ToastNotificationProps,
 } from "./ToastNotification";
+export { useServerNotifications } from "./useServerNotifications";
