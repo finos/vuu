@@ -33,6 +33,7 @@ import {
 } from "./workspace-management";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 import { useLostConnection } from "@vuu-ui/vuu-data-react";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 
 import shellCss from "./shell.css";
 
@@ -122,7 +123,7 @@ const VuuApplication = ({
   });
 
   useLostConnection();
-  useServerNotifications();
+  useServerNotifications(ConnectionManager);
 
   return isLayoutLoading ? null : (
     <ContextMenuProvider

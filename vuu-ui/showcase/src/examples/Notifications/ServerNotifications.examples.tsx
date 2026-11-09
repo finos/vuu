@@ -24,7 +24,7 @@ const notifications: Record<string, ShowNotificationAction> = {
 };
 
 const ServerNotificationButtons = () => {
-  useServerNotifications();
+  useServerNotifications(ConnectionManager);
   return Object.entries(notifications).map(([label, action]) => (
     <button
       key={label}

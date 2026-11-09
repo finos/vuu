@@ -140,7 +140,7 @@ The interceptor needs nothing from the server: it runs on the client and sees se
 The client shows the notifications on both kinds of RPC response at the server's level: `Error`, `Warning` and `Info` are shown with those statuses, and an action without a `notificationType` as a success. Without a `title`, the header names the status. The mapping is `getServerNotificationStatus` in `@vuu-ui/vuu-utils`.
 
 - **Context-menu RPCs:** the menu action handler shows the notification.
-- **Other RPCs:** the caller gets only the response's `result`, so `ConnectionManager` emits the notification as a `server-notification` event. `useServerNotifications` shows these; vuu-shell calls it. An application that doesn't use the shell calls it once itself. A caller that also reports the `ERROR_RESULT`, such as the session editing form, shows the error twice: inline and as a toast.
+- **Other RPCs:** the caller gets only the response's `result`, so `ConnectionManager` emits the notification as a `server-notification` event. `useServerNotifications(ConnectionManager)` shows these. The hook takes the event source as an argument, so this package doesn't depend on `@vuu-ui/vuu-data-remote`. vuu-shell calls it; an application that doesn't use the shell calls it once itself. A caller that also reports the `ERROR_RESULT`, such as the session editing form, shows the error twice: inline and as a toast.
 
 Two client changes remain:
 
