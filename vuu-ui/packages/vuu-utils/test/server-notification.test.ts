@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getServerNotificationStatus } from "../src/protocol-message-utils";
+import {
+  getServerNotificationStatus,
+  hasRpcResponseNotification,
+} from "../src/protocol-message-utils";
 
 describe("getServerNotificationStatus", () => {
   it("maps each server notification type to a toast status", () => {
@@ -33,5 +36,32 @@ describe("getServerNotificationStatus", () => {
       header: "Failed to process cancelOrder request",
       status: "error",
     });
+  });
+});
+
+describe("hasRpcResponseNotification", () => {
+  const action = {
+    message: "Order 123 not found",
+    notificationType: "Error",
+    type: "SHOW_NOTIFICATION_ACTION",
+  };
+
+  it("matches an RPC response that carries a notification", () => {
+    expect(
+      hasRpcResponseNotification({ action, requestId: "1", type: "RPC_RESPONSE" }),
+    ).toBe(true);
+  });
+
+  it("ignores other responses and other actions", () => {
+    expect(
+      hasRpcResponseNotification({ action, type: "VIEW_PORT_MENU_RESP" }),
+    ).toBe(false);
+    expect(
+      hasRpcResponseNotification({
+        action: { type: "NO_ACTION" },
+        type: "RPC_RESPONSE",
+      }),
+    ).toBe(false);
+    expect(hasRpcResponseNotification({ type: "RPC_RESPONSE" })).toBe(false);
   });
 });

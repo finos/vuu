@@ -125,7 +125,7 @@ The Vuu server notifies the client in two ways:
 
 | Attribute | What it's for in a portal | What the server would need |
 | --- | --- | --- |
-| `origin.moduleId` | Says which application a notification belongs to. The portal can then badge that application in its navigation, filter the notification history by application, and let the user mute an application. | **RPC responses:** nothing. The response returns to the application that made the request, and that application's `NotificationOriginProvider` sets the origin.<br>**`notifications` table:** a standard column naming the application, such as `module`, holding the application's client identifier. Without it, a notification can only be attributed to every application using that server. |
+| `origin.moduleId` | Says which application a notification belongs to. The portal can then badge that application in its navigation, filter the notification history by application, and let the user mute an application. | **RPC responses:** nothing. The response returns to the application that made the request, and that application's `NotificationOriginProvider` sets the origin. (Today this holds for context-menu RPCs only; see below.)<br>**`notifications` table:** a standard column naming the application, such as `module`, holding the application's client identifier. Without it, a notification can only be attributed to every application using that server. |
 | `origin.connectionId` | Says which Vuu server a notification came from, when a portal uses several. | Nothing: the client knows which connection a message arrived on. |
 | `origin.parentModuleId` | Attributes notifications from an application embedded in another to the outer application too. | Nothing: it comes from the nesting of origin providers on the client. |
 | Topic, for routing | Lets applications declare the kinds of notification they care about (for example `orders`), so the server doesn't need to know application names. | A standard `topic` column on the `notifications` table. |
@@ -137,16 +137,19 @@ The interceptor needs nothing from the server: it runs on the client and sees se
 
 ### Client changes to go with them
 
-The context-menu RPC handler reads `notificationType` from the action: `Error`, `Warning` and `Info` are shown with those statuses, and an action without one as a success. Without a `title`, the header names the status. The mapping is `getServerNotificationStatus` in `@vuu-ui/vuu-utils`.
+The client shows the notifications on both kinds of RPC response at the server's level: `Error`, `Warning` and `Info` are shown with those statuses, and an action without a `notificationType` as a success. Without a `title`, the header names the status. The mapping is `getServerNotificationStatus` in `@vuu-ui/vuu-utils`.
+
+- **Context-menu RPCs:** the menu action handler shows the notification.
+- **Other RPCs:** the caller gets only the response's `result`, so `ConnectionManager` emits the notification as a `server-notification` event. `useServerNotifications` from `@vuu-ui/vuu-data-react` shows these; vuu-shell calls it. An application that doesn't use the shell calls it once itself. A caller that also reports the `ERROR_RESULT`, such as the session editing form, shows the error twice: inline and as a toast.
 
 Two client changes remain:
 
-- **Generic RPC responses:** the client returns only the `result` of an `RPC_RESPONSE` to the caller, so a `SHOW_NOTIFICATION_ACTION` on it, such as the server's "Failed to process … request" error, is not shown. Callers see the `ERROR_RESULT` and report it themselves.
-- **New fields:** once the server sends `record` and `dismissal`, the handler should pass them to `showNotification` as well.
+- **Origin of other RPC notifications:** the event isn't tied to the request that caused it, so these notifications get the origin of wherever `useServerNotifications` is called, not of the application that made the request. Passing the notification back to the caller would fix this.
+- **New fields:** once the server sends `record` and `dismissal`, both handlers should pass them to `showNotification` as well.
 
 ## Examples and tests
 
-- **Examples:** the showcase has examples under `Notifications/Toast` and `Notifications/NotificationOrigins`.
+- **Examples:** the showcase has examples under `Notifications/Toast`, `Notifications/NotificationOrigins` and `Notifications/ServerNotifications`.
 - **Component tests:** in `src/__tests__/__component__`, run with:
 
   ```sh

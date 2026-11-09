@@ -299,3 +299,14 @@ export const getServerNotificationStatus = ({
     : "success";
   return { header: title ?? defaultNotificationTitle[status], status };
 };
+
+/**
+ * A response to a generic RPC_REQUEST that carries a notification for the
+ * user, such as the server's report that the request failed.
+ */
+export const hasRpcResponseNotification = (
+  message: object,
+): message is { action: ShowNotificationAction; type: "RPC_RESPONSE" } =>
+  (message as { type?: string }).type === "RPC_RESPONSE" &&
+  (message as { action?: { type?: string } }).action?.type ===
+    "SHOW_NOTIFICATION_ACTION";

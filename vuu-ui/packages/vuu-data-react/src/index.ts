@@ -15,4 +15,5 @@ export {
 } from "./hooks/useVuuMenuActions";
 export { useVuuTables } from "./hooks/useVuuTables";
 export { useLostConnection } from "./lost-connection-indicator/useLostConnection";
+export { useServerNotifications } from "./hooks/useServerNotifications";
 export * from "./session-editing-form";

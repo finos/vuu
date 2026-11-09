@@ -29,7 +29,10 @@ import {
   useWorkspaceContextMenuItems,
 } from "./workspace-management";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
-import { useLostConnection } from "@vuu-ui/vuu-data-react";
+import {
+  useLostConnection,
+  useServerNotifications,
+} from "@vuu-ui/vuu-data-react";
 
 import shellCss from "./shell.css";
 
@@ -119,6 +122,7 @@ const VuuApplication = ({
   });
 
   useLostConnection();
+  useServerNotifications();
 
   return isLayoutLoading ? null : (
     <ContextMenuProvider

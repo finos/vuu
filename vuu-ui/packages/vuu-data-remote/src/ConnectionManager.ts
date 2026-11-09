@@ -16,10 +16,12 @@ import {
   VuuTableList,
   VuuTableListRequest,
   VuuTableMetaRequest,
+  ShowNotificationAction,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   DeferredPromise,
   EventEmitter,
+  hasRpcResponseNotification,
   isConnectionQualityMetrics,
   isRequestResponse,
   isTableSchemaMessage,
@@ -42,6 +44,11 @@ export type PostMessageToClientCallback = (
 
 export type ConnectionEvents = WebSocketConnectionEvents & {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
+  /**
+   * A notification the server attached to an RPC response. The caller gets
+   * only the response's result, so the notification is emitted here.
+   */
+  "server-notification": (action: ShowNotificationAction) => void;
 };
 
 type RegisteredViewport = {
@@ -136,6 +143,9 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     } else if (isConnectionQualityMetrics(message)) {
       this.emit("connection-metrics", message);
     } else if (isRequestResponse(message)) {
+      if (hasRpcResponseNotification(message)) {
+        this.emit("server-notification", message.action);
+      }
       const { requestId } = message;
       if (this.#pendingRequests.has(requestId)) {
         const { resolve } = this.#pendingRequests.get(requestId);
