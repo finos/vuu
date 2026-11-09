@@ -166,6 +166,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       {getDataItemEditControl({
         InputProps,
         TypeaheadProps,
+        appearance,
         commitWhenCleared: true,
         dataDescriptor: controlDescriptor,
         labels,
