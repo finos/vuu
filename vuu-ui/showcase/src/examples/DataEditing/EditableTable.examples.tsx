@@ -11,7 +11,7 @@ import {
   TableEditorTable,
   TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
-import { ModalProvider } from "@vuu-ui/core";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 import { useData } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
