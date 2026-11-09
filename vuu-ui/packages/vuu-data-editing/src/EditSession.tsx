@@ -826,7 +826,13 @@ export class EditSession
 
       try {
         if (sessionDataSource.status !== "unsubscribed" || saveChanges) {
-          await this.dataSource?.endEditSession?.(saveChanges, force);
+          const response = await this.dataSource?.endEditSession?.(
+            saveChanges,
+            force,
+          );
+          if (isRpcError(response)) {
+            throw new Error(response.errorMessage);
+          }
         }
         sessionDataSource.removeListener?.(
           "unsubscribed",
