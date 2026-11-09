@@ -9,6 +9,9 @@
     "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
+  "devDependencies": {
+    "@vuu-ui/vuu-protocol-types": "4.2.3"
+  },
   "dependencies": {
     "@salt-ds/core": "1.74.0",
     "@salt-ds/styles": "0.4.2",

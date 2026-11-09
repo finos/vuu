@@ -880,9 +880,14 @@ export interface ServerToClientHeartBeat {
 export declare type VuuTableList = Pick<VuuTableListResponse, "tables">;
 
 // Menu Response Actions
+/** The level of a notification sent by the server. */
+export declare type ServerNotificationType = "Error" | "Warning" | "Info";
+
 export interface ShowNotificationAction {
   type: "SHOW_NOTIFICATION_ACTION";
   message: string;
+  /** Absent from servers that predate it; the notification is then a success. */
+  notificationType?: ServerNotificationType;
   title?: string;
 }
 
