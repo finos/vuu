@@ -6,7 +6,7 @@ import {
   type MenuActionHandler,
   type MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import {
+import type {
   DataSource,
   DataSourceVisualLinkCreatedMessage,
   RpcResponseHandler,
@@ -38,6 +38,7 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import {
   getLayoutComponent,
+  getServerNotificationStatus,
   isActionMessage,
   isCustomComponentActionMessage,
   isSessionTableActionMessage,
@@ -45,8 +46,8 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 import {
-  FormConfig,
-  FormFieldDescriptor,
+  type FormConfig,
+  type FormFieldDescriptor,
   SessionEditingForm,
 } from "../session-editing-form";
 import { useModal } from "@vuu-ui/vuu-ui-controls";
@@ -258,7 +259,7 @@ const configFromSchema = (schema?: TableSchema): FormConfig | undefined => {
     const { columns, key } = schema;
     return {
       key,
-      title: `Parameters for command`,
+      title: "Parameters for command",
       fields: columns
         .map((col) => ({
           description: col.name,
@@ -372,7 +373,7 @@ export const useVuuMenuActions = ({
       }
 
       //will the tableSchema be different to ds?
-      const sessionDs = await ds.createSessionDataSource?.('All');
+      const sessionDs = await ds.createSessionDataSource?.("All");
       const handleSubmit = () => {
         sessionDs?.rpcRequest?.({
           params: {
@@ -454,13 +455,10 @@ export const useVuuMenuActions = ({
               }
               if (isActionMessage(rpcResponse)) {
                 if (hasShowNotificationAction(rpcResponse)) {
-                  const {
-                    action: { message, title = "Success" },
-                  } = rpcResponse;
+                  const { action } = rpcResponse;
                   showNotification({
-                    status: "success",
-                    content: message,
-                    header: title,
+                    ...getServerNotificationStatus(action),
+                    content: action.message,
                     type: NotificationType.Toast,
                   });
                 } else if (isSessionTableActionMessage(rpcResponse)) {

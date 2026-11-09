@@ -137,7 +137,12 @@ The interceptor needs nothing from the server: it runs on the client and sees se
 
 ### Client changes to go with them
 
-The client needs changes too. The protocol type for `SHOW_NOTIFICATION_ACTION` in `@vuu-ui/vuu-protocol-types` has no `notificationType`, and the context-menu RPC handler shows every such notification as a success. Once the server sends the fields above, both should read `notificationType`, `record` and `dismissal` from the action and pass them to `showNotification`.
+The context-menu RPC handler reads `notificationType` from the action: `Error`, `Warning` and `Info` are shown with those statuses, and an action without one as a success. Without a `title`, the header names the status. The mapping is `getServerNotificationStatus` in `@vuu-ui/vuu-utils`.
+
+Two client changes remain:
+
+- **Generic RPC responses:** the client returns only the `result` of an `RPC_RESPONSE` to the caller, so a `SHOW_NOTIFICATION_ACTION` on it, such as the server's "Failed to process … request" error, is not shown. Callers see the `ERROR_RESULT` and report it themselves.
+- **New fields:** once the server sends `record` and `dismissal`, the handler should pass them to `showNotification` as well.
 
 ## Examples and tests
 

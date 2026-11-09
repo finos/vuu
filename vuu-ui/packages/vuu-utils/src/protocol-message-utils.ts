@@ -6,7 +6,7 @@ import type {
   TableSchema,
   VuuUiMessageInRequestResponse,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   VuuRpcMenuRequest,
   OpenDialogAction,
   VuuRpcRequest,
@@ -28,6 +28,7 @@ import {
   LoginErrorMessage,
   RpcResult,
   RpcResultSuccess,
+  ShowNotificationAction,
   RpcResultError,
   VuuColumnDataType,
   VuuNumericType,
@@ -271,3 +272,30 @@ export const isCreateSessionTableRpcRequest = (
   rpcRequest: VuuRpcServiceRequest,
 ): rpcRequest is CreateSessionTableRpcServiceRequest =>
   rpcRequest.rpcName === "createSessionTable";
+
+const serverNotificationStatus = {
+  Error: "error",
+  Info: "info",
+  Warning: "warning",
+} as const;
+
+const defaultNotificationTitle = {
+  error: "Error",
+  info: "Information",
+  success: "Success",
+  warning: "Warning",
+} as const;
+
+/**
+ * The status and header of the toast for a server's SHOW_NOTIFICATION_ACTION.
+ * An action without a notificationType is a success.
+ */
+export const getServerNotificationStatus = ({
+  notificationType,
+  title,
+}: Pick<ShowNotificationAction, "notificationType" | "title">) => {
+  const status: keyof typeof defaultNotificationTitle = notificationType
+    ? serverNotificationStatus[notificationType]
+    : "success";
+  return { header: title ?? defaultNotificationTitle[status], status };
+};
