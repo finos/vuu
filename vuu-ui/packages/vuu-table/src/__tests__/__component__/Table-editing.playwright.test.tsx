@@ -1297,6 +1297,10 @@ test.describe("Editable table navigation", () => {
     await expect(listbox).not.toBeVisible();
     await table.assertCellIsFocused(currencyRow3, "combobox");
 
+    // The focus outline stays while the pointer is over the dropdown
+    await dropdownRow3.hover();
+    await expect(dropdownRow3).toHaveCSS("outline-style", "solid");
+
     // A focused, closed dropdown leaves arrow keys to table navigation
     await dropdownRow3.press("ArrowDown");
     await table.assertCellIsFocused(currencyRow4);

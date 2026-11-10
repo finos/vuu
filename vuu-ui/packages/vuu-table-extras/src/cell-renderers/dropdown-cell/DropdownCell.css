@@ -24,10 +24,11 @@
 }
 
 /* Focus is shown on the Dropdown, as on an InputCell: solid while the cell
-   or Dropdown has focus, dashed while the list is open (as when editing). */
+   or Dropdown has focus, dashed while the list is open (as when editing).
+   .saltDropdown raises specificity above Salt's .saltDropdown:focus:hover. */
 .vuuTableCell-editable:focus-within,
 .vuuTableCell:focus {
-  .vuuTableDropdownCell {
+  .vuuTableDropdownCell.saltDropdown {
     border-color: transparent;
     outline: solid var(--salt-editable-borderColor-active) 2px;
     outline-offset: -1px;
