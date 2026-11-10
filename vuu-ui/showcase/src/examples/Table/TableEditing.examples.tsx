@@ -1,4 +1,8 @@
 import {
+  DataEditingProvider,
+  DirectEditSession,
+} from "@vuu-ui/vuu-data-editing";
+import {
   LocalDataSourceProvider,
   VuuTableName,
   getSchema,
@@ -66,8 +70,14 @@ const TableTemplate = ({
     schema,
   ]);
 
+  // Cells only commit edits through an edit session
+  const editSession = useMemo(
+    () => new DirectEditSession({ dataSource }),
+    [dataSource],
+  );
+
   return (
-    <>
+    <DataEditingProvider editSession={editSession}>
       <Table
         config={config}
         dataSource={dataSource}
@@ -79,7 +89,7 @@ const TableTemplate = ({
         width={9200}
       />
       <DataSourceStats dataSource={dataSource} style={{ height: 32 }} />
-    </>
+    </DataEditingProvider>
   );
 };
 

@@ -1381,6 +1381,38 @@ test.describe("Editable table navigation", () => {
     await table.assertCellIsFocused(nextCell);
   });
 
+  test("typing a character in a focused dropdown cell, then Enter, commits the matching option", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    // Safari doesn't transfer focus on 'vuu-commit'
+    test.skip(browserName === "webkit");
+
+    await mount("Table/Editing/EditableInstruments");
+    const table = new PwTable(page);
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    const bbgCell = table.locateCell(3, 1);
+    const currencyCell = table.locateCell(3, 2);
+    const dropdown = currencyCell.getByRole("combobox");
+    const nextCell = table.locateCell(4, 2);
+    const listbox = page.getByRole("listbox");
+
+    await bbgCell.click();
+    await bbgCell.press("ArrowRight");
+    await table.assertCellIsFocused(currencyCell);
+
+    await currencyCell.press("s");
+    await expect(listbox.locator(".saltOption-active")).toHaveText("SEK");
+
+    await dropdown.press("Enter");
+    await expect(listbox).not.toBeVisible();
+    await table.assertCellContent(currencyCell, "SEK", "combobox");
+    await table.assertCellIsFocused(nextCell);
+  });
+
   test("In edit mode, with cell navigation disabled, arrow key navigation traverses editable cells only", async ({
     mount,
     page,
