@@ -55,7 +55,12 @@ import tableCss from "./Table.css";
 
 const classBase = "vuuTable";
 
-export type TableNavigationStyle = "none" | "cell" | "row" | "tree";
+export type TableNavigationStyle =
+  | "none"
+  | "cell"
+  | "editable-cell"
+  | "row"
+  | "tree";
 
 // A dummy Table Row rendered once and not visible. We measure this to
 // determine height of Row(s) and monitor it for size changes (in
@@ -193,6 +198,9 @@ export interface TableProps extends Omit<
 
   /**
    * Determines bahaviour of keyboard navigation , either row focused or cell focused.
+   * `editable-cell` is cell navigation that moves only between editable cells,
+   * when the table has editable columns. `cell` does the same only while an edit
+   * session is in progress.
    * `tree` is a specialised navigation behaviour only useful where table is being
    * used to present purely grouped data (see TreeTable)
    */
@@ -379,6 +387,7 @@ const TableCore = ({
     draggableRow,
     editSessionInProgress,
     focusCellPlaceholderKeyDown,
+    hasEditableColumns,
     focusCellPlaceholderRef,
     getRowOffset,
     handleColumnAction,
@@ -494,6 +503,7 @@ const TableCore = ({
           {...tableProps}
           className={cx(`${classBase}-table`, {
             [`${classBase}-editing`]: editSessionInProgress,
+            [`${classBase}-editable`]: hasEditableColumns,
           })}
           role="table"
           tabIndex={disableFocus ? undefined : -1}

@@ -58,9 +58,11 @@ export const getTableCell = (
   const cell = getTableCellElement(containerRef, cellPos);
 
   if (cellIsEditable(cell)) {
-    // Dropdown gets focus, Input does not
+    // Controls that don't use arrow keys (buttons, checkboxes) take focus
+    // directly. Controls that do (Input, Dropdown) leave focus on the cell
+    // until Enter moves it into the control.
     const focusableContent = cell.querySelector(
-      `button,input[type="checkbox"]`,
+      `button:not(.saltDropdown),input[type="checkbox"]`,
     ) as HTMLElement;
     return focusableContent || cell;
   } else {
@@ -96,6 +98,16 @@ export const cellDropdownShowing = (cell: HTMLDivElement | null) => {
   return false;
 };
 
+/**
+ * A closed Salt Dropdown calls preventDefault on ArrowUp/ArrowDown/Home/End
+ * (it would open its list). A cell Dropdown can be focused while closed, after
+ * a click or Escape. It only opens on Enter or click, so these keys belong to
+ * table navigation.
+ */
+export const isClosedCellDropdown = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  target.matches('.vuuTableCell-editable .saltDropdown[aria-expanded="false"]');
+
 const cellIsGroupCell = (cell: HTMLElement | null) =>
   cell?.classList.contains("vuuTableGroupCell");
 
@@ -112,6 +124,9 @@ const rowIsExpanded = (cell: HTMLElement) => {
 
 export const cellIsTextInput = (cell: HTMLElement) =>
   cell.querySelector(".vuuTableInputCell") !== null;
+
+export const getCellDropdown = (cell: HTMLElement) =>
+  cell.querySelector<HTMLButtonElement>(".saltDropdown");
 
 export const getRowElementByAriaIndex = (
   container: HTMLDivElement | EventTarget,

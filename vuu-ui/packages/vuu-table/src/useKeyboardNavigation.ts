@@ -50,6 +50,7 @@ export const isNavigationKey = (
 ): key is NavigationKey => {
   switch (navigationStyle) {
     case "cell":
+    case "editable-cell":
     case "tree":
       return cellNavigationKeys.has(key as NavigationKey);
     case "row":
@@ -117,7 +118,8 @@ export interface NavigationHookProps {
   defaultHighlightedIndex?: number;
   disableFocus?: boolean;
   disableHighlightOnFocus?: boolean;
-  editSessionInProgress?: boolean;
+  /** Arrow keys move only between editable cells */
+  editableCellsOnly?: boolean;
   focusCell: FocusCell;
   focusCellWhenRendered: FocusCellWhenRendered;
   highlightedIndex?: number;
@@ -139,7 +141,7 @@ export const useKeyboardNavigation = ({
   containerRef,
   defaultHighlightedIndex,
   disableHighlightOnFocus,
-  editSessionInProgress,
+  editableCellsOnly,
   focusCell,
   focusCellWhenRendered,
   headerCount,
@@ -298,7 +300,7 @@ export const useKeyboardNavigation = ({
         onToggleGroup(treeNodeOperation, rowIdx - headerCount - 1);
       } else if (treeNodeOperation === "level-up") {
         [nextRowIdx, nextColIdx] = getLevelUp(containerRef, cellPos);
-      } else if (editSessionInProgress) {
+      } else if (editableCellsOnly) {
         [nextRowIdx, nextColIdx] = getNextEditableCellPos(
           containerRef,
           key,
@@ -325,7 +327,7 @@ export const useKeyboardNavigation = ({
       nextPageItemIdx,
       focusCellWhenRendered,
       containerRef,
-      editSessionInProgress,
+      editableCellsOnly,
       onToggleGroup,
       headerCount,
       columnCount,
@@ -400,7 +402,11 @@ export const useKeyboardNavigation = ({
           moveHighlightedRow(e.key);
         } else if (navigationStyle !== "none") {
           if (!focusControlWithinCell(e, cell)) {
-            navigateChildItems(navigationStyle, e.key, e.shiftKey);
+            navigateChildItems(
+              navigationStyle === "tree" ? "tree" : "cell",
+              e.key,
+              e.shiftKey,
+            );
           }
         }
         // }

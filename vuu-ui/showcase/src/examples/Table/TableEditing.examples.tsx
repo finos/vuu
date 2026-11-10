@@ -1,4 +1,8 @@
 import {
+  DataEditingProvider,
+  DirectEditSession,
+} from "@vuu-ui/vuu-data-editing";
+import {
   LocalDataSourceProvider,
   VuuTableName,
   getSchema,
@@ -31,11 +35,15 @@ const TableTemplate = ({
   columns: columnProps,
   dataSource: dataSourceProp,
   getDefaultColumnConfig,
+  navigationStyle,
   rowActionHandlers,
   selectionModel = "checkbox",
   tableName = "instrumentsExtended",
 }: Partial<
-  Pick<TableProps, "dataSource" | "rowActionHandlers" | "selectionModel">
+  Pick<
+    TableProps,
+    "dataSource" | "navigationStyle" | "rowActionHandlers" | "selectionModel"
+  >
 > & {
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   columns?: ColumnDescriptor[];
@@ -62,19 +70,26 @@ const TableTemplate = ({
     schema,
   ]);
 
+  // Cells only commit edits through an edit session
+  const editSession = useMemo(
+    () => new DirectEditSession({ dataSource }),
+    [dataSource],
+  );
+
   return (
-    <>
+    <DataEditingProvider editSession={editSession}>
       <Table
         config={config}
         dataSource={dataSource}
         height={645}
+        navigationStyle={navigationStyle}
         renderBufferSize={10}
         rowActionHandlers={rowActionHandlers}
         selectionModel={selectionModel}
         width={9200}
       />
       <DataSourceStats dataSource={dataSource} style={{ height: 32 }} />
-    </>
+    </DataEditingProvider>
   );
 };
 
@@ -144,7 +159,10 @@ export const EditableTable = () => {
 
   return (
     <LocalDataSourceProvider>
-      <TableTemplate getDefaultColumnConfig={getDefaultColumnConfig} />
+      <TableTemplate
+        getDefaultColumnConfig={getDefaultColumnConfig}
+        navigationStyle="editable-cell"
+      />
     </LocalDataSourceProvider>
   );
 };

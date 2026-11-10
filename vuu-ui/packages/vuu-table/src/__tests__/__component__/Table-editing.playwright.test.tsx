@@ -1249,7 +1249,168 @@ test.describe("Editable table navigation", () => {
     await cell1.press("ArrowDown");
     await table.assertCellIsFocused(cell2);
     await cell2.press("ArrowRight");
-    await table.assertCellIsFocused(cell3, "combobox");
+    await table.assertCellIsFocused(cell3);
+  });
+
+  test("arrow keys move between dropdown cells, Enter moves focus into the dropdown and opens it", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstruments");
+    const table = new PwTable(page);
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // currency column, rendered with dropdown-cell
+    const bbgCell = table.locateCell(2, 1);
+    const currencyRow2 = table.locateCell(2, 2);
+    const currencyRow3 = table.locateCell(3, 2);
+    const currencyRow4 = table.locateCell(4, 2);
+    const dropdownRow3 = currencyRow3.getByRole("combobox");
+    const listbox = page.getByRole("listbox");
+
+    // Navigation focuses the cell, as it does for input cells
+    await bbgCell.click();
+    await bbgCell.press("ArrowRight");
+    await table.assertCellIsFocused(currencyRow2);
+
+    await currencyRow2.press("ArrowDown");
+    await table.assertCellIsFocused(currencyRow3);
+    await currencyRow3.press("ArrowDown");
+    await table.assertCellIsFocused(currencyRow4);
+    await currencyRow4.press("ArrowUp");
+    await table.assertCellIsFocused(currencyRow3);
+    await expect(listbox).not.toBeVisible();
+
+    // Enter moves focus into the dropdown and opens it
+    await currencyRow3.press("Enter");
+    await table.assertCellIsFocused(currencyRow3, "combobox");
+    await expect(listbox).toBeVisible();
+
+    // While open, arrow keys move between options
+    await dropdownRow3.press("ArrowDown");
+    await table.assertCellIsFocused(currencyRow3, "combobox");
+    await expect(listbox).toBeVisible();
+
+    // Escape closes the dropdown, which keeps focus, as an input cell does
+    await dropdownRow3.press("Escape");
+    await expect(listbox).not.toBeVisible();
+    await table.assertCellIsFocused(currencyRow3, "combobox");
+
+    // The focus outline stays while the pointer is over the dropdown
+    await dropdownRow3.hover();
+    await expect(dropdownRow3).toHaveCSS("outline-style", "solid");
+
+    // A focused, closed dropdown leaves arrow keys to table navigation
+    await dropdownRow3.press("ArrowDown");
+    await table.assertCellIsFocused(currencyRow4);
+    await expect(listbox).not.toBeVisible();
+  });
+
+  test("selecting a dropdown option with the keyboard commits and moves focus to the next row", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    // Safari doesn't transfer focus on 'vuu-commit'
+    test.skip(browserName === "webkit");
+
+    await mount("Table/Editing/EditableInstruments");
+    const table = new PwTable(page);
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    const bbgCell = table.locateCell(3, 1);
+    const currencyCell = table.locateCell(3, 2);
+    const nextCell = table.locateCell(4, 2);
+
+    await bbgCell.click();
+    await bbgCell.press("ArrowRight");
+    await table.assertCellIsFocused(currencyCell);
+    await currencyCell.press("Enter");
+    await expect(page.getByRole("listbox")).toBeVisible();
+    await currencyCell.getByRole("combobox").press("ArrowDown");
+    await currencyCell.getByRole("combobox").press("Enter");
+
+    await expect(page.getByRole("listbox")).not.toBeVisible();
+    await table.assertCellIsFocused(nextCell);
+  });
+
+  test("typing a character in a dropdown cell opens the dropdown at the first matching option", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    // Safari doesn't transfer focus on 'vuu-commit'
+    test.skip(browserName === "webkit");
+
+    await mount("Table/Editing/EditableInstruments");
+    const table = new PwTable(page);
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    const bbgCell = table.locateCell(3, 1);
+    const currencyCell = table.locateCell(3, 2);
+    const dropdown = currencyCell.getByRole("combobox");
+    const nextCell = table.locateCell(4, 2);
+    const listbox = page.getByRole("listbox");
+    const activeOption = listbox.locator(".saltOption-active");
+
+    await bbgCell.click();
+    await bbgCell.press("ArrowRight");
+    await table.assertCellIsFocused(currencyCell);
+
+    // The character moves focus into the Dropdown, as it does for an input cell
+    await currencyCell.press("s");
+    await table.assertCellIsFocused(currencyCell, "combobox");
+    await expect(listbox).toBeVisible();
+    await expect(activeOption).toHaveText("SEK");
+
+    // Typing on a focused, closed Dropdown opens it too
+    await dropdown.press("Escape");
+    await expect(listbox).not.toBeVisible();
+    // Salt joins keys typed within 500ms into one search ("sj")
+    await page.waitForTimeout(600);
+    await dropdown.press("j");
+    await expect(listbox).toBeVisible();
+    await expect(activeOption).toHaveText("JPY");
+
+    await dropdown.press("Enter");
+    await expect(listbox).not.toBeVisible();
+    await table.assertCellContent(currencyCell, "JPY", "combobox");
+    await table.assertCellIsFocused(nextCell);
+  });
+
+  test("typing a character in a focused dropdown cell, then Enter, commits the matching option", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    // Safari doesn't transfer focus on 'vuu-commit'
+    test.skip(browserName === "webkit");
+
+    await mount("Table/Editing/EditableInstruments");
+    const table = new PwTable(page);
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    const bbgCell = table.locateCell(3, 1);
+    const currencyCell = table.locateCell(3, 2);
+    const dropdown = currencyCell.getByRole("combobox");
+    const nextCell = table.locateCell(4, 2);
+    const listbox = page.getByRole("listbox");
+
+    await bbgCell.click();
+    await bbgCell.press("ArrowRight");
+    await table.assertCellIsFocused(currencyCell);
+
+    await currencyCell.press("s");
+    await expect(listbox.locator(".saltOption-active")).toHaveText("SEK");
+
+    await dropdown.press("Enter");
+    await expect(listbox).not.toBeVisible();
+    await table.assertCellContent(currencyCell, "SEK", "combobox");
+    await table.assertCellIsFocused(nextCell);
   });
 
   test("In edit mode, with cell navigation disabled, arrow key navigation traverses editable cells only", async ({
@@ -1331,7 +1492,7 @@ test.describe("Editable table navigation", () => {
     await expect(page.getByRole("listbox")).not.toBeVisible();
     await table.assertCellContent(cell, originalValue, "combobox");
 
-    await table.assertCellIsFocused(nextCell, "combobox");
+    await table.assertCellIsFocused(nextCell);
   });
 
   test("clicking Escape in a cell in edit mode, before actual editing, exits edit mode, textbox retains focus", async ({
@@ -1387,6 +1548,57 @@ test.describe("Editable table navigation", () => {
     await table.assertCellIsFocused(cell, "textbox");
     await table.assertCellIsEditing(cell);
     await expect(textbox).toHaveSelection(0, 0);
+  });
+});
+
+test.describe("editable-cell navigation style", () => {
+  test("arrow keys move only between editable cells", async ({
+    mount,
+    page,
+  }) => {
+    // description and isin are not editable
+    await mount("Table/TableEditing/EditableTable");
+    const table = new PwTable(page);
+
+    const bbg = await table.locateCell(2, "bbg");
+    const currency = await table.locateCell(2, "currency");
+    const exchange = await table.locateCell(2, "exchange");
+    const lotSize = await table.locateCell(2, "lotSize");
+    const lotSizeRow3 = await table.locateCell(3, "lotSize");
+
+    await bbg.click();
+    await bbg.press("ArrowRight");
+    await table.assertCellIsFocused(currency);
+    await currency.press("ArrowRight");
+    await table.assertCellIsFocused(exchange);
+    await exchange.press("ArrowRight");
+    await table.assertCellIsFocused(lotSize);
+    await lotSize.press("ArrowDown");
+    await table.assertCellIsFocused(lotSizeRow3);
+    await lotSizeRow3.press("ArrowUp");
+    await table.assertCellIsFocused(lotSize);
+    await lotSize.press("ArrowLeft");
+    await table.assertCellIsFocused(exchange);
+    await exchange.press("ArrowLeft");
+    await table.assertCellIsFocused(currency);
+  });
+
+  test("a clicked non-editable cell shows focus, arrow keys move to the next editable cell", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/TableEditing/EditableTable");
+    const table = new PwTable(page);
+
+    const description = await table.locateCell(2, "description");
+    const exchange = await table.locateCell(2, "exchange");
+
+    await description.click();
+    await table.assertCellIsFocused(description);
+    await expect(description).toHaveCSS("outline-style", "solid");
+
+    await description.press("ArrowRight");
+    await table.assertCellIsFocused(exchange);
   });
 });
 

@@ -33,6 +33,7 @@ import {
   getAriaRowIndex,
   getPinStateFromElement,
   isGroupColumn,
+  isDataValueEditable,
   isJsonGroup,
   isValidNumber,
   logUnhandledMessage,
@@ -60,7 +61,7 @@ import { CellFocusState } from "./CellFocusState";
 import type { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./table-data-source/useDataSource";
-import { getHeaderCell } from "./table-dom-utils";
+import { getHeaderCell, isClosedCellDropdown } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
 import { type FocusCell, useCellFocus } from "./useCellFocus";
 import {
@@ -655,6 +656,13 @@ export const useTable = ({
   focusCellRef.current = focusCell;
 
   const columnCount = columns.filter((c) => c.hidden !== true).length;
+  const hasEditableColumns = useMemo(
+    () =>
+      columns.some(
+        (c) => c.hidden !== true && isDataValueEditable(c, "update"),
+      ),
+    [columns],
+  );
 
   const {
     highlightedIndexRef,
@@ -667,7 +675,9 @@ export const useTable = ({
     columnCount,
     containerRef,
     disableFocus,
-    editSessionInProgress: editSession?.inEditMode,
+    editableCellsOnly:
+      editSession?.inEditMode === true ||
+      (navigationStyle === "editable-cell" && hasEditableColumns),
     focusCell,
     focusCellWhenRendered,
     headerCount: headerState.count,
@@ -789,7 +799,7 @@ export const useTable = ({
       // console.log(`[useTable] handleKeyDown, delegates to ...`);
 
       cellBlockSelectionKeyDown?.(e);
-      if (!e.defaultPrevented) {
+      if (!e.defaultPrevented || isClosedCellDropdown(e.target)) {
         navigationKeyDown(e);
       }
       if (!e.defaultPrevented) {
@@ -920,6 +930,7 @@ export const useTable = ({
     draggableRow,
     editSessionInProgress: editSession?.inEditMode,
     focusCellPlaceholderKeyDown,
+    hasEditableColumns,
     focusCellPlaceholderRef,
     getRowOffset,
     handleColumnAction,

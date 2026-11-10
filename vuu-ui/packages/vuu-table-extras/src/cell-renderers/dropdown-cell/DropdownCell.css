@@ -20,13 +20,21 @@
       --saltButton-borderWidth: 2px;
       padding-left: 7px;
     }
-    &.saltDropdown:focus {
-      outline: none;
-    }
   }
+}
 
-  .vuuTableDropdownCell:focus {
-    border: solid 2px var(--salt-focused-outlineColor);
+/* Focus is shown on the Dropdown, as on an InputCell: solid while the cell
+   or Dropdown has focus, dashed while the list is open (as when editing).
+   .saltDropdown raises specificity above Salt's .saltDropdown:focus:hover. */
+.vuuTableCell-editable:focus-within,
+.vuuTableCell:focus {
+  .vuuTableDropdownCell.saltDropdown {
+    border-color: transparent;
+    outline: solid var(--salt-editable-borderColor-active) 2px;
+    outline-offset: -1px;
+  }
+  .vuuTableDropdownCell[aria-expanded="true"] {
+    outline-style: dashed;
   }
 }
 

@@ -5,7 +5,26 @@ import {
   MouseEvent,
   useCallback,
 } from "react";
-import { cellIsTextInput } from "./table-dom-utils";
+import { cellIsTextInput, getCellDropdown } from "./table-dom-utils";
+
+/**
+ * Re-dispatch a keydown on a control that has just received focus, so the
+ * control handles the key that moved focus into it.
+ */
+const forwardKeyDown = (
+  target: HTMLElement,
+  { key, code, shiftKey }: ReactKeyboardEvent<HTMLElement>,
+) => {
+  target.dispatchEvent(
+    new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      code,
+      key,
+      shiftKey,
+    }),
+  );
+};
 
 export interface CellEditingHookProps {
   navigate: () => void;
@@ -49,6 +68,25 @@ export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
           editInput(e);
         } else if (e.key === "Enter") {
           focusInput(e);
+        }
+      } else if (el.role === "cell") {
+        const dropdown = getCellDropdown(el);
+        if (dropdown) {
+          if (e.key === "Enter") {
+            // The Dropdown opens when it receives focus from its cell
+            dropdown.focus();
+          } else if (
+            isCharacterKey(e.key) &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey
+          ) {
+            // As typing in an input cell starts editing, typing in a dropdown
+            // cell opens the Dropdown at the first matching option.
+            e.preventDefault();
+            dropdown.focus();
+            forwardKeyDown(dropdown, e);
+          }
         }
       }
     },
