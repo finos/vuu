@@ -32,6 +32,7 @@
         <module>main-clickhouse</module>
         <module>notifications</module>
         <module>python-integration</module>
+        <module>vuu-spreadsheet</module>
     </modules>
 
     <build>
