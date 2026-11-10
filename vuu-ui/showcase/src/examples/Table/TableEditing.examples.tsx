@@ -31,11 +31,15 @@ const TableTemplate = ({
   columns: columnProps,
   dataSource: dataSourceProp,
   getDefaultColumnConfig,
+  navigationStyle,
   rowActionHandlers,
   selectionModel = "checkbox",
   tableName = "instrumentsExtended",
 }: Partial<
-  Pick<TableProps, "dataSource" | "rowActionHandlers" | "selectionModel">
+  Pick<
+    TableProps,
+    "dataSource" | "navigationStyle" | "rowActionHandlers" | "selectionModel"
+  >
 > & {
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   columns?: ColumnDescriptor[];
@@ -68,6 +72,7 @@ const TableTemplate = ({
         config={config}
         dataSource={dataSource}
         height={645}
+        navigationStyle={navigationStyle}
         renderBufferSize={10}
         rowActionHandlers={rowActionHandlers}
         selectionModel={selectionModel}
@@ -144,7 +149,10 @@ export const EditableTable = () => {
 
   return (
     <LocalDataSourceProvider>
-      <TableTemplate getDefaultColumnConfig={getDefaultColumnConfig} />
+      <TableTemplate
+        getDefaultColumnConfig={getDefaultColumnConfig}
+        navigationStyle="editable-cell"
+      />
     </LocalDataSourceProvider>
   );
 };

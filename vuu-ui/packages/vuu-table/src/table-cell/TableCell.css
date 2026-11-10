@@ -65,6 +65,20 @@
     outline: none;
   }
 }
+/* In a table with editable cells, focused editable cells are outlined, so
+   focused non-editable cells are too. */
+.vuuTable-editable .vuuTableCell:not(.vuuTableCell-editable):focus {
+  outline: var(
+    --vuuTableCell-outline,
+    solid var(--salt-focused-outlineColor) 2px
+  );
+  outline-offset: -2px;
+
+  &:has(.vuuCheckboxRowSelector) {
+    outline: none;
+  }
+}
+
 /* .vuuTableCell-editable:focus {
   outline: none;
 } */
