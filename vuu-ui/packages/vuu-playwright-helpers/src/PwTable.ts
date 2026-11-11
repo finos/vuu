@@ -921,4 +921,20 @@ export class PwTable extends PwComponent {
       await expect(this.locateCell(2, lastVisible + 1)).not.toBeInViewport();
     }
   }
+
+  /**
+   * Assert EmptyDisplayContent text that should be displayed when there are no rows in the table.
+   *
+   * @example
+   * test("Assert EmptyDisplayContent text", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.assertEmptyDisplayContentText("No data available"});
+   * });
+   */
+  async assertEmptyDisplayContentText(text: string) {
+    const emptyDisplayContent = this.locator.locator('.vuuTable-emptyDisplay .EmptyDisplayContent');
+    await expect(emptyDisplayContent).toContainText(text);
+  }
 }
+
+
