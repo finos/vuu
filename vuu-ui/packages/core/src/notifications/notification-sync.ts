@@ -94,11 +94,7 @@ export const syncNotificationState = (
         Object.keys(data.read).length > 0 ||
         Object.keys(data.deleted).length > 0
       ) {
-        store.loadReadState({
-          deleted: data.deleted,
-          read: data.read,
-          version: 1,
-        });
+        store.mergeKeyState({ deleted: data.deleted, read: data.read });
       }
       if (data.unread.length > 0) {
         store.markRead(data.unread, false);

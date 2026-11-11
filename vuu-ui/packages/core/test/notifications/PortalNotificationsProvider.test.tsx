@@ -15,7 +15,6 @@ import { AuthenticationProvider } from "../../src/auth/AuthenticationProvider";
 import { DataProvider } from "../../src/context-definitions/DataProvider";
 import type { DataSourceConstructor } from "../../src/context-definitions/DataContext";
 import {
-  NOTIFICATIONS_STATE_KEY,
   PortalNotificationsProvider,
   useModuleUnreadCount,
   useNotificationList,
@@ -232,7 +231,7 @@ describe("PortalNotificationsProvider", () => {
     expect(output().m0).toBe(1);
   });
 
-  it("persists read state in the portal's saved state", async () => {
+  it("keeps read state in memory only", async () => {
     await render();
     await act(async () => sources[0].send(["1", "2"]));
     await act(async () => api?.markRead(["simul:1"]));
@@ -245,14 +244,11 @@ describe("PortalNotificationsProvider", () => {
       applicationVersion: PORTAL_APPLICATION_VERSION,
       user: "local-user",
     });
-    expect(
-      (saved?.entries?.[NOTIFICATIONS_STATE_KEY]?.value as { read: object })
-        ?.read,
-    ).toHaveProperty("simul:1");
+    expect(saved?.entries?.notifications).toBeUndefined();
 
     await render();
     await act(async () => sources[0].send(["1", "2"]));
-    expect(output()).toMatchObject({ m0: 1, total: 1 });
+    expect(output()).toMatchObject({ m0: 2, total: 2 });
   });
 
   it("publishes client notifications", async () => {

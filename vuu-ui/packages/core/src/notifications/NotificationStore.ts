@@ -13,34 +13,23 @@ const DAY = 24 * HOUR;
 export interface NotificationStoreOptions {
   /** Notifications kept in memory. Default 500. */
   maxNotifications?: number;
-  /** How long expired notifications are kept. Default 24 hours. */
-  expiredRetentionMs?: number;
-  /** How long read and deleted keys are remembered. Default 7 days. */
-  stateRetentionMs?: number;
-  /** Most read, and most deleted, keys remembered. Default 2000 each. */
-  maxStateKeys?: number;
+  /**
+   * How long expired notifications, and read and deleted keys, are kept.
+   * Default 24 hours: Vuu servers hold notifications in memory for a day
+   * at most.
+   */
+  retentionMs?: number;
   now?: () => number;
 }
 
 /**
- * The persisted read state: keys read and keys deleted, each with the time
- * it happened. The notifications themselves are not persisted; the servers
- * are the source of truth for current rows.
+ * Keys read and keys deleted, each with the time it happened. Held in
+ * memory only, and shared with the portal's other pages.
  */
-export type NotificationReadState = {
-  version: 1;
+export interface NotificationKeyState {
   read: Record<string, number>;
   deleted: Record<string, number>;
-};
-
-export const isNotificationReadState = (
-  value: unknown,
-): value is NotificationReadState =>
-  typeof value === "object" &&
-  value !== null &&
-  (value as NotificationReadState).version === 1 &&
-  typeof (value as NotificationReadState).read === "object" &&
-  typeof (value as NotificationReadState).deleted === "object";
+}
 
 type Listener = (event: NotificationStoreEvent) => void;
 
@@ -71,15 +60,9 @@ const toSeverity = ({
 }: PortalNotification): NotificationUnreadSeverity =>
   level === "error" || level === "warning" ? level : "unread";
 
-const trimOldest = (map: Map<string, number>, before: number, max: number) => {
+const trimOlderThan = (map: Map<string, number>, before: number) => {
   for (const [key, time] of map) {
     if (time < before) {
-      map.delete(key);
-    }
-  }
-  if (map.size > max) {
-    const oldest = [...map].sort((a, b) => a[1] - b[1]);
-    for (const [key] of oldest.slice(0, map.size - max)) {
       map.delete(key);
     }
   }
@@ -104,14 +87,12 @@ const matchesText = (notification: PortalNotification, text: string) => {
  */
 export class NotificationStore {
   readonly #expiredAt = new Map<string, number>();
-  readonly #expiredRetentionMs: number;
   readonly #listeners = new Set<Listener>();
   readonly #maxNotifications: number;
-  readonly #maxStateKeys: number;
   readonly #notifications = new Map<string, PortalNotification>();
   readonly #now: () => number;
   readonly #readKeys = new Map<string, number>();
-  readonly #stateRetentionMs: number;
+  readonly #retentionMs: number;
   readonly #tombstones = new Map<string, number>();
   readonly #unreadByConnection = new Map<string, number>();
   readonly #unreadByModule = new Map<ModuleId, number>();
@@ -123,17 +104,13 @@ export class NotificationStore {
   #version = 0;
 
   constructor({
-    expiredRetentionMs = DAY,
     maxNotifications = 500,
-    maxStateKeys = 2000,
     now = Date.now,
-    stateRetentionMs = 7 * DAY,
+    retentionMs = DAY,
   }: NotificationStoreOptions = {}) {
-    this.#expiredRetentionMs = expiredRetentionMs;
     this.#maxNotifications = maxNotifications;
-    this.#maxStateKeys = maxStateKeys;
     this.#now = now;
-    this.#stateRetentionMs = stateRetentionMs;
+    this.#retentionMs = retentionMs;
   }
 
   get size() {
@@ -411,27 +388,21 @@ export class NotificationStore {
     const stale: PortalNotification[] = [];
     for (const [key, expiredAt] of this.#expiredAt) {
       const notification = this.#notifications.get(key);
-      if (notification && now - expiredAt > this.#expiredRetentionMs) {
+      if (notification && now - expiredAt > this.#retentionMs) {
         stale.push(notification);
       }
     }
     this.#remove(stale);
-    const before = now - this.#stateRetentionMs;
-    trimOldest(this.#readKeys, before, this.#maxStateKeys);
-    trimOldest(this.#tombstones, before, this.#maxStateKeys);
+    const before = now - this.#retentionMs;
+    trimOlderThan(this.#readKeys, before);
+    trimOlderThan(this.#tombstones, before);
   }
 
-  getReadState(): NotificationReadState {
-    this.prune();
-    return {
-      deleted: Object.fromEntries(this.#tombstones),
-      read: Object.fromEntries(this.#readKeys),
-      version: 1,
-    };
-  }
-
-  /** Merges persisted read state, applying it to current notifications. */
-  loadReadState(state: NotificationReadState) {
+  /**
+   * Merges read and deleted keys from another page of the portal, applying
+   * them to current notifications and to ones that arrive later.
+   */
+  mergeKeyState(state: NotificationKeyState) {
     for (const [key, time] of Object.entries(state.read)) {
       if (typeof time === "number") {
         this.#readKeys.set(key, Math.max(time, this.#readKeys.get(key) ?? 0));
