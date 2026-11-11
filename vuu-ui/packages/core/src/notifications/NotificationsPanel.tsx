@@ -135,31 +135,6 @@ const formatTime = (time: number) =>
     minute: "2-digit",
   });
 
-const dayLabel = (time: number, now = Date.now()) => {
-  const day = new Date(time).toDateString();
-  if (day === new Date(now).toDateString()) {
-    return "Today";
-  }
-  if (day === new Date(now - 86_400_000).toDateString()) {
-    return "Yesterday";
-  }
-  return new Date(time).toLocaleDateString();
-};
-
-const groupByDay = (notifications: readonly PortalNotification[]) => {
-  const groups: { label: string; notifications: PortalNotification[] }[] = [];
-  for (const notification of notifications) {
-    const label = dayLabel(notification.createdAt);
-    const group = groups.at(-1);
-    if (group?.label === label) {
-      group.notifications.push(notification);
-    } else {
-      groups.push({ label, notifications: [notification] });
-    }
-  }
-  return groups;
-};
-
 const navigationPath = (path: string) => path.replace(/\/?\*$/, "") || "/";
 
 const notificationSource = (
@@ -573,27 +548,20 @@ const NotificationsPanelContent = ({
         {notifications.length === 0 ? (
           <Text className={`${classBase}-empty`}>No notifications</Text>
         ) : (
-          groupByDay(notifications).map(({ label, notifications }) => (
-            <section aria-label={label} key={label}>
-              <Text className={`${classBase}-day`} styleAs="label">
-                {label}
-              </Text>
-              <ul>
-                {notifications.map((notification) => (
-                  <NotificationItem
-                    api={api}
-                    canNavigate={canNavigate}
-                    expanded={selectedKey === notification.key}
-                    key={notification.key}
-                    moduleServerMap={moduleServerMap}
-                    notification={notification}
-                    onOpenModule={close}
-                    onSelect={select}
-                  />
-                ))}
-              </ul>
-            </section>
-          ))
+          <ul>
+            {notifications.map((notification) => (
+              <NotificationItem
+                api={api}
+                canNavigate={canNavigate}
+                expanded={selectedKey === notification.key}
+                key={notification.key}
+                moduleServerMap={moduleServerMap}
+                notification={notification}
+                onOpenModule={close}
+                onSelect={select}
+              />
+            ))}
+          </ul>
         )}
       </div>
       <div className={`${classBase}-footer`}>

@@ -57,8 +57,7 @@
     }
   }
 
-  .vuuNotificationsPanel-empty,
-  .vuuNotificationsPanel-day {
+  .vuuNotificationsPanel-empty {
     display: block;
     padding: var(--salt-spacing-50) var(--salt-spacing-200);
   }
