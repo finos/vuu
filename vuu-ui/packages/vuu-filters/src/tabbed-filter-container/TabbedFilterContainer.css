@@ -1,0 +1,55 @@
+.vuuTabbedFilterContainer {
+    display: flex;
+    flex-direction: column;
+    height: var(--vuuTabbedFilterContainer-height, 100%);
+    min-height: 0;
+    overflow: hidden;
+
+    /* Tabs fill the container: tab bar fixed at top, panel takes the rest */
+    > .saltTabs {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .saltTabBar {
+        flex: 0 0 auto;
+    }
+
+    .saltTabPanel {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .saltTabPanel:not([hidden]) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Ad hoc tab: only the filters scroll, toolbar stays at the bottom */
+    .vuuFilterPanel {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 0;
+    }
+
+    .vuuFilterPanel > .vuuFilterContainer {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+    }
+
+    .vuuFilterPanel-toolbar {
+        flex: 0 0 auto;
+    }
+
+    /* Saved tab: the list of saved filters scrolls */
+    .vuuSavedFilterPanel {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+    }
+}
