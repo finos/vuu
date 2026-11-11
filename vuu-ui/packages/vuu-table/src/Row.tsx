@@ -19,6 +19,8 @@ const classBase = "vuuTableRow";
 
 export const Row = memo(
   ({
+    ariaRole: _ariaRole,
+    ariaRowIndex,
     className: classNameProp,
     columns,
     dataRow,
@@ -95,6 +97,7 @@ export const Row = memo(
     return (
       // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
       <div
+        aria-rowindex={ariaRowIndex}
         {...htmlAttributes}
         aria-expanded={ariaExpanded}
         aria-selected={isSelected ? "true" : undefined}

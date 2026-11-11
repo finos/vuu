@@ -65,6 +65,9 @@ export const getTableCell = (
       `button:not(.saltDropdown),input[type="checkbox"]`,
     ) as HTMLElement;
     return focusableContent || cell;
+  } else if (cellIsRowSelector(cell)) {
+    // Space on the checkbox itself toggles row selection
+    return cell.querySelector<HTMLElement>('input[type="checkbox"]') ?? cell;
   } else {
     return cell;
   }
@@ -90,6 +93,9 @@ export const getFocusedCell = (el: HTMLElement | Element | null) => {
 
 export const cellIsEditable = (cell: HTMLDivElement | null) =>
   cell?.classList.contains("vuuTableCell-editable");
+
+const cellIsRowSelector = (cell: HTMLDivElement | null) =>
+  cell?.querySelector(".vuuCheckboxRowSelector") != null;
 
 export const cellDropdownShowing = (cell: HTMLDivElement | null) => {
   if (cellIsEditable(cell)) {
@@ -199,6 +205,10 @@ export function getNextCellPos(
   return [rowIdx, colIdx];
 }
 
+/**
+ * The next cell, in the direction of the arrow key, that holds an editable
+ * value or a row selection checkbox.
+ */
 export const getNextEditableCellPos = (
   containerRef: RefObject<HTMLElement | null>,
   key: ArrowKey,
@@ -220,7 +230,7 @@ export const getNextEditableCellPos = (
     }
 
     const cell = getTableCellElement(containerRef, [nextRowIdx, nextColIdx]);
-    if (cellIsEditable(cell)) {
+    if (cellIsEditable(cell) || cellIsRowSelector(cell)) {
       return [nextRowIdx, nextColIdx];
     }
     // keep going

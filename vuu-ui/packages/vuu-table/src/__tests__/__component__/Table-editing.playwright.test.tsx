@@ -1602,6 +1602,79 @@ test.describe("editable-cell navigation style", () => {
   });
 });
 
+test.describe("Edit mode navigation with selection and inline add row", () => {
+  // Aria row 1 is the column headers, 2 the inline add row, data from 3.
+  // Aria col 1 is the selection checkbox, 2 bbg.
+  test.beforeEach(async ({ mount, page }) => {
+    await mount("Table/Editing/EditableInstrumentsAddEditDelete");
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.locator(".vuuInlineAddRow")).toBeVisible();
+  });
+
+  test("arrow keys move to the selection checkbox, Space selects the row", async ({
+    page,
+  }) => {
+    const table = new PwTable(page);
+    const bbgRow3 = table.locateCell(3, 2);
+    const bbgRow4 = table.locateCell(4, 2);
+    const checkboxRow4 = table.locateCell(4, 1).getByRole("checkbox");
+    const checkboxRow5 = table.locateCell(5, 1).getByRole("checkbox");
+
+    await bbgRow3.click();
+    await table.assertCellIsFocused(bbgRow3, "textbox");
+    await bbgRow3.press("ArrowDown");
+    await table.assertCellIsFocused(bbgRow4);
+
+    await bbgRow4.press("ArrowLeft");
+    await expect(checkboxRow4).toBeFocused();
+
+    await checkboxRow4.press(" ");
+    await expect(checkboxRow4).toBeChecked();
+    await expect(page.locator('[aria-rowindex="4"]')).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+
+    await checkboxRow4.press("ArrowDown");
+    await expect(checkboxRow5).toBeFocused();
+    await checkboxRow5.press("ArrowRight");
+    await table.assertCellIsFocused(table.locateCell(5, 2));
+  });
+
+  test("ArrowUp from the first row moves into the inline add row", async ({
+    page,
+  }) => {
+    const table = new PwTable(page);
+    const bbgAddRow = table.locateCell(2, 2);
+    const bbgRow3 = table.locateCell(3, 2);
+    const bbgRow4 = table.locateCell(4, 2);
+    const checkboxRow3 = table.locateCell(3, 1).getByRole("checkbox");
+
+    await bbgRow3.click();
+    await bbgRow3.press("ArrowDown");
+    await table.assertCellIsFocused(bbgRow4);
+    await bbgRow4.press("ArrowUp");
+    await table.assertCellIsFocused(bbgRow3);
+
+    await bbgRow3.press("ArrowUp");
+    await table.assertCellIsFocused(bbgAddRow);
+    await expect(bbgAddRow).toHaveAttribute("aria-colindex", "2");
+
+    // Nothing editable above the add row
+    await bbgAddRow.press("ArrowUp");
+    await table.assertCellIsFocused(bbgAddRow);
+
+    await bbgAddRow.press("ArrowDown");
+    await table.assertCellIsFocused(bbgRow3);
+
+    // The add row has no selection checkbox to move up to
+    await bbgRow3.press("ArrowLeft");
+    await expect(checkboxRow3).toBeFocused();
+    await checkboxRow3.press("ArrowUp");
+    await expect(checkboxRow3).toBeFocused();
+  });
+});
+
 test.describe("Cell editing", () => {
   test("cancelling an edit restores the original value when locating by column name", async ({
     mount,

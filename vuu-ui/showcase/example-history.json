@@ -607,6 +607,7 @@
   "Table/Editing/BulkEditTable": "2026-05-27",
   "Table/Editing/CreateSessionTableInstruments": "2026-07-22",
   "Table/Editing/EditableInstruments": "2026-05-18",
+  "Table/Editing/EditableInstrumentsAddEditDelete": "2026-11-11",
   "Table/Editing/EditableInstrumentsCustomCellRenderer": "2026-05-18",
   "Table/Editing/EditableInstrumentsInlineEdit": "2026-07-17",
   "Table/Editing/EditableInstrumentsWithInlineAddRow": "2026-08-19",
