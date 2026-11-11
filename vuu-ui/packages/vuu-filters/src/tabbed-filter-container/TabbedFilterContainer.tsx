@@ -6,6 +6,8 @@ import {
   TabTrigger,
   Tabs,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import type { HTMLAttributes, ReactNode } from "react";
 import { FilterContainerProps } from "../filter-container/FilterContainer";
@@ -14,6 +16,8 @@ import {
   SavedFilterPanel,
   SavedFilterPanelProps,
 } from "../saved-filters/SavedFilterPanel";
+
+import tabbedFilterContainerCss from "./TabbedFilterContainer.css";
 
 const classBase = "vuuTabbedFilterContainer";
 
@@ -44,6 +48,12 @@ export const TabbedFilterContainer = ({
   savedFilterLabel = "Saved",
   ...htmlAttributes
 }: TabbedFilterContainerProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-tabbed-filter-container",
+    css: tabbedFilterContainerCss,
+    window: targetWindow,
+  });
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
