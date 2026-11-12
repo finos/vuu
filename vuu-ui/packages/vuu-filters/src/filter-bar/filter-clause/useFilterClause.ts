@@ -10,13 +10,14 @@ import {
   useRef,
   useState,
 } from "react";
+import type { FilterClauseChangeHandler } from "../FilterModel";
 import { FilterClauseProps } from "./FilterClause";
 import {
   clauseIsNotFirst,
   focusNextElement,
   focusNextFocusableElement,
   navigateToNextItemIfAtBoundary,
-  tabToPreviousFilterCombinator,
+  tabToPreviousField,
 } from "./filterClauseFocusManagement";
 
 export type FilterClauseEditorHookProps = Pick<
@@ -28,7 +29,7 @@ export type FilterClauseEditorHookProps = Pick<
 };
 
 export type FilterClauseValueChangeHandler = (
-  value: string | string[] | number | number[],
+  value: string | string[] | number | number[] | undefined,
   isFinal?: boolean,
 ) => void;
 
@@ -40,14 +41,20 @@ export const useFilterClause = ({
   onOpenChange,
   dropdownOnAutofocus = true,
 }: FilterClauseEditorHookProps) => {
-  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
-    filterClauseModel.isValid ? filterClauseModel.asFilter() : {},
+  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(() =>
+    filterClauseModel.asFilter(false),
   );
 
-  useMemo(() => {
-    filterClauseModel.on("filterClause", (filterClause) => {
-      setFilterClause(filterClause);
-    });
+  useEffect(() => {
+    const handleFilterClauseChange: FilterClauseChangeHandler = (
+      filterClause,
+    ) => setFilterClause(filterClause);
+    filterClauseModel.on("filterClause", handleFilterClauseChange);
+    return () =>
+      filterClauseModel.removeListener(
+        "filterClause",
+        handleFilterClauseChange,
+      );
   }, [filterClauseModel]);
 
   const columnRef = useRef<HTMLDivElement>(null);
@@ -152,14 +159,14 @@ export const useFilterClause = ({
           onCancel?.(filterClauseModel, "Escape");
         }
       } else if (evt.key === "Tab" && evt.shiftKey) {
-        evt.preventDefault();
-        tabToPreviousFilterCombinator(evt.target as HTMLElement);
+        if (tabToPreviousField(evt.target as HTMLElement)) {
+          evt.preventDefault();
+        }
       } else if (evt.key === "Tab") {
         // if the clause is valid, skip to save
         if (filterClauseModel.isValid) {
           evt.preventDefault();
           evt.stopPropagation();
-          // TODO focus cancel if not changed
           onFocusSave?.();
         }
       }

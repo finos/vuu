@@ -50,6 +50,26 @@ const isValidFilter = (filter?: Filter): boolean => {
   }
 };
 
+/**
+ * FilterModel holds a flat list of clauses joined by a single combinator.
+ * A multi-clause filter whose nested multi-clause filters use the same
+ * combinator can be flattened into that shape; one that mixes AND and OR
+ * cannot be edited.
+ */
+export const isEditableFilter = (filter: Filter): boolean =>
+  !isMultiClauseFilter(filter) ||
+  filter.filters.every(
+    (f) =>
+      !isMultiClauseFilter(f) || (f.op === filter.op && isEditableFilter(f)),
+  );
+
+const flattenFilterClauses = (filter: MultiClauseFilter): FilterClause[] =>
+  filter.filters.flatMap((f) =>
+    isMultiClauseFilter(f) ? flattenFilterClauses(f) : [f as FilterClause],
+  );
+
+const isMultiValueOp = (op?: FilterClauseOp) => op === "in";
+
 const isValidFilterModel = (filterModel: FilterModel) => {
   if (filterModel.isMultiClauseFilter) {
     return filterModel.filterClauses.every((f) => f.isValid);
@@ -72,13 +92,23 @@ export type FilterModelEvents = {
   isValid: FilterStatusChangeHandler;
 };
 
+let nextFilterClauseId = 1;
+
 export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
   #filterClause: Partial<FilterClause>;
+  #id = nextFilterClauseId++;
   #isValid: boolean;
   constructor(filterClause: Partial<FilterClause>) {
     super();
     this.#filterClause = filterClause;
     this.#isValid = isValidFilterClause(filterClause);
+  }
+
+  /**
+   * Unique for the lifetime of the model, used as a stable React key.
+   */
+  get id() {
+    return this.#id;
   }
   get isValid() {
     return this.#isValid;
@@ -94,7 +124,6 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
   }
 
   set column(column: undefined | string) {
-    // TODO set op, value to empty
     this.#filterClause = {
       column,
     };
@@ -111,10 +140,15 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
   }
 
   setOp(op: undefined | FilterClauseOp) {
-    this.#filterClause = {
-      ...this.#filterClause,
-      op,
-    };
+    const { column, op: currentOp } = this.#filterClause;
+    // A value is kept only when the new operator takes the same kind of
+    // value (single or multi) as the current one.
+    this.#filterClause =
+      op !== undefined &&
+      currentOp !== undefined &&
+      isMultiValueOp(op) === isMultiValueOp(currentOp)
+        ? ({ ...this.#filterClause, op } as Partial<FilterClause>)
+        : ({ column, op } as Partial<FilterClause>);
     const isValid = isValidFilterClause(this.#filterClause);
     this.emit("filterClause", this.#filterClause, isValid);
     if (isValid !== this.#isValid) {
@@ -174,8 +208,13 @@ export class FilterModel extends EventEmitter<FilterModelEvents> {
   constructor(filter?: Filter) {
     super();
     if (isMultiClauseFilter(filter)) {
+      if (!isEditableFilter(filter)) {
+        throw Error(
+          "FilterModel: nested filters that mix AND and OR cannot be edited",
+        );
+      }
       this.#op = filter.op;
-      filter.filters.forEach((f) => this.addFilterClause(f as FilterClause));
+      flattenFilterClauses(filter).forEach((f) => this.addFilterClause(f));
     } else if (filter) {
       this.addFilterClause(filter);
     } else {
@@ -225,6 +264,7 @@ export class FilterModel extends EventEmitter<FilterModelEvents> {
       const doomedFilter = this.filterClauses.indexOf(filterClause);
       if (doomedFilter !== -1) {
         this.filterClauses.splice(doomedFilter, 1);
+        filterClause.removeAllListeners();
         // If we're down the the last clause, we are no longer multi-clause
         if (this.filterClauses.length === 1) {
           this.#op = undefined;

@@ -1,16 +1,15 @@
-import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import type {
-  ColumnDescriptorsByName,
-  FilterCombinatorOp,
-} from "@vuu-ui/vuu-filter-types";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
+import { getColumnsByName } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEventHandler,
   RefCallback,
   useCallback,
+  useEffect,
   useMemo,
+  useReducer,
   useRef,
-  useState,
 } from "react";
+import { FilterClauseCancelHandler } from "../filter-clause";
 import {
   focusFilterClauseField,
   focusFirstClauseIfAllClausesValid,
@@ -18,23 +17,18 @@ import {
   getFocusedFieldDetails,
   navigateToNextFilterClause,
 } from "../filter-clause/filterClauseFocusManagement";
-import { FilterEditorProps } from "./FilterEditor";
 import {
   FilterChangeHandler,
   FilterModel,
   FilterStatusChangeHandler,
 } from "../FilterModel";
-import { FilterClauseCancelHandler } from "../filter-clause";
 import { FilterClauseCombinatorChangeHandler } from "./FilterClauseCombinator";
-import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
+import { FilterEditorProps } from "./FilterEditor";
 
-export interface FilterEditorHookProps
-  extends Pick<
-    FilterEditorProps,
-    "columnDescriptors" | "filter" | "onCancel" | "onSave"
-  > {
-  label?: string;
-}
+export type FilterEditorHookProps = Pick<
+  FilterEditorProps,
+  "columnDescriptors" | "filter" | "onCancel" | "onSave"
+>;
 
 export const useFilterEditor = ({
   columnDescriptors,
@@ -42,13 +36,9 @@ export const useFilterEditor = ({
   onCancel,
   onSave,
 }: FilterEditorHookProps) => {
-  const filterModel = useMemo(() => {
-    return new FilterModel(filter);
-  }, [filter]);
+  const filterModel = useMemo(() => new FilterModel(filter), [filter]);
 
-  const [_, forceRefresh] = useState({});
-  const [isValid, setIsValid] = useState(filterModel.isValid);
-  const clauseCombinatorRef = useRef<FilterCombinatorOp | undefined>(undefined);
+  const [, forceRefresh] = useReducer((n: number) => n + 1, 0);
   const saveButtonRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const setContainer = useCallback<RefCallback<HTMLDivElement>>((el) => {
@@ -59,29 +49,28 @@ export const useFilterEditor = ({
     }
   }, []);
 
-  const saveButtonMenuBuilder: MenuBuilder = useCallback((_, options) => {
-    switch (clauseCombinatorRef.current) {
-      case "and":
-        return [{ id: "and-clause", label: "AND", options }];
-      case "or":
-        return [{ id: "or-clause", label: "OR", options }];
-      default:
-        return [
-          { id: "and-clause", label: "AND", options },
-          { id: "or-clause", label: "OR", options },
-        ];
-    }
-  }, []);
-
-  const columnsByName = useMemo(
-    () => columnDescriptorsByName(columnDescriptors),
-    [columnDescriptors],
+  // Once a filter has a combinator, a new clause can only be added with
+  // that same combinator. Changing it is done with the combinator button.
+  const saveButtonMenuBuilder = useCallback<MenuBuilder>(
+    (_, options) => {
+      switch (filterModel.op) {
+        case "and":
+          return [{ id: "and-clause", label: "AND", options }];
+        case "or":
+          return [{ id: "or-clause", label: "OR", options }];
+        default:
+          return [
+            { id: "and-clause", label: "AND", options },
+            { id: "or-clause", label: "OR", options },
+          ];
+      }
+    },
+    [filterModel],
   );
 
-  const isLastFilterClause = useCallback(
-    (index?: number) =>
-      index !== undefined && filterModel.filterClauses.length === index + 1,
-    [filterModel],
+  const columnsByName = useMemo(
+    () => getColumnsByName(columnDescriptors),
+    [columnDescriptors],
   );
 
   const focusSaveButton = useCallback(() => {
@@ -90,13 +79,15 @@ export const useFilterEditor = ({
     });
   }, []);
 
-  useMemo(() => {
-    const setValid: FilterStatusChangeHandler = (isValid) => {
-      // bind the model state change to React state to ensure render
-      setIsValid(isValid);
-    };
+  useEffect(() => {
+    const isLastFilterClause = (index?: number) =>
+      index !== undefined && filterModel.filterClauses.length === index + 1;
 
-    const valueChanged: FilterChangeHandler = (_filter, isValid) => {
+    // Save button enabled state is read from the model, re-render when it changes
+    const handleValidStatusChange: FilterStatusChangeHandler = () =>
+      forceRefresh();
+
+    const handleFilterChange: FilterChangeHandler = (_filter, isValid) => {
       if (isValid) {
         const [filterClauseIndex, fieldName] = getFocusedFieldDetails();
         if (fieldName === "value" && isLastFilterClause(filterClauseIndex)) {
@@ -104,9 +95,13 @@ export const useFilterEditor = ({
         }
       }
     };
-    filterModel.on("isValid", setValid);
-    filterModel.on("filter", valueChanged);
-  }, [filterModel, focusSaveButton, isLastFilterClause]);
+    filterModel.on("isValid", handleValidStatusChange);
+    filterModel.on("filter", handleFilterChange);
+    return () => {
+      filterModel.removeListener("isValid", handleValidStatusChange);
+      filterModel.removeListener("filter", handleFilterChange);
+    };
+  }, [filterModel, focusSaveButton]);
 
   const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(
     (filterClause, reason) => {
@@ -114,19 +109,11 @@ export const useFilterEditor = ({
         const indexOfFilterClause =
           filterModel.filterClauses.indexOf(filterClause);
         filterModel.removeFilterClause(filterClause);
-        forceRefresh({});
-        if (reason === "Backspace" && containerRef.current) {
-          if (indexOfFilterClause > 0) {
-            focusFilterClauseField(
-              containerRef.current,
-              indexOfFilterClause - 1,
-            );
-          }
+        forceRefresh();
+        if (containerRef.current && indexOfFilterClause > 0) {
+          focusFilterClauseField(containerRef.current, indexOfFilterClause - 1);
         }
       } else {
-        console.log(
-          `cancel because of Escape valid clause ${filterClause.isValid}`,
-        );
         onCancel(filter);
       }
     },
@@ -147,14 +134,13 @@ export const useFilterEditor = ({
           onSave(newOrUpdatedFilter);
           return true;
         }
-        case "and-clause": {
-          clauseCombinatorRef.current = "and";
+        case "and-clause":
           filterModel.addNewFilterClause("and");
+          forceRefresh();
           return true;
-        }
         case "or-clause":
-          clauseCombinatorRef.current = "or";
           filterModel.addNewFilterClause("or");
+          forceRefresh();
           return true;
         default:
           return false;
@@ -181,22 +167,17 @@ export const useFilterEditor = ({
     KeyboardEventHandler<HTMLElement>
   >((evt) => {
     const { target, key, shiftKey } = evt;
-    if (key === "ArrowLeft") {
+    if (key === "ArrowLeft" || (key === "Tab" && shiftKey)) {
       evt.preventDefault();
       navigateToNextFilterClause(target as HTMLElement, "bwd");
     } else if (key === "ArrowRight") {
       evt.preventDefault();
       navigateToNextFilterClause(target as HTMLElement, "fwd");
-    } else if (key === "Tab" && shiftKey) {
-      evt.preventDefault();
-      navigateToNextFilterClause(target as HTMLElement, "bwd");
     }
   }, []);
 
-  const handleClickSaveButton = useMemo(
-    () => () =>
-      // onSave() ?
-      invokeMenuAction("save"),
+  const handleClickSaveButton = useCallback(
+    () => invokeMenuAction("save"),
     [invokeMenuAction],
   );
 
@@ -215,8 +196,7 @@ export const useFilterEditor = ({
     useCallback<FilterClauseCombinatorChangeHandler>(
       (op) => {
         filterModel.setOp(op);
-        clauseCombinatorRef.current = op;
-        forceRefresh({});
+        forceRefresh();
       },
       [filterModel],
     );
@@ -229,7 +209,6 @@ export const useFilterEditor = ({
     columnsByName,
     filterModel,
     focusSaveButton,
-    isValid,
     onCancelFilterClause: handleCancelFilterClause,
     onCancelFilterEdit: handleCancelFilterEdit,
     onChangeFilterCombinator,
@@ -239,10 +218,3 @@ export const useFilterEditor = ({
     setContainer,
   };
 };
-
-// Duplicated in useFilterBar
-function columnDescriptorsByName(
-  columns: readonly ColumnDescriptor[],
-): ColumnDescriptorsByName {
-  return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
-}

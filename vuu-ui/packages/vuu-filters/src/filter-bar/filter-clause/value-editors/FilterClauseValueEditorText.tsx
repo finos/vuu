@@ -24,6 +24,8 @@ import {
 import { ExpandoCombobox } from "../../../expando-combobox/ExpandoCombobox";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 
+const TYPEAHEAD_DEBOUNCE_MS = 150;
+
 export interface FilterClauseTextValueEditorProps
   extends FilterClauseValueEditor,
     HTMLAttributes<HTMLDivElement> {
@@ -62,9 +64,11 @@ export const FilterClauseValueEditorText = forwardRef(
     const [valueInputValue, setValueInputValue] = useState(
       value?.toString() ?? "",
     );
-    const [typeaheadValues, setTypeaheadValues] = useState<string[] | false>(
-      [],
-    );
+    // undefined until the first response from the typeahead service is
+    // received, false if there is no typeahead service.
+    const [typeaheadValues, setTypeaheadValues] = useState<
+      string[] | false | undefined
+    >(table ? undefined : false);
 
     const getSuggestions = useTypeaheadSuggestions();
 
@@ -101,28 +105,44 @@ export const FilterClauseValueEditorText = forwardRef(
       [highlightFirstOption],
     );
 
+    const filterText = isMultiValue ? "" : valueInputValue;
     useEffect(() => {
-      if (table) {
-        const vuuTable = getVuuTable(table);
-        const params: TypeaheadParams =
-          valueInputValue && !isMultiValue
-            ? [vuuTable, column.name, valueInputValue]
-            : [vuuTable, column.name];
-        getSuggestions(params)
-          .then((suggestions) => {
-            if (suggestions === false) {
-              setTypeaheadValues(false);
-            } else if (suggestions.length === 0 && valueInputValue) {
-              setTypeaheadValues(NO_DATA_MATCH);
-            } else {
-              setTypeaheadValues(suggestions);
-            }
-          })
-          .catch((err) => {
-            console.error("Error getting suggestions", err);
-          });
+      if (table === undefined) {
+        setTypeaheadValues(false);
+        return;
       }
-    }, [table, column, valueInputValue, getSuggestions, isMultiValue]);
+      let cancelled = false;
+      const vuuTable = getVuuTable(table);
+      const params: TypeaheadParams = filterText
+        ? [vuuTable, column.name, filterText]
+        : [vuuTable, column.name];
+      // requests are debounced while user is typing
+      const timeoutHandle = setTimeout(
+        () => {
+          getSuggestions(params)
+            .then((suggestions) => {
+              // ignore responses to requests that have been superseded
+              if (cancelled) {
+                return;
+              } else if (suggestions === false) {
+                setTypeaheadValues(false);
+              } else if (suggestions.length === 0 && filterText) {
+                setTypeaheadValues(NO_DATA_MATCH);
+              } else {
+                setTypeaheadValues(suggestions);
+              }
+            })
+            .catch((err) => {
+              console.error("Error getting suggestions", err);
+            });
+        },
+        filterText ? TYPEAHEAD_DEBOUNCE_MS : 0,
+      );
+      return () => {
+        cancelled = true;
+        clearTimeout(timeoutHandle);
+      };
+    }, [table, column, filterText, getSuggestions]);
 
     const handleInputChange = useCallback(
       (evt: ChangeEvent<HTMLInputElement>) => {
@@ -143,10 +163,19 @@ export const FilterClauseValueEditorText = forwardRef(
     const handleInputCommit = useCallback<CommitHandler>(
       (_, value = "") => {
         if (typeof value === "string") {
-          onChangeValue(value);
+          if (isMultiValue) {
+            // free text entry of multiple values, comma separated
+            const values = value
+              .split(",")
+              .map((v) => v.trim())
+              .filter((v) => v !== "");
+            onChangeValue(values.length > 0 ? values : undefined);
+          } else {
+            onChangeValue(value);
+          }
         }
       },
-      [onChangeValue],
+      [isMultiValue, onChangeValue],
     );
 
     const handleKeyDownFreeTextInput = useCallback<
@@ -179,8 +208,17 @@ export const FilterClauseValueEditorText = forwardRef(
     }, [inputPropsProp, handleKeyDownFreeTextInput, operator]);
 
     const getValueInputField = useCallback(() => {
-      if (typeaheadValues === false) {
-        // No typeahead service available
+      if (typeaheadValues === undefined) {
+        // Rendered once the first suggestions are received, so the first
+        // option can be highlighted when the dropdown opens.
+        return null;
+      }
+      const suggestions = typeaheadValues || [];
+      if (
+        typeaheadValues === false ||
+        (suggestions.length === 0 && operator !== "in")
+      ) {
+        // No typeahead service available, or no values to suggest
         return (
           <ExpandoInput
             inputProps={inputProps}
@@ -209,15 +247,9 @@ export const FilterClauseValueEditorText = forwardRef(
               value={value}
               dropdownOnAutofocus={dropdownOnAutofocus}
             >
-              {typeaheadValues
-                // .filter((typeaheadValue) =>
-                //   typeaheadValue
-                //     .toLowerCase()
-                //     .includes(value.trim().toLowerCase())
-                // )
-                .map((state) => (
-                  <Option value={state} key={state} />
-                ))}
+              {suggestions.map((state) => (
+                <Option value={state} key={state} />
+              ))}
             </ExpandoCombobox>
           );
         case "starts": {
@@ -232,7 +264,7 @@ export const FilterClauseValueEditorText = forwardRef(
               ref={forwardedRef}
               value={value}
             >
-              {typeaheadValues.map((state) => (
+              {suggestions.map((state) => (
                 <Option value={state} key={state} disabled />
               ))}
             </ExpandoCombobox>
@@ -252,7 +284,7 @@ export const FilterClauseValueEditorText = forwardRef(
           );
 
         default: {
-          return typeaheadValues.length > 0 ? (
+          return (
             <ExpandoCombobox
               className={className}
               data-field="value"
@@ -265,11 +297,11 @@ export const FilterClauseValueEditorText = forwardRef(
               title="value"
               value={value}
             >
-              {typeaheadValues.map((state) => (
+              {suggestions.map((state) => (
                 <Option value={state} key={state} />
               ))}
             </ExpandoCombobox>
-          ) : null;
+          );
         }
       }
     }, [

@@ -16,8 +16,9 @@ const instrumentsSchema = getSchema("instruments");
 const FilterEditorTemplate = ({
   onSave: onSaveProp,
   columnDescriptors = instrumentsSchema.columns,
+  withTypeahead = true,
   ...props
-}: Partial<FilterEditorProps>) => {
+}: Partial<FilterEditorProps> & { withTypeahead?: boolean }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     const schema = getSchema("instruments");
@@ -56,7 +57,7 @@ const FilterEditorTemplate = ({
         onCancel={onCancel}
         onSave={onSave}
         style={style}
-        vuuTable={instrumentsSchema.table}
+        vuuTable={withTypeahead ? instrumentsSchema.table : undefined}
       />
       <input hidden data-testid="save-records" readOnly value={JSON.stringify(saveRecords)} />
     </DataSourceProvider>
@@ -152,6 +153,33 @@ export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
       ],
     };
   }, []);
+
+  return <FilterEditorTemplate {...props} filter={filter} />;
+};
+
+/** tags=data-consumer */
+export const NewFilterNoTypeahead = (props: Partial<FilterEditorProps>) => (
+  <FilterEditorTemplate {...props} withTypeahead={false} />
+);
+
+/** tags=data-consumer */
+export const NewFilterAllColumnTypes = (props: Partial<FilterEditorProps>) => (
+  <FilterEditorTemplate
+    {...props}
+    columnDescriptors={getSchema("instrumentsExtended").columns}
+  />
+);
+
+/** tags=data-consumer */
+export const EditNumericFilter = (props: Partial<FilterEditorProps>) => {
+  const filter = useMemo<Filter>(
+    () => ({
+      column: "lotSize",
+      op: ">",
+      value: 1000,
+    }),
+    [],
+  );
 
   return <FilterEditorTemplate {...props} filter={filter} />;
 };

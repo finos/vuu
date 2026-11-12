@@ -5,7 +5,6 @@ import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, ReactElement } from "react";
-import { FilterClauseModel } from "../FilterModel";
 import { FilterClause } from "../filter-clause";
 import { FilterClauseCombinator } from "./FilterClauseCombinator";
 import { useFilterEditor } from "./useFilterEditor";
@@ -23,7 +22,11 @@ export interface FilterEditorProps extends HTMLAttributes<HTMLDivElement> {
   filter?: Filter;
   onCancel: FilterEditCancelHandler;
   onSave: FilterEditSaveHandler;
-  vuuTable: VuuTable;
+  /**
+   * Table used in calls to the Vuu typeahead service. Without it, text
+   * values are entered as free text.
+   */
+  vuuTable?: VuuTable;
 }
 
 export const FilterEditor = ({
@@ -67,7 +70,7 @@ export const FilterEditor = ({
       if (i > 0 && op) {
         content.push(
           <FilterClauseCombinator
-            key={`filter-operator-${i}`}
+            key={`filter-operator-${filterClauseModel.id}`}
             onChange={onChangeFilterCombinator}
             onKeyDown={onKeyDownCombinator}
             operator={op}
@@ -78,8 +81,8 @@ export const FilterEditor = ({
         <FilterClause
           columnsByName={columnsByName}
           data-index={i}
-          filterClauseModel={filterClauseModel as FilterClauseModel}
-          key={`editor-${i}`}
+          filterClauseModel={filterClauseModel}
+          key={`editor-${filterClauseModel.id}`}
           onCancel={onCancelFilterClause}
           onFocusSave={focusSaveButton}
           vuuTable={vuuTable}

@@ -1,4 +1,8 @@
-import { FilterModel, FilterClauseModel } from "../src/filter-bar/FilterModel";
+import {
+  FilterClauseModel,
+  FilterModel,
+  isEditableFilter,
+} from "../src/filter-bar/FilterModel";
 import { describe, expect, it } from "vitest";
 import { Filter } from "@vuu-ui/vuu-filter-types";
 
@@ -94,37 +98,114 @@ describe("FilterModel", () => {
         expect(filterModel.asFilter()).toEqual(AndFilter);
       });
     });
-    // describe("AND complete multi clause filterclause with nested structure is provided", () => {
-    //   const filter: Filter = {
-    //     op: "and",
-    //     filters: [
-    //       simpleEqualsFilter,
-    //       {
-    //         op: "or",
-    //         filters: [
-    //           simpleGTFilter,
-    //           { column: "price", op: "<", value: 2000 },
-    //         ],
-    //       },
-    //     ],
-    //   };
-    //   it("THEN filterModel has single filterclause", () => {
-    //     const filterModel = new FilterModel(filter);
-    //     expect(filterModel.op).toEqual("and");
-    //     expect(filterModel.filterClauses.length).toEqual(2);
-    //   });
-    //   it("THEN filter is valid and filterclause is valid", () => {
-    //     const filterModel = new FilterModel(filter);
-    //     expect(filterModel.isValid).toEqual(true);
-    //     const firstClause = filterModel.getFilterClause(0);
-    //     expect(firstClause?.isValid).toEqual(true);
-    //     const secondClause = filterModel.getFilterClause(1);
-    //     expect(secondClause?.isValid).toEqual(true);
-    //   });
-    //   it("THEN filter structure matches input", () => {
-    //     const filterModel = new FilterModel(filter);
-    //     expect(filterModel.asFilter()).toEqual(filter);
-    //   });
-    // });
+    describe("AND multi clause filter with nested filter using same combinator is provided", () => {
+      const filter: Filter = {
+        op: "and",
+        filters: [
+          simpleEqualsFilter,
+          {
+            op: "and",
+            filters: [
+              simpleGTFilter,
+              { column: "price", op: "<", value: 2000 },
+            ],
+          },
+        ],
+      };
+      it("THEN nested clauses are flattened into a single list", () => {
+        const filterModel = new FilterModel(filter);
+        expect(filterModel.op).toEqual("and");
+        expect(filterModel.filterClauses.length).toEqual(3);
+        expect(filterModel.isValid).toEqual(true);
+      });
+      it("THEN filter is returned in flattened form", () => {
+        const filterModel = new FilterModel(filter);
+        expect(filterModel.asFilter()).toEqual({
+          op: "and",
+          filters: [
+            simpleEqualsFilter,
+            simpleGTFilter,
+            { column: "price", op: "<", value: 2000 },
+          ],
+        });
+      });
+      it("THEN filter is editable", () => {
+        expect(isEditableFilter(filter)).toEqual(true);
+      });
+    });
+    describe("AND multi clause filter with nested filter using different combinator is provided", () => {
+      const filter: Filter = {
+        op: "and",
+        filters: [
+          simpleEqualsFilter,
+          {
+            op: "or",
+            filters: [
+              simpleGTFilter,
+              { column: "price", op: "<", value: 2000 },
+            ],
+          },
+        ],
+      };
+      it("THEN filter is not editable", () => {
+        expect(isEditableFilter(filter)).toEqual(false);
+      });
+      it("THEN creating a FilterModel throws", () => {
+        expect(() => new FilterModel(filter)).toThrow(/cannot be edited/);
+      });
+    });
+  });
+
+  describe("filter clause ids", () => {
+    it("THEN each filter clause has a unique id", () => {
+      const filterModel = new FilterModel(AndFilter);
+      filterModel.addNewFilterClause("and");
+      const ids = filterModel.filterClauses.map((f) => f.id);
+      expect(new Set(ids).size).toEqual(3);
+    });
+    it("THEN ids are not reused after a clause is removed", () => {
+      const filterModel = new FilterModel(AndFilter);
+      const [, second] = filterModel.filterClauses;
+      filterModel.removeFilterClause(second);
+      filterModel.addNewFilterClause("and");
+      expect(filterModel.filterClauses[1].id).not.toEqual(second.id);
+    });
+  });
+
+  describe("WHEN operator of a filter clause is changed", () => {
+    it("THEN value is kept when new operator takes a single value", () => {
+      const filterClause = new FilterClauseModel({ ...simpleEqualsFilter });
+      filterClause.setOp("!=");
+      expect(filterClause.isValid).toEqual(true);
+      expect(filterClause.asFilter()).toEqual({
+        column: "ccy",
+        op: "!=",
+        value: "EUR",
+      });
+    });
+    it("THEN value is cleared when switching from single to multi value operator", () => {
+      const filterClause = new FilterClauseModel({ ...simpleEqualsFilter });
+      filterClause.setOp("in");
+      expect(filterClause.isValid).toEqual(false);
+      expect(filterClause.asFilter(false)).toEqual({ column: "ccy", op: "in" });
+    });
+    it("THEN values are cleared when switching from multi to single value operator", () => {
+      const filterClause = new FilterClauseModel({
+        column: "ccy",
+        op: "in",
+        values: ["EUR", "GBP"],
+      });
+      filterClause.setOp("=");
+      expect(filterClause.isValid).toEqual(false);
+      expect(filterClause.asFilter(false)).toEqual({ column: "ccy", op: "=" });
+    });
+    it("THEN value is cleared when operator is removed", () => {
+      const filterClause = new FilterClauseModel({ ...simpleEqualsFilter });
+      filterClause.setOp(undefined);
+      expect(filterClause.asFilter(false)).toEqual({
+        column: "ccy",
+        op: undefined,
+      });
+    });
   });
 });

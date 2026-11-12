@@ -273,6 +273,37 @@ export const FilterBarOneSimpleFilter = () => {
 };
 
 /** tags=data-consumer */
+export const FilterBarMixedNestedFilter = () => {
+  const dataSource = useInstrumentsDataSource();
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <FilterBarTemplate
+        filterState={{
+          filters: [
+            {
+              name: "Mixed",
+              op: "and",
+              filters: [
+                { column: "currency", op: "=", value: "EUR" },
+                {
+                  op: "or",
+                  filters: [
+                    { column: "exchange", op: "=", value: "XLON" },
+                    { column: "lotSize", op: ">", value: 1000 },
+                  ],
+                },
+              ],
+            },
+          ],
+          activeIndices: [],
+        }}
+      />
+    </DataSourceProvider>
+  );
+};
+
+/** tags=data-consumer */
 export const FilterBarOneMultiValueFilter = () => {
   const dataSource = useInstrumentsDataSource();
 

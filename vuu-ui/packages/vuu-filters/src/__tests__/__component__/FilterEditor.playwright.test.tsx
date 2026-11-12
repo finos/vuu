@@ -1,7 +1,5 @@
 import { expect, test, type Page } from "../../../../../playwright/fixtures";
 
-
-
 const assertComboboxReady = async (page: Page) => {
   await expect(page.getByRole("combobox")).toBeFocused();
   await expect(page.getByRole("listbox")).toBeVisible();
@@ -600,6 +598,170 @@ test.describe("FilterEditor", () => {
           await expect(combo0).toHaveSelection(0, 0);
         });
       });
+    });
+  });
+
+  test.describe("Numeric values", () => {
+    test("editing a numeric filter shows the existing value", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterEditor/EditNumericFilter");
+      await expect(page.getByRole("textbox")).toHaveValue("1000");
+      await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
+    });
+
+    test("a typed numeric value is saved without pressing Enter", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterEditor/NewFilter");
+      await selectListItem(page, "lotSize");
+      await selectListItem(page, ">");
+      await page.getByRole("textbox").fill("1000");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeEnabled();
+      await save.click();
+
+      await expect(page.getByTestId("save-records")).toHaveValue(
+        JSON.stringify([{ column: "lotSize", op: ">", value: 1000 }]),
+      );
+    });
+
+    for (const text of ["12abc", "10.5"]) {
+      test(`'${text}' is not a valid value for an int column`, async ({
+        mount,
+        page,
+      }) => {
+        await mount("Filters/FilterEditor/NewFilter");
+        await selectListItem(page, "lotSize");
+        await selectListItem(page, ">");
+        const value = page.getByRole("textbox");
+        await value.fill(text);
+        await value.press("Enter");
+
+        await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
+        await expect(page.locator(".vuuExpandoInput-error")).toBeVisible();
+      });
+    }
+  });
+
+  test.describe("Column types", () => {
+    test("only columns that can be filtered are offered", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterEditor/NewFilterAllColumnTypes");
+      await assertComboboxReady(page);
+      await expect(
+        page.getByRole("option", { name: "side", exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("option", { name: "supported", exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("option", { name: "wishlist", exact: true }),
+      ).toHaveCount(0);
+    });
+  });
+
+  test.describe("Without typeahead", () => {
+    test("a text value can be entered as free text", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterEditor/NewFilterNoTypeahead");
+      await selectListItem(page, "currency");
+      await selectListItem(page, "=");
+      const value = page.getByRole("textbox");
+      await expect(value).toBeFocused();
+      await value.fill("EUR");
+      await value.press("Enter");
+
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Enter");
+      await expect(page.getByTestId("save-records")).toHaveValue(
+        JSON.stringify([{ column: "currency", op: "=", value: "EUR" }]),
+      );
+    });
+
+    test("multiple text values can be entered, comma separated", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterEditor/NewFilterNoTypeahead");
+      await selectListItem(page, "currency");
+      await selectListItem(page, "in");
+      const value = page.getByRole("textbox");
+      await value.fill("EUR, GBP");
+      await value.press("Enter");
+
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Enter");
+      await expect(page.getByTestId("save-records")).toHaveValue(
+        JSON.stringify([
+          { column: "currency", op: "in", values: ["EUR", "GBP"] },
+        ]),
+      );
+    });
+  });
+
+  test.describe("Save menu", () => {
+    test("editing an AND filter offers only AND to add a clause", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterEditor/EditMultiClauseAndFilter");
+      await expect(page.getByRole("combobox").first()).toBeFocused();
+      const save = page.getByRole("button", { name: "Save" });
+      await save.focus();
+      await save.press("ArrowDown");
+      await expect(page.getByRole("menuitem", { name: "OR" })).toHaveCount(0);
+      await page.getByRole("menuitem", { name: "AND" }).press("Enter");
+
+      await expect(page.locator(".vuuFilterClause")).toHaveCount(3);
+      await expect(page.locator(".vuuFilterClauseCombinator")).toHaveCount(2);
+    });
+
+    test("editing an OR filter does not offer AND", async ({ mount, page }) => {
+      await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
+      await expect(page.getByRole("combobox").first()).toBeFocused();
+      const save = page.getByRole("button", { name: "Save" });
+      await save.focus();
+      await save.press("ArrowDown");
+      await expect(page.getByRole("menuitem", { name: "OR" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "AND" })).toHaveCount(0);
+    });
+  });
+
+  test.describe("Shift+Tab", () => {
+    test("moves back through value, operator and column, then out of the editor", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterEditor/NewFilter");
+      await assertComboboxReady(page);
+      await page.getByRole("combobox").press("Enter");
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await page.getByRole("combobox").nth(1).press("Enter");
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await page.getByRole("combobox").nth(2).press("Enter");
+
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Shift+Tab");
+      const [column, operator, value] = [0, 1, 2].map((i) =>
+        page.getByRole("combobox").nth(i),
+      );
+      await expect(value).toBeFocused();
+      await value.press("Shift+Tab");
+      await expect(operator).toBeFocused();
+      await operator.press("Shift+Tab");
+      await expect(column).toBeFocused();
+      await column.press("Shift+Tab");
+      await expect(page.locator(".vuuFilterEditor :focus")).toHaveCount(0);
     });
   });
 });

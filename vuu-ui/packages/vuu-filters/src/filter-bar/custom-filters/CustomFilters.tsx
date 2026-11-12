@@ -5,7 +5,7 @@ import { HTMLAttributes, ReactElement, useRef } from "react";
 import { type FilterBarProps } from "../FilterBar";
 import { FilterEditor } from "../filter-editor";
 import { FilterPill } from "../filter-pill";
-import { FilterModel } from "../FilterModel";
+import { isEditableFilter } from "../FilterModel";
 import { isEditFilterState, useCustomFilters } from "./useCustomFilters";
 
 const classBase = "vuuCustomFilters";
@@ -66,9 +66,7 @@ export const CustomFilters = ({
       ? interactedFilterState.index
       : -1;
 
-  const filterModel = isEditFilterState(interactedFilterState?.state)
-    ? new FilterModel(interactedFilterState.filter)
-    : undefined;
+  const isEditing = isEditFilterState(interactedFilterState?.state);
 
   const getFilterPills = () => {
     const items: ReactElement[] = [];
@@ -76,6 +74,7 @@ export const CustomFilters = ({
       items.push(
         <FilterPill
           {...FilterPillProps}
+          allowEdit={isEditableFilter(filter)}
           editing={indexOfFilterBeingRenamed === i}
           columnsByName={columnsByName}
           data-index={i}
@@ -104,7 +103,7 @@ export const CustomFilters = ({
 
         {promptProps ? <Prompt {...promptProps} open /> : null}
       </div>
-      {filterModel && vuuTable && (
+      {isEditing && (
         <FilterEditor
           columnDescriptors={columnDescriptors}
           key="filter-editor"

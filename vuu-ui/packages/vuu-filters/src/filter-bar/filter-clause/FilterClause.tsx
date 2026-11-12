@@ -9,6 +9,7 @@ import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterClauseModel } from "../FilterModel";
 import { ColumnPicker } from "./column-picker/ColumnPicker";
+import { isFilterClauseColumn } from "./filterClauseColumns";
 import { useFilterClause } from "./useFilterClause";
 import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor";
 
@@ -30,7 +31,7 @@ export interface FilterClauseProps
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
   dropdownOnAutofocus?: boolean;
-  vuuTable: VuuTable;
+  vuuTable?: VuuTable;
 }
 
 const classBase = "vuuFilterClause";
@@ -74,10 +75,13 @@ export const FilterClause = ({
     window: targetWindow,
   });
 
-  const columns = useMemo(() => Object.values(columnsByName), [columnsByName]);
+  const columns = useMemo(
+    () => Object.values(columnsByName).filter(isFilterClauseColumn),
+    [columnsByName],
+  );
 
   return (
-    <div className={cx(classBase, className)} {...htmlAttributes} tabIndex={0}>
+    <div className={cx(classBase, className)} {...htmlAttributes}>
       <ColumnPicker
         inputProps={inputProps}
         className={cx(`${classBase}Field`, `${classBase}Column`)}

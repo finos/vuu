@@ -19,8 +19,6 @@
   flex: var(--vuuFilterBar-flex);
   flex-wrap: wrap;
   gap: var(--flexbar-gap);
-  grid-template-columns: 70px 1fr 28px;
-  grid-auto-rows: 28px 0px;
   height: var(--filterbar-height);
   overflow: hidden;
   padding: var(--salt-spacing-100) var(--salt-spacing-200);
@@ -38,7 +36,6 @@
 }
 
 .vuuFilterBar:has(.vuuFilterEditor) {
-  grid-template-rows: 28px 28px;
   height: calc(1px + var(--flexbar-gap) + (2 * var(--filterbar-height)));
 }
 
@@ -68,13 +65,6 @@
 
 .vuuFilterBar .vuuToolbar {
   flex: 0 1 auto;
-}
-
-.vuuFilterBar-Editor {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--salt-spacing-100);
 }
 
 .vuuCustomFilters {

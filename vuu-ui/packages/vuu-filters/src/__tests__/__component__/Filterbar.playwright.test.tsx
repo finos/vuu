@@ -417,4 +417,14 @@ test.describe("FilterBar", () => {
       "Test",
     ]);
   });
+
+  test("a filter that mixes AND and OR cannot be edited", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterBar/FilterBarMixedNestedFilter");
+    await openPillMenu(page);
+    await expect(page.getByRole("menuitem", { name: "Delete" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Edit" })).toHaveCount(0);
+  });
 });

@@ -30,21 +30,12 @@ const getFilterClauseDetails = ({ classList }: HTMLElement) => {
 
 export const getFocusedFieldDetails = (): [number, string] | [] => {
   const el = document.activeElement as HTMLElement;
-  const field = queryClosest(el, ".vuuFilterClauseField,.saltCalendar");
-  if (field?.matches(".vuuFilterClauseField")) {
-    const filterClause = queryClosest(field, ".vuuFilterClause");
-    if (filterClause && field) {
-      return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
-    }
-  } else if (field?.matches(".saltCalendar")) {
-    console.log("its in a calendar");
+  const field = queryClosest(el, ".vuuFilterClauseField");
+  const filterClause = queryClosest(field, ".vuuFilterClause");
+  if (field && filterClause) {
+    return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
   }
-  // const filterClause = queryClosest(field, ".vuuFilterClause");
-  // if (filterClause && field) {
-  //   return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
-  // } else {
   return [];
-  // }
 };
 
 // Focus the input control within field. If clause passed, will
@@ -58,11 +49,6 @@ const focusField = (fieldOrClause: HTMLElement | null) => {
     });
   }
 };
-
-export const elementIsFilterCombinator = (
-  element: Element | null,
-): element is HTMLElement =>
-  element !== null && element.classList.contains("vuuFilterClauseCombinator");
 
 export const elementIsFilterClause = (
   element: Element | null,
@@ -90,13 +76,25 @@ export const focusLastClauseValue = (filterEditor: HTMLElement) => {
   focusField(field);
 };
 
-export const focusNextFocusableElement = (direction: "fwd" | "bwd" = "fwd") => {
-  const activeField = getFocusedField() as HTMLElement;
+// How many frames to wait for the next field to be rendered
+const MAX_FOCUS_RETRIES = 5;
+
+export const focusNextFocusableElement = (
+  direction: "fwd" | "bwd" = "fwd",
+  retries = MAX_FOCUS_RETRIES,
+) => {
+  const activeField = getFilterClauseFieldElement(
+    document.activeElement as HTMLElement,
+  );
   const filterClause = getFilterClauseElement(activeField);
   if (direction === "fwd" && filterClause?.lastChild === activeField) {
-    requestAnimationFrame(() => {
-      focusNextFocusableElement();
-    });
+    // The next field is rendered once the selection in this one has been
+    // applied to the model.
+    if (retries > 0) {
+      requestAnimationFrame(() => {
+        focusNextFocusableElement(direction, retries - 1);
+      });
+    }
   } else {
     const nextField =
       direction === "fwd"
@@ -107,27 +105,19 @@ export const focusNextFocusableElement = (direction: "fwd" | "bwd" = "fwd") => {
   }
 };
 
-const getFocusedField = () => {
-  const activeElement = document.activeElement as HTMLElement;
-  if (activeElement?.classList.contains("vuuFilterClause-clearButton")) {
-    return activeElement as HTMLElement;
-  } else {
-    return getFilterClauseFieldElement(activeElement);
-  }
-};
-
+/**
+ * Move focus from column to operator or from operator to value. Focus moves
+ * from value to the Save button when the value is committed (see FilterEditor).
+ */
 export const focusNextElement = () => {
-  const filterClauseField = getFocusedField();
-  const filterClause = getFilterClauseElement(filterClauseField);
-  if (filterClause && filterClauseField) {
-    if (filterClauseField.classList.contains("vuuFilterClauseValue")) {
-      const clearButton = filterClause.querySelector(
-        ".vuuFilterClause-clearButton",
-      ) as HTMLButtonElement;
-      clearButton?.focus();
-    } else {
-      focusNextFocusableElement();
-    }
+  const filterClauseField = getFilterClauseFieldElement(
+    document.activeElement as HTMLElement,
+  );
+  if (
+    filterClauseField &&
+    !filterClauseField.classList.contains("vuuFilterClauseValue")
+  ) {
+    focusNextFocusableElement();
   }
 };
 
@@ -158,38 +148,41 @@ const clauseIsNotLast = (el: HTMLElement) => {
   return nextClause?.classList.contains("vuuFilterClauseCombinator");
 };
 
-export const tabToPreviousFilterCombinator = (currentElement: HTMLElement) => {
-  const filterClause = getFilterClauseElement(currentElement);
-  const nextItem = filterClause.previousSibling as HTMLElement;
-  console.log(`tab to previous combinator`);
-  nextItem?.focus();
+/**
+ * Shift+Tab moves focus to the previous field in the clause, from the column
+ * field to the preceding combinator. Returns false when the column field of
+ * the first clause has focus, Shift+Tab then moves focus out of the editor.
+ */
+export const tabToPreviousField = (currentElement: HTMLElement) => {
+  const field = getFilterClauseFieldElement(currentElement);
+  if (getFieldName(field) !== "column") {
+    focusField(field.previousElementSibling as HTMLElement);
+    return true;
+  } else if (clauseIsNotFirst(currentElement)) {
+    const filterClause = getFilterClauseElement(currentElement);
+    (filterClause.previousElementSibling as HTMLElement | null)?.focus();
+    return true;
+  }
+  return false;
 };
 
+/**
+ * Navigate from a filter combinator to the value field of the preceding
+ * clause (bwd) or the column field of the following clause (fwd).
+ */
 export const navigateToNextFilterClause = (
-  currentElement: HTMLElement,
+  combinator: HTMLElement,
   direction: "bwd" | "fwd" = "fwd",
 ) => {
   if (direction === "bwd") {
-    if (elementIsFilterCombinator(currentElement)) {
-      const nextClause = currentElement.previousElementSibling;
-      if (elementIsFilterClause(nextClause)) {
-        const nextField = nextClause.querySelector(
-          ".vuuFilterClauseValue",
-        ) as HTMLElement;
-        console.log(`focus field Value ${nextField?.classList}`);
-        focusField(nextField);
-      }
-    } else {
-      const filterClause = getFilterClauseElement(currentElement);
-      const nextClause = filterClause.previousSibling as HTMLElement;
-      const nextField = nextClause.querySelector(
-        ".vuuFilterClauseValue",
-      ) as HTMLElement;
-      focusField(nextField);
+    const previousClause = combinator.previousElementSibling;
+    if (elementIsFilterClause(previousClause)) {
+      focusField(
+        previousClause.querySelector(".vuuFilterClauseValue") as HTMLElement,
+      );
     }
   } else {
-    const nextClause = currentElement.nextSibling as HTMLElement;
-    focusField(nextClause);
+    focusField(combinator.nextElementSibling as HTMLElement);
   }
 };
 

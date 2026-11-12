@@ -1,12 +1,15 @@
-import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 import { PromptProps } from "@vuu-ui/vuu-ui-controls";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   EditableLabelProps,
   EditAPI,
   NullEditAPI,
 } from "@vuu-ui/vuu-ui-controls";
-import { getElementDataIndex, queryClosest } from "@vuu-ui/vuu-utils";
+import {
+  getColumnsByName,
+  getElementDataIndex,
+  queryClosest,
+} from "@vuu-ui/vuu-utils";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -75,7 +78,7 @@ export const useCustomFilters = ({
   const editPillLabelAPI = useRef<EditAPI>(NullEditAPI);
 
   const columnsByName = useMemo(
-    () => columnDescriptorsByName(columnDescriptors),
+    () => getColumnsByName(columnDescriptors),
     [columnDescriptors],
   );
 
@@ -336,9 +339,3 @@ export const useCustomFilters = ({
     promptProps,
   };
 };
-
-function columnDescriptorsByName(
-  columns: readonly ColumnDescriptor[],
-): ColumnDescriptorsByName {
-  return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
-}

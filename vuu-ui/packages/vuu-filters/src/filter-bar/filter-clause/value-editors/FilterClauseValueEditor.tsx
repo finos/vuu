@@ -110,10 +110,10 @@ export const FilterClauseValueEditor = forwardRef(
             onChangeValue={onChangeValue}
             operator={operator}
             ref={forwardedRef}
+            value={typeof value === "number" ? value : undefined}
           />
         );
       default:
-        console.log("returning null");
         return null;
     }
   },
