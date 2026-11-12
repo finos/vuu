@@ -756,8 +756,6 @@
   "TableExtras/TableFooter/FlexTableFooter": "2026-04-23",
   "TableExtras/TableFooter/WithDataSourceStats": "2026-04-23",
   "TableExtras/TableFooter/WithDataSourceStatsAndTooltrayAction": "2026-04-23",
-  "UiControls/Calendar/ControlledCalendar": "2024-03-15",
-  "UiControls/Calendar/DefaultCalendar": "2024-01-10",
   "UiControls/ColumnPicker/DefaultColumnPicker": "2024-06-05",
   "UiControls/ColumnPicker/DefaultColumnSearch": "2024-06-05",
   "UiControls/DragDrop/DraggableListsOneWayDrag": "2023-10-08",

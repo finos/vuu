@@ -1,75 +1,67 @@
-import { DatePicker } from "@vuu-ui/vuu-ui-controls";
-import {
-  getLocalTimeZone,
-  today,
-  type DateValue,
-} from "@internationalized/date";
-import { useState } from "react";
-import { VuuDatePicker } from "@vuu-ui/vuu-ui-controls";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
-
-const tz = getLocalTimeZone();
-const _today = today(tz);
+import { AdapterDateFns } from "@salt-ds/date-adapters/date-fns";
+import {
+  DatePicker,
+  DatePickerOverlay,
+  DatePickerSingleGridPanel,
+  DatePickerSingleInput,
+  DatePickerTrigger,
+  LocalizationProvider,
+} from "@salt-ds/date-components";
+import { VuuDatePicker } from "@vuu-ui/vuu-ui-controls";
+import { type CommitHandler, EpochTimestamp } from "@vuu-ui/vuu-utils";
+import { useState } from "react";
 
 export const DefaultDatePicker = () => {
-  const [selectedDate, setSelectedDate] = useState<DateValue>(_today);
-
-  const setDate = (date: DateValue) => {
-    setSelectedDate(date);
-  };
-
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   return (
-    <DatePicker
-      // selectedDate={selectedDate}
-      style={{ width: 150 }}
-      onSelectionChange={(_, date) => setDate(date as DateValue)}
-    />
+    <LocalizationProvider DateAdapter={AdapterDateFns}>
+      <DatePicker
+        onSelectionChange={(_e, date) => setSelectedDate(date as Date | null)}
+        selectedDate={selectedDate}
+        selectionVariant="single"
+      >
+        <DatePickerTrigger>
+          <DatePickerSingleInput style={{ width: 150 }} />
+        </DatePickerTrigger>
+        <DatePickerOverlay>
+          <DatePickerSingleGridPanel />
+        </DatePickerOverlay>
+      </DatePicker>
+    </LocalizationProvider>
   );
 };
 
 export const DefaultVuuDatePicker = () => {
-  const [selectedDate, setSelectedDate] = useState<DateValue>();
+  const [value, setValue] = useState<number>();
 
-  const setDate = (date: DateValue) => {
-    if (date) {
-      setSelectedDate(date);
-    }
-  };
-
-  const handleCommit: CommitHandler<HTMLElement, number> = (e, value) => {
-    console.log(`commit ${value} ${new Date(value).toString()}`);
+  const handleCommit: CommitHandler<HTMLElement, number> = (_e, value) => {
+    console.log(`commit ${value} ${EpochTimestamp.fromMillis(value)}`);
+    setValue(value);
   };
 
   return (
     <VuuDatePicker
       onCommit={handleCommit}
-      onSelectionChange={(_, date) => setDate(date as DateValue)}
-      selectedDate={selectedDate}
       style={{ width: "250px" }}
+      value={value}
     />
   );
 };
 
 export const VuuDatePickerWithValue = () => {
-  const [selectedDate, setSelectedDate] = useState<DateValue>(_today);
+  const [value, setValue] = useState<number>(() => Date.now());
 
-  const setDate = (date: DateValue) => {
-    if (date) {
-      setSelectedDate(date);
-    }
-  };
-
-  const handleCommit: CommitHandler<HTMLElement, number> = (e, value) => {
-    console.log(`commit ${value} ${new Date(value).toString()}`);
+  const handleCommit: CommitHandler<HTMLElement, number> = (_e, value) => {
+    console.log(`commit ${value} ${EpochTimestamp.fromMillis(value)}`);
+    setValue(value);
   };
 
   return (
     <VuuDatePicker
       onCommit={handleCommit}
-      onSelectionChange={(_, date) => setDate(date as DateValue)}
-      selectedDate={selectedDate}
       style={{ width: "250px" }}
+      value={value}
     />
   );
 };
