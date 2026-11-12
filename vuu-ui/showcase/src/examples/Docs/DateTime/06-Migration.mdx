@@ -41,6 +41,8 @@ Filter queries sent to the server for temporal columns are now generated from th
 | Change | What to do |
 | ------ | ---------- |
 | `VuuDatePicker`: `onChange` was removed and `value` and `timeZone` were added. `onCommit` receives start-of-day milliseconds in the picker's time zone. | Use `onCommit`. See [VuuDatePicker](./04-Editing.mdx#vuudatepicker). |
+| `VuuDatePicker` is built on the Salt `DatePicker` from `@salt-ds/date-components`. `selectedDate`, `onSelectionChange` and `preserveFocusOnSelect` were removed. `onCommit` is also called when a valid typed date loses focus. | Use `value` and `onCommit`. |
+| `Calendar`, `DatePicker` and `DateInput` were removed from `@vuu-ui/vuu-ui-controls`. | Use `Calendar`, `DatePicker` and `DateInputSingle` from `@salt-ds/date-components`, inside a `LocalizationProvider`. |
 | `FilterClauseValueEditorDate` and `FilterClauseValueEditorTime` need a `temporalInfo` prop, and `value` is `number \| string` rather than `number`. | Pass `getTemporalInfo(column)`. |
 | Editable temporal table cells use the `temporal-input-cell` renderer, so users edit formatted text rather than raw epoch numbers. | Set an explicit renderer if you relied on `input-cell` for these columns. See [Table cells](./04-Editing.mdx#table-cells). |
 | `getDataItemEditControl` commits wire values for temporal fields (a `number` of milliseconds or a `string` of nanoseconds). Date edits keep the time of day and time edits keep the date. | Update `onCommit` handlers that expected text. |

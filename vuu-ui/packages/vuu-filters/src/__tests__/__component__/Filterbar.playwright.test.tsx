@@ -1,7 +1,6 @@
 import { test, type Page } from "../../../../../playwright/fixtures";
 import { expect } from "../../../../../playwright/fixtures";
 
-
 const FILTER_CONTAINER = ".vuuCustomFilters-filters";
 
 const addButton = (page: Page) =>
@@ -342,13 +341,11 @@ test.describe("FilterBar", () => {
       await addButton(page).click();
       await selectOption(page, "lastUpdated");
       await selectOption(page, op);
-      const dateInput = page.getByRole("textbox", { name: "Start date" });
+      const dateInput = page.getByRole("textbox", { name: "date input" });
       await expect(dateInput).toBeFocused();
       await dateInput.press("ArrowDown");
       await page
-        .locator(
-          ".saltCalendarCarousel-slide:not([aria-hidden]) .saltCalendarDay-today",
-        )
+        .locator(".saltCalendarDay-today:not(.saltCalendarDay-outOfRange)")
         .click();
       await page.keyboard.press("ArrowRight");
       await page.getByRole("button", { name: "Save" }).click();

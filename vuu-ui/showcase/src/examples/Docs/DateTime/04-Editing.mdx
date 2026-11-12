@@ -55,9 +55,11 @@ Bulk edit uses the same cell.
 
 | Prop                         | Type                        | Description                                                                                                                                    |
 | ---------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `value`                      | `EpochTimestamp \| number`  | The current value. The calendar date is derived in `timeZone`. An alternative to `selectedDate`.                                               |
+| `value`                      | `EpochTimestamp \| number`  | The current value. The calendar date is derived in `timeZone`.                                                                                  |
 | `timeZone`                   | `TimeZoneSpec`              | Defaults to the application default time zone.                                                                                                 |
-| `onCommit(evt, epochMillis)` | function                    | Called when a date is picked, or when a valid date is typed and Enter pressed. Receives the start of the day in `timeZone`, in epoch millis.     |
+| `onCommit(evt, epochMillis)` | function                    | Called when a date is picked, or when a valid date is typed and Enter pressed or focus leaves the input. Not called when the date is unchanged. Receives the start of the day in `timeZone`, in epoch millis. |
+
+`VuuDatePicker` is a Salt `DatePicker` from `@salt-ds/date-components`. Other props are passed to its `DatePickerSingleInput`.
 
 The same date can be a different instant in different time zones:
 
