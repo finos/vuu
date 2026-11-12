@@ -17,7 +17,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { FilterBarProps } from "../filter-bar";
+import { FilterBarProps } from "../FilterBar";
 import {
   FilterEditCancelHandler,
   FilterEditSaveHandler,

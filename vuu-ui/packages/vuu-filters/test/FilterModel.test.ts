@@ -1,4 +1,4 @@
-import { FilterModel, FilterClauseModel } from "../src/FilterModel";
+import { FilterModel, FilterClauseModel } from "../src/filter-bar/FilterModel";
 import { describe, expect, it } from "vitest";
 import { Filter } from "@vuu-ui/vuu-filter-types";
 

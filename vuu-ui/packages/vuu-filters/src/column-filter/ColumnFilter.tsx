@@ -19,7 +19,7 @@ import {
   isBetweenOperator,
   withDateTimePattern,
 } from "@vuu-ui/vuu-utils";
-import { OperatorPicker } from "../filter-clause/operator-picker/OperatorPicker";
+import { OperatorPicker } from "../operator-picker/OperatorPicker";
 
 const classBase = "vuuColumnFilter";
 

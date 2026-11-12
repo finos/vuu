@@ -14,7 +14,7 @@ import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor
 
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import filterClauseCss from "./FilterClause.css";
-import { OperatorPicker } from "./operator-picker/OperatorPicker";
+import { OperatorPicker } from "../../operator-picker/OperatorPicker";
 
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (

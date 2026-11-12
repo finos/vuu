@@ -31,7 +31,7 @@ import {
 } from "../filter-pill-menu/FilterPillMenuOptions";
 import { filterAsReactNode } from "./filterAsReactNode";
 import { getFilterLabel } from "./getFilterLabel";
-import { getFilterAsFormattedText } from "./getFilterTooltipText";
+import { getFilterAsFormattedText } from "../../filter-pill/getFilterTooltipText";
 
 import filterPillCss from "./FilterPill.css";
 

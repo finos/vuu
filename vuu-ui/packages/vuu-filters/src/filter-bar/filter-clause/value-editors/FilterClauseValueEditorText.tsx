@@ -21,7 +21,7 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-import { ExpandoCombobox } from "../ExpandoCombobox";
+import { ExpandoCombobox } from "../../../expando-combobox/ExpandoCombobox";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 
 export interface FilterClauseTextValueEditorProps

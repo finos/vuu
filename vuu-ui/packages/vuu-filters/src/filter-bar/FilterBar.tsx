@@ -6,8 +6,8 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
-import { CustomFilters } from "../custom-filters";
-import { QuickFilterProps, QuickFilters } from "../quick-filters";
+import { CustomFilters } from "./custom-filters";
+import { QuickFilterProps, QuickFilters } from "./quick-filters";
 import { FilterMode, useFilterBar } from "./useFilterBar";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 

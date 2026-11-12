@@ -2,7 +2,7 @@ import type { ColumnFilterOp, FilterClauseOp } from "@vuu-ui/vuu-filter-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { ComboBoxProps, Dropdown, Option, useForkRef } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
-import { ExpandoCombobox } from "../ExpandoCombobox";
+import { ExpandoCombobox } from "../expando-combobox/ExpandoCombobox";
 import { getOperators } from "./operator-utils";
 import { useOperatorPicker } from "./useOperatorPicker";
 

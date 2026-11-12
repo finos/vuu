@@ -5,7 +5,7 @@ import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { HTMLAttributes } from "react";
-import { FilterBarProps } from "../filter-bar";
+import { FilterBarProps } from "../FilterBar";
 import { useQuickFilters } from "./useQuickFilters";
 
 import quickFiltersCss from "./QuickFilters.css";

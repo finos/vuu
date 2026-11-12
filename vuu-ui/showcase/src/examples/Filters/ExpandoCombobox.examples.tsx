@@ -13,7 +13,7 @@ import {
 } from "react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
-import { FilterClauseValueChangeHandler } from "@vuu-ui/vuu-filters/src/filter-clause/useFilterClause";
+import { FilterClauseValueChangeHandler } from "@vuu-ui/vuu-filters/src/filter-bar/filter-clause/useFilterClause";
 import { MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
 
 const longUsStates = [

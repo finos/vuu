@@ -2,7 +2,7 @@ import { Prompt } from "@vuu-ui/vuu-ui-controls";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { HTMLAttributes, ReactElement, useRef } from "react";
-import { type FilterBarProps } from "../filter-bar";
+import { type FilterBarProps } from "../FilterBar";
 import { FilterEditor } from "../filter-editor";
 import { FilterPill } from "../filter-pill";
 import { FilterModel } from "../FilterModel";

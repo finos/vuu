@@ -1,5 +1,5 @@
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { ExpandoCombobox } from "../ExpandoCombobox";
+import { ExpandoCombobox } from "../../../expando-combobox/ExpandoCombobox";
 import { ComboBoxProps, Option, useForkRef } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 import { useColumnPicker } from "./useColumnPicker";
