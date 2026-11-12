@@ -509,6 +509,15 @@ export const EditableInstrumentsInlineEdit = () => (
   </LocalDataSourceProvider>
 );
 
+/** tags=data-consumer */
+export const EditableInstrumentsAddEditDelete = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate copyOption="All" showInlineAddRow />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
 const UseEditableTableSessionReadinessTemplate = ({
   delaySubscription,
 }: {
