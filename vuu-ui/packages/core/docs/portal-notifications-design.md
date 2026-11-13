@@ -207,8 +207,10 @@ is no cross-window state sharing (`portal-design.md`).
   module exactly as it is (§13).
 - Push notifications when no portal page is open (Web Push / OS
   notifications) — possible later, see §15.
-- Cross-device read-state synchronisation (would need a server store; the
-  persistence backend makes it possible later).
+- Saving read state across reloads or devices. Vuu servers hold
+  notifications in memory for a day at most, so saved read keys would
+  mostly refer to rows that no longer exist, and a server that reuses row
+  ids after its daily clear would match the wrong notifications.
 - Marking notifications read or dismissed **on the server**. Read and delete
   state is client-side only.
 
@@ -228,7 +230,7 @@ is no cross-window state sharing (`portal-design.md`).
 | FR-10 | Toasts are shown only for notifications attributed to the currently open module (or to the portal itself). Banners are portal-wide.           |
 | FR-11 | The compact viewer shows the unread total and the latest notification text.                                                                        |
 | FR-12 | The expanded viewer lists notifications with filters (application/server, level, read state, type, text, time) and client-side actions (mark read/unread, mark all read, delete, clear). |
-| FR-13 | Read and deleted state persists per user across reloads.                                                                                           |
+| FR-13 | Read and deleted state lasts for the page's lifetime and is shared by the portal's open pages. It is not saved across reloads.                    |
 | FR-14 | Badge and presence are accessible (accessible description/tooltip and `aria-disabled`, not visual styling alone). An unavailable item shows a status badge with a hover/focus overlay explaining the cause, retry timing, and offering Retry now. |
 | FR-16 | No server-side changes are required.                                                                                                                |
 | FR-15 | Works in `local` mode with simulated servers.                                                                                                       |
@@ -596,8 +598,9 @@ export interface NotificationOrigin {
 - `topic` (optional column, `""` when unset) maps to `topic`; an empty or
   missing value means no topic. It is not copied to `attributes`.
 - Rows in the **initial snapshot** are `initial: true`. They are added as
-  unread unless their key is in the persisted read set (§8.4) or their module
-  is currently open (§7.6), and they never toast (banners still show, §9.3).
+  unread unless their key was read earlier in this page's lifetime or on
+  another page of the portal (§8.4), or their module is currently open
+  (§7.6), and they never toast (banners still show, §9.3).
   The viewer shows their real `createdAt` time, like any other notification.
 - A row delete sets `expired: true` (the item stays in history until
   retention removes it; the viewer can hide expired items via a filter).
@@ -781,22 +784,18 @@ useLatestNotification(): PortalNotification | undefined;
 
 - Max `maxNotifications` (default 500) in memory, oldest read first evicted,
   then oldest.
-- Deleted keys are remembered (tombstones, bounded, 7 days) so a deleted
-  server notification is not re-added on reconnect snapshot.
-- Expired notifications older than `expiredRetentionMs` (default 24 h) are
-  pruned.
+- Deleted keys are remembered (tombstones) so a deleted server notification
+  is not re-added on reconnect snapshot.
+- Expired notifications, read keys and tombstones older than `retentionMs`
+  (default 24 h) are pruned, every minute.
 
-### 8.4 Persistence
+### 8.4 Read state is not persisted
 
-Read keys and tombstones (not the notifications themselves — the server is
-the source of truth for current rows) are stored per user in the portal's
-persistence service under a portal-owned application key
-(`"portal.notifications"`, version 1), using the existing
-`PortalPersistenceService` / backend, so a remote backend would give
-cross-device read state for free. Client-sourced notifications are not
-persisted in v1.
-
-Writes are debounced (500 ms).
+Read keys and tombstones are held in memory for the page's lifetime and
+shared with the portal's other pages (§12). They are not saved: Vuu servers
+hold notifications in memory and clear them daily, and with short expiries
+few rows outlive a reload. After a reload, the rows a server still has
+arrive unread.
 
 ## 9. Presentation policy and the portal-level provider
 
@@ -1093,7 +1092,7 @@ and connections (§2.5).
   store, and toasts show only for that module.
 - **Read/delete state** is synchronised between pages of the same origin and
   user via a `BroadcastChannel("vuu-portal-notifications:<portalId>:<user>")`
-  carrying `read-state` and `delete` events, and is persisted (§8.4).
+  carrying `read-state` and `delete` events. It is not persisted (§8.4).
 - **Connection fan-out.** See §12.1. Not addressed in v1.
 
 ### 12.1 Why tab leader election might be needed
@@ -1151,8 +1150,8 @@ generic Notifications module already provides, which means:
   omits the column (its table built with `includeDefaultColumns = false`),
   `createdAt` falls back to `receivedAt`.
 - **No server read state.** "Read" is client-side, derived from opening the
-  module and from explicit user action (§7.6), persisted per user locally
-  (§8.4).
+  module and from explicit user action (§7.6), held in memory for the
+  page's lifetime (§8.4).
 - **No generic dismiss.** Dismissal RPCs are server specific (e.g. the
   example's `dismissNotification`), so delete is a local operation only.
 - **No module column.** Attribution relies on the 1:1 app/server mapping
@@ -1262,13 +1261,9 @@ Phase 2 is implemented in `src/notifications/`. `PortalShell` mounts
 route in a `PortalModuleIdContext`. These are the places where it differs
 from, or adds to, the design above:
 
-- Read state is saved in the existing `vuu.portal` application state, under
-  the entry `notifications`. It is not saved under a separate
-  `portal.notifications` key. Saves are debounced by 500ms and skipped when
-  nothing has changed.
-- On logout the feeds are disposed but the store is not cleared. Clearing
-  it would save an empty read state. The provider creates a new store for
-  each user instead.
+- Read state is not saved (§8.4).
+- On logout the feeds are disposed. The provider creates a new store for
+  each user.
 - `publish` (§8.2) was added in this phase rather than Phase 3.
 - `RemoteModule` registers its `vuu` override connection with
   `useRegisterNotificationHost`, so those notifications are attributed to
@@ -1363,7 +1358,7 @@ to, the design above:
   `BroadcastChannel("vuu-portal-notifications:<portalId>:<user>")`. Each
   message carries keys marked read (with the time), keys marked unread, and
   keys deleted (with the time). The receiving page applies read and deleted
-  keys with `loadReadState`, so they also apply to notifications it receives
+  keys with `mergeKeyState`, so they also apply to notifications it receives
   later. Changes received from the channel are not sent back.
 - To support this, the store's `read-state` event now carries `read`, and
   `removed` carries `deleted: true` when the user deleted the

@@ -13,13 +13,9 @@ import { useOptionalIdentityContext } from "../auth/AuthenticationProvider";
 import type { ModuleId } from "../connection-management/ModuleServerMap";
 import { useData } from "../context-definitions/DataProvider";
 import { DEFAULT_PORTAL_ID } from "../persistence/LocalStoragePersistenceBackend";
-import { useOptionalApplicationState } from "../persistence/PersistenceContext";
 import type { LocalVuuServer } from "../VuuServerDescriptor";
 import { NotificationFeedManager } from "./NotificationFeedManager";
-import {
-  isNotificationReadState,
-  NotificationStore,
-} from "./NotificationStore";
+import { NotificationStore } from "./NotificationStore";
 import {
   type PortalNotificationsAPI,
   PortalModuleIdContext,
@@ -44,9 +40,6 @@ import type {
   PortalNotificationsOptions,
 } from "./notification-types";
 
-/** Entry in the portal's own saved state that holds read state. */
-export const NOTIFICATIONS_STATE_KEY = "notifications";
-const SAVE_DELAY_MS = 500;
 const PRUNE_INTERVAL_MS = 60_000;
 
 export interface PortalNotificationsProviderProps {
@@ -89,43 +82,6 @@ const LocalNotificationFeeds = ({
       <LocalNotificationFeed connectionId={connectionId} manager={manager} />
     </DataSourceProvider>
   ));
-
-/** Loads and saves read state in the portal's own saved state. */
-const useReadStatePersistence = (store: NotificationStore) => {
-  const portalState = useOptionalApplicationState();
-  useEffect(() => {
-    if (!portalState) {
-      return;
-    }
-    const saved = portalState.get(NOTIFICATIONS_STATE_KEY);
-    if (isNotificationReadState(saved)) {
-      store.loadReadState(saved);
-    }
-    let lastSaved = JSON.stringify(store.getReadState());
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const save = () => {
-      timer = undefined;
-      const state = store.getReadState();
-      const json = JSON.stringify(state);
-      if (json !== lastSaved) {
-        lastSaved = json;
-        portalState.set(NOTIFICATIONS_STATE_KEY, state, {
-          label: "Notification read state",
-        });
-      }
-    };
-    const unsubscribe = store.subscribe(() => {
-      timer ??= setTimeout(save, SAVE_DELAY_MS);
-    });
-    return () => {
-      unsubscribe();
-      if (timer !== undefined) {
-        clearTimeout(timer);
-        save();
-      }
-    };
-  }, [portalState, store]);
-};
 
 /** Shares read and deleted state with the portal's other pages. */
 const useReadStateSync = (
@@ -215,7 +171,6 @@ export const PortalNotificationsProvider = ({
     store,
   ]);
 
-  useReadStatePersistence(store);
   useReadStateSync(
     store,
     enabled && identity !== undefined,

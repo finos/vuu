@@ -4,21 +4,26 @@ import {
   Drawer,
   Dropdown,
   Input,
+  Menu,
+  MenuItem,
+  MenuPanel,
+  MenuTrigger,
   Option,
+  Overlay,
+  OverlayPanel,
+  OverlayPanelContent,
+  OverlayTrigger,
+  Pill,
+  PillGroup,
   StatusIndicator,
   Switch,
   Text,
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import {
-  CloseIcon,
-  DeleteIcon,
-  NotificationReadIcon,
-  SearchIcon,
-} from "@salt-ds/icons";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import {
   type KeyboardEvent,
@@ -40,10 +45,7 @@ import {
   isRoutedModule,
   type RemoteModuleDescriptor,
 } from "../RemoteModuleDescriptor";
-import {
-  useModuleServerStatus,
-  useVuuServerStatuses,
-} from "../server-monitor/VuuServerMonitorProvider";
+import { useModuleServerStatus } from "../server-monitor/VuuServerMonitorProvider";
 import type { PortalNotificationsAPI } from "./PortalNotificationsContext";
 import { sourceLabel } from "./PortalNotificationsPresentation";
 import {
@@ -73,15 +75,16 @@ export interface NotificationsPanelFilters {
   /** Empty shows every kind. */
   kinds: NotificationKind[];
   unreadOnly: boolean;
-  showExpired: boolean;
+  /** Expired notifications are shown, dimmed, unless this is set. */
+  hideExpired: boolean;
   text: string;
 }
 
 const DEFAULT_FILTERS: NotificationsPanelFilters = {
+  hideExpired: false,
   kinds: [],
   levels: [],
   moduleIds: [],
-  showExpired: false,
   text: "",
   unreadOnly: false,
 };
@@ -109,19 +112,18 @@ const isFiltered = (filters: NotificationsPanelFilters) =>
   filters.moduleIds.length > 0 ||
   filters.levels.length > 0 ||
   filters.kinds.length > 0 ||
-  filters.unreadOnly ||
-  filters.showExpired ||
+  filters.hideExpired ||
   filters.text !== "";
 
 const toQuery = ({
+  hideExpired,
   kinds,
   levels,
   moduleIds,
-  showExpired,
   text,
   unreadOnly,
 }: NotificationsPanelFilters): NotificationQuery => ({
-  includeExpired: showExpired,
+  includeExpired: !hideExpired,
   kinds: kinds.length > 0 ? kinds : undefined,
   levels: levels.length > 0 ? levels : undefined,
   moduleIds: moduleIds.length > 0 ? moduleIds : undefined,
@@ -135,30 +137,12 @@ const formatTime = (time: number) =>
     minute: "2-digit",
   });
 
-const dayLabel = (time: number, now = Date.now()) => {
-  const day = new Date(time).toDateString();
-  if (day === new Date(now).toDateString()) {
-    return "Today";
-  }
-  if (day === new Date(now - 86_400_000).toDateString()) {
-    return "Yesterday";
-  }
-  return new Date(time).toLocaleDateString();
-};
-
-const groupByDay = (notifications: readonly PortalNotification[]) => {
-  const groups: { label: string; notifications: PortalNotification[] }[] = [];
-  for (const notification of notifications) {
-    const label = dayLabel(notification.createdAt);
-    const group = groups.at(-1);
-    if (group?.label === label) {
-      group.notifications.push(notification);
-    } else {
-      groups.push({ label, notifications: [notification] });
-    }
-  }
-  return groups;
-};
+const formatSeconds = (time: number) =>
+  new Date(time).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 
 const navigationPath = (path: string) => path.replace(/\/?\*$/, "") || "/";
 
@@ -171,6 +155,33 @@ const notificationSource = (
     moduleIds,
     moduleIds.length === 0 ? "Portal" : (connectionId ?? "Portal"),
   );
+
+/** Extra columns the server sent, as name and value. */
+const attributeEntries = ({ attributes }: PortalNotification) =>
+  Object.entries(attributes)
+    .filter(
+      ([, value]) => value !== undefined && value !== null && value !== "",
+    )
+    .map(([name, value]) => [name, String(value)] as const);
+
+/** Type, server, received and expiry, for the expanded row. */
+const deliveryLine = ({
+  expired,
+  expiresAt,
+  kind,
+  origin,
+  receivedAt,
+}: PortalNotification) =>
+  [
+    KIND_LABELS[kind],
+    origin.connectionId,
+    `received ${formatSeconds(receivedAt)}`,
+    expiresAt === undefined
+      ? undefined
+      : `${expired ? "expired" : "expires"} ${formatSeconds(expiresAt)}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
 /** Saves the panel's filters in the portal's own saved state. */
 const usePanelFilters = () => {
@@ -206,14 +217,14 @@ const OpenModuleButton = ({
   const { presence } = useModuleServerStatus(id);
   return (
     <Button
-      appearance="bordered"
+      appearance="solid"
       disabled={isUnavailablePresence(presence)}
       onClick={(event) => {
         event.stopPropagation();
         navigate(navigationPath(path));
         onOpen();
       }}
-      sentiment="neutral"
+      sentiment="accented"
     >
       Open {title}
     </Button>
@@ -244,6 +255,7 @@ const NotificationItem = ({
   const module = moduleServerMap?.modules.find(
     ({ id }) => id === origin.moduleIds[0],
   );
+  const attributes = expanded ? attributeEntries(notification) : [];
   const toggleRead = () => api.markRead([key], !read);
   const remove = () => api.delete([key]);
 
@@ -278,101 +290,157 @@ const NotificationItem = ({
       tabIndex={0}
     >
       <span aria-hidden className={`${classBase}-unreadDot`} />
-      <StatusIndicator aria-hidden status={level} />
+      <StatusIndicator
+        aria-label={LEVEL_LABELS[level]}
+        className={`${classBase}-level`}
+        status={level}
+      />
       <div className={`${classBase}-itemBody`}>
         <div className={`${classBase}-itemHeader`}>
-          <Text className={`${classBase}-itemTitle`}>
-            {read ? title : <strong>{title}</strong>}
-            {expired ? " (expired)" : null}
-          </Text>
-          <Text className={`${classBase}-itemSource`} styleAs="label">
-            {notificationSource(moduleServerMap, origin)} ·{" "}
+          <span className={`${classBase}-itemTitle`}>{title}</span>
+          <span className={`${classBase}-itemSource`}>
+            {notificationSource(moduleServerMap, origin)}
+          </span>
+          {expired ? (
+            <span className={`${classBase}-expiredTag`}>Expired</span>
+          ) : null}
+          <time
+            className={`${classBase}-itemTime`}
+            dateTime={new Date(createdAt).toISOString()}
+          >
             {formatTime(createdAt)}
-          </Text>
+          </time>
         </div>
         {message ? (
-          <Text className={`${classBase}-itemMessage`}>{message}</Text>
+          <div className={`${classBase}-itemMessage`}>{message}</div>
         ) : null}
-        <div className={`${classBase}-itemActions`}>
-          {canNavigate && module && isRoutedModule(module) ? (
-            <OpenModuleButton module={module} onOpen={onOpenModule} />
-          ) : null}
-          <span className={`${classBase}-itemActionsEnd`}>
-            <Button
-              appearance="transparent"
-              aria-label={read ? "Mark unread" : "Mark read"}
-              onClick={(event) => {
-                event.stopPropagation();
-                toggleRead();
-              }}
-              sentiment="neutral"
-            >
-              <NotificationReadIcon aria-hidden />
-            </Button>
-            <Button
-              appearance="transparent"
-              aria-label="Delete"
-              onClick={(event) => {
-                event.stopPropagation();
-                remove();
-              }}
-              sentiment="neutral"
-            >
-              <DeleteIcon aria-hidden />
-            </Button>
-          </span>
-        </div>
+        {expanded ? (
+          <>
+            {attributes.length > 0 ? (
+              <dl className={`${classBase}-attributes`}>
+                {attributes.map(([name, value]) => (
+                  <div className={`${classBase}-attribute`} key={name}>
+                    <dt>{name}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+            <div className={`${classBase}-itemActions`}>
+              {canNavigate && module && isRoutedModule(module) ? (
+                <OpenModuleButton module={module} onOpen={onOpenModule} />
+              ) : null}
+              <span className={`${classBase}-itemActionsEnd`}>
+                <Button
+                  appearance="transparent"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    toggleRead();
+                  }}
+                  sentiment="neutral"
+                >
+                  {read ? "Mark unread" : "Mark read"}
+                </Button>
+                <Button
+                  appearance="transparent"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    remove();
+                  }}
+                  sentiment="neutral"
+                >
+                  Delete
+                </Button>
+              </span>
+            </div>
+            <div className={`${classBase}-delivery`}>
+              {deliveryLine(notification)} · R read · Del delete
+            </div>
+          </>
+        ) : null}
       </div>
     </li>
   );
 };
 
-const presenceLabel = (presence: string, since: number, now: number) => {
-  if (presence === "online") {
-    return "online";
-  }
-  if (isUnavailablePresence(presence as never) && since > 0) {
-    const minutes = Math.max(1, Math.round((now - since) / 60_000));
-    return `${presence} ${minutes}m`;
-  }
-  return presence;
-};
+interface MoreFiltersProps {
+  filters: NotificationsPanelFilters;
+  moduleOptions: { id: ModuleId; title: string }[];
+  moduleTitle: (id: ModuleId) => string;
+  setFilters: (changes: Partial<NotificationsPanelFilters>) => void;
+}
 
-/** Every server's availability, including servers no nav item shows. */
-const ServerSummary = ({
-  moduleServerMap,
-}: {
-  moduleServerMap?: ModuleServerMap;
-}) => {
-  const statuses = useVuuServerStatuses();
-  if (statuses.size === 0) {
-    return null;
-  }
-  const now = Date.now();
+/** Application, type and expired filters, behind the filter button. */
+const MoreFilters = ({
+  filters,
+  moduleOptions,
+  moduleTitle,
+  setFilters,
+}: MoreFiltersProps) => {
+  const active =
+    filters.moduleIds.length > 0 ||
+    filters.kinds.length > 0 ||
+    filters.hideExpired;
   return (
-    <div className={`${classBase}-servers`}>
-      <Text styleAs="label">Servers:</Text>
-      {[...statuses.values()].map(({ connectionId, presence, since }) => (
-        <span
-          className={cx(
-            `${classBase}-server`,
-            `${classBase}-server-${presence}`,
-          )}
-          key={connectionId}
+    <Overlay placement="bottom-end">
+      <OverlayTrigger>
+        <Button
+          appearance={active ? "solid" : "bordered"}
+          aria-label="More filters"
+          className={`${classBase}-filterButton`}
+          sentiment={active ? "accented" : "neutral"}
         >
-          {connectionId === moduleServerMap?.portalConnectionId
-            ? "Portal"
-            : sourceLabel(
-                moduleServerMap,
-                moduleServerMap?.modulesFor(connectionId) ?? [],
-                connectionId,
-              )}{" "}
-          <span className={`${classBase}-serverPresence`}>
-            {presenceLabel(presence, since, now)}
-          </span>
-        </span>
-      ))}
-    </div>
+          <Icon name="filter" />
+        </Button>
+      </OverlayTrigger>
+      <OverlayPanel aria-label="More filters" className={`${classBase}-more`}>
+        <OverlayPanelContent className={`${classBase}-moreContent`}>
+          <Dropdown<ModuleId>
+            aria-label="Applications"
+            bordered
+            multiselect
+            onSelectionChange={(_: SyntheticEvent, moduleIds: ModuleId[]) =>
+              setFilters({ moduleIds })
+            }
+            placeholder="All applications"
+            selected={filters.moduleIds}
+            value={filters.moduleIds.map(moduleTitle).join(", ")}
+            valueToString={moduleTitle}
+          >
+            {moduleOptions.map(({ id, title }) => (
+              <Option key={id} value={id}>
+                {title}
+              </Option>
+            ))}
+          </Dropdown>
+          <Dropdown<NotificationKind>
+            aria-label="Types"
+            bordered
+            multiselect
+            onSelectionChange={(_: SyntheticEvent, kinds: NotificationKind[]) =>
+              setFilters({ kinds })
+            }
+            placeholder="All types"
+            selected={filters.kinds}
+            value={filters.kinds.map((kind) => KIND_LABELS[kind]).join(", ")}
+            valueToString={(kind) => KIND_LABELS[kind]}
+          >
+            {KINDS.map((kind) => (
+              <Option key={kind} value={kind}>
+                {KIND_LABELS[kind]}
+              </Option>
+            ))}
+          </Dropdown>
+          <Checkbox
+            checked={filters.hideExpired}
+            label="Hide expired"
+            onChange={(event) =>
+              setFilters({ hideExpired: event.target.checked })
+            }
+          />
+        </OverlayPanelContent>
+      </OverlayPanel>
+    </Overlay>
   );
 };
 
@@ -428,12 +496,54 @@ const NotificationsPanelContent = ({
   const moduleTitle = (id: ModuleId) =>
     moduleOptions.find((option) => option.id === id)?.title ?? String(id);
 
+  const visible = filters.hideExpired
+    ? allNotifications.filter(({ expired }) => !expired)
+    : allNotifications;
+  const levelCounts = (level: NotificationLevel) =>
+    visible.filter((n) => n.level === level).length;
+  const totalUnread = visible.filter((n) => !n.read).length;
   const unreadKeys = notifications.filter((n) => !n.read).map((n) => n.key);
   const readKeys = notifications.filter((n) => n.read).map((n) => n.key);
+  const filtered = isFiltered(filters);
   const close = () => presentation?.closePanel();
   const select = (key: string) => {
     setSelectedKey((current) => (current === key ? undefined : key));
     api.markRead([key]);
+  };
+
+  const emptyState = () => {
+    if (filtered) {
+      return (
+        <>
+          <Text styleAs="h4">No notifications match</Text>
+          <Button
+            appearance="bordered"
+            onClick={() => setFilters(DEFAULT_FILTERS)}
+            sentiment="neutral"
+          >
+            Clear filters
+          </Button>
+        </>
+      );
+    }
+    if (filters.unreadOnly && visible.length > 0) {
+      return (
+        <>
+          <Text styleAs="h4">You're all caught up</Text>
+          <Text color="secondary">
+            No unread notifications. {visible.length} in All.
+          </Text>
+          <Button
+            appearance="bordered"
+            onClick={() => setFilters({ unreadOnly: false })}
+            sentiment="neutral"
+          >
+            Show all
+          </Button>
+        </>
+      );
+    }
+    return <Text styleAs="h4">No notifications today</Text>;
   };
 
   return (
@@ -446,100 +556,59 @@ const NotificationsPanelContent = ({
       }}
     >
       <div className={`${classBase}-header`}>
-        <Text as="h2" className={`${classBase}-title`} styleAs="h3">
+        <Text as="h2" className={`${classBase}-title`}>
           Notifications
         </Text>
-        <Button
-          appearance="transparent"
-          disabled={unreadKeys.length === 0}
-          onClick={() => api.markRead(unreadKeys)}
-          sentiment="neutral"
-        >
-          Mark all read
-        </Button>
-        <Button
-          appearance="transparent"
-          disabled={readKeys.length === 0}
-          onClick={() => api.delete(readKeys)}
-          sentiment="neutral"
-        >
-          Delete read
-        </Button>
-        <Button
-          appearance="transparent"
-          aria-label="Close notifications"
-          onClick={close}
-          sentiment="neutral"
-        >
-          <CloseIcon aria-hidden />
-        </Button>
+        {totalUnread > 0 ? (
+          <span className={`${classBase}-unreadCount`}>
+            {totalUnread} unread
+          </span>
+        ) : null}
+        {presentation?.doNotDisturb ? (
+          <span className={`${classBase}-dndTag`}>Do not disturb</span>
+        ) : null}
+        <span className={`${classBase}-headerEnd`}>
+          <Button
+            appearance="transparent"
+            aria-label="Mark all read"
+            disabled={unreadKeys.length === 0}
+            onClick={() => api.markRead(unreadKeys)}
+            sentiment="neutral"
+            title="Mark all read"
+          >
+            <Icon name="tick" />
+          </Button>
+          <Menu>
+            <MenuTrigger>
+              <Button
+                appearance="transparent"
+                aria-label="More actions"
+                sentiment="neutral"
+              >
+                <Icon name="more-horiz" />
+              </Button>
+            </MenuTrigger>
+            <MenuPanel>
+              <MenuItem
+                disabled={readKeys.length === 0}
+                onClick={() => api.delete(readKeys)}
+              >
+                Delete read
+              </MenuItem>
+            </MenuPanel>
+          </Menu>
+          <Button
+            appearance="transparent"
+            aria-label="Close notifications"
+            onClick={close}
+            sentiment="neutral"
+          >
+            <Icon name="close" />
+          </Button>
+        </span>
       </div>
-      <div className={`${classBase}-filters`}>
-        <Input
-          bordered
-          className={`${classBase}-search`}
-          inputProps={{ "aria-label": "Search notifications" }}
-          onChange={(event) =>
-            setFilters({ text: (event.target as HTMLInputElement).value })
-          }
-          placeholder="Search…"
-          startAdornment={<SearchIcon aria-hidden />}
-          value={filters.text}
-        />
-        <Dropdown<ModuleId>
-          aria-label="Applications"
-          bordered
-          multiselect
-          onSelectionChange={(_: SyntheticEvent, moduleIds: ModuleId[]) =>
-            setFilters({ moduleIds })
-          }
-          placeholder="All apps"
-          selected={filters.moduleIds}
-          value={filters.moduleIds.map(moduleTitle).join(", ")}
-          valueToString={moduleTitle}
-        >
-          {moduleOptions.map(({ id, title }) => (
-            <Option key={id} value={id}>
-              {title}
-            </Option>
-          ))}
-        </Dropdown>
-        <Dropdown<NotificationLevel>
-          aria-label="Levels"
-          bordered
-          multiselect
-          onSelectionChange={(_: SyntheticEvent, levels: NotificationLevel[]) =>
-            setFilters({ levels })
-          }
-          placeholder="All levels"
-          selected={filters.levels}
-          value={filters.levels.map((level) => LEVEL_LABELS[level]).join(", ")}
-          valueToString={(level) => LEVEL_LABELS[level]}
-        >
-          {LEVELS.map((level) => (
-            <Option key={level} value={level}>
-              {LEVEL_LABELS[level]}
-            </Option>
-          ))}
-        </Dropdown>
-        <Dropdown<NotificationKind>
-          aria-label="Types"
-          bordered
-          multiselect
-          onSelectionChange={(_: SyntheticEvent, kinds: NotificationKind[]) =>
-            setFilters({ kinds })
-          }
-          placeholder="All types"
-          selected={filters.kinds}
-          value={filters.kinds.map((kind) => KIND_LABELS[kind]).join(", ")}
-          valueToString={(kind) => KIND_LABELS[kind]}
-        >
-          {KINDS.map((kind) => (
-            <Option key={kind} value={kind}>
-              {KIND_LABELS[kind]}
-            </Option>
-          ))}
-        </Dropdown>
+
+      <div className={`${classBase}-toolbar`}>
         <ToggleButtonGroup
           aria-label="Read state"
           onChange={(event) =>
@@ -549,17 +618,76 @@ const NotificationsPanelContent = ({
           }
           value={filters.unreadOnly ? "unread" : "all"}
         >
-          <ToggleButton value="unread">Unread</ToggleButton>
-          <ToggleButton value="all">All</ToggleButton>
+          <ToggleButton value="unread">Unread {totalUnread}</ToggleButton>
+          <ToggleButton value="all">All {visible.length}</ToggleButton>
         </ToggleButtonGroup>
-        <Checkbox
-          checked={filters.showExpired}
-          label="Show expired"
+        <Input
+          bordered
+          className={`${classBase}-search`}
+          inputProps={{ "aria-label": "Search notifications" }}
           onChange={(event) =>
-            setFilters({ showExpired: event.target.checked })
+            setFilters({ text: (event.target as HTMLInputElement).value })
           }
+          placeholder="Search title and message"
+          startAdornment={<Icon name="search" />}
+          value={filters.text}
         />
-        {isFiltered(filters) ? (
+        <MoreFilters
+          filters={filters}
+          moduleOptions={moduleOptions}
+          moduleTitle={moduleTitle}
+          setFilters={setFilters}
+        />
+      </div>
+
+      <div className={`${classBase}-chips`}>
+        <PillGroup
+          aria-label="Levels"
+          onSelectionChange={(_, levels) =>
+            setFilters({ levels: levels as NotificationLevel[] })
+          }
+          selected={filters.levels}
+          selectionVariant="multiple"
+        >
+          {LEVELS.map((level) => (
+            <Pill
+              className={`${classBase}-levelPill`}
+              key={level}
+              value={level}
+            >
+              <span
+                aria-hidden
+                className={`${classBase}-levelDot`}
+                data-level={level}
+              />
+              {LEVEL_LABELS[level]}
+              <span className={`${classBase}-count`}>{levelCounts(level)}</span>
+            </Pill>
+          ))}
+        </PillGroup>
+        {filters.moduleIds.map((id) => (
+          <Pill
+            aria-label={`Remove ${moduleTitle(id)} filter`}
+            className={`${classBase}-scopePill`}
+            key={id}
+            onClick={() =>
+              setFilters({
+                moduleIds: filters.moduleIds.filter((m) => m !== id),
+              })
+            }
+          >
+            {moduleTitle(id)}
+            <Icon name="close" />
+          </Pill>
+        ))}
+      </div>
+
+      {filtered ? (
+        <div className={`${classBase}-matches`}>
+          <span>
+            <strong>{notifications.length}</strong> of {allNotifications.length}{" "}
+            match
+          </span>
           <Button
             appearance="transparent"
             onClick={() => setFilters(DEFAULT_FILTERS)}
@@ -567,38 +695,48 @@ const NotificationsPanelContent = ({
           >
             Clear filters
           </Button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
+
+      {presentation?.doNotDisturb ? (
+        <div className={`${classBase}-dndNotice`}>
+          <div>
+            <strong>Toasts and banners are held</strong>
+            <div>New notifications are listed here and in the nav badges.</div>
+          </div>
+          <Button
+            appearance="bordered"
+            onClick={() => presentation.setDoNotDisturb(false)}
+            sentiment="neutral"
+          >
+            Turn off
+          </Button>
+        </div>
+      ) : null}
+
       <div className={`${classBase}-list`} ref={listRef}>
         {notifications.length === 0 ? (
-          <Text className={`${classBase}-empty`}>No notifications</Text>
+          <div className={`${classBase}-empty`}>{emptyState()}</div>
         ) : (
-          groupByDay(notifications).map(({ label, notifications }) => (
-            <section aria-label={label} key={label}>
-              <Text className={`${classBase}-day`} styleAs="label">
-                {label}
-              </Text>
-              <ul>
-                {notifications.map((notification) => (
-                  <NotificationItem
-                    api={api}
-                    canNavigate={canNavigate}
-                    expanded={selectedKey === notification.key}
-                    key={notification.key}
-                    moduleServerMap={moduleServerMap}
-                    notification={notification}
-                    onOpenModule={close}
-                    onSelect={select}
-                  />
-                ))}
-              </ul>
-            </section>
-          ))
+          <ul>
+            {notifications.map((notification) => (
+              <NotificationItem
+                api={api}
+                canNavigate={canNavigate}
+                expanded={selectedKey === notification.key}
+                key={notification.key}
+                moduleServerMap={moduleServerMap}
+                notification={notification}
+                onOpenModule={close}
+                onSelect={select}
+              />
+            ))}
+          </ul>
         )}
       </div>
-      <div className={`${classBase}-footer`}>
-        <ServerSummary moduleServerMap={moduleServerMap} />
-        {presentation ? (
+
+      {presentation ? (
+        <div className={`${classBase}-footer`}>
           <Switch
             checked={presentation.doNotDisturb}
             label="Do not disturb"
@@ -606,16 +744,16 @@ const NotificationsPanelContent = ({
               presentation.setDoNotDisturb(event.target.checked)
             }
           />
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 };
 
 /**
- * Every notification the portal has received, with filters and actions, in
- * a drawer on the right. `PortalShell` renders it; open it with
- * `useNotificationPresentation().openPanel()`.
+ * Today's notifications from every server and from client code, with
+ * filters and actions, in a drawer on the right. `PortalShell` renders it;
+ * open it with `useNotificationPresentation().openPanel()`.
  */
 export const NotificationsPanel = () => {
   const targetWindow = useWindow();
