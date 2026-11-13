@@ -1,7 +1,4 @@
-import type {
-  ColumnDescriptorsByName,
-  Filter,
-} from "@vuu-ui/vuu-filter-types";
+import type { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 
 export interface SetFilterOptions {
   columnsByName?: ColumnDescriptorsByName;
@@ -45,7 +42,10 @@ import type {
 } from "@vuu-ui/vuu-utils";
 import type {
   ColumnDescriptor,
+  ColumnTypeRendering,
   DataValueTypeDescriptor,
+  LookupRenderer,
+  ValueListRenderer,
 } from "@vuu-ui/vuu-table-types";
 import type { PostMessageToClientCallback } from "@vuu-ui/vuu-data-remote";
 
@@ -174,8 +174,40 @@ export declare type DataEditable =
       update: boolean;
     };
 
+/**
+ * Requests a typeahead editor, which suggests values already present in the
+ * table. Suits codes (currency, exchange), not free text.
+ */
+export interface TypeaheadEditor {
+  name: "typeahead";
+  /**
+   * 0 shows suggestions on focus, like a dropdown. Use 1 or more for columns
+   * with many distinct values, so the user must type first.
+   * @default 1
+   */
+  minCharacterCountToTriggerSuggestions?: 0 | 1 | 2 | 3;
+}
+
+/**
+ * How a value is edited, in a table cell or a form field. Names a registered
+ * cell editor (e.g. "input-cell", "checkbox-cell", "dropdown-cell") with any
+ * options it needs, or requests a typeahead.
+ */
+export declare type DataValueEditor =
+  | ColumnTypeRendering
+  | LookupRenderer
+  | ValueListRenderer
+  | TypeaheadEditor;
+
 export interface DataValueDescriptor {
+  /**
+   * Whether the value can be edited. On a server schema column, what the
+   * server allows. On a client descriptor (e.g. a table column) it can only
+   * narrow what the server allows.
+   */
   editable?: DataEditable;
+  /** How the value is edited, in a table cell or a form field. */
+  editor?: DataValueEditor;
   /**
    There are three values for editableBulk. 
     - false user will not see these values when applying a bulk edit. 
@@ -493,6 +525,7 @@ export interface DataSourceConstructorProps
    */
   autosubscribeColumns?: string[];
   bufferSize?: number;
+  connectionId?: string;
   /**
    * For datasources that support edit sessions, some services support an additional
    * column on session tables that will be used to return status information for a row
@@ -512,7 +545,22 @@ export interface DataSourceConstructorProps
   viewport?: string;
 }
 
+/**
+ * The Vuu server a remote module connects to. Published by the remote in its
+ * `config.json`, not by the module registry.
+ */
+/**
+ * How the portal gets a Vuu token for a server:
+ * - `token-exchange`: exchanges the portal's identity token (e.g. Keycloak)
+ *   at `restUrl`.
+ * - `vuu-login`: posts a username and password to `restUrl`, the Vuu
+ *   server's own login endpoint (e.g. `/api/authn` of the Scala server).
+ */
+export type VuuServerAuthMode = "token-exchange" | "vuu-login";
+
 export interface RemoteModuleConnection {
+  /** Default `token-exchange`. */
+  auth?: VuuServerAuthMode;
   connectionId: string;
   restUrl?: string;
   websocketUrl?: string;
@@ -874,7 +922,7 @@ export interface ServerProxySubscribeMessage extends WithFullConfig {
 // };
 
 export declare type VuuUIMessageInConnected = {
-  sessionId: string;
+  loginResponse: VuuLoginSuccessResponse & { sessionId: string };
   type: "connected";
 };
 

@@ -1,0 +1,143 @@
+.vuuBasketToolbar {
+  --saltFormField-width: auto;
+  background: var(--salt-container-primary-background);
+  border-bottom: 1px solid var(--salt-separable-primary-borderColor);
+  flex: 0 0 auto;
+  padding: 16px;
+}
+
+.vuuBasketToolbar-inner {
+  --vuuExpandoInput-background: var(--salt-container-primary-background);
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.vuuBasketToolbar-tradeControls,
+.vuuBasketToolbar-metrics {
+  align-items: center;
+  border-radius: 6px;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 20px;
+  padding: 10px 16px;
+}
+
+.vuuBasketToolbar-tradeControls,
+.vuuBasketToolbar-metrics {
+  background: transparent;
+}
+
+.vuuBasketToolbar .saltFormField {
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.vuuBasketToolbar .saltFormFieldLabel {
+  color: var(--salt-content-secondary-foreground);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: var(--salt-text-fontWeight-strong);
+  letter-spacing: 0.2px;
+}
+
+.vuuBasketToolbar .saltButton.vuuCycleStateButton {
+  border: 0 !important;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.vuuBasketToolbar .vuuCycleStateButton:focus-visible {
+  outline: 2px solid var(--salt-focused-outlineColor);
+  outline-offset: 2px;
+}
+
+.vuuBasketToolbar-side,
+.vuuBasketToolbar-units {
+  --saltButton-height: 32px;
+  --vuuExpandoInput-border: 1px solid var(--salt-editable-borderColor);
+  --vuuExpandoInput-borderRadius: var(--salt-palette-corner-weak);
+  --vuuExpandoInput-height: 32px;
+  box-sizing: border-box;
+  height: 32px;
+  min-height: 0;
+  min-width: 80px;
+}
+
+.vuuBasketToolbar .vuuCycleStateButton-buy {
+  background: var(--salt-color-green-500);
+  color: var(--salt-content-bold-foreground);
+}
+
+.vuuBasketToolbar .vuuCycleStateButton-sell {
+  background: var(--salt-color-red-500);
+  color: var(--salt-content-bold-foreground);
+}
+
+.vuuBasketToolbar .vuuCycleStateButton:hover {
+  filter: brightness(0.9);
+}
+
+.vuuBasketToolbar-notional,
+.vuuBasketToolbar-pctFilled,
+.vuuBasketToolbar-on-market .vuuBasketToolbar-side,
+.vuuBasketToolbar-on-market .vuuBasketToolbar-units {
+  align-items: center;
+  display: inline-flex;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--salt-text-fontWeight-strong);
+  line-height: 32px;
+  min-height: 32px;
+  white-space: nowrap;
+}
+
+.vuuBasketToolbar-notionalField,
+.vuuBasketToolbar-notionalUsdField {
+  padding-left: 0;
+}
+
+.vuuBasketToolbar-notionalField,
+.vuuBasketToolbar-pctFilledField {
+  border-left: 1px solid var(--salt-separable-primary-borderColor);
+  padding-left: 20px;
+}
+
+.vuuBasketToolbar-takeOffMarket,
+.vuuBasketToolbar-sendToMarket,
+.vuuBasketToolbar-actions {
+  --saltButton-height: 32px;
+  --vuu-icon-size: 16px;
+  flex: 0 0 auto;
+  gap: 8px;
+  height: 32px;
+  min-height: 0;
+  white-space: nowrap;
+}
+
+.vuuBasketToolbar-marketActions,
+.vuuBasketToolbar-sendToMarket {
+  margin-left: auto;
+}
+
+.vuuBasketToolbar-marketActions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.vuuBasketToolbar-status {
+  align-items: center;
+  background: var(--salt-status-success-background);
+  border: 1px solid var(--salt-status-success-borderColor);
+  border-radius: 16px;
+  color: var(--salt-status-success-foreground-informative);
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: var(--salt-text-fontWeight-strong);
+  height: 32px;
+  padding: 0 12px;
+  white-space: nowrap;
+}

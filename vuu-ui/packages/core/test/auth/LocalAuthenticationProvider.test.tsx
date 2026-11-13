@@ -1,0 +1,116 @@
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  AuthenticationProvider,
+  useModuleRegistry,
+  useVuuAccessToken,
+  useVuuAuthorizations,
+  useVuuConnectionId,
+} from "../../src/auth/AuthenticationProvider";
+import type { PortalModuleRegistry } from "../../src/RemoteModuleDescriptor";
+
+const registry = {
+  modules: [
+    {
+      clientIdentifier: "local-orders",
+      description: "Local orders",
+      id: "local-orders",
+      navLocation: "/Trading/Orders",
+      accessRole: "local",
+      mfComponent: "OrdersLocal",
+      mfScope: "orders",
+      mfUrl: "http://localhost:5008",
+      name: "orders",
+      path: "/trading/orders",
+      title: "Orders",
+      version: 1,
+    },
+  ],
+} satisfies PortalModuleRegistry;
+
+const SessionProbe = () => {
+  const moduleRegistry = useModuleRegistry();
+  const connectionId = useVuuConnectionId();
+  const token = useVuuAccessToken();
+  const authorizations = useVuuAuthorizations();
+  return (
+    <output>
+      {JSON.stringify({
+        authorizations,
+        connectionId,
+        moduleCount: moduleRegistry.modules.length,
+        token,
+      })}
+    </output>
+  );
+};
+
+const ModuleCountProbe = () => (
+  <output>{useModuleRegistry().modules.length}</output>
+);
+
+describe("AuthenticationProvider local mode", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("publishes the local registry and synthetic VUU session without network authentication", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}"));
+    const webSocketConstructor = vi.fn();
+    vi.stubGlobal("WebSocket", webSocketConstructor);
+
+    await act(async () => {
+      root.render(
+        <AuthenticationProvider
+          authorizations={["orders.read"]}
+          mode="local"
+          registry={registry}
+        >
+          <SessionProbe />
+        </AuthenticationProvider>,
+      );
+    });
+
+    expect(JSON.parse(container.textContent ?? "")).toEqual({
+      authorizations: ["orders.read"],
+      connectionId: "local",
+      moduleCount: 1,
+      token: "",
+    });
+    // Only module configs are fetched; nothing authenticates.
+    expect(
+      fetchSpy.mock.calls.filter(
+        ([url]) => !String(url).endsWith("/config.json"),
+      ),
+    ).toEqual([]);
+    expect(webSocketConstructor).not.toHaveBeenCalled();
+  });
+
+  it("defaults to an empty registry", async () => {
+    await act(async () => {
+      root.render(
+        <AuthenticationProvider mode="local">
+          <ModuleCountProbe />
+        </AuthenticationProvider>,
+      );
+    });
+
+    expect(container.textContent).toBe("0");
+  });
+});

@@ -6,6 +6,8 @@ import type {
   MultiValueFilterClause,
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
+import type { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
 import {
   type ColumnMap,
   getScaledDecimalScale,
@@ -17,8 +19,6 @@ import {
   toScaledInteger,
 } from "@vuu-ui/vuu-utils";
 import { parseFilter } from "./FilterParser";
-import type { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
 const dataRowFilterPredicateMap = new Map<string, DataRowFilterPredicate>();

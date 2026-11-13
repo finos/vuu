@@ -1,13 +1,3 @@
-/**
- * VuuUser is not used in any websocket messages. It represents the user structure returned
- * encoded within the auth token used to LOGIN. The auti token is returned by the authn REST
- * service call.
- */
-export interface VuuUser {
-  authorizations: string[];
-  name: string;
-}
-
 export type InvalidSessionReason =
   | "Invalid session"
   | "User session limit exceeded";
@@ -52,8 +42,80 @@ export interface VuuLoginRequest {
   type: "LOGIN";
 }
 
+/**
+ * How a module can be added to a workspace. A module is listed in the
+ * workspace palette only if its descriptor includes this.
+ */
+export interface VuuModuleWorkspaceDescriptor {
+  /** Heading of the palette group the module is listed under. */
+  paletteGroup: string;
+  /** Palette icon as a data URL. Defaults to `navIconUrl`. */
+  iconUrl?: string;
+  /** Initial size, in grid tracks, of an item added to a workspace. */
+  defaultSize?: { cols?: number; rows?: number };
+}
+
+export interface VuuModuleDescriptor {
+  clientIdentifier: string;
+  description: string;
+  enabled?: boolean;
+  id: number | string;
+  /**
+   * Identifier for an icon that must be provided through CSS.
+   */
+  navIconName?: string;
+  /**
+   * Full icon encapsulated in a data URL, represented as SVG or base64-encoded SVG.
+   */
+  navIconUrl?: string;
+  /**
+   * Key of a live badge source, e.g. `"workingOrders"`. The application maps
+   * it to a value; the portal does not interpret it.
+   */
+  navBadge?: string;
+  /**
+   * Where the module appears in the navigation. Optional for a palette-only
+   * module, i.e. one with `workspace` metadata that is only added to
+   * workspaces from the Panels palette.
+   */
+  navLocation?: string;
+  /**
+   * Order within the module's navigation section, lowest first. Modules
+   * without a value follow those with one, in registration order.
+   */
+  navOrder?: number;
+  /**
+   * Notification topics the module claims, e.g. `["orders"]`.
+   */
+  notificationTopics?: string[];
+  accessRole: string;
+  mfComponent: string;
+  mfScope: string;
+  mfUrl: string;
+  name: string;
+  /**
+   * The module's route. Optional for a palette-only module, which has no
+   * route and no navigation entry.
+   */
+  path?: string;
+  title: string;
+  version: number;
+  /** Set to make the module available in the workspace palette. */
+  workspace?: VuuModuleWorkspaceDescriptor;
+}
+
+export interface VuuModuleRecord extends VuuModuleDescriptor {
+  enabled: boolean;
+  id: number;
+}
+
+export interface VuuModuleRegistry {
+  modules: VuuModuleRecord[];
+}
+
 // There is no LOGIN_FAIL
 export interface VuuLoginSuccessResponse {
+  moduleRegistry?: VuuModuleRegistry;
   type: "LOGIN_SUCCESS";
   vuuServerId: string;
 }
@@ -218,7 +280,9 @@ export interface VuuViewportRangeReject {
   viewPortId: string;
 }
 
-export type VuuViewportRangeResponse = VuuViewportRangeSuccess | VuuViewportRangeReject
+export type VuuViewportRangeResponse =
+  | VuuViewportRangeSuccess
+  | VuuViewportRangeReject;
 
 export interface VuuViewportDisableRequest {
   type: "DISABLE_VP";
@@ -315,11 +379,11 @@ export declare type SelectRowResponse = SelectRowSuccess | SelectRowReject;
 export declare interface SelectSuccessWithRowCount {
   selectedRowCount: number;
   type:
-  | "SELECT_ROW_SUCCESS"
-  | "DESELECT_ROW_SUCCESS"
-  | "SELECT_ROW_RANGE_SUCCESS"
-  | "SELECT_ALL_SUCCESS"
-  | "DESELECT_ALL_SUCCESS";
+    | "SELECT_ROW_SUCCESS"
+    | "DESELECT_ROW_SUCCESS"
+    | "SELECT_ROW_RANGE_SUCCESS"
+    | "SELECT_ALL_SUCCESS"
+    | "DESELECT_ALL_SUCCESS";
 }
 
 export interface SelectRowSuccess extends SelectSuccessWithRowCount {
@@ -585,7 +649,11 @@ export declare type EditCellRpcServiceRequest = {
 };
 
 export declare type BeginEditSessionParams = {
-  editSessionMode?: "inline-all-rows" | "all-rows" | "selected-rows" | "empty-session-table";
+  editSessionMode?:
+    | "inline-all-rows"
+    | "all-rows"
+    | "selected-rows"
+    | "empty-session-table";
 };
 export declare type BeginEditSessionRpcServiceRequest = {
   context: ViewportRpcContext;

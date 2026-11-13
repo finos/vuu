@@ -1,0 +1,58 @@
+.vuuAdminUser-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminUser-header > .vuuAdminUi-stack {
+  flex: 1;
+  min-width: 260px;
+}
+
+.vuuAdminUser-title {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAdminUser-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+  padding-top: var(--salt-spacing-200);
+}
+
+.vuuAdminUser-detailsTab {
+  max-width: 560px;
+}
+
+.vuuAdminUser-columns {
+  display: grid;
+  gap: var(--salt-spacing-300);
+  grid-template-columns: minmax(280px, 2fr) minmax(0, 3fr);
+}
+
+.vuuAdminUser-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+  min-width: 0;
+}
+
+.vuuAdminUser-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminUser-password {
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+
+@container identity-admin (max-width: 760px) {
+  .vuuAdminUser-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

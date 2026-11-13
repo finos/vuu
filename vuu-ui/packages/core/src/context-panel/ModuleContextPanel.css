@@ -1,0 +1,16 @@
+/*
+ * Zero width host at the right edge of the module's frame, the nearest
+ * positioned ancestor; the panel slides out leftwards over the module.
+ */
+.vuuModuleContextPanel {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 0;
+  z-index: 2;
+
+  .vuuContextPanel {
+    height: 100%;
+  }
+}

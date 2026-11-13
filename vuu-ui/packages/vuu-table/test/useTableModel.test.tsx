@@ -14,7 +14,7 @@ import {
 import { useTableModel } from "../src/useTableModel";
 
 // creates a Worker on import, not needed here
-vi.mock("@vuu-ui/vuu-data-remote", () => ({}));
+vi.mock("@vuu-ui/vuu-data-remote", () => ({ ConnectionManager: {} }));
 
 const tableSchema: TableSchema = {
   columns: [

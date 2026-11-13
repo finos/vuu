@@ -1,42 +1,33 @@
-import {
-  View,
-  layoutFromJson,
-  useLayoutProviderDispatch,
-} from "@vuu-ui/vuu-layout";
-import { IconButton, useHideContextPanel } from "@vuu-ui/vuu-ui-controls";
-import { LayoutJSON, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { IconButton, useHideContextPanel } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
-import React, {
-  KeyboardEventHandler,
-  ReactElement,
-  ReactNode,
+import {
   useCallback,
   useLayoutEffect,
-  useMemo,
   useRef,
+  type KeyboardEventHandler,
+  type ReactElement,
+  type ReactNode,
 } from "react";
-
 import contextPanelCss from "./ContextPanel.css";
 
 const classBase = "vuuContextPanel";
 
 export interface ContextPanelProps {
-  [key: string]: unknown;
-  className?: string;
-  content?: ReactElement | LayoutJSON;
-  expanded?: boolean;
-  id?: string;
-  onClose?: () => void;
-  overlay?: boolean;
-  title?: ReactNode;
+  readonly className?: string;
+  readonly content?: ReactElement;
+  readonly expanded?: boolean;
+  readonly id?: string;
+  readonly onClose?: () => void;
+  readonly overlay?: boolean;
+  readonly title?: ReactNode;
 }
 
 export const ContextPanel = ({
-  className: classNameProp,
+  className,
+  content,
   expanded = false,
-  content: contentProp,
   id,
   onClose,
   overlay = false,
@@ -48,82 +39,55 @@ export const ContextPanel = ({
     css: contextPanelCss,
     window: targetWindow,
   });
-
   const hideContextPanel = useHideContextPanel();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const dispatchLayoutAction = useLayoutProviderDispatch();
   const handleClose = useCallback(() => {
-    if (hideContextPanel) {
-      hideContextPanel();
-    } else {
-      dispatchLayoutAction({
-        path: `#${VuuShellLocation.ContextPanel}`,
-        propName: "expanded",
-        propValue: false,
-        type: "set-prop",
-      });
-    }
-  }, [dispatchLayoutAction, hideContextPanel]);
-
+    hideContextPanel?.();
+    onClose?.();
+  }, [hideContextPanel, onClose]);
   const handleKeyDown = useCallback<KeyboardEventHandler>(
-    (e) => {
-      if (e.key === "Escape") {
+    (event) => {
+      if (event.key === "Escape") {
         handleClose();
       }
     },
     [handleClose],
   );
-
-  const className = cx(classBase, classNameProp, {
-    [`${classBase}-expanded`]: expanded,
-    [`${classBase}-inline`]: overlay !== true,
-    [`${classBase}-overlay`]: overlay,
-  });
-
-  const content = useMemo(
-    () =>
-      contentProp && expanded
-        ? React.isValidElement(contentProp)
-          ? contentProp
-          : layoutFromJson(contentProp, "context-0")
-        : null,
-    [contentProp, expanded],
-  );
-
   useLayoutEffect(() => {
     if (expanded) {
-      // Components loaded into the ContextPanel will often assume focus themselves,
-      //but if not, default to close button
       closeButtonRef.current?.focus();
-    } else {
-      onClose?.();
     }
-  }, [expanded, onClose]);
+  }, [expanded]);
 
   return (
     <div
       className={cx(classBase, className, "vuuScrollable", {
         [`${classBase}-expanded`]: expanded,
+        [`${classBase}-inline`]: !overlay,
+        [`${classBase}-overlay`]: overlay,
       })}
       id={id}
+      onKeyDown={handleKeyDown}
     >
-      <View className={`${classBase}-inner`} header={false} id={id}>
+      <div className={`${classBase}-inner`}>
         <div className={`${classBase}-header`}>
           <h2 className={`${classBase}-title`}>{title}</h2>
           <IconButton
             appearance="transparent"
+            aria-label="Close context panel"
             className={`${classBase}-close`}
             data-embedded
             icon="close"
             onClick={handleClose}
-            onKeyDown={handleKeyDown}
             ref={closeButtonRef}
             sentiment="neutral"
             size={16}
           />
         </div>
-        <div className={`${classBase}-content`}>{content}</div>
-      </View>
+        <div className={`${classBase}-content`}>
+          {expanded ? content : null}
+        </div>
+      </div>
     </div>
   );
 };

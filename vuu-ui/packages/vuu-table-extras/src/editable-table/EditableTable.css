@@ -1,0 +1,38 @@
+.vuuEditableTable {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  /* The Table (a MeasuredContainer) fills the space beside toolbar and footer. */
+  --vuuMeasuredContainer-flex: 1 1 1px;
+}
+
+/* The table, in an EditableTableMain, beside a side panel. */
+.vuuEditableTable-withPanel {
+  flex-direction: row;
+}
+
+.vuuEditableTable-main {
+  --vuuMeasuredContainer-flex: 1 1 1px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.vuuEditableTable-panel {
+  --saltSidePanel-width: 320px;
+}
+
+.vuuEditableTable-panelHeader > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.vuuEditableTable-detail {
+  min-height: 0;
+  overflow: auto;
+}

@@ -1,0 +1,683 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { AuthHandler } from "../../src/auth/AuthHandler";
+import {
+  isSessionEnded,
+  SESSION_EVICTED,
+  VuuConnectionRegistry,
+  type VuuConnectionClient,
+} from "../../src/connection-management/VuuConnectionRegistry";
+import type {
+  VuuAuthTarget,
+  VuuSession,
+} from "../../src/auth/VuuTokenExchange";
+import { VuuTokenExchangeError } from "../../src/auth/VuuTokenExchange";
+
+const target: VuuAuthTarget = {
+  connectionId: "orders",
+  restUrl: "https://orders.example.test/api/authn",
+  websocketUrl: "wss://orders.example.test/websocket",
+};
+
+const session: VuuSession = {
+  authorizations: ["orders.read"],
+  token: "vuu-token",
+  user: { userName: "alice" },
+};
+
+const moduleRegistry = {
+  modules: [
+    {
+      clientIdentifier: "vuu-user-admin",
+      description: "Manage users",
+      enabled: true,
+      id: 1,
+      navLocation: "/Admin/Users",
+      accessRole: "user-admin-access",
+      mfComponent: "UserAdmin",
+      mfScope: "userAdmin",
+      mfUrl: "http://localhost:5007",
+      name: "user-admin",
+      path: "/users/admin",
+      title: "Manage users",
+      version: 1,
+      vuu: {
+        connectionId: "user-admin",
+        restUrl: "https://localhost:8444/api/authn",
+        websocketUrl: "wss://localhost:8092/websocket-user-admin",
+      },
+    },
+    {
+      clientIdentifier: "vuu-module-admin",
+      description: "Manage modules",
+      enabled: true,
+      id: 2,
+      navLocation: "/Admin/Modules",
+      accessRole: "module-admin-access",
+      mfComponent: "ModuleAdmin",
+      mfScope: "moduleAdmin",
+      mfUrl: "http://localhost:5008",
+      name: "module-admin",
+      path: "/modules/admin",
+      title: "Manage modules",
+      version: 1,
+      vuu: {
+        connectionId: "module-admin",
+        restUrl: "https://localhost:8443/api/authn/module-admin",
+        websocketUrl: "wss://localhost:8091/websocket-portal",
+      },
+    },
+    {
+      clientIdentifier: "vuu-basket-trading",
+      description: "Trade baskets",
+      enabled: true,
+      id: 3,
+      navLocation: "/Trading/Baskets",
+      accessRole: "basket-trading-access",
+      mfComponent: "VuuBasketTradingFeature",
+      mfScope: "basketTrading",
+      mfUrl: "http://localhost:5005",
+      name: "basket-trading",
+      path: "/trading/baskets",
+      title: "Basket Trading",
+      version: 1,
+      vuu: {
+        connectionId: "basket-trading",
+        restUrl: "https://localhost:8445/api/authn",
+        websocketUrl: "wss://localhost:8093/websocket-basket-trading",
+      },
+    },
+  ],
+};
+
+class TestConnectionClient implements VuuConnectionClient {
+  connections: Array<{
+    connectionId: string;
+    options: { token: string; url: string };
+  }> = [];
+  connectCount = 0;
+  destroyCount = 0;
+  connected = false;
+  listener?: (status: "disconnected" | "session-evicted") => void;
+
+  async connectWithLoginResponseTo(
+    connectionId: string,
+    options: { token: string; url: string },
+  ) {
+    this.connectCount += 1;
+    this.connected = true;
+    this.connections.push({ connectionId, options });
+    return {
+      loginResponse: {
+        moduleRegistry,
+        sessionId: "session-1",
+        type: "LOGIN_SUCCESS" as const,
+        vuuServerId: "portal",
+      },
+      status: "connected" as const,
+    };
+  }
+
+  connectedFor() {
+    return this.connected;
+  }
+
+  async destroyConnection() {
+    this.destroyCount += 1;
+    this.connected = false;
+  }
+
+  onConnectionStatus(
+    _connectionId: string,
+    listener: (status: "disconnected" | "session-evicted") => void,
+  ) {
+    this.listener = listener;
+    return () => {
+      this.listener = undefined;
+    };
+  }
+}
+
+const authHandler: AuthHandler = {
+  authenticate: vi.fn(),
+  getIdentityToken: vi.fn().mockResolvedValue("identity-token"),
+  logout: vi.fn(),
+};
+
+describe("VuuConnectionRegistry", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("shares authentication and a connection by connectionId", async () => {
+    const connectionClient = new TestConnectionClient();
+    const exchangeToken = vi.fn().mockResolvedValue(session);
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+    });
+
+    const [first, second] = await Promise.all([
+      registry.acquire(authHandler, target),
+      registry.acquire(authHandler, target),
+    ]);
+
+    expect(first).toEqual({ ...session, moduleRegistry });
+    expect(second).toBe(first);
+    expect(exchangeToken).toHaveBeenCalledTimes(1);
+    expect(connectionClient.connectCount).toBe(1);
+    expect(registry.getRefCount(target.connectionId)).toBe(2);
+
+    registry.release(target.connectionId);
+    await new Promise((resolve) => setTimeout(resolve, 1));
+    expect(connectionClient.destroyCount).toBe(0);
+
+    registry.release(target.connectionId);
+    await vi.waitFor(() => expect(connectionClient.destroyCount).toBe(1));
+  });
+
+  it("forwards the shared portal URL to separate portal and module-admin connections", async () => {
+    const connectionClient = new TestConnectionClient();
+    const portalTarget = {
+      connectionId: "portal",
+      restUrl: "https://localhost:8443/api/authn",
+      websocketUrl: "wss://localhost:8091/websocket-portal",
+    };
+    const moduleAdminTarget = {
+      connectionId: "module-admin",
+      restUrl: "https://localhost:8443/api/authn/module-admin",
+      websocketUrl: portalTarget.websocketUrl,
+    };
+    const exchangeToken = vi.fn(
+      async (_identityToken: string, authTarget: VuuAuthTarget) => ({
+        ...session,
+        token: `${authTarget.connectionId}-token`,
+      }),
+    );
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+    });
+
+    const [portalSession, moduleAdminSession] = await Promise.all([
+      registry.acquire(authHandler, portalTarget),
+      registry.acquire(authHandler, moduleAdminTarget),
+    ]);
+
+    expect(portalSession.token).toBe("portal-token");
+    expect(moduleAdminSession.token).toBe("module-admin-token");
+    expect(exchangeToken).toHaveBeenCalledTimes(2);
+    expect(exchangeToken).toHaveBeenCalledWith(
+      "identity-token",
+      moduleAdminTarget,
+    );
+    expect(connectionClient.connections).toEqual([
+      {
+        connectionId: "portal",
+        options: {
+          token: "portal-token",
+          url: portalTarget.websocketUrl,
+        },
+      },
+      {
+        connectionId: "module-admin",
+        options: {
+          token: "module-admin-token",
+          url: portalTarget.websocketUrl,
+        },
+      },
+    ]);
+    expect(registry.getRefCount("portal")).toBe(1);
+    expect(registry.getRefCount("module-admin")).toBe(1);
+
+    registry.release("portal");
+    registry.release("module-admin");
+  });
+
+  it("isolates a denied remote from concurrent connections", async () => {
+    const connectionClient = new TestConnectionClient();
+    const targets = [
+      {
+        connectionId: "portal",
+        restUrl: "https://localhost:8443/api/authn",
+        websocketUrl: "wss://localhost:8091/websocket-portal",
+      },
+      {
+        connectionId: "module-admin",
+        restUrl: "https://localhost:8443/api/authn/module-admin",
+        websocketUrl: "wss://localhost:8091/websocket-portal",
+      },
+      {
+        connectionId: "basket-trading",
+        restUrl: "https://localhost:8445/api/authn",
+        websocketUrl: "wss://localhost:8093/websocket-basket-trading",
+      },
+      {
+        connectionId: "user-admin",
+        restUrl: "https://localhost:8444/api/authn",
+        websocketUrl: "wss://localhost:8092/websocket-user-admin",
+      },
+    ];
+    const exchangeToken = vi.fn(
+      async (_identityToken: string, authTarget: VuuAuthTarget) => {
+        if (authTarget.connectionId === "module-admin") {
+          throw new VuuTokenExchangeError(
+            "VUU authorization denied for module-admin (403)",
+            403,
+          );
+        }
+        return { ...session, token: `${authTarget.connectionId}-token` };
+      },
+    );
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+    });
+
+    const [portalResult, moduleAdminResult, basketResult, userAdminResult] =
+      await Promise.allSettled(
+        targets.map((authTarget) => registry.acquire(authHandler, authTarget)),
+      );
+
+    expect(portalResult).toMatchObject({
+      status: "fulfilled",
+      value: { token: "portal-token" },
+    });
+    expect(moduleAdminResult).toMatchObject({
+      reason: {
+        failure: "authorization-denied",
+        status: 403,
+      },
+      status: "rejected",
+    });
+    expect(basketResult).toMatchObject({
+      status: "fulfilled",
+      value: { token: "basket-trading-token" },
+    });
+    expect(userAdminResult).toMatchObject({
+      status: "fulfilled",
+      value: { token: "user-admin-token" },
+    });
+    expect(
+      connectionClient.connections.map(({ connectionId, options }) => ({
+        connectionId,
+        url: options.url,
+      })),
+    ).toEqual([
+      {
+        connectionId: "portal",
+        url: "wss://localhost:8091/websocket-portal",
+      },
+      {
+        connectionId: "basket-trading",
+        url: "wss://localhost:8093/websocket-basket-trading",
+      },
+      {
+        connectionId: "user-admin",
+        url: "wss://localhost:8092/websocket-user-admin",
+      },
+    ]);
+
+    targets.forEach(({ connectionId }) => {
+      registry.release(connectionId);
+    });
+  });
+
+  it("gets a fresh identity and exchanges for the same target on reconnect", async () => {
+    const connectionClient = new TestConnectionClient();
+    const reconnectAuthHandler: AuthHandler = {
+      authenticate: vi.fn(),
+      getIdentityToken: vi
+        .fn()
+        .mockResolvedValueOnce("identity-token-1")
+        .mockResolvedValueOnce("identity-token-2"),
+      logout: vi.fn(),
+    };
+    const exchangeToken = vi.fn().mockResolvedValue(session);
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+      retryIntervals: [0],
+    });
+
+    await registry.acquire(reconnectAuthHandler, target);
+    connectionClient.connected = false;
+    connectionClient.listener?.("disconnected");
+    await vi.waitFor(() => expect(exchangeToken).toHaveBeenCalledTimes(2));
+
+    expect(reconnectAuthHandler.getIdentityToken).toHaveBeenCalledTimes(2);
+    expect(exchangeToken.mock.calls).toEqual([
+      ["identity-token-1", target],
+      ["identity-token-2", target],
+    ]);
+    expect(exchangeToken).toHaveBeenCalledTimes(2);
+    expect(connectionClient.connectCount).toBe(2);
+    expect(connectionClient.connections).toEqual([
+      {
+        connectionId: target.connectionId,
+        options: { token: session.token, url: target.websocketUrl },
+      },
+      {
+        connectionId: target.connectionId,
+        options: { token: session.token, url: target.websocketUrl },
+      },
+    ]);
+
+    registry.release(target.connectionId);
+  });
+
+  it("reports a reconnect authorization denial without retrying it", async () => {
+    const connectionClient = new TestConnectionClient();
+    const authorizationError = new VuuTokenExchangeError(
+      "VUU authorization denied for orders (403)",
+      403,
+    );
+    const exchangeToken = vi
+      .fn()
+      .mockResolvedValueOnce(session)
+      .mockRejectedValue(authorizationError);
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+      retryIntervals: [0, 0],
+    });
+    const errorListener = vi.fn();
+
+    await registry.acquire(authHandler, target);
+    registry.subscribe(target.connectionId, vi.fn(), errorListener);
+    connectionClient.connected = false;
+    connectionClient.listener?.("disconnected");
+    await vi.waitFor(() =>
+      expect(errorListener).toHaveBeenCalledWith(authorizationError),
+    );
+
+    expect(exchangeToken).toHaveBeenCalledTimes(2);
+
+    registry.release(target.connectionId);
+  });
+
+  it.each([
+    new Error("User session limit exceeded"),
+    "User session limit exceeded",
+  ])("stops reconnecting after a session-limit rejection (%s)", async (error) => {
+    const connectionClient = new TestConnectionClient();
+    const connect = vi.spyOn(connectionClient, "connectWithLoginResponseTo");
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken: vi.fn().mockResolvedValue(session),
+      retryIntervals: [0, 0, 0],
+    });
+    await registry.acquire(authHandler, target);
+    const errorListener = vi.fn();
+    registry.subscribe(target.connectionId, vi.fn(), errorListener);
+    connect.mockRejectedValue(error);
+    connectionClient.connected = false;
+    connectionClient.listener?.("disconnected");
+    await vi.waitFor(() => expect(errorListener).toHaveBeenCalledOnce());
+    expect(connect).toHaveBeenCalledTimes(2);
+    expect(errorListener).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "User session limit exceeded" }),
+    );
+    expect(registry.getState(target.connectionId)).toBe("failed");
+    connectionClient.listener?.("disconnected");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(connect).toHaveBeenCalledTimes(2);
+    expect(errorListener).toHaveBeenCalledOnce();
+    registry.release(target.connectionId);
+  });
+
+  it("does not reconnect a session the server evicted for a newer login", async () => {
+    const connectionClient = new TestConnectionClient();
+    const connect = vi.spyOn(connectionClient, "connectWithLoginResponseTo");
+    const exchangeToken = vi.fn().mockResolvedValue(session);
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+      retryIntervals: [0, 0, 0],
+    });
+    await registry.acquire(authHandler, target);
+    const errorListener = vi.fn();
+    registry.subscribe(target.connectionId, vi.fn(), errorListener);
+
+    // Reconnecting would evict the newer session, which would reconnect
+    // and evict this one, and so on.
+    connectionClient.connected = false;
+    connectionClient.listener?.("session-evicted");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(connect).toHaveBeenCalledTimes(1);
+    expect(exchangeToken).toHaveBeenCalledTimes(1);
+    expect(registry.getState(target.connectionId)).toBe("failed");
+    expect(errorListener).toHaveBeenCalledOnce();
+    expect(errorListener).toHaveBeenCalledWith(
+      expect.objectContaining({ message: SESSION_EVICTED }),
+    );
+    expect(isSessionEnded(errorListener.mock.calls[0][0])).toBe(true);
+
+    // A later drop of the old socket doesn't start reconnecting either.
+    connectionClient.listener?.("disconnected");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(connect).toHaveBeenCalledTimes(1);
+    registry.release(target.connectionId);
+  });
+
+  it("uses the configured direct VUU session resolver", async () => {
+    const connectionClient = new TestConnectionClient();
+    const exchangeToken = vi.fn();
+    const sessionResolver = { resolve: vi.fn().mockResolvedValue(session) };
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+      sessionResolver,
+    });
+
+    await expect(registry.acquire(authHandler, target)).resolves.toEqual({
+      ...session,
+      moduleRegistry,
+    });
+
+    expect(sessionResolver.resolve).toHaveBeenCalledWith(authHandler, target);
+    expect(exchangeToken).not.toHaveBeenCalled();
+    registry.release(target.connectionId);
+  });
+
+  it("shares reconnect work with consumers mounted during an outage", async () => {
+    const connectionClient = new TestConnectionClient();
+    let resolveReconnect: ((session: VuuSession) => void) | undefined;
+    const exchangeToken = vi
+      .fn()
+      .mockResolvedValueOnce(session)
+      .mockImplementationOnce(
+        () =>
+          new Promise<VuuSession>((resolve) => {
+            resolveReconnect = resolve;
+          }),
+      );
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+      retryIntervals: [0],
+    });
+
+    await registry.acquire(authHandler, target);
+    connectionClient.connected = false;
+    connectionClient.listener?.("disconnected");
+    await vi.waitFor(() => expect(exchangeToken).toHaveBeenCalledTimes(2));
+
+    const mountedDuringReconnect = registry.acquire(authHandler, target);
+    resolveReconnect?.(session);
+    await expect(mountedDuringReconnect).resolves.toEqual({
+      ...session,
+      moduleRegistry,
+    });
+    expect(exchangeToken).toHaveBeenCalledTimes(2);
+
+    registry.release(target.connectionId);
+    registry.release(target.connectionId);
+  });
+
+  describe("state observation", () => {
+    it("reports state changes for initial connect and release", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi.fn().mockResolvedValue(session),
+      });
+      const listener = vi.fn();
+      registry.onStateChange(listener);
+
+      expect(registry.getState(target.connectionId)).toBeUndefined();
+      await registry.acquire(authHandler, target);
+      expect(registry.getState(target.connectionId)).toBe("connected");
+      expect(registry.connectedIds()).toEqual([target.connectionId]);
+
+      registry.release(target.connectionId);
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBeUndefined(),
+      );
+
+      expect(listener.mock.calls.map(([id, state]) => [id, state])).toEqual([
+        ["orders", "authenticating"],
+        ["orders", "connecting"],
+        ["orders", "connected"],
+        ["orders", "idle"],
+      ]);
+      expect(registry.getState(target.connectionId)).toBeUndefined();
+      expect(registry.connectedIds()).toEqual([]);
+    });
+
+    it("marks a denied initial acquire unauthorized", async () => {
+      const registry = new VuuConnectionRegistry({
+        connectionClient: new TestConnectionClient(),
+        exchangeToken: vi
+          .fn()
+          .mockRejectedValue(
+            new VuuTokenExchangeError("VUU authorization denied", 403),
+          ),
+      });
+      const listener = vi.fn();
+      registry.onStateChange(listener);
+
+      await expect(registry.acquire(authHandler, target)).rejects.toThrow();
+
+      expect(registry.getState(target.connectionId)).toBe("unauthorized");
+      expect(listener).toHaveBeenLastCalledWith(
+        "orders",
+        "unauthorized",
+        expect.any(VuuTokenExchangeError),
+      );
+      registry.release(target.connectionId);
+    });
+
+    it("marks a failed initial acquire failed", async () => {
+      const registry = new VuuConnectionRegistry({
+        connectionClient: new TestConnectionClient(),
+        exchangeToken: vi.fn().mockRejectedValue(new Error("unreachable")),
+      });
+
+      await expect(registry.acquire(authHandler, target)).rejects.toThrow(
+        "unreachable",
+      );
+
+      expect(registry.getState(target.connectionId)).toBe("failed");
+      registry.release(target.connectionId);
+    });
+
+    it("reports reconnecting while reconnecting, then connected", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi.fn().mockResolvedValue(session),
+        retryIntervals: [0],
+      });
+      const states: string[] = [];
+      await registry.acquire(authHandler, target);
+      registry.onStateChange((_id, state) => states.push(state));
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      expect(registry.getState(target.connectionId)).toBe("reconnecting");
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBe("connected"),
+      );
+
+      expect(states).toEqual(["reconnecting", "connected"]);
+      registry.release(target.connectionId);
+    });
+
+    it("skips the reconnect wait when asked to reconnect now", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi.fn().mockResolvedValue(session),
+        retryIntervals: [60],
+      });
+      await registry.acquire(authHandler, target);
+      expect(registry.reconnectNow(target.connectionId)).toBeUndefined();
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      expect(registry.getState(target.connectionId)).toBe("reconnecting");
+
+      await registry.reconnectNow(target.connectionId);
+      expect(registry.getState(target.connectionId)).toBe("connected");
+      registry.release(target.connectionId);
+    });
+
+    it("reports unauthorized when a reconnect is denied", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi
+          .fn()
+          .mockResolvedValueOnce(session)
+          .mockRejectedValue(
+            new VuuTokenExchangeError("VUU authorization denied", 403),
+          ),
+        retryIntervals: [0, 0],
+      });
+      await registry.acquire(authHandler, target);
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBe("unauthorized"),
+      );
+      registry.release(target.connectionId);
+    });
+
+    it("reports failed when reconnect attempts are exhausted", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi
+          .fn()
+          .mockResolvedValueOnce(session)
+          .mockRejectedValue(new Error("down")),
+        retryIntervals: [0, 0],
+      });
+      await registry.acquire(authHandler, target);
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      await vi.waitFor(() =>
+        expect(registry.getState(target.connectionId)).toBe("failed"),
+      );
+      registry.release(target.connectionId);
+    });
+
+    it("stops notifying an unsubscribed listener", async () => {
+      const registry = new VuuConnectionRegistry({
+        connectionClient: new TestConnectionClient(),
+        exchangeToken: vi.fn().mockResolvedValue(session),
+      });
+      const listener = vi.fn();
+      const unsubscribe = registry.onStateChange(listener);
+      unsubscribe();
+
+      await registry.acquire(authHandler, target);
+
+      expect(listener).not.toHaveBeenCalled();
+      registry.release(target.connectionId);
+    });
+  });
+});

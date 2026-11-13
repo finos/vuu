@@ -52,7 +52,7 @@ const TableCellTemplate = ({
 
   const [value, setValue] = useState<string>("100.00");
   // prettier-ignore
-  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, 100.00]));
+  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0, timestamp, isNew, 100.00]));
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
@@ -64,7 +64,7 @@ const TableCellTemplate = ({
         const numericValue = parseFloat(value);
         if (!isNaN(numericValue)) {
           // prettier-ignore
-          setDataRow(DataRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, numericValue]));
+          setDataRow(DataRow([0, 0, true, false, 1, 0, "key", 0, timestamp, isNew, numericValue]));
         }
       }
     },

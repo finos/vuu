@@ -1,0 +1,14 @@
+.vuuPortalNotificationBanners {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-50);
+  padding-bottom: var(--salt-spacing-50);
+
+  .vuuPortalNotificationBanners-source {
+    display: block;
+  }
+
+  .vuuPortalNotificationBanners-more {
+    align-self: flex-start;
+  }
+}

@@ -1,0 +1,99 @@
+.vuuPortalShell {
+  display: grid;
+  /*
+   * The gap after the nav is a track, not a column-gap, so the last column,
+   * which an inline context panel occupies, adds no gap while it is empty.
+   */
+  grid-template-columns:
+    var(--vuuPortalShell-navWidth, 56px)
+    var(--vuuPortalShell-columnGap, var(--salt-spacing-50))
+    minmax(0, 1fr)
+    auto;
+  grid-template-rows: 56px auto 1fr;
+  grid-template-areas:
+    "nav . header"
+    "nav . banners"
+    "nav . content";
+  /* The track count never changes, so a nav width change can animate. */
+  transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 0s) var(--vuuPortalShell-navTransitionTimingFunction, ease);
+
+  height: 100vh;
+  padding: var(--vuuPortalShell-padding, var(--salt-spacing-50));
+  width: 100vw;
+
+  /* The column is sized by a PortalNav, which animates by default. */
+  &.vuuPortalShell-managedNav {
+    transition: grid-template-columns var(--vuuPortalShell-navTransitionDuration, 180ms) var(--vuuPortalShell-navTransitionTimingFunction, ease);
+  }
+
+  &.vuuPortalShell-noHeader {
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "nav . banners"
+      "nav . content";
+  }
+
+  .vuuNavContainer {
+    grid-area: nav;
+
+    .vuuPortalAppSwitcher {
+      grid-area: nav;
+    }
+  }
+
+  .vuuPortalHeader {
+    grid-area: header;
+  }
+
+  .vuuPortalShell-banners {
+    grid-area: banners;
+    min-width: 0;
+  }
+
+  .vuuPortalShell-content {
+    grid-area: content;
+    /* Contains a remote module's connection lost overlay. */
+    isolation: isolate;
+    position: relative;
+  }
+
+  /* Zero width host; the panel slides out leftwards over the content. */
+  .vuuPortalShell-context {
+    grid-column: 3;
+    grid-row: 1 / -1;
+    justify-self: end;
+    position: relative;
+    width: 0;
+    z-index: 2;
+
+    /*
+     * The panel's title lines up with the workspace header title and the
+     * nav brand: same height from the top of the shell, same type.
+     */
+    .vuuContextPanel {
+      --vuuContextPanel-header-height: 52px;
+      height: 100%;
+    }
+
+    .vuuContextPanel-inner {
+      padding-top: 0;
+    }
+
+    .vuuContextPanel-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    /*
+     * The panel takes the last column, sized by its width as it slides out,
+     * and the content column shrinks to make room.
+     */
+    &[data-placement="inline"] {
+      grid-column: 4;
+      justify-self: stretch;
+      width: auto;
+      z-index: auto;
+    }
+  }
+}
