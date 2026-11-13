@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  isNotificationReadState,
-  NotificationStore,
-} from "../../src/notifications/NotificationStore";
+import { NotificationStore } from "../../src/notifications/NotificationStore";
 import type { PortalNotification } from "../../src/notifications/notification-types";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -138,9 +135,6 @@ describe("NotificationStore", () => {
     expect(store.unreadCount()).toBe(0);
     store.upsert(notification("1"));
     expect(store.size).toBe(0);
-    expect(store.getReadState().deleted).toEqual({
-      "s1:1": expect.any(Number),
-    });
   });
 
   it("marks notifications for the open module read, now and as they arrive", () => {
@@ -221,42 +215,36 @@ describe("NotificationStore", () => {
     expect(store.query().map(({ key }) => key)).toEqual(["s1:4", "s1:3"]);
   });
 
-  it("prunes expired notifications and old read state", () => {
+  it("prunes expired notifications and read keys after a day", () => {
     const { advance, now } = clock();
     const store = new NotificationStore({ now });
     store.upsert(notification("1"));
     store.upsert(notification("2"));
-    store.markRead(["s1:2"]);
     store.expire("s1:1");
+    store.mergeKeyState({ deleted: {}, read: { "s1:3": now() } });
     advance(DAY + 1);
     store.prune();
     expect(store.get("s1:1")).toBeUndefined();
     expect(store.get("s1:2")).toBeDefined();
-    advance(7 * DAY);
-    expect(store.getReadState().read).toEqual({});
+    store.upsert(notification("3"));
+    expect(store.get("s1:3")?.read).toBe(false);
   });
 
-  it("round-trips read state", () => {
+  it("merges read and deleted keys from another page", () => {
+    const time = Date.now();
+    const state = { deleted: { "s1:2": time }, read: { "s1:1": time } };
+
     const store = new NotificationStore();
     store.upsert(notification("1"));
     store.upsert(notification("2"));
-    store.markRead(["s1:1"]);
-    store.delete(["s1:2"]);
-    const state = store.getReadState();
-    expect(isNotificationReadState(state)).toBe(true);
-    expect(isNotificationReadState({ version: 2 })).toBe(false);
-
-    const restored = new NotificationStore();
-    restored.upsert(notification("1"));
-    restored.upsert(notification("2"));
-    restored.upsert(notification("3"));
-    restored.loadReadState(state);
-    expect(restored.get("s1:1")?.read).toBe(true);
-    expect(restored.get("s1:2")).toBeUndefined();
-    expect(restored.unreadCount()).toBe(1);
+    store.upsert(notification("3"));
+    store.mergeKeyState(state);
+    expect(store.get("s1:1")?.read).toBe(true);
+    expect(store.get("s1:2")).toBeUndefined();
+    expect(store.unreadCount()).toBe(1);
 
     const later = new NotificationStore();
-    later.loadReadState(state);
+    later.mergeKeyState(state);
     later.upsert(notification("1"));
     later.upsert(notification("2"));
     expect(later.get("s1:1")?.read).toBe(true);

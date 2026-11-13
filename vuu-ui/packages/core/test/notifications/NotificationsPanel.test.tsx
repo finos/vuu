@@ -111,18 +111,21 @@ describe("NotificationsPanel", () => {
     request?: Parameters<PortalNotificationsPresentation["openPanel"]>[0],
   ) => act(async () => presentation?.openPanel(request));
 
-  it("is closed until opened, newest first, hiding expired", async () => {
+  it("is closed until opened, newest first, showing expired", async () => {
     expect(panel()).toBeNull();
     await open();
     expect(panel()).not.toBeNull();
-    expect(keys()).toEqual(["simul:1", "simul:2", "simul:3"]);
+    expect(keys()).toEqual(["simul:1", "simul:2", "simul:3", "simul:4"]);
+    expect(item("simul:4")?.classList).toContain(
+      "vuuNotificationsPanel-item-expired",
+    );
   });
 
   it("filters to the requested applications", async () => {
     await open({ moduleIds: ["m1"] });
     expect(keys()).toEqual(["simul:2"]);
     await click(button("Clear filters"));
-    expect(keys()).toEqual(["simul:1", "simul:2", "simul:3"]);
+    expect(keys()).toEqual(["simul:1", "simul:2", "simul:3", "simul:4"]);
   });
 
   it("selects and focuses the requested notification, marking it read", async () => {
@@ -136,21 +139,28 @@ describe("NotificationsPanel", () => {
 
   it("marks read, unread and deletes single notifications", async () => {
     await open();
-    await click(button("Mark read", item("simul:1") as HTMLElement));
+    await click(item("simul:1"));
     expect(api?.store.get("simul:1")?.read).toBe(true);
     await click(button("Mark unread", item("simul:1") as HTMLElement));
     expect(api?.store.get("simul:1")?.read).toBe(false);
+    await click(button("Mark read", item("simul:1") as HTMLElement));
+    expect(api?.store.get("simul:1")?.read).toBe(true);
+    await click(item("simul:2"));
     await click(button("Delete", item("simul:2") as HTMLElement));
-    expect(keys()).toEqual(["simul:1", "simul:3"]);
+    expect(keys()).toEqual(["simul:1", "simul:3", "simul:4"]);
   });
 
   it("marks all read, then deletes the read notifications", async () => {
     await open();
     await click(button("Mark all read"));
     expect(api?.store.get("simul:2")?.read).toBe(true);
-    // the expired notification is filtered out of the panel
-    expect(api?.store.get("simul:4")?.read).toBe(false);
-    await click(button("Delete read"));
+    expect(api?.store.get("simul:4")?.read).toBe(true);
+    await click(button("More actions"));
+    await click(
+      [...document.querySelectorAll('[role="menuitem"]')].find(
+        (menuItem) => menuItem.textContent === "Delete read",
+      ),
+    );
     expect(keys()).toEqual([]);
     expect(
       document.querySelector(".vuuNotificationsPanel-empty"),

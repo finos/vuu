@@ -6,8 +6,7 @@ export {
   remoteNotificationScope,
 } from "./NotificationFeedManager";
 export {
-  isNotificationReadState,
-  type NotificationReadState,
+  type NotificationKeyState,
   NotificationStore,
   type NotificationStoreOptions,
 } from "./NotificationStore";
@@ -37,7 +36,6 @@ export {
   type PublishedNotification,
 } from "./PortalNotificationsContext";
 export {
-  NOTIFICATIONS_STATE_KEY,
   PortalNotificationsProvider,
   type PortalNotificationsProviderProps,
   useLatestNotification,
