@@ -125,7 +125,7 @@
   text-transform: uppercase;
 }
 
-/* Page lists, recently viewed and recently added */
+/* Page lists, recently viewed */
 
 .ShowcaseHome-pages {
   display: grid;
@@ -190,14 +190,6 @@
 .ShowcaseHome-pageTrail {
   color: var(--sc-text-3);
   font-size: 11.5px;
-}
-
-.ShowcaseHome-pageDate {
-  color: var(--sc-text-3);
-  flex: 0 0 auto;
-  font-size: 11.5px;
-  font-variant-numeric: tabular-nums;
-  margin-left: auto;
 }
 
 /* ---- Responsive ---- */
