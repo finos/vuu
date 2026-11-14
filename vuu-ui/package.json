@@ -70,7 +70,7 @@
     "semver": "^7.5.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.6",
+    "@biomejs/biome": "2.6.7",
     "@lezer/generator": "^1.2.2",
     "@playwright/test": "1.64.1",
     "@rsbuild/core": "^2.1.3",
