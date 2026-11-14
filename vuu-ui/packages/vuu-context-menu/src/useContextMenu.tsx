@@ -19,7 +19,7 @@ export type ShowContextMenu = (
   location: string,
   options: unknown,
   contextMenuProps?: Partial<
-    Pick<ContextMenuProps, "onOpenChange" | "x" | "y">
+    Pick<ContextMenuProps, "className" | "onOpenChange" | "x" | "y">
   >,
 ) => boolean;
 
@@ -56,7 +56,7 @@ export const useContextMenu = (
       evt,
       location,
       options,
-      { onOpenChange, x = evt.clientX, y = evt.clientY } = {
+      { className, onOpenChange, x = evt.clientX, y = evt.clientY } = {
         x: evt.clientX,
         y: evt.clientY,
       },
@@ -99,6 +99,7 @@ export const useContextMenu = (
         if (menuItemDescriptors.length) {
           ctx?.showContextMenu(
             <ContextMenu
+              className={className}
               menuHandler={menuHandler}
               menuItemDescriptors={menuItemDescriptors}
               onOpenChange={localOpenChange}

@@ -91,47 +91,44 @@ export const FilterBar = ({
 
   const className = cx(classBase, classNameProp);
 
-  const startAdornment = useMemo(() => {
-    if (!allowQuickFilters) {
-      return <Icon name="sliders" size={16} style={{ top: 2 }} />;
-    } else {
-      return (
-        <ToggleButtonGroup
-          data-variant="secondary"
-          onChange={onChangeFilterMode}
-          value={filterMode}
+  const startAdornment = useMemo(
+    () => (
+      <ToggleButtonGroup
+        data-variant="secondary"
+        onChange={onChangeFilterMode}
+        value={filterMode}
+      >
+        <ToggleButton
+          className="vuuIconToggleButton"
+          key="custom-filter"
+          value="custom-filter"
+          aria-label="Custom filters"
+          tabIndex={-1}
         >
-          <ToggleButton
-            className="vuuIconToggleButton"
-            key="custom-filter"
-            value="custom-filter"
-            aria-label="Custom filters"
-            tabIndex={-1}
-          >
-            <Icon name="grid" size={16} />
-          </ToggleButton>
-          <ToggleButton
-            className="vuuIconToggleButton"
-            key="quick-filter"
-            value="quick-filter"
-            aria-label="Quick filters"
-            tabIndex={-1}
-          >
-            <Icon name="tune" size={16} />
-          </ToggleButton>
-        </ToggleButtonGroup>
-      );
-    }
-  }, [allowQuickFilters, filterMode, onChangeFilterMode]);
+          <Icon name="grid" size={16} />
+        </ToggleButton>
+        <ToggleButton
+          className="vuuIconToggleButton"
+          key="quick-filter"
+          value="quick-filter"
+          aria-label="Quick filters"
+          tabIndex={-1}
+        >
+          <Icon name="tune" size={16} />
+        </ToggleButton>
+      </ToggleButtonGroup>
+    ),
+    [filterMode, onChangeFilterMode],
+  );
 
   return (
     <div
       {...htmlAttributes}
       className={cx(className, `${classBase}-${filterMode}-mode`)}
     >
-      {variant === "quick-filters-only" ? null : (
+      {allowQuickFilters && allowCustomFilters ? (
         <div className={`${classBase}-iconContainer`}>{startAdornment}</div>
-      )}
+      ) : null}
       {filterMode === "custom-filter" ? (
         <CustomFilters
           columnDescriptors={columnDescriptors}
@@ -142,6 +139,7 @@ export const FilterBar = ({
           onFilterDeleted={onFilterDeleted}
           onFilterRenamed={onFilterRenamed}
           onFilterStateChanged={onFilterStateChanged}
+          showFilterSummary={!allowQuickFilters}
           vuuTable={vuuTable}
         />
       ) : (

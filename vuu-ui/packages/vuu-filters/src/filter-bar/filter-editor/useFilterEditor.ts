@@ -80,17 +80,16 @@ export const useFilterEditor = ({
   }, []);
 
   useEffect(() => {
-    const isLastFilterClause = (index?: number) =>
-      index !== undefined && filterModel.filterClauses.length === index + 1;
-
     // Save button enabled state is read from the model, re-render when it changes
     const handleValidStatusChange: FilterStatusChangeHandler = () =>
       forceRefresh();
 
+    // Committing a value that leaves the whole filter valid moves focus to
+    // Save, whichever clause was being edited.
     const handleFilterChange: FilterChangeHandler = (_filter, isValid) => {
       if (isValid) {
-        const [filterClauseIndex, fieldName] = getFocusedFieldDetails();
-        if (fieldName === "value" && isLastFilterClause(filterClauseIndex)) {
+        const [, fieldName] = getFocusedFieldDetails();
+        if (fieldName === "value") {
           focusSaveButton();
         }
       }
@@ -183,7 +182,9 @@ export const useFilterEditor = ({
 
   const saveButtonProps = {
     PopupMenuProps: {
-      icon: "more-vert",
+      "aria-label": "Add clause",
+      icon: "chevron-down",
+      menuClassName: "vuuFilterEditor-menu",
       menuBuilder: saveButtonMenuBuilder,
       menuActionHandler: invokeMenuAction,
       menuLocation: "filter-save-menu",

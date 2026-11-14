@@ -86,6 +86,7 @@ export const useCustomFilters = ({
     activeFilterIndex,
     filters,
     onAddFilter,
+    onClearActiveFilters,
     onChangeFilter,
     onDeleteFilter,
     onRenameFilter,
@@ -313,7 +314,8 @@ export const useCustomFilters = ({
     if (interactedFilterState) {
       const { index } = interactedFilterState;
       if (index === -1) {
-        addButtonRef.current?.focus();
+        // the Add button is hidden while a new filter is edited
+        requestAnimationFrame(() => addButtonRef.current?.focus());
       } else {
         focusFilterPill(index);
       }
@@ -335,7 +337,9 @@ export const useCustomFilters = ({
     filters,
     interactedFilterState,
     onCancelEdit: handleCancelEdit,
+    onClearActiveFilters,
     onSave: filterSaveHandler,
+    onToggleFilterActive,
     promptProps,
   };
 };

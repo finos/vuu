@@ -81,7 +81,9 @@ test.describe("FilterBar", () => {
     await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
 
     await addButton(page).click();
-    await expect(page.locator(`${FILTER_CONTAINER} > *`)).toHaveCount(0);
+    await expect(
+      page.locator(`${FILTER_CONTAINER} > .vuuFilterPill`),
+    ).toHaveCount(0);
     await expect(page.locator(".vuuFilterEditor")).toBeVisible();
     await expect(page.getByRole("combobox")).toBeFocused();
     await expect(page.getByRole("combobox")).toHaveAttribute(
@@ -426,5 +428,70 @@ test.describe("FilterBar", () => {
     await openPillMenu(page);
     await expect(page.getByRole("menuitem", { name: "Delete" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Edit" })).toHaveCount(0);
+  });
+});
+
+test.describe("Compact layout", () => {
+  const filterState = {
+    filters: [
+      { column: "currency", name: "Euro", op: "=", value: "EUR" },
+      {
+        name: "London",
+        op: "and",
+        filters: [
+          { column: "exchange", op: "=", value: "XLON" },
+          { column: "ric", op: "starts", value: "B" },
+        ],
+      },
+    ],
+    activeIndices: [0, 1],
+  } as const;
+
+  test("editing a pill puts the editor in the pill's place", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar", {
+      filterState,
+    });
+    await openPillMenu(page, 0);
+    await page.getByRole("menuitem", { name: "Edit" }).click();
+
+    const items = page.locator(`${FILTER_CONTAINER} > *`);
+    await expect(items).toHaveCount(2);
+    await expect(items.first()).toContainClass("vuuFilterEditor");
+    await expect(items.first()).toContainText("Euro");
+    await expect(filterPill(page, 1)).toBeVisible();
+  });
+
+  test("the filter icon badge counts the clauses of active filters", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar", {
+      filterState,
+    });
+    await expect(page.locator(".saltBadge-badge")).toHaveText("3");
+    await expect(page.getByLabel("3 filter clauses applied")).toBeVisible();
+  });
+
+  test("the summary overlay deactivates a filter and clears all", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar", {
+      filterState,
+    });
+    await page.getByLabel("3 filter clauses applied").click();
+    await expect(page.getByText("Filters (3)")).toBeVisible();
+
+    await page.getByRole("button", { name: "Deactivate Euro" }).click();
+    await expect(page.locator(".saltBadge-badge")).toHaveText("2");
+    await expect(filterPill(page, 0)).toHaveAttribute("aria-checked", "false");
+    await expect(filterPill(page, 1)).toHaveAttribute("aria-checked", "true");
+
+    await page.getByRole("button", { name: "Clear All" }).click();
+    await expect(page.locator(".saltBadge-badge")).toHaveCount(0);
+    await expect(filterPill(page, 1)).toHaveAttribute("aria-checked", "false");
   });
 });

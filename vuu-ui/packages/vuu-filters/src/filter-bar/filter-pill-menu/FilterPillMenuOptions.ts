@@ -21,6 +21,7 @@ export const closeCommand = (options?: MenuOptions) =>
 
 export const deleteCommand = (options?: MenuOptions) =>
   ({
+    className: "vuuFilterMenu-delete",
     label: `Delete`,
     location: "filter",
     id: `delete-filter`,

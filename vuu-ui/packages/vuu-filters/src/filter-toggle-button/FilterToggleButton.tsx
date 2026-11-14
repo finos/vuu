@@ -1,15 +1,14 @@
-import { Badge, Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { FilterContainerFilterDescriptor } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { HoverOverlay, IconButton } from "@vuu-ui/vuu-ui-controls";
 import {
   filtersAreEqual,
   isBetweenFilter,
   isMultiClauseFilter,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FilterSummaryButton } from "./FilterSummaryButton";
 import { FilterDisplay } from "../filter-display/FilterDisplay";
 import { useSavedFilters } from "../filter-provider/FilterContext";
 
@@ -78,62 +77,39 @@ export const FilterToggleButton = ({
     setFilteredColumnCount(filterCount);
   }, [filterCount]);
 
-  const filterIcon = useMemo(
-    () => (
-      <IconButton
-        appearance="solid"
-        className={classBase}
-        icon="filter-slider"
-        onClick={onToggle}
-        sentiment="neutral"
-        size={16}
-      />
-    ),
-    [onToggle],
-  );
-
-  const [open, setOpen] = useState(false);
-
-  const handleClear = useCallback(() => {
-    clearCurrentFilter?.();
-    setOpen(false);
-  }, [clearCurrentFilter]);
-
   const handleDeleteFilterClause = useCallback(
     (columnName: string) => {
       const { current: fag } = filterAggregatorRef;
       const column = columns.find((col) => col.name === columnName);
       if (column) {
         if (filteredColumnCount === 1) {
-          handleClear();
+          clearCurrentFilter?.();
         } else if (fag.remove(column) && fag.filter) {
           setCurrentFilter(fag.filter);
         }
       }
     },
-    [columns, filteredColumnCount, handleClear, setCurrentFilter],
+    [clearCurrentFilter, columns, filteredColumnCount, setCurrentFilter],
   );
 
-  return currentFilter.filter ? (
-    <Badge value={filteredColumnCount}>
-      <HoverOverlay onOpenChange={setOpen} open={open} trigger={filterIcon}>
-        <div className={`${classBase}-overlay-panel`}>
-          <div>{`Filters (${filteredColumnCount})`}</div>
-          <FilterDisplay
-            allowDelete
-            columns={columns}
-            filter={currentFilter.filter}
-            onDeleteFilterClause={handleDeleteFilterClause}
-          />
-          <div>
-            <Button onClick={handleClear} sentiment="neutral">
-              Clear All
-            </Button>
-          </div>
-        </div>
-      </HoverOverlay>
-    </Badge>
-  ) : (
-    filterIcon
+  const handleClear = useCallback(() => {
+    clearCurrentFilter?.();
+  }, [clearCurrentFilter]);
+
+  return (
+    <FilterSummaryButton
+      className={classBase}
+      clauseCount={currentFilter.filter ? filteredColumnCount : 0}
+      icon="filter-slider"
+      onClear={handleClear}
+      onClick={onToggle}
+    >
+      <FilterDisplay
+        allowDelete
+        columns={columns}
+        filter={currentFilter.filter ?? undefined}
+        onDeleteFilterClause={handleDeleteFilterClause}
+      />
+    </FilterSummaryButton>
   );
 };

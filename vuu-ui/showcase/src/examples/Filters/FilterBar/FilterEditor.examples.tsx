@@ -42,13 +42,6 @@ const FilterEditorTemplate = ({
     [onSaveProp],
   );
 
-  const style = useMemo(
-    () => ({
-      background: "#eee",
-    }),
-    [],
-  );
-
   return (
     <DataSourceProvider dataSource={dataSource}>
       <FilterEditor
@@ -56,7 +49,6 @@ const FilterEditorTemplate = ({
         columnDescriptors={columnDescriptors}
         onCancel={onCancel}
         onSave={onSave}
-        style={style}
         vuuTable={withTypeahead ? instrumentsSchema.table : undefined}
       />
       <input hidden data-testid="save-records" readOnly value={JSON.stringify(saveRecords)} />

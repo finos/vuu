@@ -60,7 +60,12 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   });
 
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Item[]>([]);
+  // the current value is marked in the list until the user types
+  const [selected, setSelected] = useState<Item[]>(() =>
+    multiselect || valueProp === undefined || valueProp === ""
+      ? []
+      : [valueProp as Item],
+  );
   const [value, setValue] = useState(
     valueProp === undefined ? "" : valueProp.toString(),
   );
@@ -142,10 +147,21 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     };
   }, [inputPropsProp, dropdownOnAutofocus, inputHasFocus, onOpenChange]);
 
+  const [currentItem] = selected;
+  const hint =
+    !multiselect && currentItem !== undefined && open
+      ? `Tab keeps ${itemToString(currentItem)} · type to filter`
+      : undefined;
+
   return (
     <div className={cx(classBase, className)} data-text={value} ref={ref}>
       <ComboBox<Item>
         {...props}
+        OverlayProps={{
+          ...props.OverlayProps,
+          className: cx(`${classBase}-overlay`, props.OverlayProps?.className),
+          ...(hint ? { "data-hint": hint } : undefined),
+        }}
         inputProps={inputProps}
         multiselect={multiselect}
         onChange={handleChange}

@@ -305,7 +305,6 @@ export const FilterClauseValueEditorText = forwardRef(
               onOpenChange={handleOpenChange}
               onSelectionChange={handleSingleValueSelectionChange}
               ref={combinedRef}
-              title="value"
               value={value}
             >
               {suggestions.map((state) => (

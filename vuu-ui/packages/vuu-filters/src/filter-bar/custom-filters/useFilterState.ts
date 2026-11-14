@@ -150,8 +150,13 @@ export const useFilterState = ({
     [filterState, handleFilterStateChange],
   );
 
+  const handleClearActiveFilters = useCallback(() => {
+    handleFilterStateChange({ ...filterState, activeIndices: [] });
+  }, [filterState, handleFilterStateChange]);
+
   return {
     activeFilterIndex: filterState.activeIndices,
+    onClearActiveFilters: handleClearActiveFilters,
     filters: filterState.filters,
     onToggleFilterActive: handleToggleFilterActive,
     onAddFilter: handleAddFilter,

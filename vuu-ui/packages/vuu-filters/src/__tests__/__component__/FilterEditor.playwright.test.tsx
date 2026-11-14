@@ -833,6 +833,27 @@ test.describe("Value suggestions", () => {
     });
   });
 
+  test.describe("WHEN the value of the first of two clauses is re-edited", () => {
+    test("THEN committing it moves focus to Save, second clause unchanged", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseAndFilter");
+      const comboboxes = page.getByRole("combobox");
+      await expect(comboboxes.first()).toBeFocused();
+      const firstValue = comboboxes.nth(2);
+      await expect(firstValue).toHaveValue("EUR");
+
+      await firstValue.click();
+      await page.getByRole("option", { name: "GBP", exact: true }).click();
+
+      await expect(page.getByRole("button", { name: "Save" })).toBeFocused();
+      await expect(firstValue).toHaveValue("GBP");
+      await expect(comboboxes.nth(3)).toHaveValue("exchange");
+      await expect(comboboxes.nth(5)).toHaveValue("XLON");
+    });
+  });
+
   test.describe("WHEN navigating back through a complete clause", () => {
     test("THEN every field lists all options, current value first", async ({
       mount,

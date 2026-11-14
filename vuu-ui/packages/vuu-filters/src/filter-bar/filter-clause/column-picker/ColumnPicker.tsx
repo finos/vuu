@@ -38,7 +38,6 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
       dropdownOnAutofocus={dropdownOnAutofocus}
       inputProps={inputProps}
       ref={useForkRef(forwardedRef, ref)}
-      title="column"
     >
       {getOptionList(
         columns,

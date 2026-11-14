@@ -1,8 +1,163 @@
+/* One outline holds the clauses and the actions. Save (with its AND / OR
+   menu) and Cancel are full-height segments at the right end, divided by
+   borders. */
 .vuuFilterEditor {
-    align-items: center;
-    display: flex;
-    gap: var(--salt-spacing-200);
-    height: var(--vuuFilterEditor-height, calc(var(--salt-size-base) + var(--salt-size-unit)));
-    width: 100%;
-    
+  --editor-height: var(--vuuFilterEditor-height, var(--salt-size-base));
+  --editor-accent: var(--vuuFilterBar-accent, rgb(59 91 140));
+  --editor-accent-foreground: var(--vuuFilterBar-accentForeground, rgb(255 255 255));
+  --editor-tint: var(--vuuFilterBar-tint, rgb(59 91 140 / 0.1));
+  --editor-divider: var(--salt-separable-tertiary-borderColor);
+  --segment-height: calc(var(--editor-height) - 2px);
+
+  align-items: center;
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--editor-accent);
+  border-radius: var(--vuuFilterEditor-borderRadius, 4px);
+  box-shadow: 0 0 0 2px var(--editor-tint);
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  gap: var(--salt-spacing-100);
+  height: var(--editor-height);
+  overflow: hidden;
+  padding-left: var(--salt-spacing-100);
+}
+
+/* a lighter accent keeps contrast on a dark background */
+[data-mode="dark"] .vuuFilterEditor {
+  --editor-accent: var(--vuuFilterBar-accent, rgb(138 168 214));
+  --editor-accent-foreground: var(--vuuFilterBar-accentForeground, rgb(20 28 40));
+  --editor-tint: var(--vuuFilterBar-tint, rgb(138 168 214 / 0.16));
+}
+
+.vuuFilterEditor-name {
+  border-right: 1px solid var(--editor-divider);
+  color: var(--editor-accent);
+  font-weight: var(--salt-text-fontWeight-strong);
+  padding-right: var(--salt-spacing-100);
+  white-space: nowrap;
+}
+
+/* clauses are tokens inside the outline, the one being edited is tinted */
+.vuuFilterEditor .vuuFilterClause {
+  --salt-focused-outlineStyle: none;
+  background: transparent;
+  border-color: transparent;
+  border-radius: 2px;
+  height: calc(var(--editor-height) - 6px);
+}
+.vuuFilterEditor .vuuFilterClause .saltPillInput,
+.vuuFilterEditor .vuuFilterClause .saltInput {
+  --saltPillInput-background: transparent;
+  --saltPillInput-background-active: transparent;
+  --saltPillInput-background-hover: transparent;
+  background: transparent;
+}
+.vuuFilterEditor .vuuFilterClause:focus-within {
+  background: transparent;
+  border-color: transparent;
+}
+
+.vuuFilterEditor .vuuFilterEditor-save.vuuSplitButton.vuuSplitButton-primary {
+  --vuuSplitButton-borderRadius: 0;
+  --vuuSplitButton-background: transparent;
+  --vuuSplitButton-background-hover: var(--editor-tint);
+  --saltButton-height: var(--segment-height);
+  /* icons match Cancel; focus fills the segment */
+  --saltButton-text-color: var(--salt-content-secondary-foreground);
+  --saltButton-text-color-hover: var(--salt-content-secondary-foreground);
+  --vuuButtonIcon-color: var(--salt-content-secondary-foreground);
+  align-self: stretch;
+  border-left: 1px solid var(--editor-divider);
+  margin-left: auto;
+
+  .saltButton {
+    --saltButton-borderColor: transparent;
+    --saltButton-borderColor-hover: transparent;
+    border-color: transparent;
+  }
+  .vuuSplitButton-main {
+    --saltButton-width: var(--segment-height);
+    min-width: var(--segment-height);
+    padding: 0;
+  }
+  .vuuSplitButton-trigger {
+    --saltButton-width: 16px;
+    border-left: 1px solid var(--editor-divider);
+    width: 16px;
+  }
+}
+
+.vuuFilterEditor .vuuFilterEditor-save.vuuSplitButton-disabled {
+  --vuuButtonIcon-color: var(--salt-content-secondary-foreground-disabled, var(--salt-content-secondary-foreground));
+}
+
+/* Save is the default action, focused it is filled */
+.vuuFilterEditor .vuuFilterEditor-save.vuuSplitButton.vuuSplitButton-primary.vuuFocusVisible {
+  --split-background: var(--editor-accent);
+  --saltButton-text-color: var(--editor-accent-foreground);
+  --saltButton-text-color-hover: var(--editor-accent-foreground);
+  --vuuButtonIcon-color: var(--editor-accent-foreground);
+  outline: none;
+  .vuuSplitButton-trigger {
+    border-left-color: rgb(255 255 255 / 0.35);
+  }
+}
+
+.vuuFilterEditor .vuuFilterEditor-cancel {
+  --saltButton-height: var(--segment-height);
+  --saltButton-width: var(--segment-height);
+  --saltButton-borderColor: transparent;
+  --saltButton-borderColor-hover: transparent;
+  --saltButton-borderColor-active: transparent;
+  --saltButton-borderRadius: 0;
+  --saltButton-background-hover: var(--editor-tint);
+  --vuuButtonIcon-color: var(--salt-content-secondary-foreground);
+  align-self: stretch;
+  border-left: 1px solid var(--editor-divider);
+  margin-left: calc(-1 * var(--salt-spacing-100));
+  min-width: var(--segment-height);
+  padding: 0;
+}
+/* keyboard focus fills Cancel as it does Save */
+.vuuFilterEditor .vuuFilterEditor-cancel:focus-visible {
+  --saltButton-background: var(--editor-accent);
+  --saltButton-background-hover: var(--editor-accent);
+  --saltButton-background-active: var(--editor-accent);
+  --vuuButtonIcon-color: var(--editor-accent-foreground);
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+  border-top-color: transparent;
+  outline: none;
+}
+
+/* A compact menu: the focused item is a soft fill rather than a dashed
+   focus outline. */
+.vuuFilterEditor-menu {
+  --filter-menu-highlight: var(--salt-actionable-subtle-background-active, var(--salt-palette-alpha-contrast-low));
+  --salt-focused-outlineStyle: none;
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgb(20 30 45 / 0.12);
+  padding: var(--salt-spacing-50);
+
+  .saltMenuItem {
+    border-radius: 3px;
+  }
+  .saltMenuItem:hover,
+  .saltMenuItem:focus-visible,
+  .saltMenuItem.saltMenuItem-focusVisible {
+    background: var(--filter-menu-highlight);
+    outline: none;
+  }
+}
+
+.vuuFilterEditor .vuuFilterClauseCombinator {
+  min-width: 0;
+  padding: 0 var(--salt-spacing-50);
+}
+
+/* a softer highlight on a dark background */
+[data-mode="dark"] .vuuFilterEditor-menu {
+  --filter-menu-highlight: rgb(255 255 255 / 0.08);
 }

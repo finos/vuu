@@ -1,6 +1,6 @@
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { SplitButton } from "@vuu-ui/vuu-ui-controls";
+import { Icon, SplitButton } from "@vuu-ui/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -13,6 +13,8 @@ import filterEditorCss from "./FilterEditor.css";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 const classBase = "vuuFilterEditor";
+
+const saveButtonAriaProps = { "aria-label": "Save" };
 
 export type FilterEditSaveHandler = (filter: Filter) => void;
 export type FilterEditCancelHandler = (filter?: Filter) => void;
@@ -94,17 +96,28 @@ export const FilterEditor = ({
 
   return (
     <div {...htmlAttributes} className={classBase} ref={setContainer}>
+      {filter?.name ? (
+        <span className={`${classBase}-name`}>{filter.name}</span>
+      ) : null}
       {getContents()}
       <SplitButton
         {...saveButtonProps}
+        ButtonProps={saveButtonAriaProps}
+        className={`${classBase}-save`}
         disabled={!filterModel.isValid}
         key="save-button"
         ref={saveButtonRef}
       >
-        Save
+        <Icon name="tick" size={12} />
       </SplitButton>
-      <Button onClick={onCancelFilterEdit} variant="secondary">
-        Cancel
+      <Button
+        appearance="transparent"
+        aria-label="Cancel"
+        className={`${classBase}-cancel`}
+        onClick={onCancelFilterEdit}
+        sentiment="neutral"
+      >
+        <Icon name="close" size={10} />
       </Button>
     </div>
   );

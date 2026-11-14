@@ -19,9 +19,15 @@ import {
   SplitStateButton,
   SplitStateButtonProps,
 } from "@vuu-ui/vuu-ui-controls";
-import { useId } from "@vuu-ui/vuu-utils";
+import { dispatchMouseEvent, useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { FocusEventHandler, useCallback, useMemo, useRef } from "react";
+import {
+  FocusEventHandler,
+  MouseEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   closeCommand,
   deleteCommand,
@@ -109,7 +115,11 @@ export const FilterPill = ({
   const popupMenuProps = useMemo<
     Pick<
       PopupMenuProps,
-      "menuBuilder" | "menuActionHandler" | "menuOptions" | "onMenuClose"
+      | "menuBuilder"
+      | "menuActionHandler"
+      | "menuClassName"
+      | "menuOptions"
+      | "onMenuClose"
     >
   >(
     () => ({
@@ -132,6 +142,7 @@ export const FilterPill = ({
       },
 
       menuActionHandler: onMenuAction,
+      menuClassName: `${classBase}-menu`,
       menuLocation: "filter-pill-menu",
       menuOptions: {
         filter,
@@ -148,6 +159,22 @@ export const FilterPill = ({
       handleMenuClose,
       onMenuAction,
     ],
+  );
+
+  // The menu trigger is only visible on hover or focus, right-click is
+  // another way to open the menu.
+  const handleContextMenu = useCallback<MouseEventHandler<HTMLDivElement>>(
+    (evt) => {
+      const trigger = rootRef.current?.querySelector<HTMLElement>(
+        ".vuuSplitButton-trigger",
+      );
+      if (trigger) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        dispatchMouseEvent(trigger, "click");
+      }
+    },
+    [],
   );
 
   const handleExitEditMode = useCallback<ExitEditModeHandler>(
@@ -182,6 +209,7 @@ export const FilterPill = ({
       PopupMenuProps={popupMenuProps}
       className={cx(classBase, classNameProp)}
       data-text={label}
+      onContextMenu={handleContextMenu}
       ref={rootRef}
     >
       {editable && onExitEditMode ? (

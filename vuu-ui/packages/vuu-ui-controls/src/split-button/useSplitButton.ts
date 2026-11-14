@@ -1,3 +1,4 @@
+import cx from "clsx";
 import { MenuCloseHandler, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { dispatchMouseEvent } from "@vuu-ui/vuu-utils";
 import {
@@ -45,7 +46,7 @@ SplitButtonHookProps) => {
   const menuProps: PopupMenuProps = {
     ...PopupMenuProps,
     anchorElement: rootRef,
-    menuClassName: `${classBase}-menu`,
+    menuClassName: cx(`${classBase}-menu`, PopupMenuProps?.menuClassName),
     onMenuClose,
     popupPlacement: "below-full-width",
   };

@@ -1,11 +1,189 @@
-.vuuFilterPill {
-    --saltButton-textTransform: none;
-    max-width: var(--vuuFilterPill-maxWidth, 200px);
+/* Unselected pills are outlined, selected (active) pills are filled. */
+.vuuFilterPill.vuuSplitStateButton.vuuSplitButton-primary.vuuSplitButton {
+  --saltButton-textTransform: none;
+  --pill-height: var(--vuuFilterPill-height, var(--salt-size-base));
+  --pill-trigger-width: 18px;
+  --pill-selected-background: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  --pill-selected-foreground: var(--vuuFilterBar-selectedForeground, rgb(255 255 255));
+  --split-state-background: var(--salt-container-primary-background);
+  --split-state-foreground: var(--salt-content-secondary-foreground);
+  --saltButton-text-color: var(--salt-content-secondary-foreground);
+  --saltButton-text-color-hover: var(--salt-content-primary-foreground);
+  --vuuButtonIcon-color: var(--salt-content-secondary-foreground);
+  --pill-foreground: var(--salt-content-secondary-foreground);
+  --pill-foreground-hover: var(--salt-content-primary-foreground);
+  /* the pill border is rounded, the buttons inside it are not */
+  --vuuSplitButton-borderRadius: 0;
+
+  background: var(--split-state-background);
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
+  border-radius: var(--vuuFilterPill-borderRadius, 3px);
+  box-sizing: border-box;
+  height: var(--pill-height);
+  max-width: var(--vuuFilterPill-maxWidth, 200px);
+  overflow: hidden;
+  position: relative;
+
+  cursor: default;
+
+  .saltButton {
+    --saltButton-height: calc(var(--pill-height) - 2px);
+    cursor: default;
+    --saltButton-borderColor: transparent;
+    --saltButton-borderColor-hover: transparent;
+    --saltButton-borderRadius: 0;
+    /* the pill carries the fill, so its focus outline shows through */
+    --saltButton-background: transparent;
+    --saltButton-background-hover: transparent;
+    --saltButton-background-active: transparent;
+    background: transparent;
+    --saltButton-text-color: var(--pill-foreground);
+    --saltButton-text-color-hover: var(--pill-foreground-hover);
+    --saltButton-text-color-active: var(--pill-foreground-hover);
+    --vuu-icon-color: var(--pill-foreground);
+    border-color: transparent;
+    font-weight: var(--salt-text-fontWeight);
+    /* both halves change colour together on selection */
+    transition: none;
+  }
+
+  /* the right padding is room for the menu trigger, so it never covers
+     the label */
+  .vuuSplitButton-main {
+    justify-content: flex-start;
+    padding: 0 var(--pill-trigger-width) 0 var(--salt-spacing-200);
+  }
+
+  /* the label is as wide as its text, with a little room to rename */
+  .vuuEditableLabel {
+    --vuuEditableLabel-padding: 0;
+  }
+  .vuuEditableLabel:before {
+    padding: 0 2px;
+  }
+  .vuuEditableLabel-label {
+    padding-left: 0;
+    text-align: left;
+  }
+  /* while renaming, the input fills the space the label text measures */
+  .vuuEditableLabel .saltInput {
+    left: 0;
+    padding: 0 2px;
+    right: 0;
+    width: 100%;
+  }
+  &:has(.vuuEditableLabel .saltInput) .vuuSplitButton-trigger {
+    display: none;
+  }
+
+  /* The menu trigger shows over the end of the pill on hover or focus;
+     ArrowDown and right-click also open the menu. */
+  .vuuSplitButton-trigger {
+    --saltButton-width: var(--pill-trigger-width);
+    bottom: 0;
+    opacity: 0;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    min-width: 0;
+    width: var(--pill-trigger-width);
+    z-index: 1;
+  }
+  &:hover .vuuSplitButton-trigger,
+  &:focus-within .vuuSplitButton-trigger,
+  .vuuSplitButton-trigger[aria-expanded="true"] {
+    opacity: 1;
+  }
+}
+
+.vuuFilterPill.vuuSplitStateButton.vuuSplitButton-primary.vuuSplitButton:hover:not(.vuuSplitStateButton-disabled, .vuuFocusVisible, [aria-checked="true"]) {
+  border-color: var(--salt-content-secondary-foreground);
+}
+
+.vuuFilterPill.vuuSplitStateButton.vuuSplitButton-primary.vuuSplitButton[aria-checked="true"] {
+  --split-state-background: var(--pill-selected-background);
+  --split-state-foreground: var(--pill-selected-foreground);
+  --saltButton-text-color: var(--pill-selected-foreground);
+  --saltButton-text-color-hover: var(--pill-selected-foreground);
+  --vuuButtonIcon-color: var(--pill-selected-foreground);
+  --vuu-icon-color: var(--pill-selected-foreground);
+  --pill-foreground: var(--pill-selected-foreground);
+  --pill-foreground-hover: var(--pill-selected-foreground);
+  border-color: var(--pill-selected-background);
+
+  .saltButton {
+    font-weight: var(--salt-text-fontWeight-strong);
+  }
+}
+
+/* Keyboard focus is a dashed outline on the pill edge, in place of the
+   border, as table cells do. The pill fill shows between the dashes: blue
+   dashes on an unselected pill, white on a selected one. */
+.vuuFilterPill.vuuSplitStateButton.vuuSplitButton-primary.vuuSplitButton.vuuFocusVisible {
+  border-color: transparent;
+  box-shadow: none;
+  outline: 1px dashed var(--vuuFilterBar-accent, rgb(59 91 140));
+  outline-offset: -1px;
+}
+.vuuFilterPill.vuuSplitStateButton.vuuSplitButton-primary.vuuSplitButton.vuuFocusVisible[aria-checked="true"] {
+  outline-color: var(--pill-selected-foreground);
+}
+
+/* while renaming, the text selection shows focus */
+.vuuFilterPill.vuuSplitStateButton.vuuSplitButton-primary.vuuSplitButton.vuuSplitButton:has(.vuuEditableLabel .saltInput) {
+  outline: none;
+  .saltButton,
+  .vuuEditableLabel,
+  .saltInput,
+  .vuuEditableLabel-input,
+  .vuuEditableLabel-input:focus-visible {
+    outline: none;
+  }
 }
 
 .vuuFilterPill-tooltip {
-    ul {
-        padding-left: var(--salt-spacing-400);
-    }    
+  ul {
+    padding-left: var(--salt-spacing-400);
+  }
 }
 
+/* A compact menu: the focused item is a soft fill rather than a dashed
+   focus outline. */
+.vuuFilterPill-menu {
+  --filter-menu-highlight: var(--salt-actionable-subtle-background-active, var(--salt-palette-alpha-contrast-low));
+  /* Delete is destructive, so it is set apart */
+  .saltMenuItem.vuuFilterMenu-delete {
+    margin-top: calc(var(--salt-spacing-50) + 1px);
+    position: relative;
+  }
+  .saltMenuItem.vuuFilterMenu-delete::before {
+    border-top: 1px solid var(--salt-separable-tertiary-borderColor);
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: calc(-1 * var(--salt-spacing-50) / 2 - 1px);
+  }
+
+  --salt-focused-outlineStyle: none;
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgb(20 30 45 / 0.12);
+  padding: var(--salt-spacing-50);
+
+  .saltMenuItem {
+    border-radius: 3px;
+  }
+  .saltMenuItem:hover,
+  .saltMenuItem:focus-visible,
+  .saltMenuItem.saltMenuItem-focusVisible {
+    background: var(--filter-menu-highlight);
+    outline: none;
+  }
+}
+
+/* a softer highlight on a dark background */
+[data-mode="dark"] .vuuFilterPill-menu {
+  --filter-menu-highlight: rgb(255 255 255 / 0.08);
+}

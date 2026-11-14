@@ -20,7 +20,6 @@
     min-width: 0px;
   }
 
-
   .saltPillInput-inputWrapper {
     height: 100%;
     padding: 0;
@@ -35,7 +34,6 @@
   .saltPillInput-activationIndicator {
     display: none;
   }
-
 }
 
 .vuuExpandoOption {
@@ -44,7 +42,6 @@
   padding-right: var(--salt-spacing-200);
 }
 
-
 .vuuExpandoCombobox:before {
   content: attr(data-text);
   display: block;
@@ -52,4 +49,63 @@
   height: 0px;
   overflow: hidden;
   white-space: pre-wrap;
+}
+
+/* A compact option list: the active option is a soft fill rather than a
+   dashed focus outline. Qualified to outrank the vuu theme option list. */
+.salt-theme.salt-theme .vuuExpandoCombobox-overlay.saltOptionList {
+  --filter-menu-highlight: var(--salt-actionable-subtle-background-active, var(--salt-palette-alpha-contrast-low));
+  --salt-focused-outlineStyle: none;
+  border-color: var(--salt-separable-tertiary-borderColor);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgb(20 30 45 / 0.12);
+  padding: var(--salt-spacing-50);
+
+  /* options are inset from the list edge, with rounded corners */
+  .saltOption {
+    border-radius: 3px;
+  }
+  /* the current value has a tint and a 'current' tag, without the
+     selection bar */
+  .saltOption[aria-selected="true"] {
+    background: var(--vuuFilterBar-tint, rgb(59 91 140 / 0.1));
+    align-items: center;
+    box-shadow: none;
+    font-weight: var(--salt-text-fontWeight-strong);
+    gap: var(--salt-spacing-200);
+  }
+  .saltOption[aria-selected="true"]::after {
+    color: var(--salt-content-secondary-foreground);
+    content: "current" / "";
+    font-size: 10px;
+    font-weight: var(--salt-text-fontWeight);
+    margin-left: auto;
+  }
+  .saltOption-focusVisible,
+  .saltOption-active {
+    outline: none;
+  }
+  /* a hint at the foot of the list while the current value is kept */
+  &[data-hint]::after {
+    background: var(--salt-container-primary-background);
+    border-top: 1px solid var(--salt-separable-tertiary-borderColor);
+    bottom: calc(-1 * var(--salt-spacing-50));
+    color: var(--salt-content-secondary-foreground);
+    content: attr(data-hint) / "";
+    font-size: 10px;
+    margin-top: var(--salt-spacing-50);
+    padding: var(--salt-spacing-50) var(--salt-spacing-100);
+    position: sticky;
+    white-space: nowrap;
+  }
+  .saltOption:hover,
+  .saltOption.saltOption-focusVisible,
+  .saltOption.saltOption-active {
+    background: var(--filter-menu-highlight);
+  }
+}
+
+/* a softer highlight on a dark background */
+.salt-theme.salt-theme[data-mode="dark"] .vuuExpandoCombobox-overlay.saltOptionList {
+  --filter-menu-highlight: rgb(255 255 255 / 0.08);
 }
