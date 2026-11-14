@@ -92,41 +92,6 @@ export const getHomeStats = (treeSource: NavNode[]): HomeStats => {
   };
 };
 
-export interface AddedPageRef extends PageRef {
-  /** date (yyyy-mm-dd) the example was added */
-  added: string;
-}
-
-/**
- * The most recently added examples, newest first. Examples added on the same
- * date retain their tree order.
- */
-export const getRecentlyAdded = (
-  treeSource: NavNode[],
-  limit: number,
-): AddedPageRef[] => {
-  const examples: AddedPageRef[] = [];
-  const visit = (nodes: NavNode[], trail: string[]) => {
-    for (const node of nodes) {
-      if (node.childNodes?.length) {
-        visit(node.childNodes, trail.concat(node.label));
-      } else if (isExample(node) && node.nodeData?.added) {
-        examples.push({
-          added: node.nodeData.added,
-          label: node.label,
-          live: node.nodeData.live,
-          path: `/${node.id}`,
-          trail,
-        });
-      }
-    }
-  };
-  visit(getExampleNodes(treeSource), []);
-  return examples
-    .sort((e1, e2) => e2.added.localeCompare(e1.added))
-    .slice(0, limit);
-};
-
 /** Recently viewed paths resolved to pages, unknown paths are dropped */
 export const resolveRecent = (
   recent: string[],

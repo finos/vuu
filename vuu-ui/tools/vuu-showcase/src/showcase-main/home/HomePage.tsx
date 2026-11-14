@@ -7,10 +7,8 @@ import { RouteLink } from "../chrome/RouteLink";
 import { useRecent } from "../tree-nav/nav-store";
 import type { NavNodeData } from "../tree-nav/nav-tree";
 import {
-  type AddedPageRef,
   createPageIndex,
   getHomeStats,
-  getRecentlyAdded,
   type PageRef,
   resolveRecent,
 } from "./home-model";
@@ -20,18 +18,10 @@ import "./HomePage.css";
 const classBase = "ShowcaseHome";
 
 const MAX_RECENT = 6;
-const MAX_ADDED = 3;
 
 const isMac =
   typeof navigator !== "undefined" &&
   /Mac|iPhone|iPad/.test(navigator.platform);
-
-const formatDate = (date: string) =>
-  new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 
 const LiveDot = () => (
   <span className="ShowcaseLiveDot" title="Uses live data" />
@@ -42,10 +32,10 @@ const PageList = ({
   pages,
 }: {
   icon: ChromeIconName;
-  pages: (PageRef & Partial<Pick<AddedPageRef, "added">>)[];
+  pages: PageRef[];
 }) => (
   <ul className={`${classBase}-pages`}>
-    {pages.map(({ added, label, live, path, trail }) => (
+    {pages.map(({ label, live, path, trail }) => (
       <li key={path}>
         <RouteLink className={`${classBase}-page`} path={path}>
           <ChromeIcon name={icon} size={14} />
@@ -60,11 +50,6 @@ const PageList = ({
               </span>
             ) : null}
           </span>
-          {added ? (
-            <time className={`${classBase}-pageDate`} dateTime={added}>
-              {formatDate(added)}
-            </time>
-          ) : null}
         </RouteLink>
       </li>
     ))}
@@ -78,9 +63,8 @@ export interface HomePageProps {
 
 export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
   const source = treeSource as TreeSourceNode<NavNodeData>[];
-  const { addedPages, pageIndex, stats } = useMemo(
+  const { pageIndex, stats } = useMemo(
     () => ({
-      addedPages: getRecentlyAdded(source, MAX_ADDED),
       pageIndex: createPageIndex(source),
       stats: getHomeStats(source),
     }),
@@ -144,18 +128,6 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
           ) : null}
         </dl>
       </section>
-
-      {addedPages.length > 0 ? (
-        <section
-          aria-labelledby={`${classBase}-added`}
-          className={`${classBase}-section`}
-        >
-          <h2 className={`${classBase}-heading`} id={`${classBase}-added`}>
-            What&apos;s new
-          </h2>
-          <PageList icon="star" pages={addedPages} />
-        </section>
-      ) : null}
 
       {recentPages.length > 0 ? (
         <section

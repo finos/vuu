@@ -24,8 +24,6 @@ const getDocumentPath = (
 };
 
 export type NodeData = {
-  /** examples only, date (yyyy-mm-dd) first seen, from the example history */
-  added?: string;
   componentName?: string;
   /** folders only, number of examples within */
   count?: number;

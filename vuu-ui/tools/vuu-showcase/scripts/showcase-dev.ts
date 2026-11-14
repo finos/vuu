@@ -9,7 +9,6 @@ import Watcher from "watcher";
 
 import { createFolder, linkSourceDirectory, writeFile } from "./utils";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
-import { syncExampleHistory } from "./example-history";
 import { applyFixtureUsage } from "./test-fixtures";
 import {
   highlightSource,
@@ -22,7 +21,6 @@ const pathToExhibits = "./src/examples";
 
 // 1) Build the exhibit structure that will be used to create nav tree in showcase GUI
 const [treeSourceJson /*, tags*/] = treeSourceFromFileSystem(pathToExhibits);
-syncExampleHistory(treeSourceJson, pathToExhibits);
 // the vuu-ui folder, test files are found in packages and playwright
 applyFixtureUsage(treeSourceJson, path.resolve(".."));
 
