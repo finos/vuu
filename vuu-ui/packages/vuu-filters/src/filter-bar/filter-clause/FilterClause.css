@@ -10,7 +10,8 @@
   align-items: center;
   background: var(--salt-container-primary-background);
   border-color: var(--salt-editable-borderColor);
-  border-radius: var(--saltButton-borderRadius);
+  /* matches the Save (SplitButton) radius */
+  border-radius: var(--vuuSplitButton-borderRadius, var(--salt-palette-corner));
   border-width: 1px;
   border-style: solid;
   display: flex;
