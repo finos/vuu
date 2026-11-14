@@ -13,7 +13,7 @@
     <name>${project.artifactId}</name>
 
     <properties>
-        <vuu.sttp.client4.version>4.1.1</vuu.sttp.client4.version>
+        <vuu.sttp.client4.version>4.1.2</vuu.sttp.client4.version>
         <vuu.typesafe.conf.version>1.4.10</vuu.typesafe.conf.version>
         <vuu.vertx.version>5.2.3</vuu.vertx.version>
     </properties>
