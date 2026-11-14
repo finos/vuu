@@ -25,7 +25,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await expect(page.getByRole("combobox")).toHaveCount(1);
     });
 
@@ -33,7 +33,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
     });
 
@@ -41,7 +41,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await expect(page.getByRole("combobox")).toBeFocused();
       await expect(page.getByRole("listbox")).toBeVisible();
     });
@@ -52,7 +52,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
           await page.getByRole("combobox").press("Enter");
           await expect(page.getByRole("listbox")).toBeVisible();
@@ -68,7 +68,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await assertComboboxReady(page);
       await selectListItem(page, "description");
       await selectListItem(page, "starts");
@@ -91,7 +91,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await selectListItem(page, "description");
         await selectListItem(page, "starts");
         const value = page.getByRole("combobox").nth(2);
@@ -106,7 +106,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await selectListItem(page, "lotSize");
 
       for (const operator of ["=", "!=", ">", ">=", "<", "<="]) {
@@ -124,7 +124,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await selectListItem(page, "lotSize");
         await selectListItem(page, ">");
         const value = page.getByRole("textbox");
@@ -141,7 +141,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await selectListItem(page, "lotSize");
       await selectListItem(page, ">");
       const value = page.getByRole("textbox");
@@ -200,7 +200,7 @@ test.describe("FilterEditor", () => {
     test.describe("WHEN rendered with new FilterClauseModel", () => {
       test.describe("WHEN Enter is pressed twice to accept default selections", () => {
         test("THEN filter clause value is focused", async ({ mount, page }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
           await page.getByRole("combobox").press("Enter");
           await expect(page.getByRole("listbox")).toBeVisible();
@@ -215,7 +215,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           await page.getByRole("combobox").press("Enter");
@@ -239,7 +239,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           await page.getByRole("combobox").press("Enter");
@@ -274,7 +274,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -292,7 +292,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -315,7 +315,7 @@ test.describe("FilterEditor", () => {
 
     test.describe("WHEN second clause is completed and SAVE pressed", () => {
       test("THEN two clause filter is saved", async ({ mount, page }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -369,7 +369,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           // accept all the default values
@@ -399,7 +399,7 @@ test.describe("FilterEditor", () => {
             mount,
             page,
           }) => {
-            await mount("Filters/FilterEditor/NewFilter");
+            await mount("Filters/FilterBar/FilterEditor/NewFilter");
             await assertComboboxReady(page);
 
             await page.getByRole("combobox").press("Enter");
@@ -435,7 +435,7 @@ test.describe("FilterEditor", () => {
             mount,
             page,
           }) => {
-            await mount("Filters/FilterEditor/NewFilter");
+            await mount("Filters/FilterBar/FilterEditor/NewFilter");
             await assertComboboxReady(page);
 
             await page.getByRole("combobox").press("Enter");
@@ -481,7 +481,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
+          await mount("Filters/FilterBar/FilterEditor/EditMultiClauseOrFilter");
 
           await expect(page.getByRole("combobox")).toHaveCount(6);
 
@@ -545,7 +545,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
+          await mount("Filters/FilterBar/FilterEditor/EditMultiClauseOrFilter");
 
           await expect(page.getByRole("combobox")).toHaveCount(6);
 
@@ -606,7 +606,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/EditNumericFilter");
+      await mount("Filters/FilterBar/FilterEditor/EditNumericFilter");
       await expect(page.getByRole("textbox")).toHaveValue("1000");
       await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
     });
@@ -615,7 +615,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await selectListItem(page, "lotSize");
       await selectListItem(page, ">");
       await page.getByRole("textbox").fill("1000");
@@ -633,7 +633,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await selectListItem(page, "lotSize");
         await selectListItem(page, ">");
         const value = page.getByRole("textbox");
@@ -651,7 +651,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilterAllColumnTypes");
+      await mount("Filters/FilterBar/FilterEditor/NewFilterAllColumnTypes");
       await assertComboboxReady(page);
       await expect(
         page.getByRole("option", { name: "side", exact: true }),
@@ -670,7 +670,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilterNoTypeahead");
+      await mount("Filters/FilterBar/FilterEditor/NewFilterNoTypeahead");
       await selectListItem(page, "currency");
       await selectListItem(page, "=");
       const value = page.getByRole("textbox");
@@ -690,7 +690,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilterNoTypeahead");
+      await mount("Filters/FilterBar/FilterEditor/NewFilterNoTypeahead");
       await selectListItem(page, "currency");
       await selectListItem(page, "in");
       const value = page.getByRole("textbox");
@@ -713,7 +713,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/EditMultiClauseAndFilter");
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseAndFilter");
       await expect(page.getByRole("combobox").first()).toBeFocused();
       const save = page.getByRole("button", { name: "Save" });
       await save.focus();
@@ -726,7 +726,7 @@ test.describe("FilterEditor", () => {
     });
 
     test("editing an OR filter does not offer AND", async ({ mount, page }) => {
-      await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseOrFilter");
       await expect(page.getByRole("combobox").first()).toBeFocused();
       const save = page.getByRole("button", { name: "Save" });
       await save.focus();
@@ -741,7 +741,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await assertComboboxReady(page);
       await page.getByRole("combobox").press("Enter");
       await expect(page.getByRole("listbox")).toBeVisible();
