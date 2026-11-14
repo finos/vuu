@@ -1,4 +1,3 @@
-import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import type {
   DataSource,
   DataSourceConfigChangeHandler,
@@ -11,6 +10,7 @@ import {
   extractFilterForColumn,
   getVuuTable,
   useDataSource,
+  useTypeaheadSuggestions,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
