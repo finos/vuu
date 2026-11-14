@@ -15,7 +15,7 @@
 
     <properties>
         <vuu.caffeine.version>3.3.1</vuu.caffeine.version>
-        <vuu.clickhouse.client.version>0.11.1</vuu.clickhouse.client.version>
+        <vuu.clickhouse.client.version>0.11.2</vuu.clickhouse.client.version>
     </properties>
 
     <modules>
