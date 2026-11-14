@@ -765,3 +765,116 @@ test.describe("FilterEditor", () => {
     });
   });
 });
+
+test.describe("Value suggestions", () => {
+  test("editing a value suggests all values until text is typed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+    const value = page.getByRole("combobox").nth(2);
+    await expect(value).toHaveValue("EUR");
+    await value.click();
+
+    await expect(
+      page.getByRole("option", { name: "GBP", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("option", { name: "EUR", exact: true }),
+    ).toBeVisible();
+
+    await value.fill("G");
+    await expect(
+      page.getByRole("option", { name: "GBX", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("option", { name: "EUR", exact: true }),
+    ).toHaveCount(0);
+  });
+  test.describe("WHEN Shift+Tab moves back through a complete clause", () => {
+    test("THEN the clause values are unchanged", async ({ mount, page }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseAndFilter");
+      const comboboxes = page.getByRole("combobox");
+      await expect(comboboxes.first()).toBeFocused();
+      await comboboxes.first().press("Tab");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+
+      await save.press("Shift+Tab");
+      await expect(comboboxes.nth(5)).toBeFocused();
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await comboboxes.nth(5).press("Shift+Tab");
+      await expect(comboboxes.nth(4)).toBeFocused();
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await comboboxes.nth(4).press("Shift+Tab");
+      await expect(comboboxes.nth(3)).toBeFocused();
+
+      await expect(comboboxes.nth(3)).toHaveValue("exchange");
+      await expect(comboboxes.nth(4)).toHaveValue("=");
+      await expect(comboboxes.nth(5)).toHaveValue("XLON");
+    });
+
+    test("THEN Enter on the value keeps it", async ({ mount, page }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+      const comboboxes = page.getByRole("combobox");
+      await expect(comboboxes.first()).toBeFocused();
+      await comboboxes.first().press("Tab");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Shift+Tab");
+      const value = comboboxes.nth(2);
+      await expect(value).toBeFocused();
+      await expect(
+        page.getByRole("option", { name: "GBP", exact: true }),
+      ).toBeVisible();
+      await value.press("Enter");
+      await expect(save).toBeFocused();
+      await expect(value).toHaveValue("EUR");
+    });
+  });
+
+  test.describe("WHEN navigating back through a complete clause", () => {
+    test("THEN every field lists all options, current value first", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+      const comboboxes = page.getByRole("combobox");
+      const options = page.getByRole("option");
+      await expect(comboboxes.first()).toBeFocused();
+      await comboboxes.first().press("Tab");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Shift+Tab");
+
+      await expect(comboboxes.nth(2)).toBeFocused();
+      await expect(options.first()).toHaveText("EUR");
+      await expect(options.filter({ hasText: "GBP" })).toHaveCount(1);
+
+      await comboboxes.nth(2).press("ArrowLeft");
+      await expect(comboboxes.nth(1)).toBeFocused();
+      await expect(options.first()).toHaveText("=");
+      await expect(options.filter({ hasText: "contains" })).toHaveCount(1);
+
+      await comboboxes.nth(1).press("ArrowLeft");
+      await expect(comboboxes.first()).toBeFocused();
+      await expect(options.first()).toHaveText("currency");
+      await expect(options.filter({ hasText: "exchange" })).toHaveCount(1);
+
+      await comboboxes.first().press("Enter");
+      await expect(comboboxes.first()).toHaveValue("currency");
+      await expect(comboboxes.nth(1)).toHaveValue("=");
+      await expect(comboboxes.nth(2)).toHaveValue("EUR");
+    });
+
+    test("THEN typing filters the options", async ({ mount, page }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+      const comboboxes = page.getByRole("combobox");
+      const options = page.getByRole("option");
+      await expect(comboboxes.first()).toBeFocused();
+      await expect(options.filter({ hasText: "exchange" })).toHaveCount(1);
+      await comboboxes.first().fill("exc");
+      await expect(options).toHaveText(["exchange"]);
+    });
+  });
+});

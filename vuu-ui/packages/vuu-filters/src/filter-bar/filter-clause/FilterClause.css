@@ -47,6 +47,14 @@
     outline: none;
   }
 
+  /* fields sit inside the clause border, a radius of their own would clip the
+     text selection at one end */
+  .vuuFilterClauseField .saltPillInput,
+  .vuuFilterClauseField.saltInput,
+  .vuuFilterClauseField .saltInput {
+    border-radius: 0;
+  }
+
   .saltTokenizedInput {
     height: 16px;
     min-height: 16px;

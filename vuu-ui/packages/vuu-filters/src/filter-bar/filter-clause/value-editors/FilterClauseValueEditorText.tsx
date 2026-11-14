@@ -22,6 +22,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { ExpandoCombobox } from "../../../expando-combobox/ExpandoCombobox";
+import { getOptionList } from "../../../expando-combobox/option-list-utils";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 
 const TYPEAHEAD_DEBOUNCE_MS = 150;
@@ -64,6 +65,9 @@ export const FilterClauseValueEditorText = forwardRef(
     const [valueInputValue, setValueInputValue] = useState(
       value?.toString() ?? "",
     );
+    // Suggestions are filtered by what the user has typed. When an existing
+    // value is edited, all values are suggested until the user types.
+    const [typedText, setTypedText] = useState("");
     // undefined until the first response from the typeahead service is
     // received, false if there is no typeahead service.
     const [typeaheadValues, setTypeaheadValues] = useState<
@@ -105,7 +109,7 @@ export const FilterClauseValueEditorText = forwardRef(
       [highlightFirstOption],
     );
 
-    const filterText = isMultiValue ? "" : valueInputValue;
+    const filterText = isMultiValue ? "" : typedText;
     useEffect(() => {
       if (table === undefined) {
         setTypeaheadValues(false);
@@ -148,6 +152,7 @@ export const FilterClauseValueEditorText = forwardRef(
       (evt: ChangeEvent<HTMLInputElement>) => {
         const { value } = evt.target as HTMLInputElement;
         setValueInputValue(value);
+        setTypedText(value);
         // we want to set the filterclause status to valid, but not trigger focus change
         if (
           operator === "starts" ||
@@ -213,7 +218,13 @@ export const FilterClauseValueEditorText = forwardRef(
         // option can be highlighted when the dropdown opens.
         return null;
       }
-      const suggestions = typeaheadValues || [];
+      // suggestions are already filtered by the typed text
+      const suggestions = getOptionList(
+        typeaheadValues || [],
+        (suggestion) => suggestion,
+        "",
+        typedText === "" && typeof value === "string" ? value : undefined,
+      );
       if (
         typeaheadValues === false ||
         (suggestions.length === 0 && operator !== "in")
@@ -306,6 +317,7 @@ export const FilterClauseValueEditorText = forwardRef(
       }
     }, [
       typeaheadValues,
+      typedText,
       operator,
       inputProps,
       className,

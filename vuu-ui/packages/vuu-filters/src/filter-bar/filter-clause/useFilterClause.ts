@@ -159,6 +159,9 @@ export const useFilterClause = ({
           onCancel?.(filterClauseModel, "Escape");
         }
       } else if (evt.key === "Tab" && evt.shiftKey) {
+        // Moving back must not change the field, the combobox would
+        // otherwise select its highlighted option.
+        evt.stopPropagation();
         if (tabToPreviousField(evt.target as HTMLElement)) {
           evt.preventDefault();
         }

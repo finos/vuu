@@ -29,6 +29,9 @@
 }
 
 .vuuSplitButton.vuuFocusVisible {
+  /* the outline surrounds both buttons, they have no visible border of their own */
+  --saltButton-borderColor: var(--split-background);
+  --vuuButton-borderColor: var(--split-background);
   .saltButton {
     outline-style: none;
   }

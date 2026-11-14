@@ -1,14 +1,16 @@
 import cx from "clsx";
-import { ComboBox, ComboBoxProps } from "@salt-ds/core";
+import { ComboBox, type ComboBoxProps, useForkRef } from "@salt-ds/core";
 import {
-  ChangeEvent,
-  ForwardedRef,
-  ReactElement,
-  Ref,
-  SyntheticEvent,
+  type ChangeEvent,
+  type ForwardedRef,
+  type ReactElement,
+  type Ref,
+  type SyntheticEvent,
   forwardRef,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -73,8 +75,22 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     [onChange],
   );
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const ref = useForkRef(forwardedRef, containerRef);
+  const openOnFocusTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  useEffect(() => () => clearTimeout(openOnFocusTimer.current), []);
+
+  const inputHasFocus = useCallback(() => {
+    const input = containerRef.current?.querySelector("input");
+    return input != null && input === input.ownerDocument.activeElement;
+  }, []);
+
   const handleSelectionChange = useCallback(
     (evt: SyntheticEvent, newSelected: Item[]) => {
+      // selecting an option closes the list, it must not reopen on focus
+      clearTimeout(openOnFocusTimer.current);
       if (multiselect) {
         onSelectionChange?.(evt, newSelected);
       } else {
@@ -91,34 +107,43 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
 
   const handleOpenChange = useCallback(
     (open: boolean, reason?: "manual" | "input") => {
+      // The list is only shown while the input has focus. Once focus has
+      // moved to another field, requests to open the list are ignored.
+      if (open && !inputHasFocus()) {
+        return;
+      }
       onOpenChange?.(open, reason);
       setOpen(open);
     },
-    [onOpenChange],
+    [inputHasFocus, onOpenChange],
   );
 
   const inputProps = useMemo<ComboBoxProps<Item>["inputProps"]>(() => {
     return {
       autoComplete: "off",
       ...inputPropsProp,
+      onBlur: (evt) => {
+        inputPropsProp?.onBlur?.(evt);
+        clearTimeout(openOnFocusTimer.current);
+      },
       onFocus: (evt) => {
         inputPropsProp?.onFocus?.(evt);
         if (!dropdownOnAutofocus) return;
 
-        setTimeout(() => {
-          setOpen(true);
-          onOpenChange?.(true, "focus");
+        clearTimeout(openOnFocusTimer.current);
+        openOnFocusTimer.current = setTimeout(() => {
+          // focus may have moved on to another field
+          if (inputHasFocus()) {
+            setOpen(true);
+            onOpenChange?.(true, "focus");
+          }
         }, 100);
       },
     };
-  }, [inputPropsProp, dropdownOnAutofocus, onOpenChange]);
+  }, [inputPropsProp, dropdownOnAutofocus, inputHasFocus, onOpenChange]);
 
   return (
-    <div
-      className={cx(classBase, className)}
-      data-text={value}
-      ref={forwardedRef}
-    >
+    <div className={cx(classBase, className)} data-text={value} ref={ref}>
       <ComboBox<Item>
         {...props}
         inputProps={inputProps}

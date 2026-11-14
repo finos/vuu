@@ -3,6 +3,7 @@ import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { ComboBoxProps, Dropdown, Option, useForkRef } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 import { ExpandoCombobox } from "../expando-combobox/ExpandoCombobox";
+import { getOptionList } from "../expando-combobox/option-list-utils";
 import { getOperators } from "./operator-utils";
 import { useOperatorPicker } from "./useOperatorPicker";
 
@@ -78,7 +79,7 @@ const OperatorCombobox = forwardRef(function OperatorCombobox(
   }: OperatorComboboxProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
-  const { ref, ...comboProps } = useOperatorPicker({
+  const { ref, typedText, ...comboProps } = useOperatorPicker({
     onSelect,
     value: valueProp?.toString() ?? "",
   });
@@ -93,13 +94,14 @@ const OperatorCombobox = forwardRef(function OperatorCombobox(
       ref={useForkRef(forwardedRef, ref)}
       title="operator"
     >
-      {(operators ?? getOperators(column))
-        .filter((op) =>
-          op.toLowerCase().includes(comboProps.value.toLowerCase()),
-        )
-        .map((op) => (
-          <Option value={op} key={op} />
-        ))}
+      {getOptionList(
+        operators ?? getOperators(column),
+        (op) => op,
+        typedText,
+        comboProps.value,
+      ).map((op) => (
+        <Option value={op} key={op} />
+      ))}
     </ExpandoCombobox>
   );
 });

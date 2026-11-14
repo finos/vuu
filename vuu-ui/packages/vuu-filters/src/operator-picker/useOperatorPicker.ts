@@ -18,6 +18,8 @@ export const useOperatorPicker = ({
   const ref = useRef<HTMLDivElement>(null);
   const openRef = useRef(false);
   const [value, setValue] = useState(valueProp);
+  // Options are filtered by typed text only, not by a selected value
+  const [typedText, setTypedText] = useState("");
 
   const highlightFirstOption = useCallback(() => {
     if (ref.current) {
@@ -36,6 +38,7 @@ export const useOperatorPicker = ({
     (event: ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setValue(value);
+      setTypedText(value);
       if (openRef.current && value === "") {
         highlightFirstOption();
       }
@@ -47,6 +50,7 @@ export const useOperatorPicker = ({
     (evt: SyntheticEvent, [newSelected]: FilterClauseOp[]) => {
       onSelect?.(evt, newSelected);
       setValue(newSelected ?? "");
+      setTypedText("");
     },
     [onSelect],
   );
@@ -55,6 +59,7 @@ export const useOperatorPicker = ({
     (isOpen: boolean, reason?: "manual" | "input" | "focus") => {
       openRef.current = isOpen;
       if (isOpen && reason === "focus") {
+        setTypedText("");
         highlightFirstOption();
       }
     },
@@ -66,6 +71,7 @@ export const useOperatorPicker = ({
     onOpenChange: handleOpenChange,
     onSelectionChange: handleSelectionChange,
     ref,
+    typedText,
     value: value.toString().trim(),
   };
 };
