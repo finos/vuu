@@ -9,8 +9,8 @@ reasoning behind it, see [`docs/rfc/devcontainer.md`](../docs/rfc/devcontainer.m
 | Tool    | Version |
 |---------|---------|
 | JDK     | 25 (the code targets Java 21, so 21-compatible builds still work) |
-| Maven   | 3.9.16 (same as `./mvnw`) |
-| Scala   | 3.3.8 (same as `vuu.scala.version` in the root `pom.xml`) |
+| Maven   | 3.10.0 (same as `./mvnw`) |
+| Scala   | 3.9.0 (same as `vuu.scala.version` in the root `pom.xml`) |
 | Node / npm | latest (Node 26 / npm 12 at time of writing) |
 | Python  | 3.13, with a venv at `/opt/venv` already on `PATH` and `example/python-integration`'s `requirements.txt` pre-installed |
 | Podman  | 5.x, rootless, plus a Docker-compatible API socket for Testcontainers |
