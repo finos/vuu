@@ -37,7 +37,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release> <!-- Maintain 17 support until Q3 2027 -->
+        <maven.compiler.release>21</maven.compiler.release> <!-- Until at least Q4 2027 -->
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
 
@@ -204,7 +204,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.6.4</version>
+                    <version>3.7.0</version>
                 </plugin>
 
                 <plugin>

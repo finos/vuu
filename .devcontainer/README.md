@@ -8,7 +8,7 @@ reasoning behind it, see [`docs/rfc/devcontainer.md`](../docs/rfc/devcontainer.m
 
 | Tool    | Version |
 |---------|---------|
-| JDK     | 21 (the code targets Java 17, so 17-compatible builds still work) |
+| JDK     | 25 (the code targets Java 21, so 21-compatible builds still work) |
 | Maven   | 3.9.16 (same as `./mvnw`) |
 | Scala   | 3.3.8 (same as `vuu.scala.version` in the root `pom.xml`) |
 | Node / npm | latest (Node 26 / npm 12 at time of writing) |

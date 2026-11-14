@@ -1,6 +1,6 @@
-# JDK 21 matches the version CI builds/releases with (the code itself targets --release 17).
+# JDK 25 matches the version CI builds/releases with (the code itself targets --release 21).
 # Debian trixie base gives Python 3.13 and Podman 5.x from the distro repos.
-FROM mcr.microsoft.com/devcontainers/java:21-trixie
+FROM mcr.microsoft.com/devcontainers/java:25-trixie
 
 # Python (for example/python-integration - JPype + pytest in a venv) and Podman.
 RUN apt-get update \
