@@ -93,8 +93,9 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
   }
 
   override def runOnce(): Unit = {
-    if (!sessions.isEmpty) {
-      SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates())
+    val it = sessions.values().iterator()
+    while (it.hasNext) {      
+      it.next().sendUpdates()
     }
   }
 

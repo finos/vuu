@@ -54,7 +54,7 @@ The second step (`npm run build:app`) builds the sample application. Application
 ## Installation - Server
 
 #### Prerequisites
-* **Java 17+**
+* **Java 21+**
 * **Docker Desktop** (or Podman Desktop in compatibility mode)
 * The example client code has already been installed and is ready in `deployed_apps`
 
@@ -89,7 +89,7 @@ cd example\main
 You may prefer to run the backend using the IntelliJ IDE instead of from the command line.
 
 1. Install the Scala plugin: file -> settings -> plugins
-2. Set project SDK version to 17: file -> project structure -> select an SDK -> require version 17
+2. Set project SDK version to 21: file -> project structure -> select an SDK -> require version 21
 3. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
 4. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
 5. In IntelliJ, select the 'SimulMain' run configuration config and click run.
