@@ -53,11 +53,23 @@ SplitButtonHookProps) => {
 
   const handleRootFocus = useCallback<FocusEventHandler>((evt) => {
     const { current: splitButton } = rootRef;
-    if (!splitButton?.classList.contains("vuuFocusVisible")) {
-      splitButton?.classList.add("vuuFocusVisible");
-      if (!focusTargetIsEditableLabel(evt.target)) {
+    if (splitButton && !splitButton.classList.contains("vuuFocusVisible")) {
+      splitButton.classList.add("vuuFocusVisible");
+      if (
+        evt.target !== buttonRef.current &&
+        !focusTargetIsEditableLabel(evt.target)
+      ) {
+        // focus may have moved on, e.g. into an editable label, before
+        // the next frame
         requestAnimationFrame(() => {
-          buttonRef.current?.focus();
+          const { activeElement } = splitButton.ownerDocument;
+          if (
+            activeElement !== null &&
+            splitButton.contains(activeElement) &&
+            !focusTargetIsEditableLabel(activeElement)
+          ) {
+            buttonRef.current?.focus();
+          }
         });
       }
     }

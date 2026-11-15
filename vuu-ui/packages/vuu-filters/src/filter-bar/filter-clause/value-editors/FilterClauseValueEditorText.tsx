@@ -94,7 +94,21 @@ export const FilterClauseValueEditorText = forwardRef(
         );
         if (input) {
           requestAnimationFrame(() => {
-            dispatchKeyboardEvent(input, "keydown", "ArrowDown");
+            // The combobox may already have made the first option (the
+            // current value) active, ArrowDown would then move past it.
+            const listId = input.getAttribute("aria-controls");
+            const firstOption = listId
+              ? input.ownerDocument
+                  .getElementById(listId)
+                  ?.querySelector('[role="option"]')
+              : null;
+            const firstOptionIsActive =
+              firstOption?.classList.contains("saltOption-active") ?? false;
+            dispatchKeyboardEvent(
+              input,
+              "keydown",
+              firstOptionIsActive ? "ArrowUp" : "ArrowDown",
+            );
           });
         }
       }

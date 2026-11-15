@@ -742,6 +742,13 @@ test.describe("FilterEditor", () => {
       page,
     }) => {
       await mount("Filters/FilterBar/FilterEditor/NewFilter");
+      // Shift+Tab out of the editor needs somewhere to go: Firefox keeps
+      // focus in place when Shift+Tab would leave the page.
+      await page.evaluate(() => {
+        const input = document.createElement("input");
+        input.setAttribute("aria-label", "Before");
+        document.body.prepend(input);
+      });
       await assertComboboxReady(page);
       await page.getByRole("combobox").press("Enter");
       await expect(page.getByRole("listbox")).toBeVisible();
@@ -761,7 +768,7 @@ test.describe("FilterEditor", () => {
       await operator.press("Shift+Tab");
       await expect(column).toBeFocused();
       await column.press("Shift+Tab");
-      await expect(page.locator(".vuuFilterEditor :focus")).toHaveCount(0);
+      await expect(page.getByRole("textbox", { name: "Before" })).toBeFocused();
     });
   });
 });
