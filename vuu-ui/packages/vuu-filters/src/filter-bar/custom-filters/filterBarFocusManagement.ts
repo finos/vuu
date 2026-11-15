@@ -1,40 +1,27 @@
-import {
-  getElementByDataIndex,
-  getElementDataIndex,
-  queryClosest,
-} from "@vuu-ui/vuu-utils";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 
-const QUERY_ADD_BUTTON = '.saltButton:has([aria-label="Add filter"])';
+// in row order: the pills that fit, the overflow button, the Add button
+const QUERY_NAVIGABLE_ITEMS = [
+  ".vuuCustomFilters-filters > .vuuFilterPill:not([data-overflowed])",
+  ".vuuFilterOverflowMenu",
+  ".vuuCustomFilters-add",
+].join(",");
 
+/**
+ * Arrow key navigation between the items of the filter row.
+ */
 export const navigateToNextItem = (
   el: HTMLElement | EventTarget,
   direction: "bwd" | "fwd" = "fwd",
 ) => {
-  const pill = queryClosest(el, ".vuuFilterPill");
-  if (pill) {
-    const index = getElementDataIndex(pill);
-    if (typeof index === "number") {
-      const target =
-        direction === "fwd"
-          ? getElementByDataIndex(pill.parentElement, index + 1)
-          : getElementByDataIndex(pill.parentElement, index - 1);
-      if (target) {
-        target.focus();
-      } else if (direction === "fwd") {
-        const filterBar = queryClosest(el, ".vuuFilterBar");
-        const addButton = filterBar?.querySelector(
-          QUERY_ADD_BUTTON,
-        ) as HTMLElement;
-        addButton?.focus();
-      }
-    }
-  } else {
-    const button = queryClosest(el, QUERY_ADD_BUTTON);
-    if (button) {
-      const filterBar = queryClosest(el, ".vuuFilterBar");
-      const target = filterBar?.querySelector(
-        ".vuuFilterPill:last-child",
-      ) as HTMLElement;
+  const filterBar = queryClosest(el, ".vuuFilterBar");
+  if (filterBar && el instanceof Element) {
+    const items = Array.from(
+      filterBar.querySelectorAll<HTMLElement>(QUERY_NAVIGABLE_ITEMS),
+    );
+    const index = items.findIndex((item) => item.contains(el));
+    if (index !== -1) {
+      const target = items[direction === "fwd" ? index + 1 : index - 1];
       target?.focus();
     }
   }

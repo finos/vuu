@@ -9,3 +9,19 @@
 .vuuFilterSummaryButton-overlay-header {
   font-weight: var(--salt-text-fontWeight-strong);
 }
+
+/* a compact, borderless text action, its text aligned with the content */
+.vuuFilterSummaryButton-overlay-footer .saltButton {
+  --saltButton-height: 24px;
+  --saltButton-textTransform: none;
+  font-size: 11px;
+  margin-right: calc(-1 * var(--salt-spacing-100));
+  padding: 0 var(--salt-spacing-100);
+}
+
+/* pressed, as a toggle: quick filters are shown */
+.vuuFilterSummaryButton.vuuFilterSummaryButton-pressed {
+  --saltButton-background: var(--vuuFilterBar-pressedBackground, rgb(59 91 140 / 0.16));
+  --saltButton-background-hover: var(--vuuFilterBar-pressedBackground, rgb(59 91 140 / 0.22));
+  --vuuButtonIcon-color: var(--vuuFilterBar-accent, rgb(30 58 99));
+}

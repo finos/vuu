@@ -52,14 +52,27 @@
   .vuuFilterSummaryButton-overlay-footer {
     padding: var(--salt-spacing-100) 0;
   }
+  /* a compact, borderless 20px button */
   .vuuFilterBarSummary-filterName .saltButton {
-    --saltButton-borderRadius: 3px;
-    --saltButton-height: 22px;
-    --saltButton-width: 22px;
+    --saltButton-borderRadius: 2px;
+    --saltButton-borderColor: transparent;
+    --saltButton-borderColor-hover: transparent;
+    --saltButton-borderColor-active: transparent;
+    --saltButton-height: 20px;
+    --saltButton-width: 20px;
     --saltButton-background-hover: rgb(0 0 0 / 0.06);
     --saltButton-background-active: rgb(0 0 0 / 0.12);
-    border-radius: 3px;
+    border-color: transparent;
+    border-radius: 2px;
+    flex: none;
+    height: 20px;
     min-width: 0;
+    padding: 0;
+    width: 20px;
+  }
+  .vuuFilterBarSummary-filterName .saltButton:focus-visible {
+    outline: 1px dashed var(--vuuFilterBar-accent, rgb(59 91 140));
+    outline-offset: 0;
   }
   .vuuFilterSummaryButton-overlay-header {
     border-bottom: var(--summary-divider);

@@ -5,9 +5,7 @@
   --filterbar-height: var(--vuuFilterBar-height, calc(var(--filterbar-item-height) + 2 * var(--salt-spacing-100)));
   --vuuFilterEditor-height: var(--filterbar-item-height);
   --vuuFilterPill-height: var(--filterbar-item-height);
-  --icon-container-height: auto;
   --flexbar-gap: var(--salt-spacing-100);
-  --icon-marginTop: 0;
 
   align-items: center;
   background-color: var(--salt-container-secondary-background);
@@ -26,23 +24,6 @@
 /* the high density base size makes pills too small to read comfortably */
 .salt-density-high .vuuFilterBar {
   --filterbar-item-height: var(--vuuFilterBar-itemHeight, 24px);
-}
-
-.vuuFilterBar-quick-filter-mode {
-  --icon-container-height: 100%;
-  --icon-marginTop: 20px;
-  --filterbar-height: var(--vuuFilterBar-height, calc(2 * var(--salt-size-base)));
-  align-items: flex-end;
-  padding: var(--salt-spacing-100) var(--salt-spacing-200);
-}
-
-.vuuFilterBar-iconContainer {
-  height: var(--icon-container-height);
-
-  .saltToggleButtonGroup {
-    margin-top: var(--icon-marginTop);
-    transition: margin-top 0.1s ease-in;
-  }
 }
 
 .vuuFilterbar-icon {
@@ -67,22 +48,99 @@
 .vuuCustomFilters {
   align-items: center;
   display: flex;
+  flex: 1 1 auto;
   gap: var(--salt-spacing-100);
   min-width: 0;
+}
+/* with quick filters shown, only the filter icon remains */
+.vuuCustomFilters[data-quick-filters-shown] {
+  flex: none;
 }
 .vuuCustomFilters-filters {
   align-items: center;
   display: flex;
+  flex: 0 1 auto;
   gap: var(--salt-spacing-100);
   min-width: 0;
+  overflow: hidden;
+}
+.vuuCustomFilters-filters[hidden] {
+  display: none;
 }
 
 .vuuCustomFilters-add {
   --saltButton-height: var(--filterbar-item-height);
   --saltButton-width: var(--filterbar-item-height);
   --vuuButtonIcon-color: var(--salt-content-secondary-foreground);
+  flex: none;
 }
 
+/* Pills shrink, truncating their label, before any overflow; useOverflowItems
+   sets their minimum width. The editor and a pill being renamed keep their
+   width. */
 .vuuCustomFilters-filters > .vuuFilterPill {
+  flex: 0 1 auto;
+  .vuuEditableLabel-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+.vuuCustomFilters-filters > .vuuFilterPill[data-overflow-pinned],
+.vuuCustomFilters-filters > .vuuFilterEditor {
   flex: none;
+}
+
+/* overflowed items stay mounted, so they can be measured at their natural
+   width */
+.vuuCustomFilters-filters:not(.vuuOverflowItems-measuring) > [data-overflowed] {
+  display: none;
+}
+.vuuCustomFilters-filters.vuuOverflowItems-measuring > [data-overflow-item] {
+  flex: none;
+  min-width: auto;
+}
+
+/* the "+N" button for filters that do not fit */
+.vuuFilterOverflowMenu.saltButton {
+  --saltButton-background: var(--salt-container-primary-background);
+  --saltButton-background-hover: var(--salt-container-primary-background);
+  --saltButton-background-active: var(--vuuFilterBar-tint, rgb(59 91 140 / 0.1));
+  --saltButton-borderColor-hover: var(--salt-content-secondary-foreground);
+  --saltButton-borderColor-active: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  --saltButton-text-color-hover: var(--salt-content-primary-foreground);
+  --saltButton-text-color-active: var(--salt-content-primary-foreground);
+  --saltButton-height: var(--filterbar-item-height);
+  --saltButton-borderColor: var(--salt-separable-tertiary-borderColor);
+  --saltButton-borderStyle: solid;
+  --saltButton-borderWidth: 1px;
+  --saltButton-borderRadius: 3px;
+  padding: 0 6px;
+  --saltButton-text-color: var(--salt-content-primary-foreground);
+  flex: none;
+  font-size: 11px;
+  font-weight: var(--salt-text-fontWeight-strong);
+  gap: 4px;
+  min-width: 0;
+}
+.vuuFilterOverflowMenu-dot {
+  background: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  border-radius: 50%;
+  height: 5px;
+  width: 5px;
+}
+/* each filter in the menu shows whether it is applied */
+.vuuFilterOverflowMenu-filter {
+  gap: var(--salt-spacing-100);
+}
+.vuuFilterOverflowMenu-applied {
+  border: 1px solid var(--salt-content-secondary-foreground);
+  border-radius: 2px;
+  box-sizing: border-box;
+  flex: none;
+  height: 8px;
+  width: 8px;
+}
+.vuuFilterOverflowMenu-applied[data-applied] {
+  background: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  border-color: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
 }

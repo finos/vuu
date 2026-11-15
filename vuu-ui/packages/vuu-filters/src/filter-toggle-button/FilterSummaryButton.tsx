@@ -16,6 +16,10 @@ const classBase = "vuuFilterSummaryButton";
 export interface FilterSummaryButtonProps
   extends Pick<HoverOverlayProps, "placement"> {
   "aria-label"?: string;
+  /**
+   * When defined, the button is a toggle button in this state.
+   */
+  "aria-pressed"?: boolean;
   appearance?: "solid" | "transparent";
   /**
    * Content of the hover overlay, a description of the filter in effect.
@@ -39,6 +43,7 @@ export interface FilterSummaryButtonProps
  */
 export const FilterSummaryButton = ({
   "aria-label": ariaLabel,
+  "aria-pressed": ariaPressed,
   appearance = "solid",
   children,
   className,
@@ -67,7 +72,10 @@ export const FilterSummaryButton = ({
     <IconButton
       appearance={appearance}
       aria-label={ariaLabel}
-      className={cx(classBase, className)}
+      aria-pressed={ariaPressed}
+      className={cx(classBase, className, {
+        [`${classBase}-pressed`]: ariaPressed,
+      })}
       icon={icon}
       onClick={onClick}
       sentiment="neutral"
@@ -84,6 +92,7 @@ export const FilterSummaryButton = ({
       <HoverOverlay
         onOpenChange={setOpen}
         open={open}
+        openOnClick={onClick === undefined}
         placement={placement}
         trigger={iconButton}
       >
@@ -98,7 +107,11 @@ export const FilterSummaryButton = ({
           </div>
           {children}
           <div className={`${classBase}-overlay-footer`}>
-            <Button onClick={handleClear} sentiment="neutral">
+            <Button
+              appearance="transparent"
+              onClick={handleClear}
+              sentiment="accented"
+            >
               Clear All
             </Button>
           </div>

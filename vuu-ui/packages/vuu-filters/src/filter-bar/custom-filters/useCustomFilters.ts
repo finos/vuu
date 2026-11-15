@@ -310,6 +310,15 @@ export const useCustomFilters = ({
     }
   }, []);
 
+  const handleKeyDownOverflowButton = useCallback<KeyboardEventHandler>(
+    (evt) => {
+      if (evt.key === "ArrowLeft" || evt.key === "ArrowRight") {
+        navigateToNextItem(evt.target, evt.key === "ArrowLeft" ? "bwd" : "fwd");
+      }
+    },
+    [],
+  );
+
   const handleCancelEdit = useCallback<FilterEditCancelHandler>(() => {
     if (interactedFilterState) {
       const { index } = interactedFilterState;
@@ -338,6 +347,8 @@ export const useCustomFilters = ({
     interactedFilterState,
     onCancelEdit: handleCancelEdit,
     onClearActiveFilters,
+    onOverflowKeyDown: handleKeyDownOverflowButton,
+    onPillMenuAction: handlePillMenuAction,
     onSave: filterSaveHandler,
     onToggleFilterActive,
     promptProps,
