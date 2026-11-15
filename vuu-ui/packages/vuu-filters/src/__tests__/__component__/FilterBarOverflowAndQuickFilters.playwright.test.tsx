@@ -50,7 +50,11 @@ test.describe("FilterBar overflow", () => {
       (await hiddenPill.getAttribute("aria-checked")) === "true";
 
     await overflowButton(page).click();
-    await page.getByRole("menuitem", { name: new RegExp(`^${name}`) }).click();
+    await page
+      .getByRole("menuitem")
+      .filter({ hasText: name ?? "" })
+      .first()
+      .click();
     await page
       .getByRole("menuitem", { name: wasApplied ? "Deactivate" : "Apply" })
       .click();
