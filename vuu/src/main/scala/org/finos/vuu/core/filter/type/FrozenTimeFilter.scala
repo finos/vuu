@@ -15,7 +15,7 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
     logger.trace(s"Starting filter with ${primaryKeys.length}")
     if (primaryKeys.isEmpty) return primaryKeys
 
-    val column = source.asTable.columnForName(DefaultColumn.CreatedTime.name)
+    val column = source.asTable.columnForName(DefaultColumn.CreatedTime.columnName)
     if (column == null) return EmptyTablePrimaryKeys
 
     source.asTable.indexForColumn(column) match {
@@ -40,7 +40,7 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
 
   private def filterAll(source: RowSource, rowKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val filtered = rowKeys.view.filter(key => {
-      val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumn.CreatedTime.name)
+      val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumn.CreatedTime.columnName)
       vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[EpochTimestamp] < frozenTime
     })
     InMemTablePrimaryKeys(ImmutableArray.from(filtered))

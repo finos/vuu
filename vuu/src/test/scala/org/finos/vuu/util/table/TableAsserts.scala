@@ -23,7 +23,7 @@ object TableAsserts {
       .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.columnName && k != DefaultColumn.LastUpdatedTime.columnName))
       .toArray
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }

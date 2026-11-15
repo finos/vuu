@@ -76,7 +76,7 @@ public abstract class WebSocketApiJavaTestBase {
             TableRowUpdates tru = (TableRowUpdates)tableSizeResponse.get();
             var dataCount = Arrays.stream(tru.rows())
                     .filter(p -> p.viewPortId().equals(viewPortId))
-                    .filter(p -> p.updateType().equals(RowUpdateType.UPDATE()))
+                    .filter(p -> p.updateType().equals(RowUpdateType.Update))
                     .count();
             if (dataCount < expectedRowCount) {
                 waitForData(viewPortId,expectedRowCount - dataCount);

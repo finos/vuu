@@ -1,6 +1,6 @@
 package org.finos.vuu.core.table
 
-import org.finos.vuu.api.{Indices, TableDef, TableDefOptions}
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -17,7 +17,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
 
       val createdTime = DefaultColumn.CreatedTime
 
-      createdTime.name shouldEqual "vuuCreatedTimestamp"
+      createdTime.columnName shouldEqual "vuuCreatedTimestamp"
       createdTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
@@ -25,7 +25,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
 
       val lastUpdatedTime = DefaultColumn.LastUpdatedTime
 
-      lastUpdatedTime.name shouldEqual "vuuUpdatedTimestamp"
+      lastUpdatedTime.columnName shouldEqual "vuuUpdatedTimestamp"
       lastUpdatedTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
@@ -36,17 +36,17 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       val result = DefaultColumn.getDefaultColumns(Array(customColumn))
 
       result.length shouldEqual 3
-      result(0).name shouldEqual DefaultColumn.CreatedTime.name
+      result(0).name shouldEqual DefaultColumn.CreatedTime.columnName
       result(0).index shouldEqual 1
       result(0).isEditable shouldEqual false
       DefaultColumn.isDefaultColumn(result(0)) shouldBe true
 
-      result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
+      result(1).name shouldEqual DefaultColumn.LastUpdatedTime.columnName
       result(1).index shouldEqual 2
       result(1).isEditable shouldEqual false
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
 
-      result(2).name shouldEqual DefaultColumn.MSG.name
+      result(2).name shouldEqual DefaultColumn.MSG.columnName
       result(2).index shouldEqual 3
       result(2).isEditable shouldEqual false
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
@@ -67,11 +67,11 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       result.length shouldEqual 4
       result.head shouldEqual customColumn
       DefaultColumn.isDefaultColumn(result.head) shouldBe false
-      result(1).name shouldEqual DefaultColumn.CreatedTime.name
+      result(1).name shouldEqual DefaultColumn.CreatedTime.columnName
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
-      result(2).name shouldEqual DefaultColumn.LastUpdatedTime.name
+      result(2).name shouldEqual DefaultColumn.LastUpdatedTime.columnName
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
-      result(3).name shouldEqual DefaultColumn.MSG.name
+      result(3).name shouldEqual DefaultColumn.MSG.columnName
       DefaultColumn.isDefaultColumn(result(3)) shouldBe true
     }
 

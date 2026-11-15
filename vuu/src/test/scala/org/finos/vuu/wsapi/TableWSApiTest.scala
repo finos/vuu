@@ -4,7 +4,6 @@ import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, DefaultColumn, TableContainer}
-import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortRangeSuccess, CreateViewPortRequest, CreateViewPortSuccess, ErrorResponse, GetTableMetaRequest, GetTableMetaResponse, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
@@ -42,7 +41,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
       responseBody.columns.length shouldEqual 4
-      responseBody.columns should contain theSameElementsAs (Array("id") ++ DefaultColumn.values.map(_.name))
+      responseBody.columns should contain theSameElementsAs (Array("id") ++ DefaultColumn.values.map(_.columnName))
     }
 
     Scenario("For a non existent table") {

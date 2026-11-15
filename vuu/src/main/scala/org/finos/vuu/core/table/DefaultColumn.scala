@@ -13,12 +13,12 @@ object DefaultColumn {
   private val allDefaults = DefaultColumn.values
 
   def getDefaultColumns(customColumns: Array[Column]): Array[Column] =
-    allDefaults.map(f => SimpleColumn(f.name, customColumns.length + f.ordinal, f.dataType))
+    allDefaults.map(f => SimpleColumn(f.columnName, customColumns.length + f.ordinal, f.dataType))
 
   def isDefaultColumn(column: Column): Boolean =
-    allDefaults.exists(f => f.name == column.name && f.dataType == column.dataType)
+    allDefaults.exists(f => f.columnName == column.name && f.dataType == column.dataType)
 
   def getDefaultColumnNames: Array[String] =
-    allDefaults.map(f => f.name)
+    allDefaults.map(f => f.columnName)
 
 }

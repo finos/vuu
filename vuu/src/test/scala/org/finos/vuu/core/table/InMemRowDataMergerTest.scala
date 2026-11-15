@@ -13,7 +13,7 @@ class InMemRowDataMergerTest extends AnyFeatureSpec with Matchers {
   private val clock = new TestFriendlyClock(FIXED_TIME)
 
   Feature("InMemRowDataMerger.mergeLeftToRight with default columns") {
-    val merger = InMemRowDataMerger(clock, DefaultColumn.values.map(v=>v.name).toSet)
+    val merger = InMemRowDataMerger(clock, DefaultColumn.values.map(v => v.columnName).toSet)
 
     Scenario("Merging an update into EmptyRowData (New Row Creation)") {
       val update = RowWithData(KEY, Map("price" -> 100.50, "side" -> "Buy"))

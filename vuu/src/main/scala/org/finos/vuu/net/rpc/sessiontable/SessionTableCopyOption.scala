@@ -3,7 +3,7 @@ package org.finos.vuu.net.rpc.sessiontable
 enum SessionTableCopyOption(val external: String) extends java.lang.Enum[SessionTableCopyOption] {
   case All extends SessionTableCopyOption("All")
   case Selected extends SessionTableCopyOption("Selected")
-  case Empty extends SessionTableCopyOption("None")
+  case Empty extends SessionTableCopyOption("Empty")
 }
 
 object SessionTableCopyOption {

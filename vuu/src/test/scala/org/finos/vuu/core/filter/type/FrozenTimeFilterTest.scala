@@ -36,7 +36,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Freeze filter with indexed created time") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.columnName))(using clock)
       val now = clock.now()
       val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(now))
 
@@ -48,7 +48,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Freeze filter with indexed created time and not first in chain") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.columnName))(using clock)
       val now = clock.now()
       val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(now))
 
@@ -60,7 +60,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Freeze filter with no input primary keys") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.columnName))(using clock)
       val now = clock.now()
       val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(now))
 
