@@ -1,6 +1,6 @@
 package org.finos.vuu.core.sort
 
-enum SortDirection(val external: Char) {
+enum SortDirection(val external: Char) extends java.lang.Enum[SortDirection] {
 
   case Descending extends SortDirection('D')
   case Ascending extends SortDirection('A')
@@ -8,9 +8,6 @@ enum SortDirection(val external: Char) {
 }
 
 object SortDirection {
-
-  val DESCENDING: SortDirection = SortDirection.Descending
-  val ASCENDING: SortDirection = SortDirection.Ascending
 
   def fromExternal(external: Char): SortDirection =
     external match {

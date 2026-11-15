@@ -13,11 +13,11 @@ trait EditSessionRpcHandler extends EditTableRpcHandler {
     val selectedRows = params.viewPort.getSelection
     selectedRows.foreach {
       selectedRow => {
-        val rowData = RowWithData(selectedRow, Map(VuuAction -> DeleteRow.value))
+        val rowData = RowWithData(selectedRow, Map(VuuAction -> DeleteRow.external))
         table.processUpdate(selectedRow, rowData)
       }
     }
-    logger.debug(s"Vuu action of ${selectedRows.size} rows set to \"${DeleteRow.value}\"")
+    logger.debug(s"Vuu action of ${selectedRows.size} rows set to \"${DeleteRow.external}\"")
     RpcFunctionSuccess(None)
   }
 

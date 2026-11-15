@@ -43,7 +43,7 @@ public class SortSpecBuilder {
      * @return this builder
      */
     public SortSpecBuilder addAscending(String columnName) {
-        sortDefs.add(new SortDef(columnName, SortDirection.ASCENDING().external()));
+        sortDefs.add(new SortDef(columnName, SortDirection.Ascending.external()));
         return this;
     }
 
@@ -54,7 +54,7 @@ public class SortSpecBuilder {
      * @return this builder
      */
     public SortSpecBuilder addDescending(String columnName) {
-        sortDefs.add(new SortDef(columnName, SortDirection.DESCENDING().external()));
+        sortDefs.add(new SortDef(columnName, SortDirection.Descending.external()));
         return this;
     }
 

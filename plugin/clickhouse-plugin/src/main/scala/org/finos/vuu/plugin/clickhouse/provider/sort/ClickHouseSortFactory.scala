@@ -42,7 +42,7 @@ class ClickHouseSortFactory(tableDef: VirtualizedSessionTableDef) extends Strict
     sortSpec.sortDefs.map { sd =>      
       val remoteColumn = remoteMapping.getOrElse(sd.column,
         throw new IllegalArgumentException(s"Mapping missing for sort column: '${sd.column}'"))
-      val direction = if (sd.sortType == SortDirection.DESCENDING.external) "DESC" else "ASC"
+      val direction = if (sd.sortType == SortDirection.Descending.external) "DESC" else "ASC"
       s"${remoteColumn.remoteName} $direction"
     }
   }

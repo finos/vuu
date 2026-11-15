@@ -128,7 +128,7 @@ public class SessionTableDefBuilder  {
      * @return this builder
      */
     public SessionTableDefBuilder withPrivateVisibility() {
-        return visibility(TableVisibility.PRIVATE());
+        return visibility(TableVisibility.Private);
     }
 
     /**
@@ -137,7 +137,7 @@ public class SessionTableDefBuilder  {
      * @return this builder
      */
     public SessionTableDefBuilder withPublicVisibility() {
-        return visibility(TableVisibility.PUBLIC());
+        return visibility(TableVisibility.Public);
     }
 
     /**

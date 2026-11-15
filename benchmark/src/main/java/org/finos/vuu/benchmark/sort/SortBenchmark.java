@@ -33,13 +33,13 @@ public class SortBenchmark {
         var exchangeColumn = inMemDataTable.getTableDef().columnForName(EXCHANGE);
         singleSort = Sort.apply(
                 SortSpec.apply(toScala(List.of(
-                        SortDef.apply(exchangeColumn.name(), SortDirection.ASCENDING().external())
+                        SortDef.apply(exchangeColumn.name(), SortDirection.Ascending.external())
                 ))),
                 toScala(List.of(exchangeColumn)));
         multiSort = Sort.apply(
                 SortSpec.apply(toScala(List.of(
-                        SortDef.apply(exchangeColumn.name(), SortDirection.DESCENDING().external()),
-                        SortDef.apply(closeColumn.name(), SortDirection.ASCENDING().external())
+                        SortDef.apply(exchangeColumn.name(), SortDirection.Descending.external()),
+                        SortDef.apply(closeColumn.name(), SortDirection.Ascending.external())
                 ))),
                 toScala(List.of(exchangeColumn, closeColumn)));
         benchmarkHelper.addPriceTableData(size);

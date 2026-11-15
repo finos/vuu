@@ -45,8 +45,8 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
       case _ => s"edit-${sourceTable.name}"
     }
 
-    val copyOption = params.namedParams.get("copyOption") match {
-      case Some(value: String) => SessionTableCopyOption.fromString(value)
+    val copyOption: SessionTableCopyOption = params.namedParams.get("copyOption") match {
+      case Some(value: String) if SessionTableCopyOption.isValid(value) => SessionTableCopyOption.fromExternal(value)
       case _ => return new RpcFunctionFailure("Missing or invalid copy option.")
     }
 
@@ -106,8 +106,8 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
       case _ => s"export-${sourceTable.name}"
     }
 
-    val copyOption = params.namedParams.get("copyOption") match {
-      case Some(value: String) => SessionTableCopyOption.fromString(value)
+    val copyOption: SessionTableCopyOption = params.namedParams.get("copyOption") match {
+      case Some(value: String) if SessionTableCopyOption.isValid(value) => SessionTableCopyOption.fromExternal(value)
       case _ => return new RpcFunctionFailure("Missing or invalid copy option.")
     }
 

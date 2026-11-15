@@ -2,17 +2,13 @@ package org.finos.vuu.core.table
 
 import org.finos.vuu.core.table.column.ColumnNames.{VuuCreatedTimestamp, VuuMsg, VuuUpdatedTimestamp}
 
-enum DefaultColumn(val name: String, val dataType: Class[?]) {
+enum DefaultColumn(val columnName: String, val dataType: Class[?]) extends java.lang.Enum[DefaultColumn] {
   case CreatedTime extends DefaultColumn(VuuCreatedTimestamp, DataType.EpochTimestampType)
   case LastUpdatedTime extends DefaultColumn(VuuUpdatedTimestamp, DataType.EpochTimestampType)
   case MSG extends DefaultColumn(VuuMsg, DataType.StringDataType)
 }
 
 object DefaultColumn {
-
-  val CREATED_TIME: DefaultColumn = DefaultColumn.CreatedTime
-  val LAST_UPDATED_TIME: DefaultColumn = DefaultColumn.LastUpdatedTime
-  val VUU_MESSAGE: DefaultColumn = DefaultColumn.MSG
 
   private val allDefaults = DefaultColumn.values
 

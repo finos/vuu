@@ -28,8 +28,8 @@ class InMemRowDataMergerTest extends AnyFeatureSpec with Matchers {
           res.data("side") shouldBe "Buy"
 
           // Verify Default Columns
-          res.data(DefaultColumn.CREATED_TIME.name) shouldBe EpochTimestamp(FIXED_TIME)
-          res.data(DefaultColumn.LAST_UPDATED_TIME.name) shouldBe EpochTimestamp(FIXED_TIME)
+          res.data(DefaultColumn.CreatedTime.columnName) shouldBe EpochTimestamp(FIXED_TIME)
+          res.data(DefaultColumn.LastUpdatedTime.columnName) shouldBe EpochTimestamp(FIXED_TIME)
 
         case _ => fail("Result should be RowWithData")
       }
@@ -39,8 +39,8 @@ class InMemRowDataMergerTest extends AnyFeatureSpec with Matchers {
       val originalTime = FIXED_TIME - 10000
       val originalData = Map(
         "price" -> 99.00,
-        DefaultColumn.CREATED_TIME.name -> EpochTimestamp(originalTime),
-        DefaultColumn.LAST_UPDATED_TIME.name -> EpochTimestamp(originalTime)
+        DefaultColumn.CreatedTime.columnName -> EpochTimestamp(originalTime),
+        DefaultColumn.LastUpdatedTime.columnName -> EpochTimestamp(originalTime)
       )
       val original = RowWithData(KEY, originalData)
 
@@ -56,9 +56,9 @@ class InMemRowDataMergerTest extends AnyFeatureSpec with Matchers {
           // New field
           res.data("quantity") shouldBe 500
           // Created time should stay the same (from original map)
-          res.data(DefaultColumn.CREATED_TIME.name) shouldBe EpochTimestamp(originalTime)
+          res.data(DefaultColumn.CreatedTime.columnName) shouldBe EpochTimestamp(originalTime)
           // Last updated time should be NEW
-          res.data(DefaultColumn.LAST_UPDATED_TIME.name) shouldBe EpochTimestamp(FIXED_TIME)
+          res.data(DefaultColumn.LastUpdatedTime.columnName) shouldBe EpochTimestamp(FIXED_TIME)
 
         case _ => fail("Result should be RowWithData")
       }

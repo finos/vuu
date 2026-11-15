@@ -11,7 +11,8 @@ trait InMemRowDataMerger {
 
 object InMemRowDataMerger {
 
-  def apply(clock: Clock, defaultColumnNames: Set[String]): InMemRowDataMerger = InMemRowDataMergerImpl(clock, defaultColumnNames)
+  def apply(clock: Clock, defaultColumnNames: Set[String]): InMemRowDataMerger = 
+    InMemRowDataMergerImpl(clock, defaultColumnNames)
 
 }
 
@@ -34,10 +35,10 @@ private case class InMemRowDataMergerImpl(clock: Clock, defaultColumnNames: Set[
     builder ++= update.data
 
     val now = EpochTimestamp(clock.now())
-    if (defaultColumnNames.contains(DefaultColumn.CREATED_TIME.name))
-      builder += (DefaultColumn.CREATED_TIME.name -> now)
-    if (defaultColumnNames.contains(DefaultColumn.LAST_UPDATED_TIME.name))
-      builder += (DefaultColumn.LAST_UPDATED_TIME.name -> now)
+    if (defaultColumnNames.contains(DefaultColumn.CreatedTime.columnName))
+      builder += (DefaultColumn.CreatedTime.columnName -> now)
+    if (defaultColumnNames.contains(DefaultColumn.LastUpdatedTime.columnName))
+      builder += (DefaultColumn.LastUpdatedTime.columnName -> now)
 
     RowWithData(update.key, builder.result())
   }
@@ -49,8 +50,8 @@ private case class InMemRowDataMergerImpl(clock: Clock, defaultColumnNames: Set[
     builder ++= update.data
 
     val now = EpochTimestamp(clock.now())
-    if (defaultColumnNames.contains(DefaultColumn.LAST_UPDATED_TIME.name))
-      builder += (DefaultColumn.LAST_UPDATED_TIME.name -> now)
+    if (defaultColumnNames.contains(DefaultColumn.LastUpdatedTime.columnName))
+      builder += (DefaultColumn.LastUpdatedTime.columnName -> now)
 
     RowWithData(update.key, builder.result())
   }
