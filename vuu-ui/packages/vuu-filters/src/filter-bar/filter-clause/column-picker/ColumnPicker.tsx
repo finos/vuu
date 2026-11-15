@@ -2,8 +2,12 @@ import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { ExpandoCombobox } from "../../../expando-combobox/ExpandoCombobox";
 import { getOptionList } from "../../../expando-combobox/option-list-utils";
 import { ComboBoxProps, Option, useForkRef } from "@salt-ds/core";
-import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
-import { useColumnPicker } from "./useColumnPicker";
+import { ForwardedRef, SyntheticEvent, forwardRef, useCallback } from "react";
+import {
+  getColumnText,
+  getColumnTextByName,
+  useColumnPicker,
+} from "./useColumnPicker";
 
 export type ColumnPickerProps = Pick<
   ComboBoxProps,
@@ -30,6 +34,12 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     value: valueProp?.toString() ?? "",
   });
 
+  // the user sees column labels, the selected value is the column name
+  const columnNameToText = useCallback(
+    (columnName: string) => getColumnTextByName(columns, columnName),
+    [columns],
+  );
+
   return (
     <ExpandoCombobox
       {...comboProps}
@@ -37,16 +47,17 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
       data-field="column"
       dropdownOnAutofocus={dropdownOnAutofocus}
       inputProps={inputProps}
+      itemToString={columnNameToText}
       ref={useForkRef(forwardedRef, ref)}
     >
       {getOptionList(
         columns,
-        ({ name }) => name,
+        getColumnText,
         typedText,
-        comboProps.value,
-      ).map(({ name, label = name }) => (
-        <Option value={name} key={name}>
-          {label}
+        columnNameToText(comboProps.value),
+      ).map((column) => (
+        <Option value={column.name} key={column.name}>
+          {getColumnText(column)}
         </Option>
       ))}
     </ExpandoCombobox>

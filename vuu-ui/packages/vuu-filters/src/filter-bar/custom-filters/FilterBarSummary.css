@@ -33,7 +33,15 @@
   justify-content: space-between;
 }
 
+/* column and operator muted, the value stands out */
 .vuuFilterBarSummary-filterClauses {
+  color: var(--salt-content-secondary-foreground);
+
+  .vuuFilterBarSummary-clauseValue {
+    color: var(--salt-content-primary-foreground);
+    font-weight: 700;
+  }
+
   ul {
     margin: 0;
     padding-left: var(--salt-spacing-300);
@@ -107,4 +115,7 @@
 [data-mode="dark"] .vuuFilterSummaryButton-overlay-panel.vuuFilterBarSummary-overlay .vuuFilterBarSummary-filterName .saltButton {
   --saltButton-background-hover: rgb(255 255 255 / 0.08);
   --saltButton-background-active: rgb(255 255 255 / 0.12);
+}
+[data-mode="dark"] .vuuFilterSummaryButton-overlay-panel.vuuFilterBarSummary-overlay .vuuFilterBarSummary-filterName .saltButton:focus-visible {
+  outline-color: var(--vuuFilterBar-accent, rgb(122 156 209));
 }

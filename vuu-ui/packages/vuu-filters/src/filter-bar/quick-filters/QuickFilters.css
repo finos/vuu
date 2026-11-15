@@ -8,6 +8,8 @@
   --quickFilter-inputWidth: var(--vuuQuickFilter-inputWidth, 40px);
   --quickFilter-inputMaxWidth: var(--vuuQuickFilter-inputMaxWidth, 160px);
   --quickFilter-accent: var(--vuuFilterBar-accent, rgb(59 91 140));
+  /* the fill of a focused operator, under bold foreground text */
+  --quickFilter-focusFill: rgb(59 91 140);
   /* one grey for the outline and the label fill */
   --quickFilter-grey: var(--vuuQuickFilter-grey, rgb(214 219 226));
   --quickFilter-borderColor: var(--quickFilter-grey);
@@ -15,6 +17,17 @@
   --quickFilter-setBorder: var(--vuuFilterBar-selectedBackground, rgb(143 166 200));
   --quickFilter-setControlMinWidth: 72px;
   --quickFilter-setLabelBackground: var(--vuuQuickFilter-setLabelBackground, rgb(220 229 241));
+}
+
+/* dark mode: a mid grey for the outline and label fill, and a lighter
+   accent, so both read against the dark input */
+[data-mode="dark"] .vuuQuickFilters,
+[data-mode="dark"] .vuuQuickFilters-overflowPanel {
+  --quickFilter-grey: var(--vuuQuickFilter-grey, rgb(60 67 78));
+  --quickFilter-accent: var(--vuuFilterBar-accent, rgb(122 156 209));
+  --quickFilter-focusFill: rgb(64 96 146);
+  --quickFilter-setBorder: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  --quickFilter-setLabelBackground: var(--vuuQuickFilter-setLabelBackground, rgb(44 60 86));
 }
 
 .vuuQuickFilters {
@@ -194,7 +207,7 @@
   /* the focused operator fills with the accent, so it is clear where
      focus is */
   .vuuColumnFilter .saltDropdown.vuuColumnFilter-operator:focus {
-    background: var(--quickFilter-accent);
+    background: var(--quickFilter-focusFill);
     color: var(--salt-content-bold-foreground);
   }
   .vuuColumnFilter .saltDropdown.vuuColumnFilter-operator:hover {

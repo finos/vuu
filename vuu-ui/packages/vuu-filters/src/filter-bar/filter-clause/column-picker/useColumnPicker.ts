@@ -5,13 +5,27 @@ import {
   useRef,
   useState,
 } from "react";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { dispatchKeyboardEvent } from "@vuu-ui/vuu-utils";
+
+/** what the user sees for a column: its label, else its name */
+export const getColumnText = ({ label, name }: ColumnDescriptor) =>
+  label ?? name;
+
+export const getColumnTextByName = (
+  columns: readonly ColumnDescriptor[],
+  columnName: string,
+) => {
+  const column = columns.find(({ name }) => name === columnName);
+  return column ? getColumnText(column) : columnName;
+};
 
 export const useColumnPicker = ({
   onSelect,
   value: valueProp,
 }: {
   onSelect: (evt: SyntheticEvent, columnName: string) => void;
+  /** the selected column name */
   value: string;
 }) => {
   const ref = useRef<HTMLDivElement>(null);

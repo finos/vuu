@@ -67,7 +67,9 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       : [valueProp as Item],
   );
   const [value, setValue] = useState(
-    valueProp === undefined ? "" : valueProp.toString(),
+    valueProp === undefined || valueProp === ""
+      ? ""
+      : itemToString(valueProp as Item),
   );
 
   const handleChange = useCallback(

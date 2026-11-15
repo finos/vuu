@@ -512,9 +512,37 @@ export const QuickFiltersThreeColumns = () => {
   );
 };
 
+/**
+ * Column labels, as a Table shows them in column headers, that differ from
+ * the column names. Filters show the labels and are built with the names.
+ */
+const INSTRUMENT_COLUMN_LABELS: Record<string, string> = {
+  bbg: "Bloomberg ID",
+  currency: "Ccy",
+  description: "Name",
+  exchange: "Venue",
+  isin: "ISIN",
+  lotSize: "Lot size",
+  ric: "RIC",
+  lastUpdated: "Last updated",
+};
+
+const useLabelledInstrumentColumns = () =>
+  useMemo<ColumnDescriptor[]>(
+    () =>
+      [...getSchema("instruments").columns, lastUpdatedColumn].map(
+        (column) => ({
+          ...column,
+          label: INSTRUMENT_COLUMN_LABELS[column.name],
+        }),
+      ),
+    [],
+  );
+
 /** tags=data-consumer */
 export const FullFilters = () => {
   const dataSource = useInstrumentsDataSource();
+  const columnDescriptors = useLabelledInstrumentColumns();
 
   return (
     <>
@@ -527,6 +555,7 @@ export const FullFilters = () => {
           QuickFilterProps={{
             quickFilterColumns: ["currency", "exchange", "lotSize"],
           }}
+          columnDescriptors={columnDescriptors}
           filterState={{
             filters: [
               { column: "currency", name: "Euro trades", op: "=", value: "EUR" },
@@ -551,6 +580,7 @@ export const FullFilters = () => {
  */
 export const FullFiltersWithContextPanel = () => {
   const dataSource = useInstrumentsDataSource();
+  const columnDescriptors = useLabelledInstrumentColumns();
   const [contextPanelProps, setContextPanelProps] = useState<
     ContextPanelProps | undefined
   >(undefined);
@@ -580,6 +610,7 @@ export const FullFiltersWithContextPanel = () => {
               QuickFilterProps={{
                 quickFilterColumns: ["currency", "exchange", "lotSize"],
               }}
+              columnDescriptors={columnDescriptors}
               filterState={{
                 filters: [
                   {

@@ -260,3 +260,53 @@ test.describe("FilterBar quick filters with a context panel", () => {
     ).toHaveCount(1);
   });
 });
+
+test.describe("FilterBar column labels", () => {
+  test("filters show column labels and are built with column names", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterBar/FullFilters");
+
+    await quickFiltersToggle(page).hover();
+    await expect(page.locator(".vuuHoverOverlay-panel")).toContainText(
+      'Ccy = "EUR"',
+    );
+    await page.mouse.move(400, 400);
+    await expect(page.locator(".vuuHoverOverlay-panel")).toBeHidden();
+
+    await toggleQuickFilters(page);
+    const venue = page.locator(
+      '.vuuQuickFilters-filter[data-field="exchange"]',
+    );
+    await expect(venue.locator(".saltFormFieldLabel")).toHaveText("Venue");
+
+    const venueInput = venue.getByRole("combobox");
+    await venueInput.focus();
+    await venueInput.press("ArrowDown");
+    await page.getByRole("option").first().click();
+
+    await expect
+      .poll(async () => (await lastAppliedFilter(page))?.[0]?.op)
+      .toBe("and");
+    const [filter] = await lastAppliedFilter(page);
+    expect(filter.filters[1].column).toBe("exchange");
+  });
+
+  test("the filter editor column picker shows column labels", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterBar/FullFilters");
+
+    await page.getByRole("button", { name: "Add filter" }).click();
+    await expect(page.getByRole("option", { name: "Venue" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "exchange" })).toHaveCount(0);
+
+    await page.keyboard.type("ven");
+    await page.keyboard.press("Enter");
+    await expect(
+      page.locator(".vuuFilterClauseColumn").getByRole("combobox"),
+    ).toHaveValue("Venue");
+  });
+});

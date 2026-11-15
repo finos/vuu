@@ -1,10 +1,14 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
+import {
+  ColumnDescriptorsByName,
+  Filter,
+  FilterClause,
+} from "@vuu-ui/vuu-filter-types";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { isBetweenFilter, isMultiClauseFilter } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
-import { getFilterAsFormattedText } from "../../filter-pill/getFilterTooltipText";
+import { getFilterClauseTextParts } from "../../filter-pill/getFilterTooltipText";
 import { FilterSummaryButton } from "../../filter-toggle-button/FilterSummaryButton";
 import { filterAsReactNode } from "../filter-pill/filterAsReactNode";
 import { getFilterLabel } from "../filter-pill/getFilterLabel";
@@ -91,7 +95,19 @@ export const FilterBarSummary = ({
   }, [onClearActiveFilters, onClearQuickFilter]);
 
   const getLabel = getFilterLabel(columnsByName);
-  const getClauseText = getFilterAsFormattedText(columnsByName);
+  const getClauseTextParts = getFilterClauseTextParts(columnsByName);
+  // the value is shown in bold
+  const getClauseText = (filter: Filter, truncated = false) => {
+    const [columnAndOp, value] = getClauseTextParts(filter as FilterClause);
+    return (
+      <>
+        {columnAndOp}
+        <span className={`${classBase}-clauseValue`}>
+          {truncated ? `${value.slice(0, -1)},...]` : value}
+        </span>
+      </>
+    );
+  };
 
   const clauseText =
     clauseCount === 0
