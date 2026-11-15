@@ -22,5 +22,5 @@ object SortDirection {
       case Ascending.external => true
       case _ => false
     }
-  
+
 }

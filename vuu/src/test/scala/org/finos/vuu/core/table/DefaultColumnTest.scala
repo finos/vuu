@@ -92,7 +92,15 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       DefaultColumn.isDefaultColumn(result.head) shouldBe false
     }
 
-  }
+    Scenario("Get default column names only") {
+      val names = DefaultColumn.getDefaultColumnNames
 
+      names.length shouldEqual 3
+      names.head shouldEqual DefaultColumn.CreatedTime.columnName
+      names(1) shouldEqual DefaultColumn.LastUpdatedTime.columnName
+      names(2) shouldEqual DefaultColumn.MSG.columnName
+    }
+
+  }
 
 }
