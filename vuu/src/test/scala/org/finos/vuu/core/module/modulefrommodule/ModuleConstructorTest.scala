@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.modulefrommodule
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.{VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
+import org.finos.vuu.core.{VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.ssl.VuuSSLByCertAndKey
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -20,22 +20,21 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       When("we create a config with modules that reference each other")
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withWsPort(8090)
           .withSsl(VuuSSLByCertAndKey("certPath", "keyPath"))
-          .withBindAddress("0.0.0.0"),
-        VuuSecurityOptions(),
-        VuuThreadingOptions()
+          .withBindAddress("0.0.0.0"))
+        .withThreadingOptions(VuuThreadingOptions()
           .withViewPortThreads(1)
-          .withTreeThreads(1)
-      ).withModule(InstrumentModule())
+          .withTreeThreads(1))
+        .withModule(InstrumentModule())
         .withModule(PriceModule())
         .withModule(JoinModule())
 
       Then("we should be able to resolve the modules as long as they are defined in order")
-      config.modules.head.tableDefContainer.getModuleCount shouldEqual(3)
+      config.modules.head.tableDefContainer.getModuleCount shouldEqual 3
     }
   }
 }

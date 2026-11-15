@@ -42,14 +42,12 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
             VuuSSLByPKCS(pkcsPath, pkcsPassword))
-          .withWsPort(wsPort),
-        VuuSecurityOptions()
-      )
+          .withWsPort(wsPort))
 
       val viewServer = VuuServer(config)
       val webSocketClient = createClient(config, viewServer)
@@ -97,15 +95,13 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
             VuuSSLByPKCS(pkcsPath, pkcsPassword))
-          .withWsPort(wsPort),
-        VuuSecurityOptions()
-      )
-
+          .withWsPort(wsPort))
+        
       val viewServer = VuuServer(config)
       val webSocketClient = createClient(config, viewServer)
       lifeCycle.start()
@@ -143,14 +139,14 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
   private def createClient(config: VuuServerConfig, viewServer: VuuServer)
                           (implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketClient = {
     val options = VuuClientOptions()
-      .withPath(config.wsOptions.uri)
-      .withPort(config.wsOptions.wsPort)
-      .withSsl(config.wsOptions.sslOptions match {
+      .withPath(config.webSocketOptions.uri)
+      .withPort(config.webSocketOptions.wsPort)
+      .withSsl(config.webSocketOptions.sslOptions match {
         case VuuSSLDisabled => VuuClientSSLDisabled
         case _ => VuuClientSSLWithPKCS(trustStorePath, trustStorePassword)
       })
-      .withCompression(config.wsOptions.compressionEnabled)
-      .withNativeTransport(config.wsOptions.nativeTransportEnabled)
+      .withCompression(config.webSocketOptions.compressionEnabled)
+      .withNativeTransport(config.webSocketOptions.nativeTransportEnabled)
     val client = new WebSocketClient(options)
     lifecycle(client).dependsOn(viewServer)
     client

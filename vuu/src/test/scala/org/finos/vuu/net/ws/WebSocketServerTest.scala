@@ -34,17 +34,15 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(VuuSSLDisabled)
-          .withWsPort(wsPort),
-        VuuSecurityOptions()
-      )
+          .withWsPort(wsPort))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -59,18 +57,16 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(VuuSSLDisabled)
           .withWsPort(wsPort)
-          .withCompression(false),
-        VuuSecurityOptions()
-      )
+          .withCompression(false))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -85,18 +81,16 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(VuuSSLDisabled)
           .withWsPort(wsPort)
-          .withNativeTransport(false),
-        VuuSecurityOptions()
-      )
+          .withNativeTransport(false))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -111,18 +105,16 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
             VuuSSLByCertAndKey(certPath, keyPath))
-          .withWsPort(wsPort),
-        VuuSecurityOptions()
-      )
+          .withWsPort(wsPort))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -137,18 +129,16 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
             VuuSSLByPKCS(pkcsPath, pkcsPassword))
-          .withWsPort(wsPort),
-        VuuSecurityOptions()
-      )
+          .withWsPort(wsPort))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -163,8 +153,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
             VuuSSLByCertAndKey(
@@ -175,13 +165,11 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
                 .withProtocols(List("TLSv1.3"))
             )
           )
-          .withWsPort(wsPort),
-        VuuSecurityOptions()
-      )
+          .withWsPort(wsPort))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -196,8 +184,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
             VuuSSLByCertAndKey(
@@ -208,13 +196,11 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
                 .withProtocols(List("TLSv1.2"))
             )
           )
-          .withWsPort(wsPort),
-        VuuSecurityOptions()
-      )
+          .withWsPort(wsPort))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -229,8 +215,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val wsPort = portCounter.getAndIncrement()
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
             VuuSSLByCertAndKey(
@@ -242,13 +228,11 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
             )
           )
           .withWsPort(wsPort)
-        .withMaxSessionsPerUser(2),
-        VuuSecurityOptions()
-      )
+          .withMaxSessionsPerUser(2))
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val token = config.securityOptions.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
       sessionId should not equal null
 
@@ -260,14 +244,14 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
   private def createClient(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketViewServerClient = {
     val viewServer = new VuuServer(config)
     val options = VuuClientOptions()
-      .withPath(config.wsOptions.uri)
-      .withPort(config.wsOptions.wsPort)
-      .withSsl(config.wsOptions.sslOptions match {
+      .withPath(config.webSocketOptions.uri)
+      .withPort(config.webSocketOptions.wsPort)
+      .withSsl(config.webSocketOptions.sslOptions match {
         case VuuSSLDisabled => VuuClientSSLDisabled
         case _ => VuuClientSSLWithPKCS(trustStorePath, trustStorePassword)
       })
-      .withCompression(config.wsOptions.compressionEnabled)
-      .withNativeTransport(config.wsOptions.nativeTransportEnabled)
+      .withCompression(config.webSocketOptions.compressionEnabled)
+      .withNativeTransport(config.webSocketOptions.nativeTransportEnabled)
     val client = new WebSocketClient(options)
     lifecycle(client).dependsOn(viewServer)
     val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client)
