@@ -25,16 +25,6 @@ export interface FilterDisplayProps extends HTMLAttributes<HTMLDivElement> {
   onDeleteFilterClause?: (columnName: string) => void;
 }
 
-const getColumnLabel = (columnName: string, columns?: ColumnDescriptor[]) => {
-  if (columns) {
-    const column = columns.find((c) => c.name === columnName);
-    if (column) {
-      return column.label ?? columnName;
-    }
-  }
-  return columnName;
-};
-
 export const FilterDisplay = forwardRef(function FilterDisplay(
   {
     allowDelete = false,
@@ -73,15 +63,13 @@ export const FilterDisplay = forwardRef(function FilterDisplay(
       ref={forwardedRef}
     >
       {filterClauseList.map(
-        ([columnName, value]) => (
+        ([columnName, columnLabel, value]) => (
           <div
             className={`${classBase}-filter-clause`}
             key={columnName}
             data-column-name={columnName}
           >
-            <span className={`${classBase}-column`}>
-              {getColumnLabel(columnName)}
-            </span>
+            <span className={`${classBase}-column`}>{columnLabel}</span>
             <span className={`${classBase}-value`}>{value}</span>
             {allowDelete ? (
               <IconButton

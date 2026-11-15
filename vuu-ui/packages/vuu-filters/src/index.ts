@@ -4,7 +4,8 @@ export {
 } from "./column-filter/ColumnFilter";
 export type { SelectableColumnFilterOp } from "./column-filter/column-filter-utils";
 export * from "./filter-bar";
-export * from "./filter-clause";
+export * from "./expando-combobox/ExpandoCombobox";
+export * from "./filter-bar/filter-clause";
 export { ExtendedSingleValueFilterClause } from "./filter-container/ExtendedSingleValueFilterClause";
 export {
   FilterContainer,
@@ -18,9 +19,9 @@ export {
   useFilterContextMenu,
 } from "./filter-context-menu/useFilterContextMenu";
 export { FilterDisplay } from "./filter-display/FilterDisplay";
-export * from "./filter-editor";
+export * from "./filter-bar/filter-editor";
 export { FilterPanel } from "./filter-panel/FilterPanel";
-export * from "./filter-pill";
+export * from "./filter-bar/filter-pill";
 export { type FilterPermissions } from "./filter-pill/FilterMenu";
 export {
   FilterPillNext,
@@ -37,9 +38,10 @@ export {
   type FilterProviderProps,
 } from "./filter-provider/FilterProvider";
 export * from "./filter-utils";
-export * from "./FilterModel";
+export { OperatorPicker } from "./operator-picker/OperatorPicker";
+export * from "./filter-bar/FilterModel";
 export * from "./inline-filter";
-export * from "./quick-filters";
+export * from "./filter-bar/quick-filters";
 export {
   FilterNamePrompt as SaveFilterConfirmPrompt,
   type FilterNamePromptProps as SaveFilterConfirmPromptProps,

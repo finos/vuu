@@ -195,7 +195,7 @@ describe("getFilterClausesForDisplay", () => {
         op: "=",
         value: "GBP",
       }),
-    ).toEqual([["currency", "GBP"]]);
+    ).toEqual([["currency", "currency", "GBP"]]);
   });
   it("takes column labels into account", () => {
     expect(
@@ -207,7 +207,7 @@ describe("getFilterClausesForDisplay", () => {
         },
         [{ name: "currency", label: "CCY" }],
       ),
-    ).toEqual([["CCY", "GBP"]]);
+    ).toEqual([["currency", "CCY", "GBP"]]);
   });
   it("handles between filters", () => {
     expect(
@@ -226,7 +226,7 @@ describe("getFilterClausesForDisplay", () => {
           },
         ],
       }),
-    ).toEqual([["price", "1000 - 2000"]]);
+    ).toEqual([["price", "price", "1000 - 2000"]]);
   });
   it("handles multi clause", () => {
     expect(
@@ -246,8 +246,8 @@ describe("getFilterClausesForDisplay", () => {
         ],
       }),
     ).toEqual([
-      ["currency", "GBP"],
-      ["exchange", "XLON/SETS"],
+      ["currency", "currency", "GBP"],
+      ["exchange", "exchange", "XLON/SETS"],
     ]);
   });
   it("handles multi clause, with between", () => {
@@ -283,9 +283,9 @@ describe("getFilterClausesForDisplay", () => {
         ],
       }),
     ).toEqual([
-      ["currency", "GBP"],
-      ["exchange", "XLON/SETS"],
-      ["price", "1000 - 2000"],
+      ["currency", "currency", "GBP"],
+      ["exchange", "exchange", "XLON/SETS"],
+      ["price", "price", "1000 - 2000"],
     ]);
   });
 

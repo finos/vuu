@@ -1,0 +1,121 @@
+.vuuFilterBarSummary {
+  --saltButton-height: var(--vuuFilterPill-height, var(--salt-size-base));
+  --saltButton-width: var(--vuuFilterPill-height, var(--salt-size-base));
+}
+
+/* the badge counts what the selected pills apply, so shares their colour */
+.vuuFilterBarSummary-badge .saltBadge-badge {
+  background: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  /* a ring in the bar colour separates the badge from the icon */
+  box-shadow: 0 0 0 1.5px var(--salt-container-secondary-background);
+  color: var(--vuuFilterBar-selectedForeground, rgb(255 255 255));
+}
+/* the bar clips its content, so the badge stays inside the bar padding */
+.vuuFilterBarSummary-badge .saltBadge-topRight {
+  right: 2px;
+  top: 0;
+  transform: translateX(50%) translateY(calc(2px - var(--salt-spacing-100)));
+}
+
+.vuuFilterBarSummary-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+  min-width: 200px;
+}
+
+.vuuFilterBarSummary-filterName {
+  align-items: center;
+  color: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  display: flex;
+  font-weight: var(--salt-text-fontWeight-strong);
+  gap: var(--salt-spacing-200);
+  justify-content: space-between;
+}
+
+/* column and operator muted, the value stands out */
+.vuuFilterBarSummary-filterClauses {
+  color: var(--salt-content-secondary-foreground);
+
+  .vuuFilterBarSummary-clauseValue {
+    color: var(--salt-content-primary-foreground);
+    font-weight: 700;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: var(--salt-spacing-300);
+  }
+}
+
+/* header, each filter and footer are separated by rules */
+.vuuFilterSummaryButton-overlay-panel.vuuFilterBarSummary-overlay {
+  --summary-divider: 1px solid var(--salt-separable-tertiary-borderColor);
+  gap: 0;
+  /* side padding here keeps the rules in line with the text */
+  padding: 0 var(--salt-spacing-200);
+
+  .vuuFilterSummaryButton-overlay-header,
+  .vuuFilterBarSummary-filter,
+  .vuuFilterSummaryButton-overlay-footer {
+    padding: var(--salt-spacing-100) 0;
+  }
+  /* a compact, borderless 20px button */
+  .vuuFilterBarSummary-filterName .saltButton {
+    --saltButton-borderRadius: 2px;
+    --saltButton-borderColor: transparent;
+    --saltButton-borderColor-hover: transparent;
+    --saltButton-borderColor-active: transparent;
+    --saltButton-height: 20px;
+    --saltButton-width: 20px;
+    --saltButton-background-hover: rgb(0 0 0 / 0.06);
+    --saltButton-background-active: rgb(0 0 0 / 0.12);
+    border-color: transparent;
+    border-radius: 2px;
+    flex: none;
+    height: 20px;
+    min-width: 0;
+    padding: 0;
+    width: 20px;
+  }
+  .vuuFilterBarSummary-filterName .saltButton:focus-visible {
+    outline: 1px dashed var(--vuuFilterBar-accent, rgb(59 91 140));
+    outline-offset: 0;
+  }
+  .vuuFilterSummaryButton-overlay-header {
+    border-bottom: var(--summary-divider);
+  }
+  .vuuFilterBarSummary-filters {
+    gap: 0;
+  }
+  .vuuFilterBarSummary-filter {
+    padding: calc(var(--salt-spacing-100) * 1.5) 0;
+  }
+  .vuuFilterBarSummary-filter + .vuuFilterBarSummary-filter {
+    border-top: var(--summary-divider);
+  }
+  .vuuFilterSummaryButton-overlay-footer {
+    border-top: var(--summary-divider);
+    display: flex;
+    justify-content: flex-end;
+  }
+  .vuuFilterSummaryButton-overlay-footer .saltButton {
+    --saltButton-height: 24px;
+    --saltButton-padding: var(--salt-spacing-100);
+    font-size: 11px;
+  }
+}
+
+/* the summary sets its own padding */
+.saltOverlayPanelContent:has(> * > .vuuFilterBarSummary-overlay),
+.saltOverlayPanelContent:has(> .vuuFilterBarSummary-overlay) {
+  padding: 0;
+}
+
+[data-mode="dark"] .vuuFilterSummaryButton-overlay-panel.vuuFilterBarSummary-overlay .vuuFilterBarSummary-filterName .saltButton {
+  --saltButton-background-hover: rgb(255 255 255 / 0.08);
+  --saltButton-background-active: rgb(255 255 255 / 0.12);
+}
+[data-mode="dark"] .vuuFilterSummaryButton-overlay-panel.vuuFilterBarSummary-overlay .vuuFilterBarSummary-filterName .saltButton:focus-visible {
+  outline-color: var(--vuuFilterBar-accent, rgb(122 156 209));
+}

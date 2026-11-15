@@ -472,7 +472,8 @@ export const getNumericFilter = (
   return { column, op, value };
 };
 
-type FilterClauseList = Array<[string, string]>;
+/** [column name, column label, value] */
+type FilterClauseList = Array<[string, string, string]>;
 
 const formatValueForDisplay = (
   value: SingleValueFilterClause["value"],
@@ -483,8 +484,9 @@ const formatValueForDisplay = (
     : value.toString();
 
 /**
- * Restructure a FilterContainerFilter into a list of [column, value] tuples
- * suitable for display in a text based control.
+ * Restructure a FilterContainerFilter into a list of [column name, column
+ * label, value] tuples suitable for display in a text based control. The
+ * label is the column label if it has one, otherwise the column name.
  */
 export const getFilterClausesForDisplay = (
   filter?: FilterContainerFilter,
@@ -497,9 +499,9 @@ export const getFilterClausesForDisplay = (
     const column = columns.find((c) => c.name === filter.column);
     if (column) {
       const { name, label = name } = column;
-      clauses.push([label, formatValueForDisplay(filter.value, column)]);
+      clauses.push([name, label, formatValueForDisplay(filter.value, column)]);
     } else {
-      clauses.push([filter.column, filter.value.toString()]);
+      clauses.push([filter.column, filter.column, filter.value.toString()]);
     }
   } else if (isBetweenFilter(filter)) {
     const [f1, f2] = filter.filters;
@@ -507,11 +509,12 @@ export const getFilterClausesForDisplay = (
     if (column) {
       const { name, label = name } = column;
       clauses.push([
+        name,
         label,
         `${formatValueForDisplay(f1.value, column)} - ${formatValueForDisplay(f2.value, column)}`,
       ]);
     } else {
-      clauses.push([f1.column, `${f1.value} - ${f2.value}`]);
+      clauses.push([f1.column, f1.column, `${f1.value} - ${f2.value}`]);
     }
   } else if (isAndFilter(filter)) {
     filter.filters.forEach((f) =>

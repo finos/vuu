@@ -1,0 +1,28 @@
+.vuuFilterClauseCombinator.saltButton {
+  /* the editor sets the accent, light or dark */
+  --combinator-accent: var(--editor-accent, rgb(59 91 140));
+  --combinator-tint: var(--editor-tint, rgb(59 91 140 / 0.1));
+  --saltButton-height: calc(var(--salt-spacing-400));
+  --saltButton-background: transparent;
+  --saltButton-background-hover: var(--combinator-tint);
+  --saltButton-background-active: var(--combinator-tint);
+  --saltButton-borderColor: transparent;
+  --saltButton-borderColor-hover: transparent;
+  --saltButton-borderColor-active: transparent;
+  --saltButton-borderRadius: 2px;
+  --saltButton-text-color: var(--combinator-accent);
+  --saltButton-text-color-hover: var(--combinator-accent);
+  --saltButton-text-color-active: var(--combinator-accent);
+  font-size: 9px;
+  font-weight: var(--salt-text-fontWeight-strong);
+  letter-spacing: 0.06em;
+  padding: 0 4px;
+}
+.vuuFilterClauseCombinator.saltButton:focus {
+  --saltButton-background: var(--combinator-accent);
+  --saltButton-background-hover: var(--combinator-accent);
+  --saltButton-background-active: var(--combinator-accent);
+  --saltButton-text-color: var(--editor-accent-foreground, rgb(255 255 255));
+  --saltButton-text-color-hover: var(--editor-accent-foreground, rgb(255 255 255));
+  --saltButton-text-color-active: var(--editor-accent-foreground, rgb(255 255 255));
+}

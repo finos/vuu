@@ -2,6 +2,7 @@ import { VirtualElement } from "@floating-ui/dom";
 import { Menu, MenuPanel, MenuProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import { MenuActionHandler } from "./ContextMenuProvider";
 import {
   ContextMenuItemDescriptor,
@@ -12,6 +13,7 @@ import contextMenuCss from "./ContextMenu.css";
 
 export interface ContextMenuProps
   extends Pick<MenuProps, "open" | "onOpenChange"> {
+  className?: string;
   menuHandler: MenuActionHandler;
   menuItemDescriptors: ContextMenuItemDescriptor[];
   x: number;
@@ -19,6 +21,7 @@ export interface ContextMenuProps
 }
 
 export const ContextMenu = ({
+  className,
   menuHandler,
   menuItemDescriptors,
   onOpenChange,
@@ -52,7 +55,7 @@ export const ContextMenu = ({
       onOpenChange={onOpenChange}
       open={open}
     >
-      <MenuPanel className="vuuContextMenuPanel">
+      <MenuPanel className={cx("vuuContextMenuPanel", className)}>
         {menuItemsFromMenuDescriptors(menuItemDescriptors, menuHandler)}
       </MenuPanel>
     </Menu>

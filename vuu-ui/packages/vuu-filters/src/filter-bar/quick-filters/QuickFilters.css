@@ -1,0 +1,349 @@
+/* Quick filters sit in the same single row as filter pills. Each column
+   filter is a compact field with its label inline, before the control.
+   The overflow panel renders outside the bar, so it gets the same tokens. */
+.vuuQuickFilters,
+.vuuQuickFilters-overflowPanel {
+  --vuu-svg-columns: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="black" stroke-width="1.5"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg>');
+  --quickFilter-height: var(--filterbar-item-height, var(--salt-size-base));
+  --quickFilter-inputWidth: var(--vuuQuickFilter-inputWidth, 40px);
+  --quickFilter-inputMaxWidth: var(--vuuQuickFilter-inputMaxWidth, 160px);
+  --quickFilter-accent: var(--vuuFilterBar-accent, rgb(59 91 140));
+  /* the fill of a focused operator, under bold foreground text */
+  --quickFilter-focusFill: rgb(59 91 140);
+  /* one grey for the outline and the label fill */
+  --quickFilter-grey: var(--vuuQuickFilter-grey, rgb(214 219 226));
+  --quickFilter-borderColor: var(--quickFilter-grey);
+  --quickFilter-labelBackground: var(--quickFilter-grey);
+  --quickFilter-setBorder: var(--vuuFilterBar-selectedBackground, rgb(143 166 200));
+  --quickFilter-setControlMinWidth: 72px;
+  --quickFilter-setLabelBackground: var(--vuuQuickFilter-setLabelBackground, rgb(220 229 241));
+}
+
+/* dark mode: a mid grey for the outline and label fill, and a lighter
+   accent, so both read against the dark input */
+[data-mode="dark"] .vuuQuickFilters,
+[data-mode="dark"] .vuuQuickFilters-overflowPanel {
+  --quickFilter-grey: var(--vuuQuickFilter-grey, rgb(60 67 78));
+  --quickFilter-accent: var(--vuuFilterBar-accent, rgb(122 156 209));
+  --quickFilter-focusFill: rgb(64 96 146);
+  --quickFilter-setBorder: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  --quickFilter-setLabelBackground: var(--vuuQuickFilter-setLabelBackground, rgb(44 60 86));
+}
+
+.vuuQuickFilters {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+}
+.vuuQuickFilters[hidden] {
+  display: none;
+}
+
+.vuuQuickFilters [data-icon="columns"] {
+  --vuu-icon-svg: var(--vuu-svg-columns);
+}
+
+.vuuQuickFilters-filters {
+  align-items: center;
+  display: flex;
+  flex: 0 1 auto;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+  overflow: hidden;
+}
+.vuuQuickFilters-filters:not(.vuuOverflowItems-measuring) > .vuuQuickFilters-filter.saltFormField[data-overflowed] {
+  display: none;
+}
+
+/* A quick filter is one outline in two sections: the label on a shaded
+   fill, then the control on white, so it is clear where to type. */
+.vuuQuickFilters-filter.saltFormField,
+.vuuQuickFilters-search.saltInput {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--quickFilter-borderColor);
+  border-radius: 3px;
+  box-sizing: border-box;
+  height: var(--quickFilter-height);
+}
+
+.vuuQuickFilters-filter.saltFormField {
+  align-items: stretch;
+  column-gap: 0;
+  display: flex;
+  flex: none;
+  overflow: hidden;
+  padding: 0;
+  width: auto;
+
+  /* qualified to outrank Salt's left label alignment */
+  > .saltFormFieldLabel.saltText {
+    align-items: center;
+    align-self: stretch;
+    background: var(--quickFilter-labelBackground);
+    color: var(--salt-content-secondary-foreground);
+    display: flex;
+    flex: none;
+    font-size: var(--salt-text-label-fontSize);
+    margin: 0;
+    padding: 0 6px;
+    white-space: nowrap;
+    width: auto;
+  }
+}
+
+/* the operator pads its own left edge, so its focus fill is not flush */
+.vuuQuickFilters-filter.saltFormField:has(.vuuColumnFilter-operator) > .saltFormFieldLabel.saltText {
+  padding-right: 2px;
+}
+
+.vuuQuickFilters-filter.saltFormField[data-set] {
+  border-color: var(--quickFilter-setBorder);
+  > .saltFormFieldLabel {
+    background: var(--quickFilter-setLabelBackground);
+    color: var(--quickFilter-accent);
+    font-weight: var(--salt-text-fontWeight-strong);
+  }
+}
+.vuuQuickFilters-search.saltInput[data-set] {
+  border-color: var(--quickFilter-setBorder);
+}
+/* Focus in a text input dashes the whole box. Focus on an operator shows
+   on the operator, the box keeps its resting border. */
+.vuuQuickFilters-filter.saltFormField:has(input:focus),
+.vuuQuickFilters-search.saltInput:focus-within {
+  --saltInput-outline: none;
+  border-color: var(--quickFilter-accent);
+  border-style: dashed;
+}
+
+/* the control section: operator (if any), input, then the clear button
+   hard right */
+.vuuQuickFilters-control {
+  align-items: center;
+  background: var(--salt-container-primary-background);
+  display: flex;
+  flex: 1 1 auto;
+  gap: 6px;
+  padding: 0 6px 0 0;
+
+  .vuuColumnFilter {
+    --saltInput-background: transparent;
+    --saltInput-height: calc(var(--quickFilter-height) - 2px);
+    --saltInput-minHeight: calc(var(--quickFilter-height) - 2px);
+    --saltPillInput-background: transparent;
+    --saltPillInput-height: calc(var(--quickFilter-height) - 2px);
+    --saltPillInput-minHeight: calc(var(--quickFilter-height) - 2px);
+    --saltDropdown-background: transparent;
+    --saltDropdown-height: calc(var(--quickFilter-height) - 2px);
+    align-self: stretch;
+    border: none;
+    gap: 0;
+    padding: 0;
+  }
+  .saltInput,
+  .saltPillInput,
+  .saltDropdown {
+    background: transparent;
+    border: none;
+    min-height: 0;
+  }
+  .saltInput,
+  .saltPillInput {
+    padding: 0 0 0 6px;
+    width: auto;
+  }
+  .saltInput-activationIndicator,
+  .saltPillInput-activationIndicator,
+  .saltDropdown-activationIndicator {
+    display: none;
+  }
+  /* the box shows text input focus, the operator fill shows operator
+     focus */
+  --saltInput-outline: none;
+  --saltPillInput-outline: none;
+  .saltDropdown:focus-visible {
+    outline: none;
+  }
+  /* no dropdown button: the value list opens on click, ArrowDown or typing */
+  .saltPillInput-endAdornmentContainer {
+    display: none;
+  }
+  /* inputs grow with their value, from a minimum width up to a limit */
+  .saltInput-input,
+  .saltPillInput-input {
+    field-sizing: content;
+    font-weight: var(--salt-text-fontWeight-strong);
+    max-width: var(--quickFilter-inputMaxWidth);
+    min-width: var(--quickFilter-inputWidth);
+    width: auto;
+  }
+  /* the operator continues the label section, qualified to outrank the
+     ColumnFilter operator styles */
+  .vuuColumnFilter .saltDropdown.vuuColumnFilter-operator {
+    --saltDropdown-minWidth: 0;
+    align-self: stretch;
+    background: var(--quickFilter-labelBackground);
+    border-radius: 0;
+    color: var(--quickFilter-accent);
+    font-weight: var(--salt-text-fontWeight-strong);
+    gap: 0;
+    height: auto;
+    min-width: 0;
+    padding: 0 4px;
+    width: auto;
+
+    /* the operator reads as text, without a toggle icon */
+    .saltIcon.saltDropdown-toggle {
+      display: none;
+    }
+  }
+  /* the label fill separates the operator from the input, qualified to
+     outrank the ColumnFilter operator separator */
+  .vuuColumnFilter.vuuColumnFilter-withOperator [data-field="operator"] {
+    border-right: none;
+  }
+  /* the focused operator fills with the accent, so it is clear where
+     focus is */
+  .vuuColumnFilter .saltDropdown.vuuColumnFilter-operator:focus {
+    background: var(--quickFilter-focusFill);
+    color: var(--salt-content-bold-foreground);
+  }
+  .vuuColumnFilter .saltDropdown.vuuColumnFilter-operator:hover {
+    color: var(--salt-content-primary-foreground);
+  }
+}
+.vuuQuickFilters-filter.saltFormField[data-set] {
+  .vuuQuickFilters-control {
+    min-width: var(--quickFilter-setControlMinWidth);
+    padding-right: 2px;
+  }
+  .vuuColumnFilter .saltDropdown.vuuColumnFilter-operator:not(:focus) {
+    background: var(--quickFilter-setLabelBackground);
+  }
+}
+
+/* hard right in the control, qualified to outrank Salt's input adornment
+   sizing */
+.vuuQuickFilters .vuuQuickFilters-clear.saltButton {
+  --saltButton-height: 16px;
+  --saltButton-width: 16px;
+  --saltButton-borderRadius: 2px;
+  border-radius: 2px;
+  flex: none;
+  height: 16px;
+  margin-left: auto;
+  min-width: 0;
+  padding: 0;
+  width: 16px;
+}
+
+.vuuQuickFilters-search.saltInput {
+  --saltInput-background: var(--salt-container-primary-background);
+  --saltInput-height: calc(var(--quickFilter-height) - 2px);
+  --saltInput-minHeight: calc(var(--quickFilter-height) - 2px);
+  flex: none;
+  min-height: 0;
+  padding: 0 2px 0 var(--salt-spacing-100);
+  width: var(--vuuQuickFilters-searchWidth, 150px);
+
+  .saltInput-activationIndicator {
+    display: none;
+  }
+  .vuuIcon {
+    --vuu-icon-color: var(--salt-content-secondary-foreground);
+  }
+}
+
+/* the "+N" button for quick filters that do not fit */
+.vuuQuickFilters-more.saltButton {
+  --saltButton-background: var(--salt-container-primary-background);
+  --saltButton-background-hover: var(--salt-container-primary-background);
+  --saltButton-background-active: var(--vuuFilterBar-tint, rgb(59 91 140 / 0.1));
+  --saltButton-borderColor-hover: var(--salt-content-secondary-foreground);
+  --saltButton-borderColor-active: var(--vuuFilterBar-selectedBackground, rgb(90 120 166));
+  --saltButton-text-color-hover: var(--salt-content-primary-foreground);
+  --saltButton-text-color-active: var(--salt-content-primary-foreground);
+  --saltButton-height: var(--quickFilter-height);
+  --saltButton-borderColor: var(--salt-separable-tertiary-borderColor);
+  --saltButton-borderStyle: solid;
+  --saltButton-borderWidth: 1px;
+  --saltButton-borderRadius: 3px;
+  padding: 0 6px;
+  flex: none;
+  font-size: 11px;
+  font-weight: var(--salt-text-fontWeight-strong);
+  gap: 4px;
+  min-width: 0;
+}
+.vuuQuickFilters-dot {
+  background: var(--quickFilter-setBorder);
+  border-radius: 50%;
+  height: 5px;
+  width: 5px;
+}
+
+/* the column chooser sits at the end of the bar */
+.vuuQuickFilters-chooseColumns.saltButton {
+  --saltButton-height: var(--quickFilter-height);
+  --saltButton-width: var(--quickFilter-height);
+  --vuuButtonIcon-color: var(--salt-content-secondary-foreground);
+  flex: none;
+  margin-left: auto;
+}
+
+/* overflowed quick filters stack, each filling the panel width */
+.vuuQuickFilters-overflowPanel .saltOverlayPanelContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  min-width: 200px;
+
+  .vuuQuickFilters-filter.saltFormField {
+    width: 100%;
+  }
+  .vuuColumnFilter,
+  .vuuQuickFilters-control .saltInput,
+  .vuuQuickFilters-control .saltPillInput {
+    flex: 1 1 auto;
+  }
+}
+
+/* the column chooser: the picker above a Reset footer. In the context
+   panel it fills the panel height, in the popover it has a fixed height. */
+.vuuQuickFilters-columnsPicker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  .vuuItemPicker {
+    flex: 1 1 auto;
+    gap: var(--salt-spacing-100);
+    min-height: 0;
+    padding: var(--salt-spacing-100) 0 0;
+  }
+}
+.vuuQuickFilters-columnsPanel .saltOverlayPanelContent {
+  padding: 0;
+  width: 260px;
+
+  .vuuItemPicker {
+    --vuuItemPicker-height: 320px;
+    flex: none;
+  }
+}
+.vuuQuickFilters-columnsFooter {
+  border-top: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
+  justify-content: flex-start;
+  padding: var(--salt-spacing-100) var(--salt-spacing-200);
+
+  .saltButton {
+    --saltButton-height: 24px;
+    --saltButton-textTransform: none;
+    font-size: 11px;
+    padding: 0 var(--salt-spacing-100);
+  }
+}

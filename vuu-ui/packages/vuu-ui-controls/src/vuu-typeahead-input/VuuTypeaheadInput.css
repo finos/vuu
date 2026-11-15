@@ -4,13 +4,18 @@
   }
 
   .saltPillInput-endAdornmentContainer {
-    padding:0;
+    padding: 0;
   }
 
   .saltButton {
     --vuuButton-borderColor: transparent;
     height: 24px;
     width: 24px;
+  }
+
+  /* the vuu triangle (:after) replaces the Salt chevron */
+  .saltButton > .saltIcon {
+    display: none;
   }
 
   .saltButton:before {
@@ -30,8 +35,7 @@
     content: "";
     background-color: var(--vuu-icon-color);
     height: var(--vuu-icon-size);
-    mask: var(--vuu-svg-triangle-right) center center/var(--vuu-icon-size)
-      var(--vuu-icon-size);
+    mask: var(--vuu-svg-triangle-right) center center / var(--vuu-icon-size) var(--vuu-icon-size);
     mask-repeat: no-repeat;
     position: absolute;
     top: 3px;
