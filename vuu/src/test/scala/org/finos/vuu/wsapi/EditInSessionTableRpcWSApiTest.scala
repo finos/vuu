@@ -426,7 +426,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         params = Map(
           "sessionType" -> "export",
           "sessionTableName" -> sessionTableName1,
-          "copyOption" -> SessionTableCopyOption.All.name
+          "copyOption" -> SessionTableCopyOption.All.external
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -451,7 +451,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         RpcNames.CreateSessionTableRpc,
         params = Map(
           "sessionType" -> "export",
-          "copyOption" -> SessionTableCopyOption.All.name
+          "copyOption" -> SessionTableCopyOption.All.external
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -477,7 +477,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         params = Map(
           "sessionType" -> "export",
           "sessionTableName" -> sessionTableName1,
-          "copyOption" -> SessionTableCopyOption.All.name
+          "copyOption" -> SessionTableCopyOption.All.external
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -507,7 +507,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         RpcNames.CreateSessionTableRpc,
         params = Map(
           "sessionType" -> "export",
-          "copyOption" -> SessionTableCopyOption.Selected.name
+          "copyOption" -> SessionTableCopyOption.Selected.external
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 

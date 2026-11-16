@@ -27,7 +27,7 @@ public class ImportRecordRpcHandler extends DefaultRpcHandlerImpl implements Imp
 
     @Override
     public RpcFunctionResult addRowWithoutVuuMsg(String rowKey, RpcParams params) {
-        String vuuAction = TableAction.ADD_ROW().value(); // example of calling TableAction in Java
+        String vuuAction = TableAction.AddRow.external(); // example of calling TableAction in Java
         return new RpcFunctionSuccess();
     }
 

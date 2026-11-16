@@ -36,8 +36,8 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       When("The NotificationModule is instantiated with additional columns and a permission function")
-      import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
       import org.finos.vuu.api.ViewPortDef
+      import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
       val module = NotificationModule(
         (table, _) => new MockProvider(table),
         (_, _) => AllowAllPermissionFilter,
@@ -65,9 +65,9 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
           "audience:String",
           "source:String",
           "priority:Int",
-          DefaultColumn.CreatedTime.name + ":EpochTimestamp",
-          DefaultColumn.LastUpdatedTime.name + ":EpochTimestamp",
-          DefaultColumn.MSG.name + ":String"
+          DefaultColumn.CreatedTime.columnName + ":EpochTimestamp",
+          DefaultColumn.LastUpdatedTime.columnName + ":EpochTimestamp",
+          DefaultColumn.MSG.columnName + ":String"
         )
       )
     }

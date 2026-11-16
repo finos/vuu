@@ -450,7 +450,7 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
       val clock = TestFriendlyClock(1000L)
       val table = setupTableWithCreationTime(List())(using clock)
       val now = clock.now()
-      val filter = PermissionFilter(DefaultColumn.CreatedTime.name, Set(now.toString))
+      val filter = PermissionFilter(DefaultColumn.CreatedTime.columnName, Set(now.toString))
 
       val result = filter.doFilter(table, table.primaryKeys, true)
 
@@ -462,7 +462,7 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
       val clock = TestFriendlyClock(1000L)
       val table = setupTableWithCreationTime(List())(using clock)
       val now = clock.now()
-      val filter = PermissionFilter(DefaultColumn.CreatedTime.name, Set(now.toString))
+      val filter = PermissionFilter(DefaultColumn.CreatedTime.columnName, Set(now.toString))
 
       val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002", "NYC-0004"))), false)
 
@@ -472,9 +472,9 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Contains filter with index") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.columnName))(using clock)
       val now = clock.now()
-      val filter = PermissionFilter(DefaultColumn.CreatedTime.name, Set(now.toString))
+      val filter = PermissionFilter(DefaultColumn.CreatedTime.columnName, Set(now.toString))
 
       val result = filter.doFilter(table, table.primaryKeys, true)
 
@@ -484,9 +484,9 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Contains filter with index, not first in chain") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.columnName))(using clock)
       val now = clock.now()
-      val filter = PermissionFilter(DefaultColumn.CreatedTime.name, Set(now.toString))
+      val filter = PermissionFilter(DefaultColumn.CreatedTime.columnName, Set(now.toString))
 
       val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002", "NYC-0004"))), false)
 

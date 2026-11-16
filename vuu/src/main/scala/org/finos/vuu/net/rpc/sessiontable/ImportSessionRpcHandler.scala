@@ -20,7 +20,7 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
     params.namedParams.get("data") match {
       case Some(data: Map[_, _]) =>
         val rowKey = (sessionTableSize + 1).toString
-        data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
+        data.asInstanceOf[Map[String, Any]].get(MSG.columnName) match {
           case Some(vuuMsg: String) if !vuuMsg.isBlank => addRowWithVuuMsg(rowKey, vuuMsg, params)
           case _ => addRowWithoutVuuMsg(rowKey, params)
         }
@@ -30,7 +30,7 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
 
   protected def addRowWithVuuMsg(rowKey: String, vuuMsg: String, params: RpcParams): RpcFunctionResult = {
     params.viewPort.table.asTable.processUpdate(
-      RowWithData(rowKey, Map(VuuRowNum -> rowKey, MSG.name -> vuuMsg))
+      RowWithData(rowKey, Map(VuuRowNum -> rowKey, MSG.columnName -> vuuMsg))
     )
     RpcFunctionSuccess(None)
   }

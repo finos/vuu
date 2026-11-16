@@ -96,7 +96,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       range = ViewPortRange(0, 100),
       columns = columns,
       filterSpec = FilterSpec(filter),
-      sort = SortSpec(List(SortDef("vuuUpdatedTimestamp", SortDirection.DESCENDING.external))))
+      sort = SortSpec(List(SortDef("vuuUpdatedTimestamp", SortDirection.Descending.external))))
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId

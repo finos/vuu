@@ -128,7 +128,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder withPrivateVisibility() {
-        return visibility(TableVisibility.PRIVATE());
+        return visibility(TableVisibility.Private);
     }
 
     /**
@@ -137,7 +137,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder withPublicVisibility() {
-        return visibility(TableVisibility.PUBLIC());
+        return visibility(TableVisibility.Public);
     }
 
     /**

@@ -1,19 +1,28 @@
 package org.finos.vuu.net.rpc.sessiontable
 
-enum SessionTableCopyOption(val name: String) {
+enum SessionTableCopyOption(val external: String) extends java.lang.Enum[SessionTableCopyOption] {
   case All extends SessionTableCopyOption("All")
   case Selected extends SessionTableCopyOption("Selected")
-  case Empty extends SessionTableCopyOption("None")
+  case Empty extends SessionTableCopyOption("Empty")
 }
 
 object SessionTableCopyOption {
 
-  def fromString(s: String): SessionTableCopyOption = {
-    SessionTableCopyOption.values.find(_.name == s).getOrElse(Empty)
+  def fromExternal(external: String): SessionTableCopyOption = {
+    external match {
+      case All.external => All
+      case Selected.external => Selected
+      case Empty.external => Empty
+      case _ => throw new IllegalArgumentException(s"Invalid SessionTableCopyOption: $external")
+    }
   }
 
-  val ALL: SessionTableCopyOption = SessionTableCopyOption.All
-  val SELECTED: SessionTableCopyOption = SessionTableCopyOption.Selected
-  val EMPTY: SessionTableCopyOption = SessionTableCopyOption.Empty
+  def isValid(external: String): Boolean =
+    external match {
+      case All.external => true
+      case Selected.external => true
+      case Empty.external => true
+      case _ => false
+    }
 
 }

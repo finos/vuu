@@ -2,6 +2,8 @@ package org.finos.vuu.module;
 
 import org.finos.toolbox.time.Clock;
 import org.finos.vuu.api.ColumnBuilder;
+import org.finos.vuu.api.SessionTableDefBuilder;
+import org.finos.vuu.api.TableDefBuilder;
 import org.finos.vuu.api.ViewPortDef;
 import org.finos.vuu.core.module.DefaultModule;
 import org.finos.vuu.core.module.ModuleFactory;
@@ -11,23 +13,21 @@ import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.DefaultColumn;
 import org.finos.vuu.core.table.TableContainer;
+import org.finos.vuu.net.SortSpecBuilder;
 import org.finos.vuu.net.rpc.AllowAllRpcPermissionChecker$;
 import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl;
 import org.finos.vuu.net.rpc.RpcHandler;
+import org.finos.vuu.net.rpc.RpcHandlerBuilder;
+import org.finos.vuu.person.auto.AutoMappedPersonProvider;
+import org.finos.vuu.person.auto.EntitySchema;
+import org.finos.vuu.person.datasource.PersonStore;
+import org.finos.vuu.person.manual.PersonProvider;
 import org.finos.vuu.person.rpc.DeleteRecordRpcHandler;
 import org.finos.vuu.person.rpc.DeleteRecordRpcHandlerIF;
 import org.finos.vuu.person.rpc.EditPersonRecordRpcHandler;
 import org.finos.vuu.person.rpc.EditRecordRpcHandler;
 import org.finos.vuu.person.rpc.ImportRecordRpcHandler;
 import org.finos.vuu.person.rpc.PersonRpcHandler;
-import org.finos.vuu.person.auto.AutoMappedPersonProvider;
-import org.finos.vuu.person.auto.EntitySchema;
-import org.finos.vuu.person.datasource.PersonStore;
-import org.finos.vuu.person.manual.PersonProvider;
-import org.finos.vuu.net.rpc.RpcHandlerBuilder;
-import org.finos.vuu.api.SessionTableDefBuilder;
-import org.finos.vuu.net.SortSpecBuilder;
-import org.finos.vuu.api.TableDefBuilder;
 
 public class JavaExampleModule extends DefaultModule {
 
@@ -45,7 +45,7 @@ public class JavaExampleModule extends DefaultModule {
                                         .addInt("account")
                                         .build())
                                 .defaultSort(new SortSpecBuilder()
-                                        .addAscending(DefaultColumn.CREATED_TIME().name())
+                                        .addAscending(DefaultColumn.CreatedTime.columnName())
                                         .build())
                                 .build(),
                         (table, vs) -> new PersonProvider(table, new PersonStore()),
@@ -63,7 +63,7 @@ public class JavaExampleModule extends DefaultModule {
                                         .addInt("account")
                                         .build())
                                 .defaultSort(new SortSpecBuilder()
-                                        .addAscending(DefaultColumn.CREATED_TIME().name())
+                                        .addAscending(DefaultColumn.CreatedTime.columnName())
                                         .build())
                                 .build(),
                         (table, vs) -> new PersonProvider(table, new PersonStore()),

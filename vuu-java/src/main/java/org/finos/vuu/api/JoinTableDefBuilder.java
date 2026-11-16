@@ -129,7 +129,7 @@ public class JoinTableDefBuilder {
      * @return this builder
      */
     public JoinTableDefBuilder withPrivateVisibility() {
-       return visibility(TableVisibility.PRIVATE());
+       return visibility(TableVisibility.Private);
     }
 
     /**
@@ -138,7 +138,7 @@ public class JoinTableDefBuilder {
      * @return this builder
      */
     public JoinTableDefBuilder withPublicVisibility() {
-        return visibility(TableVisibility.PUBLIC());
+        return visibility(TableVisibility.Public);
     }
 
     /**

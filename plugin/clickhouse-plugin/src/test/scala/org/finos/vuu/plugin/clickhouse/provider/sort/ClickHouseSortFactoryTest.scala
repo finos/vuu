@@ -51,7 +51,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
 
       Given("a SortSpec for a single column with ASCENDING direction")
       val spec = SortSpec(List(
-        SortDef("quantity", SortDirection.ASCENDING.external)
+        SortDef("quantity", SortDirection.Ascending.external)
       ))
 
       When("building the sort query string")
@@ -66,7 +66,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
 
       Given("a SortSpec for a single column with DESCENDING direction")
       val spec = SortSpec(List(
-        SortDef("orderId", SortDirection.DESCENDING.external)
+        SortDef("orderId", SortDirection.Descending.external)
       ))
 
       When("building the sort query string")
@@ -81,7 +81,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
 
       Given("a SortSpec for a single column with an invalid name")
       val spec = SortSpec(List(
-        SortDef("lolcats", SortDirection.ASCENDING.external)
+        SortDef("lolcats", SortDirection.Ascending.external)
       ))
 
       When("building the sort query string")
@@ -96,8 +96,8 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
 
       Given("a SortSpec with multiple columns spanning mixed directions")
       val spec = SortSpec(List(
-        SortDef("price", SortDirection.DESCENDING.external),
-        SortDef("counterparty", SortDirection.ASCENDING.external)
+        SortDef("price", SortDirection.Descending.external),
+        SortDef("counterparty", SortDirection.Ascending.external)
       ))
 
       When("building the sort query string")

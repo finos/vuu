@@ -42,7 +42,7 @@ class SessionTableDefBuilderTest {
         assertTrue(tableDef.options().autoSubscribe());
         assertEquals(1, tableDef.options().links().links().length());
         assertEquals(1, tableDef.options().indices().indices().length());
-        assertEquals(TableVisibility.PRIVATE(), tableDef.options().visibility());
+        assertEquals(TableVisibility.Private, tableDef.options().visibility());
         assertFalse(tableDef.options().includeDefaultColumns());
         assertTrue(tableDef.options().isEditable());
         assertNotNull(tableDef.options().permissionFunction());
@@ -63,7 +63,7 @@ class SessionTableDefBuilderTest {
         assertFalse(tableDef.options().autoSubscribe());
         assertTrue(tableDef.options().links().links().isEmpty());
         assertTrue(tableDef.options().indices().indices().isEmpty());
-        assertEquals(TableVisibility.PUBLIC(), tableDef.options().visibility());
+        assertEquals(TableVisibility.Public, tableDef.options().visibility());
         assertTrue(tableDef.options().includeDefaultColumns());
         assertFalse(tableDef.options().isEditable());
         assertNotNull(tableDef.options().permissionFunction());

@@ -4,8 +4,7 @@ import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTableDefOpt
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, DefaultColumn}
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, TableRowUpdates, UnfreezeViewPortReject, UnfreezeViewPortRequest, UnfreezeViewPortSuccess}
-import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
+import org.finos.vuu.net.{FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, TableRowUpdates, UnfreezeViewPortReject, UnfreezeViewPortRequest, UnfreezeViewPortSuccess}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
 
@@ -331,7 +330,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPortForJoinTableWithDefaultColumn(tableName: String) = {
-    createViewPortAndVerifyDataSize(tableName, moduleName, Array("Id", "Name", "Description", DefaultColumn.CreatedTime.name), 4)
+    createViewPortAndVerifyDataSize(tableName, moduleName, Array("Id", "Name", "Description", DefaultColumn.CreatedTime.columnName), 4)
   }
 
   private def createViewPort(tableName: String) = {

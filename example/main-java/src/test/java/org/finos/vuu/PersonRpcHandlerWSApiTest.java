@@ -14,7 +14,7 @@ import org.finos.vuu.net.rpc.RpcErrorResult;
 import org.finos.vuu.net.rpc.RpcNames;
 import org.finos.vuu.net.rpc.RpcSuccessResult;
 import org.finos.vuu.net.rpc.ViewPortContext;
-import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption$;
+import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption;
 import org.finos.vuu.net.ui.NoneAction$;
 import org.finos.vuu.net.ui.NotificationType;
 import org.finos.vuu.net.ui.ShowNotificationAction;
@@ -127,7 +127,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                     "createSessionTable",
                     toScala(Map.of(
                             "sessionType", "export",
-                            "copyOption", SessionTableCopyOption$.MODULE$.ALL().name()
+                            "copyOption", SessionTableCopyOption.All.external()
                     ))
             );
 
@@ -303,7 +303,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
         assertInstanceOf(ShowNotificationAction.class, responseBody.action(), "Response contains show notification action");
         var action = (ShowNotificationAction) responseBody.action();
-        assertEquals(NotificationType.ERROR(), action.notificationType());
+        assertEquals(NotificationType.Error, action.notificationType());
         assertEquals("Failed to process DoesNotExist request", action.title());
         assertEquals("Could not find handler for rpc \"DoesNotExist\"", action.message());
 
