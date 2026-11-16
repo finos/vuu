@@ -17,6 +17,7 @@ import {
 import {
   CommitHandler,
   isBetweenOperator,
+  isNumericColumn,
   isValidRange,
 } from "@vuu-ui/vuu-utils";
 import { DataItemEditControlProps } from "@vuu-ui/vuu-data-react";
@@ -26,6 +27,50 @@ import {
   normalizeColumnFilterValue,
   type SelectableColumnFilterOp,
 } from "./column-filter-utils";
+import {
+  formatNumericShorthand,
+  getNumericValueError,
+  getNumericValueHint,
+  parseNumericValue,
+} from "../filter-bar/filter-clause/value-editors/numeric-value-utils";
+
+/**
+ * Text typed into a numeric filter is parsed, so shorthand like 30bn or 1,500
+ * is committed as the number it represents. Text that is not a number is
+ * undefined, so nothing is committed.
+ */
+const toNumericCommitValue = (
+  text: string,
+  integerOnly: boolean,
+): string | undefined => {
+  if (text.trim() === "") {
+    return "";
+  }
+  const value = parseNumericValue(text, integerOnly);
+  return value === undefined ? undefined : `${value}`;
+};
+
+const toNumericCommitValues = (
+  value: ColumnFilterValue,
+  integerOnly: boolean,
+): ColumnFilterValue | undefined => {
+  if (Array.isArray(value)) {
+    const [low, high] = value.map((v) => toNumericCommitValue(v, integerOnly));
+    return low === undefined || high === undefined ? undefined : [low, high];
+  } else {
+    return toNumericCommitValue(`${value}`, integerOnly);
+  }
+};
+
+const plainNumberPattern = /^-?\d+(?:\.\d+)?$/;
+
+/** A committed numeric value, shown in shorthand e.g. 30bn */
+const formatNumericText = (text: string | number) =>
+  typeof text === "number"
+    ? formatNumericShorthand(text)
+    : plainNumberPattern.test(text)
+      ? formatNumericShorthand(Number(text))
+      : text;
 
 const injectInputProps = (
   InputProps: InputProps | undefined,
@@ -106,6 +151,13 @@ export const useColumnFilter = ({
   value: valueProp,
 }: ColumnFilterHookProps) => {
   const [isInvalid, setIsInvalid] = useState(false);
+  // numeric columns accept shorthand, e.g. 30bn
+  const isNumeric = isNumericColumn(column);
+  const integerOnly =
+    column.serverDataType === "int" || column.serverDataType === "long";
+  // which input, if any, holds text being typed. Other inputs show a
+  // committed numeric value in shorthand.
+  const [editing, setEditing] = useState<"low" | "high" | undefined>();
   const operators = useMemo(
     () =>
       showOperatorPicker
@@ -146,16 +198,24 @@ export const useColumnFilter = ({
         ? value.some((v) => v !== "")
         : value !== undefined && value !== "";
       if (hadValue) {
-        const valid = !Array.isArray(newValue) || isValidRange(newValue);
+        const commitValue = isNumeric
+          ? toNumericCommitValues(newValue, integerOnly)
+          : newValue;
+        const valid =
+          commitValue !== undefined &&
+          (!Array.isArray(commitValue) || isValidRange(commitValue));
         setIsInvalid(!valid);
         if (valid) {
-          onCommit(column, newOperator, newValue, extendedFilterOptions);
+          setEditing(undefined);
+          onCommit(column, newOperator, commitValue, extendedFilterOptions);
         }
       }
     },
     [
       column,
       extendedFilterOptions,
+      integerOnly,
+      isNumeric,
       onCommit,
       onOperatorChange,
       operator,
@@ -166,7 +226,17 @@ export const useColumnFilter = ({
   );
 
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
-    (_e, newValue = "") => {
+    (_e, typedValue = "") => {
+      let newValue = typedValue;
+      if (isNumeric) {
+        const numericValue = toNumericCommitValue(`${typedValue}`, integerOnly);
+        if (numericValue === undefined) {
+          // the inline error explains, nothing is applied
+          return;
+        }
+        newValue = numericValue;
+        setEditing(undefined);
+      }
       if (Array.isArray(value)) {
         if (isBetweenOperator(operator)) {
           const newRange: [string, string] = [`${newValue}`, value[1]];
@@ -199,12 +269,23 @@ export const useColumnFilter = ({
       onCommit,
       column,
       extendedFilterOptions,
+      integerOnly,
+      isNumeric,
       showOperatorPicker,
     ],
   );
 
   const handleRangeCommit = useCallback<CommitHandler<HTMLElement>>(
-    (_e, newValue = "") => {
+    (_e, typedValue = "") => {
+      let newValue = typedValue;
+      if (isNumeric) {
+        const numericValue = toNumericCommitValue(`${typedValue}`, integerOnly);
+        if (numericValue === undefined) {
+          return;
+        }
+        newValue = numericValue;
+        setEditing(undefined);
+      }
       if (Array.isArray(value)) {
         const [firstValue] = value as [string, string];
         const newRange: [string, string] = [value[0], `${newValue}`];
@@ -236,12 +317,22 @@ export const useColumnFilter = ({
         );
       }
     },
-    [value, setValue, onCommit, column, operator, extendedFilterOptions],
+    [
+      value,
+      setValue,
+      onCommit,
+      column,
+      operator,
+      extendedFilterOptions,
+      integerOnly,
+      isNumeric,
+    ],
   );
 
   const onChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       const { value = "" } = e.target;
+      setEditing("low");
       setValue((v) => {
         const current = showOperatorPicker
           ? normalizeColumnFilterValue(operator, v)
@@ -256,6 +347,7 @@ export const useColumnFilter = ({
   const onRangeInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       const { value = "" } = e.target;
+      setEditing("high");
       setValue((v) => {
         const current = showOperatorPicker
           ? normalizeColumnFilterValue(operator, v)
@@ -268,35 +360,79 @@ export const useColumnFilter = ({
     [setValue, onColumnRangeFilterChange, column, operator, showOperatorPicker],
   );
 
+  const lowValue = Array.isArray(value) ? value[0] : value;
+  const highValue = Array.isArray(value) ? value[1] : undefined;
+  const lowText = lowValue === undefined ? "" : `${lowValue}`;
+  const highText = highValue ?? "";
+  const errorMessage = isNumeric
+    ? getNumericValueError(lowText, integerOnly)
+    : undefined;
+  const errorMessageRange = isNumeric
+    ? getNumericValueError(highText, integerOnly)
+    : undefined;
+
   const InputProps = useMemo(
     () =>
       injectInputProps(InputPropsProp, {
         onChange,
-        value: Array.isArray(value) ? value[0] : value,
+        ...(isNumeric
+          ? {
+              title: getNumericValueHint(lowText, integerOnly),
+              value: editing === "low" ? lowText : formatNumericText(lowText),
+            }
+          : { value: lowValue }),
       }),
-    [InputPropsProp, onChange, value],
+    [
+      InputPropsProp,
+      editing,
+      integerOnly,
+      isNumeric,
+      lowText,
+      lowValue,
+      onChange,
+    ],
   );
 
   const InputPropsRange = useMemo(
     () =>
       injectInputProps(
         InputPropsProp,
-        Array.isArray(value)
+        highValue !== undefined
           ? {
               onChange: onRangeInputChange,
-              value: value[1],
+              ...(isNumeric
+                ? {
+                    title: getNumericValueHint(highValue, integerOnly),
+                    value:
+                      editing === "high"
+                        ? highValue
+                        : formatNumericText(highValue),
+                  }
+                : { value: highValue }),
             }
           : undefined,
       ),
-    [InputPropsProp, onRangeInputChange, value],
+    [
+      InputPropsProp,
+      editing,
+      highValue,
+      integerOnly,
+      isNumeric,
+      onRangeInputChange,
+    ],
   );
 
   return {
     InputProps,
     InputPropsRange,
-    isInvalid: showOperatorPicker
-      ? Array.isArray(value) && !isValidRange(value)
-      : isInvalid,
+    errorMessage,
+    errorMessageRange,
+    isInvalid:
+      errorMessage !== undefined ||
+      errorMessageRange !== undefined ||
+      (showOperatorPicker
+        ? Array.isArray(value) && !isValidRange(value)
+        : isInvalid),
     onCommit: handleCommit,
     onCommitRange: handleRangeCommit,
     operator,
