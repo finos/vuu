@@ -63,7 +63,11 @@ export const pickerColumns = traderLimitsColumns.filter(
 );
 
 /** Available in the column picker, but not shown at first. */
-const INITIALLY_HIDDEN = new Set(["vuuCreatedTimestamp", "vuuUpdatedTimestamp"]);
+const INITIALLY_HIDDEN = new Set([
+  "vuuCreatedTimestamp",
+  "vuuUpdatedTimestamp",
+  "vuuMsg",
+]);
 
 export const initialSelectedColumns = pickerColumns.filter(
   ({ name }) => !INITIALLY_HIDDEN.has(name),
