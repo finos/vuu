@@ -140,6 +140,28 @@ export abstract class VuuModule<T extends string = string>
     return undefined;
   }
 
+  /**
+   * Key for a row added without one. `tableName` is the source table,
+   * `data` the values of the new row, `key` the key the client suggested,
+   * if any (an import row suggests its row number).
+   */
+  protected createRowKey(
+    _tableName: T | undefined,
+    _data: Record<string, VuuRowDataItemType>,
+    key?: string,
+  ): string {
+    return key ?? uuid();
+  }
+
+  /** Message when an added row has the key of an existing row. */
+  protected duplicateKeyMessage(
+    _tableName: T | undefined,
+    key: string,
+    _data: Record<string, VuuRowDataItemType>,
+  ): string {
+    return `key ${key} already exists`;
+  }
+
   getTableSchema(tableName: string) {
     return (
       this.schemas[tableName as T] ?? this.#sessionTableMap[tableName]?.schema
@@ -826,8 +848,39 @@ export abstract class VuuModule<T extends string = string>
         }
       }
       const keyColumn = sessionTable.schema.key;
-      const rowKey = data[keyColumn] ?? key ?? uuid();
-      const rowData = { ...data, [keyColumn]: rowKey };
+      let rowKey =
+        data[keyColumn] ?? this.createRowKey(sourceTableName, data, key);
+      let serverMessage: string | undefined;
+      let rowData: Record<string, VuuRowDataItemType> = {
+        ...data,
+        [keyColumn]: rowKey,
+      };
+
+      const sourceTable =
+        sourceTableName === undefined
+          ? undefined
+          : this.tables[sourceTableName];
+      if (
+        sessionTable.findByKey(String(rowKey)) !== undefined ||
+        sourceTable?.findByKey(String(rowKey)) !== undefined
+      ) {
+        serverMessage = this.duplicateKeyMessage(
+          sourceTableName,
+          String(rowKey),
+          data,
+        );
+        if (sessionTable.map.vuuRowNum === undefined) {
+          return { type: "ERROR_RESULT", errorMessage: serverMessage };
+        }
+        // An import session keeps the row, flagged with vuuMsg, so the
+        // error is reported against its line in the file.
+        rowKey = uuid();
+        rowData = {
+          ...data,
+          [keyColumn]: rowKey,
+          [this.#sessionTableMessageColumn]: serverMessage,
+        };
+      }
 
       const columnMap = sessionTable.map;
       const columnCount = Object.keys(columnMap).length;
@@ -839,7 +892,13 @@ export abstract class VuuModule<T extends string = string>
         }
       }
       sessionTable.insert(row);
-      return { type: "SUCCESS_RESULT", data: { key: rowKey } };
+      return {
+        type: "SUCCESS_RESULT",
+        data:
+          serverMessage === undefined
+            ? { key: rowKey }
+            : { key: rowKey, vuuMsg: serverMessage },
+      };
     }
     return {
       type: "ERROR_RESULT",
