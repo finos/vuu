@@ -30,7 +30,20 @@ export const useTableConfig = ({
 
   const handleColumnModelChange = useCallback<ColumnsChangeHandler>(
     (columns, changeSource, changeDescriptor) => {
-      if (
+      if (changeSource === ColumnChangeSource.ColumnSet) {
+        // a different column set is shown, all columns are replaced
+        dataSource.columns = columns.map(({ name }) => name);
+        let newConfig: TableConfig | undefined = undefined;
+        setTableConfig(
+          (config) => (newConfig = { ...config, columns: columns.slice() }),
+        );
+        if (newConfig) {
+          onTableConfigChange?.(newConfig, {
+            type: "columns-replaced",
+            columns: columns.slice(),
+          });
+        }
+      } else if (
         changeSource === "column-picker" ||
         changeSource === "column-settings"
       ) {

@@ -613,6 +613,13 @@ export interface TableConfigColumnResized {
   column: ColumnDescriptor;
   width: number;
 }
+/**
+ * All columns replaced, e.g. when a different column set is shown.
+ */
+export interface TableConfigColumnsReplaced {
+  type: "columns-replaced";
+  columns: ColumnDescriptor[];
+}
 export interface TableConfigColumnsHidden {
   type: "columns-hidden";
   columns: ColumnDescriptor[];
@@ -634,6 +641,7 @@ export declare type TableConfigChangeType =
   | TableConfigColumnResized
   | TableConfigColumnPinned
   | TableConfigColumnsHidden
+  | TableConfigColumnsReplaced
   | TableConfigSettingsPanel;
 
 export declare type TableConfigChangeHandler = (

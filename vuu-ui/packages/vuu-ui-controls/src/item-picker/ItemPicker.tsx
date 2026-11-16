@@ -21,6 +21,7 @@ import {
   forwardRef,
   HTMLAttributes,
   MouseEventHandler,
+  ReactNode,
   RefCallback,
   useCallback,
   useMemo,
@@ -45,6 +46,10 @@ export interface ItemPickerProps
     ItemPickerHookProps,
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
+  /**
+   * Content shown above the search input.
+   */
+  header?: ReactNode;
   itemTypeName: ItemTypeName;
 }
 
@@ -167,6 +172,7 @@ const AvailableListItem = ({
 export const ItemPicker = forwardRef(function ItemPicker(
   {
     className,
+    header,
     itemTypeName,
     allItems,
     selectedItems,
@@ -242,6 +248,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
       className={cx(classBase, className)}
       ref={forwardedRef}
     >
+      {header}
       <form className={`${classBase}-search`} role="search">
         <Input
           startAdornment={searchIcon}

@@ -9,6 +9,7 @@ import { ColumnPickerHookProps, useColumnPicker } from "./useColumnPicker";
 
 import { ItemPicker } from "@vuu-ui/vuu-ui-controls";
 import columnPickerCss from "./ColumnPicker.css";
+import { ColumnSetHeader } from "../column-sets/ColumnSetHeader";
 
 const classBase = "vuuColumnPicker";
 export const classBaseListItem = "vuuColumnPickerListItem";
@@ -24,6 +25,7 @@ const NO_SELECTION: ColumnDescriptor[] = [] as const;
 export const ColumnPicker = forwardRef(function ColumnPicker(
   {
     columnModel,
+    columnSetModel,
     className,
     onSelectionChange,
     selected = NO_SELECTION,
@@ -54,6 +56,11 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
         [`${classBase}-withCalculated`]: oneOrMoreColumnsIsCalculated,
       })}
       allItems={allItems}
+      header={
+        columnSetModel ? (
+          <ColumnSetHeader columnSetModel={columnSetModel} />
+        ) : undefined
+      }
       selectedItems={selectedItems}
       itemTypeName="column"
       onSelectedItemsChange={handleSelectedItemsChange}

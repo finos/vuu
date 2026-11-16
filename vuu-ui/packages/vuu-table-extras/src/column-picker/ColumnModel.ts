@@ -10,6 +10,7 @@ import {
 
 export const ColumnChangeSource = {
   ColumnPicker: "column-picker",
+  ColumnSet: "column-set",
   ColumnSettings: "column-settings",
   Table: "table",
 } as const;
@@ -21,6 +22,7 @@ export const SelectedColumnChangeType = {
   ColumnRemoved: "column-removed",
   ColumnUpdated: "column-updated",
   ColumnsReordered: "columns-reordered",
+  ColumnsReplaced: "columns-replaced",
 } as const;
 export type SelectedColumnChangeType = ValueOf<typeof SelectedColumnChangeType>;
 
@@ -46,12 +48,20 @@ export interface SelectedColumnChangeColumnsReordered {
   type: Extract<SelectedColumnChangeType, "columns-reordered">;
 }
 
+/**
+ * All selected columns replaced, e.g. when a different column set is shown.
+ */
+export interface SelectedColumnChangeColumnsReplaced {
+  type: Extract<SelectedColumnChangeType, "columns-replaced">;
+}
+
 export type SelectedColumnChangeDescriptor =
   | SelectedColumnChangeCalculatedColumnAdded
   | SelectedColumnChangeColumnAdded
   | SelectedColumnChangeColumnRemoved
   | SelectedColumnChangeColumnUpdated
-  | SelectedColumnChangeColumnsReordered;
+  | SelectedColumnChangeColumnsReordered
+  | SelectedColumnChangeColumnsReplaced;
 
 export const isColumnAdded = (
   change?: SelectedColumnChangeDescriptor,
@@ -69,6 +79,11 @@ export const isColumnsReordered = (
   change?: SelectedColumnChangeDescriptor,
 ): change is SelectedColumnChangeColumnsReordered =>
   change?.type === SelectedColumnChangeType.ColumnsReordered;
+
+export const isColumnsReplaced = (
+  change?: SelectedColumnChangeDescriptor,
+): change is SelectedColumnChangeColumnsReplaced =>
+  change?.type === SelectedColumnChangeType.ColumnsReplaced;
 
 export type ColumnsChangeHandler = (
   columns: readonly ColumnDescriptor[],
@@ -206,6 +221,26 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
       throw Error(
         `[ColumnModel] removeItemFromSelectedColumns, column '${name}' not found`,
       );
+    }
+  }
+
+  /**
+   * Replace the selected columns with the named columns, in the order given.
+   * A column already selected keeps its current descriptor. Names not found
+   * in allColumns are ignored.
+   */
+  replaceSelectedColumns(columnNames: string[], source: ColumnChangeSource) {
+    const columns = columnNames
+      .map(
+        (name) =>
+          this.#selectedColumns.find((col) => col.name === name) ??
+          this.allColumns.find((col) => col.name === name),
+      )
+      .filter((col): col is ColumnDescriptor => col !== undefined);
+    if (itemsOrOrderChanged(this.#selectedColumns, columns)) {
+      this.setSelectedColumns(columns, source, {
+        type: SelectedColumnChangeType.ColumnsReplaced,
+      });
     }
   }
 
