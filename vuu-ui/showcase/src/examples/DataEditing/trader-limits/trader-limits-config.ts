@@ -57,11 +57,43 @@ export const traderLimitsColumnNames = traderLimitsColumns.map(
   ({ name }) => name,
 );
 
-export const traderLimitsTableConfig: TableConfig = {
-  columns: traderLimitsColumns,
+/** Columns the user can show or hide with the column picker. */
+export const pickerColumns = traderLimitsColumns.filter(
+  ({ name }) => name !== "limit_key",
+);
+
+/** Available in the column picker, but not shown at first. */
+const INITIALLY_HIDDEN = new Set(["vuuCreatedTimestamp", "vuuUpdatedTimestamp"]);
+
+export const initialSelectedColumns = pickerColumns.filter(
+  ({ name }) => !INITIALLY_HIDDEN.has(name),
+);
+
+/** Not shown in Edit mode, whatever the column picker selection. */
+const HIDDEN_IN_EDIT_MODE = new Set(["status", "change"]);
+
+/**
+ * Columns stay in the config and are hidden, rather than removed. In Edit
+ * mode the table builds its columns from the session schema, so a column
+ * missing from the config would be shown with default settings.
+ */
+export const getTraderLimitsTableConfig = (
+  selectedColumnNames: ReadonlySet<string>,
+  isEditMode: boolean,
+): TableConfig => ({
+  columns: traderLimitsColumns.map((column) =>
+    column.name === "limit_key"
+      ? column
+      : {
+          ...column,
+          hidden:
+            !selectedColumnNames.has(column.name) ||
+            (isEditMode && HIDDEN_IN_EDIT_MODE.has(column.name)),
+        },
+  ),
   rowSeparators: true,
   zebraStripes: true,
-};
+});
 
 /** Values the user does not enter, for new rows. */
 export const traderLimitRowDefaults = {
