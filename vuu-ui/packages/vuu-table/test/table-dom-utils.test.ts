@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getLevelUp } from "../src/table-dom-utils";
+import { getLevelUp, getNextCellPos } from "../src/table-dom-utils";
 
 // Rows are deliberately inserted out of row order, as Table renders them in
 // renderIndex (recycled key) order.
@@ -45,5 +45,25 @@ describe("getLevelUp", () => {
       [3, 3],
     ]);
     expect(getLevelUp(containerRef, [4, 2])).toEqual([4, 2]);
+  });
+});
+
+describe("getNextCellPos", () => {
+  describe("ArrowDown", () => {
+    it("moves to the next row", () => {
+      expect(getNextCellPos("ArrowDown", [2, 3], 5, 4)).toEqual([3, 3]);
+    });
+    it("moves from no row to the first data row", () => {
+      expect(getNextCellPos("ArrowDown", [-1, 3], 5, 4)).toEqual([1, 3]);
+    });
+    it("stays on the last row", () => {
+      expect(getNextCellPos("ArrowDown", [4, 3], 5, 4)).toEqual([4, 3]);
+    });
+    it("stays put when there are no rows to move to", () => {
+      expect(getNextCellPos("ArrowDown", [-1, 3], 5, 0)).toEqual([-1, 3]);
+    });
+    it("stays put when already beyond the last row", () => {
+      expect(getNextCellPos("ArrowDown", [2, 3], 5, 1)).toEqual([2, 3]);
+    });
   });
 });

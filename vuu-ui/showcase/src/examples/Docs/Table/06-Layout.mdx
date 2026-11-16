@@ -242,7 +242,7 @@ export const RowHeight = () => {
 
 ## Empty state
 
-Use `EmptyDisplay` to pass a component that is rendered when the data source has no rows. It is shown in the body of the table, below the column headers.
+Use `EmptyDisplay` to pass a component that is rendered when the data source has no rows. It takes the place of the column headers and the body. Set `showColumnHeadersWhenEmpty` to keep the column headers visible, with `EmptyDisplay` shown in the body below them.
 
 <LivePreview stacked>
   <EmptyState />

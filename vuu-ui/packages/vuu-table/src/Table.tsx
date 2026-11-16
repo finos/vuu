@@ -294,6 +294,12 @@ export interface TableProps extends Omit<
    */
   showColumnHeaders?: boolean;
   /**
+   * When there are no rows and `EmptyDisplay` is shown, show the column
+   * headers above it. By default `EmptyDisplay` replaces the headers.
+   * @default false
+   */
+  showColumnHeadersWhenEmpty?: boolean;
+  /**
    * if false, column headers will not display menu icon. If true, all available Column Menu
    * actions will be available via the menu. Alternatively, a map of specific column menu
    * permissions can be provided to allow control over which menu items are presented.
@@ -357,6 +363,7 @@ const TableCore = ({
   scrollingApiRef,
   selectionModel = "extended",
   showColumnHeaders = true,
+  showColumnHeadersWhenEmpty = false,
   showColumnHeaderMenus = true,
   showPaginationControls,
   size,
@@ -489,7 +496,13 @@ const TableCore = ({
       ) : null}
 
       {dataSource.size === 0 && EmptyDisplay ? (
-        <div className={`${classBase}-emptyDisplay`}>
+        <div
+          className={cx(`${classBase}-emptyDisplay`, {
+            [`${classBase}-emptyDisplay-belowHeaders`]:
+              showColumnHeaders && showColumnHeadersWhenEmpty,
+          })}
+          style={cssVariables}
+        >
           <EmptyDisplay />{" "}
         </div>
       ) : null}
@@ -677,6 +690,7 @@ export const Table = forwardRef(function Table(
     searchPattern = "",
     selectionModel,
     showColumnHeaders,
+    showColumnHeadersWhenEmpty,
     showColumnHeaderMenus,
     showPaginationControls,
     style: styleProp,
@@ -832,6 +846,7 @@ export const Table = forwardRef(function Table(
           lowerCaseSearchPattern={lowerCase(searchPattern)}
           selectionModel={selectionModel}
           showColumnHeaders={showColumnHeaders}
+          showColumnHeadersWhenEmpty={showColumnHeadersWhenEmpty}
           showColumnHeaderMenus={showColumnHeaderMenus}
           showPaginationControls={showPaginationControls}
           size={reduceSizeHeight(size, footerHeight)}
