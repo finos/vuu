@@ -98,7 +98,7 @@ const ColumnSetsTemplate = ({
   // The host persists column sets, e.g. in user settings
   const handleColumnSetsChange = useCallback<ColumnSetsChangeHandler>(
     (state, reason) => {
-      console.log(`[ColumnSets] ${reason}`, state);
+      console.log("[ColumnSets]", reason, state);
     },
     [],
   );

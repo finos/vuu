@@ -364,6 +364,28 @@ describe("ColumnFilter numeric shorthand", () => {
     expect(hook.current.InputPropsRange.inputProps?.value).toBe("2m");
   });
 
+  it("leaves scaled decimal columns alone, including a number type", () => {
+    const onCommit = vi.fn();
+    const weight: ColumnDescriptor = {
+      name: "weight",
+      serverDataType: "scaleddecimal8",
+      type: "number",
+    };
+    const hook = renderHook({ column: weight, onCommit, value: "0.0150" });
+    expect(hook.current.InputProps.inputProps?.value).toBe("0.0150");
+    act(() => hook.current.onCommit(event, "0.0150"));
+    expect(onCommit).toHaveBeenCalledWith(weight, "=", "0.0150", undefined);
+  });
+
+  it("keeps trailing zeros of a value with no shorthand", () => {
+    const hook = renderHook({
+      column: price,
+      onCommit: vi.fn(),
+      value: "12.50",
+    });
+    expect(hook.current.InputProps.inputProps?.value).toBe("12.50");
+  });
+
   it("leaves text columns alone", () => {
     const onCommit = vi.fn();
     const name: ColumnDescriptor = { name: "name", serverDataType: "string" };

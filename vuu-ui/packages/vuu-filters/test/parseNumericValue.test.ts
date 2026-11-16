@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatNumericHint,
+  formatNumericText,
   formatNumericShorthand,
   parseNumericValue,
 } from "../src/filter-bar/filter-clause/value-editors/numeric-value-utils";
@@ -144,5 +145,16 @@ describe("formatNumericHint", () => {
   it("shows the value with thousands separators", () => {
     expect(formatNumericHint(30_000_000_000)).toEqual("= 30,000,000,000");
     expect(formatNumericHint(-1234.5)).toEqual("= -1,234.5");
+  });
+});
+
+describe("formatNumericText", () => {
+  it("replaces a plain number with shorthand only where a suffix is used", () => {
+    expect(formatNumericText("30000000000")).toEqual("30bn");
+    expect(formatNumericText("1250000")).toEqual("1.25m");
+    expect(formatNumericText("12.50")).toEqual("12.50");
+    expect(formatNumericText("0.0150")).toEqual("0.0150");
+    expect(formatNumericText("1234")).toEqual("1234");
+    expect(formatNumericText("abc")).toEqual("abc");
   });
 });

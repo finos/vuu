@@ -17,7 +17,7 @@ import {
 import {
   CommitHandler,
   isBetweenOperator,
-  isNumericColumn,
+  isTemporalColumn,
   isValidRange,
 } from "@vuu-ui/vuu-utils";
 import { DataItemEditControlProps } from "@vuu-ui/vuu-data-react";
@@ -28,7 +28,7 @@ import {
   type SelectableColumnFilterOp,
 } from "./column-filter-utils";
 import {
-  formatNumericShorthand,
+  formatNumericText,
   getNumericValueError,
   getNumericValueHint,
   parseNumericValue,
@@ -61,16 +61,6 @@ const toNumericCommitValues = (
     return toNumericCommitValue(`${value}`, integerOnly);
   }
 };
-
-const plainNumberPattern = /^-?\d+(?:\.\d+)?$/;
-
-/** A committed numeric value, shown in shorthand e.g. 30bn */
-const formatNumericText = (text: string | number) =>
-  typeof text === "number"
-    ? formatNumericShorthand(text)
-    : plainNumberPattern.test(text)
-      ? formatNumericShorthand(Number(text))
-      : text;
 
 const injectInputProps = (
   InputProps: InputProps | undefined,
@@ -152,7 +142,13 @@ export const useColumnFilter = ({
 }: ColumnFilterHookProps) => {
   const [isInvalid, setIsInvalid] = useState(false);
   // numeric columns accept shorthand, e.g. 30bn
-  const isNumeric = isNumericColumn(column);
+  // int, long and double columns. Scaled decimal values are decimal strings,
+  // kept as entered.
+  const isNumeric =
+    !isTemporalColumn(column) &&
+    (column.serverDataType === "int" ||
+      column.serverDataType === "long" ||
+      column.serverDataType === "double");
   const integerOnly =
     column.serverDataType === "int" || column.serverDataType === "long";
   // which input, if any, holds text being typed. Other inputs show a

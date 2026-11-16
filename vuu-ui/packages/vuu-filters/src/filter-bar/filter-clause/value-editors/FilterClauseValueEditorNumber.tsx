@@ -60,7 +60,6 @@ export const FilterClauseValueEditorNumber = forwardRef(
       (text: string) => {
         const numericValue = parseNumericValue(text, integerOnly);
         if (numericValue !== undefined) {
-          setValue(formatNumericShorthand(numericValue));
           onChangeValue(numericValue);
         }
       },

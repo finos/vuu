@@ -102,6 +102,23 @@ export const formatNumericShorthand = (value: number): string => {
     : plain;
 };
 
+const plainNumberPattern = /^[+-]?\d+(?:\.\d+)?$/;
+
+/**
+ * A committed numeric value, as text to show. A plain number is replaced by
+ * its shorthand where that uses a suffix, e.g. '30000000000' is '30bn'.
+ * Otherwise the text is unchanged, so '12.50' keeps its trailing zero.
+ */
+export const formatNumericText = (text: string): string => {
+  if (plainNumberPattern.test(text.trim())) {
+    const shorthand = formatNumericShorthand(Number(text));
+    if (/[a-z]$/.test(shorthand)) {
+      return shorthand;
+    }
+  }
+  return text;
+};
+
 /**
  * The value with thousands separators, as a hint of how typed text has
  * been read, e.g. '= 30,000,000,000'.
