@@ -1,8 +1,20 @@
 export {
   DataEditingProvider,
+  useDataEditing,
+  useDataEditingControl,
+  useDataEditingEditor,
+  useDataEditingMode,
   useEditSession,
   useTableEditSession,
+  type DataEditingEditor,
+  type DataEditingEditorHookProps,
+  type DataEditingMode,
+  type DataEditingModeProviderProps,
+  type DataEditingProviderProps,
+  type DataEditingSessionProviderProps,
+  type DataEditingState,
 } from "./DataEditingProvider";
+export { EditModeToggle, type EditModeToggleProps } from "./EditModeToggle";
 export {
   DirectEditSession,
   type DirectEditSessionConstructorProps,
