@@ -10,7 +10,12 @@ import {
   useState,
 } from "react";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
-import { parseNumericValue } from "./numeric-value-utils";
+import {
+  formatNumericShorthand,
+  getNumericValueError,
+  getNumericValueHint,
+  parseNumericValue,
+} from "./numeric-value-utils";
 
 export interface FilterClauseNumericValueEditorProps
   extends FilterClauseValueEditor,
@@ -35,11 +40,10 @@ export const FilterClauseValueEditorNumber = forwardRef(
     const integerOnly =
       column.serverDataType === "int" || column.serverDataType === "long";
     const [value, setValue] = useState<string>(
-      isValidNumber(valueProp) ? valueProp.toString() : "",
+      isValidNumber(valueProp) ? formatNumericShorthand(valueProp) : "",
     );
-    const isInvalid =
-      value.trim() !== "" &&
-      parseNumericValue(value, integerOnly) === undefined;
+    const errorMessage = getNumericValueError(value, integerOnly);
+    const hint = getNumericValueHint(value, integerOnly);
 
     // A valid number makes the clause valid as soon as it is typed, so Save
     // is enabled. It is committed on Enter, Tab or blur.
@@ -82,16 +86,10 @@ export const FilterClauseValueEditorNumber = forwardRef(
 
     return (
       <ExpandoInput
-        inputProps={inputProps}
+        inputProps={{ ...inputProps, title: hint }}
         className={className}
         data-field={dataField}
-        errorMessage={
-          isInvalid
-            ? integerOnly
-              ? "Enter a whole number"
-              : "Enter a number"
-            : undefined
-        }
+        errorMessage={errorMessage}
         onChange={handleChange}
         onCommit={handleCommit}
         onKeyDown={handleKeyDown}

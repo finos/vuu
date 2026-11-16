@@ -9,6 +9,7 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
+  DataSourceFilter,
   DeleteRowMode,
   OptimizeStrategy,
   ServerAPI,
@@ -40,6 +41,7 @@ import {
   combineFilters,
   constrainRange,
   debounce,
+  getDataSourceFilterColumnNames,
   isConfigChanged,
   isRpcSuccess,
   isSelectSuccessWithRowCount,
@@ -61,20 +63,26 @@ type RangeRequest = (range: VuuRange) => void;
 const { info, infoEnabled } = logger("VuuDataSource");
 
 /**
- * Autosubscribe columns are always included in a subscription.
- * The same columns may or may not be included in subscription
- * requested by client and client may change column list over
- * lifetime of dataSource. Always make sure we include the
- * autosubscription columns, but never repeat them
+ * Autosubscribe columns, and the columns referenced by the filter and base
+ * filter, are always included in a subscription. The same columns may or may
+ * not be included in the columns requested by client and client may change
+ * column list over lifetime of dataSource. Always make sure we include these
+ * columns, after the requested columns, but never repeat them.
  */
-const combineColumnsWithAutosubscribeColumns = (
-  columns: string[],
+const getSubscribedColumns = (
+  requestedColumns: string[],
   autosubscribeColumns: string[] = [],
+  filterSpec?: DataSourceFilter,
+  baseFilterSpec?: DataSourceFilter,
 ) => {
-  if (autosubscribeColumns.length === 0) {
-    return columns;
+  const additionalColumns = autosubscribeColumns.concat(
+    getDataSourceFilterColumnNames(baseFilterSpec),
+    getDataSourceFilterColumnNames(filterSpec),
+  );
+  if (additionalColumns.length === 0) {
+    return requestedColumns;
   } else {
-    return Array.from(new Set([...columns, ...autosubscribeColumns]));
+    return Array.from(new Set([...requestedColumns, ...additionalColumns]));
   }
 };
 
@@ -87,6 +95,11 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   rangeRequest: RangeRequest;
 
   #autosubscribeColumns: string[] = [];
+  /**
+   * The columns requested by the client. The subscribed columns, returned by
+   * the columns getter, also include autosubscribe and filter columns.
+   */
+  #requestedColumns: string[] = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #maxRangeEnd = Number.MAX_SAFE_INTEGER;
@@ -112,12 +125,15 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   }: DataSourceConstructorProps) {
     super({
       ...props,
-      columns: autosubscribeColumns
-        ? combineColumnsWithAutosubscribeColumns(
-            columns ?? [],
-            autosubscribeColumns,
-          )
-        : columns,
+      columns:
+        columns || autosubscribeColumns || props.filterSpec
+          ? getSubscribedColumns(
+              columns ?? [],
+              autosubscribeColumns,
+              props.filterSpec,
+              props.baseFilterSpec,
+            )
+          : columns,
     });
 
     const { bufferSize = 100, table, visualLink } = props;
@@ -137,6 +153,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     if (autosubscribeColumns) {
       this.#autosubscribeColumns = autosubscribeColumns;
     }
+    this.#requestedColumns = columns ?? [];
   }
 
   async subscribe(
@@ -144,16 +161,19 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     callback: DataSourceSubscribeCallback,
   ) {
     // super.subscribe(subscribeProps, this.handleMessageFromServer);
+    if (subscribeProps.columns) {
+      this.#requestedColumns = subscribeProps.columns;
+    }
     super.subscribe(
-      subscribeProps.columns && this.#autosubscribeColumns.length
-        ? {
-            ...subscribeProps,
-            columns: combineColumnsWithAutosubscribeColumns(
-              subscribeProps.columns,
-              this.#autosubscribeColumns,
-            ),
-          }
-        : subscribeProps,
+      {
+        ...subscribeProps,
+        columns: getSubscribedColumns(
+          this.#requestedColumns,
+          this.#autosubscribeColumns,
+          subscribeProps.filterSpec ?? this.filter,
+          subscribeProps.baseFilterSpec ?? this.baseFilter,
+        ),
+      },
       callback,
     );
     // biome-ignore lint/suspicious/noAssignInExpressions: <ignore>
@@ -455,11 +475,15 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     return super.columns;
   }
 
+  /**
+   * The subscribed columns: the columns requested by the client, plus any
+   * autosubscribe columns and columns referenced by the filter which the
+   * client has not requested. A Table renders the columns in its own config,
+   * so these additional columns are never displayed.
+   */
   set columns(columns: string[]) {
-    super.columns = combineColumnsWithAutosubscribeColumns(
-      columns,
-      this.#autosubscribeColumns,
-    );
+    // the config setter separates the requested columns
+    super.columns = columns;
   }
 
   get tableSchema() {
@@ -552,14 +576,19 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
-    const nextConfig = this.#autosubscribeColumns.length
-      ? {
-          ...config,
-          columns: combineColumnsWithAutosubscribeColumns(
-            config.columns,
-            this.#autosubscribeColumns,
-          ),
-        }
+    // Columns unchanged from the subscribed columns, e.g when only the
+    // filter is changing, leave the requested columns as they are.
+    if (itemsOrOrderChanged(this.columns, config.columns)) {
+      this.#requestedColumns = config.columns;
+    }
+    const columns = getSubscribedColumns(
+      this.#requestedColumns,
+      this.#autosubscribeColumns,
+      config.filterSpec,
+      config.baseFilterSpec,
+    );
+    const nextConfig = itemsOrOrderChanged(columns, config.columns)
+      ? { ...config, columns }
       : config;
     const { noChanges } = isConfigChanged(this.config, nextConfig);
     if (!noChanges) {
@@ -719,7 +748,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode: 'all-rows',
+        editSessionMode: "all-rows",
       },
     });
 

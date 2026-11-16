@@ -2,13 +2,16 @@ import { useContextPanel, useHideContextPanel } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useEffect, useRef } from "react";
 import { ColumnPicker } from "./ColumnPicker";
 import { ColumnModel } from "./ColumnModel";
+import type { ColumnSetModel } from "../column-sets/ColumnSetModel";
 
 export interface TableColumnPickerHookProps {
   columnModel: ColumnModel;
+  columnSetModel?: ColumnSetModel;
 }
 
 export const useTableColumnPicker = ({
   columnModel,
+  columnSetModel,
 }: TableColumnPickerHookProps) => {
   const showContextPanel = useContextPanel();
   const hideContextPanel = useHideContextPanel();
@@ -17,9 +20,15 @@ export const useTableColumnPicker = ({
   const showColumnPicker = useCallback(
     (title = "Column Picker") => {
       contextPanelShowing.current = true;
-      showContextPanel(<ColumnPicker columnModel={columnModel} />, title);
+      showContextPanel(
+        <ColumnPicker
+          columnModel={columnModel}
+          columnSetModel={columnSetModel}
+        />,
+        title,
+      );
     },
-    [columnModel, showContextPanel],
+    [columnModel, columnSetModel, showContextPanel],
   );
 
   // TODO what's this for ?

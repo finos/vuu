@@ -11,11 +11,15 @@ export const ColumnPickerAction = ({
   "aria-label": ariaLabel = "Show column picker",
   appearance = "transparent",
   columnModel,
+  columnSetModel,
   icon = "settings",
   sentiment = "neutral",
   ...IconButtonProps
 }: ColumnPickerActionProps) => {
-  const { showColumnPicker } = useTableColumnPicker({ columnModel });
+  const { showColumnPicker } = useTableColumnPicker({
+    columnModel,
+    columnSetModel,
+  });
 
   const handleClick = useCallback(() => {
     showColumnPicker();

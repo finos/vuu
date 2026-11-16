@@ -3,6 +3,7 @@ import { ItemDescriptor } from "@vuu-ui/vuu-ui-controls";
 import { isCalculatedColumn } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ColumnChangeSource, ColumnModel } from "./ColumnModel";
+import type { ColumnSetModel } from "../column-sets/ColumnSetModel";
 
 export type ColumnSelectionModel = Extract<
   TableSelectionModel,
@@ -13,6 +14,12 @@ const SOURCE = ColumnChangeSource.ColumnPicker;
 
 export interface ColumnPickerHookProps {
   columnModel: ColumnModel;
+  /**
+   * When provided, the picker shows the active column set, with actions to
+   * save, rename, revert and delete column sets. Edits in the picker are
+   * saved to the active set.
+   */
+  columnSetModel?: ColumnSetModel;
 }
 
 export const useColumnPicker = ({

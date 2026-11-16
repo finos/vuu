@@ -17,6 +17,7 @@ export {
   isColumnAdded,
   isColumnRemoved,
   isColumnsReordered,
+  isColumnsReplaced,
   SelectedColumnChangeType,
   type ColumnEvents,
   type ColumnsChangeHandler,
@@ -26,6 +27,7 @@ export {
   type ColumnPickerProps,
 } from "./column-picker/ColumnPicker";
 export { ColumnPickerAction } from "./column-picker/ColumnPickerAction";
+export * from "./column-sets";
 export { useTableColumnPicker } from "./column-picker/useTableColumnPicker";
 export { ColumnSettingsPanel } from "./column-settings-panel/ColumnSettingsPanel";
 export { useColumnSettings } from "./column-settings-panel/useColumnSettings";

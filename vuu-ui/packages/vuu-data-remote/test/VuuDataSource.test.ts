@@ -108,7 +108,7 @@ describe("VuuDataSource", () => {
         table: { module: "SIMUL", table: "instruments" },
       });
 
-      expect(dataSource.columns).toEqual(columns);
+      expect(dataSource.columns).toEqual(["col1", "col2", "ccy"]);
       expect(dataSource.filter).toEqual(filterSpec);
       expect(dataSource.sort).toEqual(sort);
     });
@@ -172,7 +172,7 @@ describe("VuuDataSource", () => {
         {
           aggregations,
           bufferSize: 200,
-          columns,
+          columns: ["test", "ccy"],
           filterSpec: {
             ...filterSpec,
             filterStruct: {
@@ -234,7 +234,7 @@ describe("VuuDataSource", () => {
         {
           aggregations,
           bufferSize: 100,
-          columns: columns2,
+          columns: ["test", "ccy"],
           filterSpec: {
             ...filter2,
             filterStruct: {
@@ -360,7 +360,7 @@ describe("VuuDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          columns: [],
+          columns: ["exchange"],
           filterSpec: {
             filter: 'exchange="SETS"',
             filterStruct: {
@@ -388,7 +388,7 @@ describe("VuuDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          columns: [],
+          columns: ["exchange"],
           filterSpec: {
             filter: 'exchange="SETS"',
             filterStruct: {
@@ -496,7 +496,7 @@ describe("VuuDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          columns: [],
+          columns: ["ccy"],
           filterSpec: {
             filter: 'ccy = "EUR"',
             filterStruct: {
@@ -532,7 +532,7 @@ describe("VuuDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          columns: [],
+          columns: ["ccy", "exchange"],
           filterSpec: {
             filter: 'exchange starts "X" and ccy = "EUR"',
             filterStruct: {
@@ -570,7 +570,7 @@ describe("VuuDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          columns: [],
+          columns: ["ccy"],
           filterSpec: {
             filter: 'ccy = "GBP"',
             filterStruct: { column: "ccy", op: "=", value: "GBP" },
@@ -778,6 +778,142 @@ describe("VuuDataSource", () => {
       expect(dataSource.config.columns).toEqual(["col1", "col3", "col4"]);
     });
   });
+
+  describe("filter columns", () => {
+    const callback = () => undefined;
+    const subscribedColumns = async () => {
+      const serverAPI = await ConnectionManager.serverAPI;
+      const [[{ columns }]] = (
+        serverAPI.subscribe as unknown as {
+          mock: { calls: [[{ columns: string[] }]] };
+        }
+      ).mock.calls.slice(-1) as [[{ columns: string[] }]];
+      return columns;
+    };
+
+    it("subscribes to columns referenced by the filter but not requested", async () => {
+      const dataSource = new VuuDataSource({
+        columns: ["ric", "description"],
+        filterSpec: { filter: 'marketCap > 30000000000 and ccy = "EUR"' },
+        table,
+      });
+      await dataSource.subscribe({}, callback);
+      expect(await subscribedColumns()).toEqual([
+        "ric",
+        "description",
+        "marketCap",
+        "ccy",
+      ]);
+    });
+
+    it("does not repeat filter columns that are requested", async () => {
+      const dataSource = new VuuDataSource({
+        columns: ["ric", "ccy"],
+        filterSpec: { filter: 'ccy = "EUR"' },
+        table,
+      });
+      await dataSource.subscribe({}, callback);
+      expect(await subscribedColumns()).toEqual(["ric", "ccy"]);
+    });
+
+    it("subscribes to filter and base filter columns passed to subscribe", async () => {
+      const dataSource = new VuuDataSource({ columns: ["ric"], table });
+      await dataSource.subscribe(
+        {
+          baseFilterSpec: { filter: 'exchange = "XLON"' },
+          filterSpec: { filter: "price > 100" },
+        },
+        callback,
+      );
+      expect(await subscribedColumns()).toEqual(["ric", "exchange", "price"]);
+    });
+
+    it("adds a filter column when filter is set, removes it when filter is cleared", async () => {
+      const dataSource = new VuuDataSource({
+        columns: ["ric", "description"],
+        table,
+        viewport: "vp1",
+      });
+      await dataSource.subscribe({}, callback);
+      const serverAPI = await ConnectionManager.serverAPI;
+      const { send } = serverAPI;
+      send["mockClear"]();
+
+      dataSource.setFilter({ column: "marketCap", op: ">", value: 30e9 });
+      expect(dataSource.columns).toEqual(["ric", "description", "marketCap"]);
+      expect(send).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          type: "config",
+          config: expect.objectContaining({
+            columns: ["ric", "description", "marketCap"],
+            filterSpec: expect.objectContaining({
+              filter: "marketCap > 30000000000",
+            }),
+          }),
+        }),
+      );
+
+      dataSource.setFilter({ column: "pe", op: "<", value: 20 });
+      expect(dataSource.columns).toEqual(["ric", "description", "pe"]);
+
+      dataSource.clearFilter();
+      expect(dataSource.columns).toEqual(["ric", "description"]);
+      expect(send).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          type: "config",
+          config: expect.objectContaining({
+            columns: ["ric", "description"],
+          }),
+        }),
+      );
+    });
+
+    it("keeps a filter column subscribed when requested, after filter is cleared", async () => {
+      const dataSource = new VuuDataSource({
+        columns: ["ric"],
+        filterSpec: { filter: "marketCap > 1000" },
+        table,
+      });
+      expect(dataSource.columns).toEqual(["ric", "marketCap"]);
+      // e.g. switching to a column set that shows the filter column
+      dataSource.columns = ["ric", "marketCap", "pe"];
+      dataSource.clearFilter();
+      expect(dataSource.columns).toEqual(["ric", "marketCap", "pe"]);
+    });
+
+    it("keeps filter columns subscribed when requested columns change", async () => {
+      const dataSource = new VuuDataSource({
+        columns: ["ric", "description"],
+        filterSpec: { filter: "marketCap > 1000" },
+        table,
+      });
+      dataSource.columns = ["ric"];
+      expect(dataSource.columns).toEqual(["ric", "marketCap"]);
+      // removing the filter column itself, as a column picker would
+      dataSource.columns = dataSource.columns.filter(
+        (name) => name !== "marketCap",
+      );
+      expect(dataSource.columns).toEqual(["ric", "marketCap"]);
+    });
+
+    it("does not drop autosubscribe columns when a filter column is removed", async () => {
+      const dataSource = new VuuDataSource({
+        autosubscribeColumns: ["ccy"],
+        columns: ["ric"],
+        filterSpec: { filter: 'ccy = "EUR" and price > 10' },
+        table,
+      });
+      expect(dataSource.columns).toEqual(["ric", "ccy", "price"]);
+      dataSource.clearFilter();
+      expect(dataSource.columns).toEqual(["ric", "ccy"]);
+    });
+
+    it("includes filter columns in config columns", async () => {
+      const dataSource = new VuuDataSource({ columns: ["ric"], table });
+      dataSource.filter = { filter: "price > 10" };
+      expect(dataSource.config.columns).toEqual(["ric", "price"]);
+    });
+  });
 });
 
 describe("VuuDataSource createSessionDataSource session config", () => {
@@ -872,7 +1008,10 @@ describe("VuuDataSource createSessionDataSource session config", () => {
   it("unsubscribes a session datasource when subscribe-failed is received from the server, but leaves permanent datasources subscribed", async () => {
     const { rpcCall } = await ConnectionManager.serverAPI;
     vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
-    const dataSource = await subscribedDataSource({ table, viewport: "vp-source" });
+    const dataSource = await subscribedDataSource({
+      table,
+      viewport: "vp-source",
+    });
     const session = await dataSource.createSessionDataSource("All", "edit");
     const sessionCallback = vi.fn();
     await session?.subscribe({}, sessionCallback);
@@ -906,4 +1045,3 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     expect(onSourceUnsubscribed).not.toHaveBeenCalled();
   });
 });
-

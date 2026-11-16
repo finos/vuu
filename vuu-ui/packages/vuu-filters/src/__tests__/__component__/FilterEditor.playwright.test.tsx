@@ -607,7 +607,8 @@ test.describe("FilterEditor", () => {
       page,
     }) => {
       await mount("Filters/FilterBar/FilterEditor/EditNumericFilter");
-      await expect(page.getByRole("textbox")).toHaveValue("1000");
+      // shown as the shortest exact shorthand
+      await expect(page.getByRole("textbox")).toHaveValue("1k");
       await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
     });
 

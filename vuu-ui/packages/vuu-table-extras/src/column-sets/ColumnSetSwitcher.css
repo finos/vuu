@@ -1,0 +1,42 @@
+.vuuColumnSetSwitcher {
+  --vuuColumnSetSwitcher-active-background: #5a78a6;
+  align-items: center;
+  display: flex;
+  flex: 0 1 auto;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+
+  .vuuColumnSetSwitcher-label {
+    color: var(--salt-content-secondary-foreground);
+    flex: none;
+    font-size: var(--salt-text-label-fontSize);
+    font-weight: var(--salt-text-label-fontWeight-strong);
+    white-space: nowrap;
+  }
+
+  /* specific enough to override the selected style of the vuu theme */
+  .vuuColumnSetSwitcher-segments.saltToggleButtonGroup.saltToggleButtonGroup-horizontal {
+    min-width: 0;
+    overflow: hidden;
+
+    .saltToggleButton {
+      font-weight: var(--salt-text-fontWeight);
+      text-transform: none;
+      white-space: nowrap;
+    }
+
+    .saltToggleButton.saltToggleButton-neutral.saltToggleButton-solid[aria-checked="true"] {
+      background: var(--vuuColumnSetSwitcher-active-background);
+      border-color: var(--vuuColumnSetSwitcher-active-background);
+      color: #fff;
+      font-weight: var(--salt-text-fontWeight-strong);
+    }
+  }
+
+  .vuuColumnSetSwitcher-dropdown {
+    flex: 0 1 auto;
+    font-weight: var(--salt-text-fontWeight-strong);
+    min-width: 100px;
+    width: 160px;
+  }
+}

@@ -1,0 +1,45 @@
+.vuuColumnSetHeader {
+  border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-75);
+  padding: 0 var(--salt-spacing-200) var(--salt-spacing-150) 0;
+
+  .vuuColumnSetHeader-label {
+    color: var(--salt-content-secondary-foreground);
+    font-size: var(--salt-text-label-fontSize);
+    font-weight: var(--salt-text-label-fontWeight-strong);
+  }
+
+  .vuuColumnSetHeader-line {
+    align-items: center;
+    display: flex;
+    gap: var(--salt-spacing-75);
+  }
+
+  .vuuColumnSetHeader-name {
+    flex: 1 1 auto;
+    font-weight: var(--salt-text-fontWeight-strong);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .vuuColumnSetHeader-unnamed {
+    color: var(--salt-content-secondary-foreground);
+    font-weight: var(--salt-text-fontWeight);
+  }
+
+  .vuuColumnSetHeader-buttons {
+    display: flex;
+    gap: var(--salt-spacing-75);
+    justify-content: flex-end;
+  }
+}
+
+.vuuColumnSetHeader-menu {
+  .vuuColumnSetHeader-delete {
+    color: var(--salt-status-error-foreground-informative);
+  }
+}

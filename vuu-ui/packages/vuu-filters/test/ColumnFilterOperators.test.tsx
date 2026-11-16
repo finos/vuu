@@ -1,4 +1,9 @@
-import { act, createElement, type SyntheticEvent } from "react";
+import {
+  act,
+  type ChangeEvent,
+  createElement,
+  type SyntheticEvent,
+} from "react";
 import { createRoot } from "react-dom/client";
 import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -276,5 +281,117 @@ describe("ColumnFilter operator state", () => {
     hook.render({ ...props, operator: "=" });
     expect(hook.current.isInvalid).toBe(false);
     expect(hook.current.InputProps.inputProps?.value).toBe("12:00:00");
+  });
+});
+
+describe("ColumnFilter numeric shorthand", () => {
+  const marketCap: ColumnDescriptor = {
+    name: "marketCap",
+    serverDataType: "long",
+  };
+  const changeEvent = (value: string) =>
+    ({ target: { value } }) as unknown as ChangeEvent<HTMLInputElement>;
+
+  it("commits the number a shorthand represents, then shows the shorthand", () => {
+    const onCommit = vi.fn();
+    const hook = renderHook({ column: marketCap, onCommit });
+    act(() =>
+      hook.current.InputProps.inputProps?.onChange?.(changeEvent("30 bn")),
+    );
+    expect(hook.current.InputProps.inputProps?.value).toBe("30 bn");
+    expect(hook.current.InputProps.inputProps?.title).toBe("= 30,000,000,000");
+    act(() => hook.current.onCommit(event, "30 bn"));
+    expect(onCommit).toHaveBeenCalledWith(
+      marketCap,
+      "=",
+      "30000000000",
+      undefined,
+    );
+    expect(hook.current.InputProps.inputProps?.value).toBe("30bn");
+    expect(hook.current.errorMessage).toBeUndefined();
+  });
+
+  it("shows an error and commits nothing for text that is not a number", () => {
+    const onCommit = vi.fn();
+    const hook = renderHook({ column: marketCap, onCommit });
+    act(() =>
+      hook.current.InputProps.inputProps?.onChange?.(changeEvent("30x")),
+    );
+    act(() => hook.current.onCommit(event, "30x"));
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(hook.current.errorMessage).toBe("Use a number with k, m, bn or tn");
+    expect(hook.current.isInvalid).toBe(true);
+    expect(hook.current.InputProps.inputProps?.value).toBe("30x");
+  });
+
+  it("refuses a shorthand that is not whole on an integer column", () => {
+    const onCommit = vi.fn();
+    const hook = renderHook({ column: marketCap, onCommit });
+    act(() =>
+      hook.current.InputProps.inputProps?.onChange?.(changeEvent("1.2345k")),
+    );
+    act(() => hook.current.onCommit(event, "1.2345k"));
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(hook.current.errorMessage).toBe("Enter a whole number");
+  });
+
+  it("shows a controlled numeric value in shorthand", () => {
+    const hook = renderHook({
+      column: marketCap,
+      onCommit: vi.fn(),
+      value: "1250000",
+    });
+    expect(hook.current.InputProps.inputProps?.value).toBe("1.25m");
+  });
+
+  it("parses both ends of a range", () => {
+    const onCommit = vi.fn();
+    const hook = renderHook({
+      column: price,
+      defaultValue: ["", ""],
+      operator: "between",
+      onCommit,
+    });
+    act(() => hook.current.onCommit(event, "1.5k"));
+    act(() => hook.current.onCommitRange(event, "2m"));
+    expect(onCommit).toHaveBeenLastCalledWith(
+      price,
+      "between",
+      ["1500", "2000000"],
+      undefined,
+    );
+    expect(hook.current.InputProps.inputProps?.value).toBe("1.5k");
+    expect(hook.current.InputPropsRange.inputProps?.value).toBe("2m");
+  });
+
+  it("leaves scaled decimal columns alone, including a number type", () => {
+    const onCommit = vi.fn();
+    const weight: ColumnDescriptor = {
+      name: "weight",
+      serverDataType: "scaleddecimal8",
+      type: "number",
+    };
+    const hook = renderHook({ column: weight, onCommit, value: "0.0150" });
+    expect(hook.current.InputProps.inputProps?.value).toBe("0.0150");
+    act(() => hook.current.onCommit(event, "0.0150"));
+    expect(onCommit).toHaveBeenCalledWith(weight, "=", "0.0150", undefined);
+  });
+
+  it("keeps trailing zeros of a value with no shorthand", () => {
+    const hook = renderHook({
+      column: price,
+      onCommit: vi.fn(),
+      value: "12.50",
+    });
+    expect(hook.current.InputProps.inputProps?.value).toBe("12.50");
+  });
+
+  it("leaves text columns alone", () => {
+    const onCommit = vi.fn();
+    const name: ColumnDescriptor = { name: "name", serverDataType: "string" };
+    const hook = renderHook({ column: name, onCommit });
+    act(() => hook.current.onCommit(event, "5k"));
+    expect(onCommit).toHaveBeenCalledWith(name, "=", "5k", undefined);
+    expect(hook.current.errorMessage).toBeUndefined();
   });
 });
