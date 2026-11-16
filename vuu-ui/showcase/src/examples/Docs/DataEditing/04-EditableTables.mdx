@@ -377,7 +377,7 @@ Cancel; Done returns the form to read-only.
 | `editStrategy` | How existing rows are edited: `"inline"` (default) or `"form"`. |
 | `createStrategy` | How rows are added: `"inline"` (default with inline editing) or `"form"`. |
 | `editModel` | `"session"` (default) or `"direct"`. |
-| `mode`, `defaultMode`, `onModeChange` | `"view"`, `"edit"`, or (with a create form) `"create"`. Use `mode` with `onModeChange` to control the mode from the parent. `defaultMode` is `"edit"` for inline direct editing, otherwise `"view"`. |
+| `mode`, `defaultMode`, `onModeChange` | `"view"`, `"edit"`, or (with a create form) `"create"`. Use `mode` with `onModeChange` to control the mode from the parent. `defaultMode` is `"edit"` for inline direct editing, otherwise `"view"`. Within a `DataEditingProvider`, set these on the provider instead. |
 | `onSaved`, `onCancelled` | Called after a successful save or cancel. |
 | `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./09-ErrorHandling.mdx). |
 | `className`, `style` | For the container. |
@@ -443,7 +443,7 @@ pieces are in `@vuu-ui/vuu-table-extras`.
 | --------- | -------- | ---- |
 | `TableEditorTable` | all | The table. Fills the space left in its flex column. In session edit mode it shows the session table, with editable cells and row styling for changes. With a form, selecting a row selects it for the form. |
 | `TableEditorToolbar` | all | A row for controls. |
-| `TableEditorModeToggle` | all | View/Edit toggle. |
+| `TableEditorModeToggle` | all | View/Edit toggle. The same component as `EditModeToggle`, which can also go outside the table. |
 | `TableEditorButtons` | all | Save and Cancel (Done with direct form editing). Nothing with inline direct editing. Render inside a composed `TableEditorForm`, or a `TableEditorCreateForm` with `showButtons={false}`. |
 | `EditableTableFooter` | inline | Save/Cancel/Delete while a session is being edited; otherwise `children`, by default the row count. |
 | `EditableTableMain` | form, or create form | The column beside the side panel, holding the table and anything above or below it. |
@@ -645,6 +645,39 @@ const [mode, setMode] = useState<EditableTableMode>("view");
   {/* ... */}
 </EditableTable>;
 ```
+
+### The View/Edit toggle outside the table
+
+To put the View/Edit toggle somewhere else on the page, such as a page
+header, wrap the page in a `DataEditingProvider` and place an
+`EditModeToggle` anywhere inside it. The provider holds the mode; the
+`EditableTable` inside it uses that, rather than a mode of its own.
+
+```tsx
+import { DataEditingProvider, EditModeToggle } from "@vuu-ui/vuu-data-editing";
+
+<DataEditingProvider>
+  <PageHeader>
+    <EditModeToggle />
+  </PageHeader>
+  <EditableTable confirmCancel={confirmDiscard} dataSource={dataSource}>
+    <TableEditorTable config={config} />
+    <EditableTableFooter />
+  </EditableTable>
+</DataEditingProvider>;
+```
+
+The toggle behaves as the table's own toggle does: switching to View asks
+`confirmCancel` before discarding changes, and the toggle is disabled while a
+row is being created and, with form editing, until a row is selected. It
+works through portals too, so it can be rendered into a shell toolbar.
+
+Set `mode`, `defaultMode` and `onModeChange` on the provider, not the table.
+`useDataEditing()` returns the provider's state and actions to any component
+inside it: `mode`, `isEditing`, `canChangeMode`, `startEdit()` and
+`cancel()`. `useEditSession()` returns the table's edit session.
+
+See `EditableTable / ExternalModeToggle` in the showcase.
 
 ## Building your own editable table
 

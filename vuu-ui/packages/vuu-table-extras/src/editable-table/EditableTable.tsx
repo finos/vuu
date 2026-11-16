@@ -1,15 +1,17 @@
 import { SidePanelContent, SidePanelTitle } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import type {
-  EditableTableHookProps,
-  EditFormValidator,
+import {
+  DataEditingProvider,
+  type EditableTableHookProps,
+  type EditFormValidator,
+  useDataEditingControl,
 } from "@vuu-ui/vuu-data-editing";
 import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
 import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import type { CSSProperties, ReactNode } from "react";
+import { type CSSProperties, type ReactNode, useEffect } from "react";
 import {
   TableEditorCreateForm,
   type TableEditorCreateStrategy,
@@ -85,7 +87,8 @@ export interface EditableTableBaseProps
   dataSource: DataSource;
   /**
    * Uncontrolled initial mode. Defaults to `edit` (always editable) for
-   * inline direct editing, otherwise to `view`.
+   * inline direct editing, otherwise to `view`. Within a
+   * `DataEditingProvider`, set the mode props on the provider instead.
    */
   defaultMode?: EditableTableMode;
   /** Controlled mode. Pair with `onModeChange`. */
@@ -446,23 +449,37 @@ export const EditableTable = (props: EditableTableProps) => {
   } = props as AllProps;
 
   const isInlineDirect = editStrategy === "inline" && editModel === "direct";
+  const hasDataEditingProvider = useDataEditingControl() !== undefined;
+  const hasModeProps =
+    defaultMode !== undefined ||
+    mode !== undefined ||
+    onModeChange !== undefined;
 
-  return (
+  useEffect(() => {
+    if (
+      process.env.NODE_ENV !== "production" &&
+      hasDataEditingProvider &&
+      hasModeProps
+    ) {
+      console.warn(
+        "[EditableTable] mode, defaultMode and onModeChange are ignored within a DataEditingProvider, set them on the provider",
+      );
+    }
+  }, [hasDataEditingProvider, hasModeProps]);
+
+  const content = (
     <TableEditorProvider
       allowDelete={allowDelete}
       confirmCancel={confirmCancel}
       copyOption={copyOption}
       createStrategy={createStrategy}
       dataSource={dataSource}
-      defaultMode={defaultMode ?? (isInlineDirect ? "edit" : "view")}
       deleteMode={deleteMode}
       editModel={editModel}
       editSessionApi={editSessionApi}
       editStrategy={editStrategy}
-      mode={mode}
       onCancelled={onCancelled}
       onError={onError}
-      onModeChange={onModeChange}
       onSaved={onSaved}
       panelVisibility={panelVisibility}
       rowDefaults={rowDefaults}
@@ -482,5 +499,17 @@ export const EditableTable = (props: EditableTableProps) => {
           ))}
       </Container>
     </TableEditorProvider>
+  );
+
+  return hasDataEditingProvider ? (
+    content
+  ) : (
+    <DataEditingProvider
+      defaultMode={defaultMode ?? (isInlineDirect ? "edit" : "view")}
+      mode={mode}
+      onModeChange={onModeChange}
+    >
+      {content}
+    </DataEditingProvider>
   );
 };

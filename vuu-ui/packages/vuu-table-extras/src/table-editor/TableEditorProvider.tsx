@@ -5,6 +5,8 @@ import {
   type EditableTableHookProps,
   type EditFormValues,
   getDataRowValues,
+  useDataEditingEditor,
+  useDataEditingMode,
   useEditableTable,
 } from "@vuu-ui/vuu-data-editing";
 import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
@@ -42,46 +44,19 @@ export interface TableEditorProviderProps
    */
   createStrategy?: TableEditorCreateStrategy;
   dataSource: DataSource;
-  /** Uncontrolled initial mode. @default "view" */
-  defaultMode?: TableEditorMode;
   /** @default "session" */
   editModel?: TableEditorEditModel;
   /** @default "inline" */
   editStrategy?: TableEditorEditStrategy;
-  /** Controlled mode. Pair with `onModeChange`. */
-  mode?: TableEditorMode;
   /** Called once changes have been discarded. */
   onCancelled?: () => void;
-  onModeChange?: (mode: TableEditorMode) => void;
   /** Called once changes (or a new row) have been saved. */
   onSaved?: () => void;
   /** Form editing: when the side panel is open. @default "on-select" */
   panelVisibility?: TableEditorPanelVisibility;
 }
 
-type ModeProps = Pick<
-  TableEditorProviderProps,
-  "defaultMode" | "mode" | "onModeChange"
->;
-
-const useModeState = ({
-  defaultMode = "view",
-  mode: modeProp,
-  onModeChange,
-}: ModeProps) => {
-  const [modeState, setModeState] = useState<TableEditorMode>(defaultMode);
-  const isControlled = modeProp !== undefined;
-  const setMode = useCallback(
-    (mode: TableEditorMode) => {
-      if (!isControlled) {
-        setModeState(mode);
-      }
-      onModeChange?.(mode);
-    },
-    [isControlled, onModeChange],
-  );
-  return [modeProp ?? modeState, setMode] as const;
-};
+const COMPONENT_NAME = "EditableTable";
 
 /** State shared by every variant: the table's columns and the mounted form. */
 const useFormState = () => {
@@ -182,9 +157,8 @@ const InlineSessionProvider = ({
   onError,
   onSaved,
   rowDefaults,
-  ...modeProps
 }: Omit<TableEditorProviderProps, "editModel" | "editStrategy">) => {
-  const [mode, setMode] = useModeState(modeProps);
+  const { mode, setMode } = useDataEditingMode(COMPONENT_NAME);
   // the session stays active while a new row is added to it
   const isEditing = mode !== "view";
   const { columns, formHandleRef, setColumns } = useFormState();
@@ -238,6 +212,13 @@ const InlineSessionProvider = ({
   ]);
 
   const startEdit = useCallback(() => setMode("edit"), [setMode]);
+
+  useDataEditingEditor(COMPONENT_NAME, {
+    canChangeMode: mode !== "create",
+    cancel,
+    editSession,
+    startEdit,
+  });
 
   const value = useMemo<TableEditorContextValue>(
     () => ({
@@ -310,12 +291,11 @@ const InlineDirectProvider = ({
   onError,
   onSaved,
   rowDefaults,
-  ...modeProps
 }: Omit<
   TableEditorProviderProps,
   "allowDelete" | "copyOption" | "editModel" | "editStrategy"
 >) => {
-  const [mode, setMode] = useModeState(modeProps);
+  const { mode, setMode } = useDataEditingMode(COMPONENT_NAME);
   const isEditing = mode !== "view";
   const { columns, formHandleRef, setColumns } = useFormState();
 
@@ -348,6 +328,13 @@ const InlineDirectProvider = ({
     }
   }, [confirmCancel, formHandleRef, mode, onCreateDone, setMode]);
   const startEdit = useCallback(() => setMode("edit"), [setMode]);
+
+  useDataEditingEditor(COMPONENT_NAME, {
+    canChangeMode: mode !== "create",
+    cancel,
+    editSession,
+    startEdit,
+  });
 
   const value = useMemo<TableEditorContextValue>(
     () => ({
@@ -429,12 +416,11 @@ const FormProvider = ({
   onSaved,
   panelVisibility = "on-select",
   rowDefaults,
-  ...modeProps
 }: Omit<
   TableEditorProviderProps,
   "allowDelete" | "copyOption" | "createStrategy" | "editStrategy"
 >) => {
-  const [mode, setMode] = useModeState(modeProps);
+  const { mode, setMode } = useDataEditingMode(COMPONENT_NAME);
   const [selectedRow, setSelectedRow] = useState<DataRow | undefined>();
   const [createKey, setCreateKey] = useState(0);
   const [panelOpenState, setPanelOpenState] = useState(false);
@@ -527,6 +513,13 @@ const FormProvider = ({
     onEditCancelled,
   ]);
 
+  // the form edits the selected row, through its own edit session
+  useDataEditingEditor(COMPONENT_NAME, {
+    canChangeMode: mode !== "create" && selectedRow !== undefined,
+    cancel,
+    startEdit,
+  });
+
   const value = useMemo<TableEditorContextValue>(
     () => ({
       allowDelete: false,
@@ -588,8 +581,10 @@ const FormProvider = ({
 
 /**
  * Internal: the provider behind `EditableTable`. Owns the editing state
- * shared by the `TableEditor` components: the mode (view, edit or create),
- * the edit session and, with a side panel, the selected row and the panel.
+ * shared by the `TableEditor` components: the edit session and, with a side
+ * panel, the selected row and the panel. The mode (view, edit or create) is
+ * owned by the enclosing `DataEditingProvider`, with which this registers
+ * how the table enters and leaves edit mode.
  * Lay out `TableEditorTable`, `TableEditorForm`, `TableEditorButtons` etc
  * anywhere inside it; read its state with `useTableEditor`.
  *
