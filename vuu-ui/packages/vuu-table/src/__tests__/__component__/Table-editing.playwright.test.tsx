@@ -93,6 +93,21 @@ test.describe("useEditableTable with a divergent edit table", () => {
 });
 
 test.describe("Inline add row", () => {
+  test("focuses the first editable cell on entering edit mode", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
+    await expect(bbg).toBeFocused();
+
+    await page.keyboard.type("new-bbg");
+    await expect(bbg).toHaveValue("new-bbg");
+  });
+
   test("renders insert-editable cells and blanks update-only columns", async ({
     mount,
     page,
