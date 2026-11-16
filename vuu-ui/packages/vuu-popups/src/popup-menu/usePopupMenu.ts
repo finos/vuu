@@ -34,6 +34,7 @@ export const usePopupMenu = ({
   id,
   menuActionHandler,
   menuBuilder,
+  menuClassName,
   menuLocation,
   menuOptions,
   onMenuClose,
@@ -91,7 +92,7 @@ export const usePopupMenu = ({
           setMenuOpen(true);
 
           showContextMenu(e, menuLocation, menuOptions, {
-            // className: menuClassName,
+            className: menuClassName,
             // id: `${id}-menu`,
             onOpenChange: handleMenuOpenChange,
             x,
@@ -109,6 +110,7 @@ export const usePopupMenu = ({
       menuLocation,
       menuOptions,
       handleMenuOpenChange,
+      menuClassName,
     ],
   );
 

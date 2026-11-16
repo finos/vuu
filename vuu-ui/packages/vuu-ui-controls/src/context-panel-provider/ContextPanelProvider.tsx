@@ -32,6 +32,12 @@ export type ShowContextPanel = (
 
 export interface ContextPanelProps {
   hideContextPanel?: () => void;
+  /**
+   * True when a context panel can show element content: a showContextPanel
+   * implementation is provided, or the layout has a context panel. Without
+   * one, only registered component types (strings) can be shown, in a Dialog.
+   */
+  isContextPanelAvailable?: boolean;
   showContextPanel: ShowContextPanel;
 }
 
@@ -54,6 +60,7 @@ export const ContextPanelProvider = ({
 }) => {
   const {
     hideContextPanel: inheritedHideContextPanel,
+    isContextPanelAvailable: inheritedIsContextPanelAvailable = false,
     showContextPanel: inheritedShowContextPanel,
   } = useContext(ContextPanelContext);
   const { showComponentInContextPanel } = useLayoutOperation();
@@ -66,6 +73,10 @@ export const ContextPanelProvider = ({
   }, []);
 
   const hideContextPanel = hideContextPanelProp ?? inheritedHideContextPanel;
+  const isContextPanelAvailable =
+    showContextPanelProp !== undefined ||
+    inheritedIsContextPanelAvailable ||
+    !isUnconfiguredProperty(showComponentInContextPanel);
 
   const showContextPanel = useCallback<ShowContextPanel>(
     (elementOrComponentType, title, props) => {
@@ -83,12 +94,12 @@ export const ContextPanelProvider = ({
         const component =
           typeof elementOrComponentType === "string"
             ? layoutFromJson(
-              {
-                type: elementOrComponentType,
-                props,
-              } as LayoutJSON,
-              "",
-            )
+                {
+                  type: elementOrComponentType,
+                  props,
+                } as LayoutJSON,
+                "",
+              )
             : elementOrComponentType;
 
         setDialog(
@@ -116,7 +127,7 @@ export const ContextPanelProvider = ({
 
   return (
     <ContextPanelContext.Provider
-      value={{ hideContextPanel, showContextPanel }}
+      value={{ hideContextPanel, isContextPanelAvailable, showContextPanel }}
     >
       {children}
       {dialog}
@@ -132,4 +143,12 @@ export function useContextPanel() {
 export function useHideContextPanel() {
   const { hideContextPanel } = useContext(ContextPanelContext);
   return hideContextPanel;
+}
+
+/**
+ * True if showContextPanel can show element content in a context panel.
+ */
+export function useContextPanelAvailable() {
+  const { isContextPanelAvailable = false } = useContext(ContextPanelContext);
+  return isContextPanelAvailable;
 }

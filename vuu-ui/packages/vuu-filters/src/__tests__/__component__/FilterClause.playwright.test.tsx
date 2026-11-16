@@ -7,7 +7,7 @@ test.describe("FilterClause", () => {
     mount,
     page,
   }) => {
-    const component = await mount("Filters/FilterClause/NewFilterClause");
+    const component = await mount("Filters/FilterBar/FilterClause/NewFilterClause");
 
     await expect(page.getByTestId("filterclause")).toContainClass(
       "vuuFilterClause",
@@ -22,7 +22,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      "Filters/FilterClause/PartialFilterClauseColumnAndOperator",
+      "Filters/FilterBar/FilterClause/PartialFilterClauseColumnAndOperator",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(3);
@@ -37,7 +37,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      "Filters/FilterClause/NewFilterClauseWithDropdownOpenOnFocusDisabled",
+      "Filters/FilterBar/FilterClause/NewFilterClauseWithDropdownOpenOnFocusDisabled",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(1);
@@ -52,7 +52,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      "Filters/FilterClause/FilterColumnWithDropdownOpenOnFocusDisabled",
+      "Filters/FilterBar/FilterClause/FilterColumnWithDropdownOpenOnFocusDisabled",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(2);
@@ -67,7 +67,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      "Filters/FilterClause/FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled",
+      "Filters/FilterBar/FilterClause/FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(3);

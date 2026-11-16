@@ -1,7 +1,5 @@
 import { expect, test, type Page } from "../../../../../playwright/fixtures";
 
-
-
 const assertComboboxReady = async (page: Page) => {
   await expect(page.getByRole("combobox")).toBeFocused();
   await expect(page.getByRole("listbox")).toBeVisible();
@@ -27,7 +25,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await expect(page.getByRole("combobox")).toHaveCount(1);
     });
 
@@ -35,7 +33,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
     });
 
@@ -43,7 +41,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await expect(page.getByRole("combobox")).toBeFocused();
       await expect(page.getByRole("listbox")).toBeVisible();
     });
@@ -54,7 +52,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
           await page.getByRole("combobox").press("Enter");
           await expect(page.getByRole("listbox")).toBeVisible();
@@ -70,7 +68,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await assertComboboxReady(page);
       await selectListItem(page, "description");
       await selectListItem(page, "starts");
@@ -93,7 +91,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await selectListItem(page, "description");
         await selectListItem(page, "starts");
         const value = page.getByRole("combobox").nth(2);
@@ -108,7 +106,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await selectListItem(page, "lotSize");
 
       for (const operator of ["=", "!=", ">", ">=", "<", "<="]) {
@@ -126,7 +124,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await selectListItem(page, "lotSize");
         await selectListItem(page, ">");
         const value = page.getByRole("textbox");
@@ -143,7 +141,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount("Filters/FilterEditor/NewFilter");
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
       await selectListItem(page, "lotSize");
       await selectListItem(page, ">");
       const value = page.getByRole("textbox");
@@ -202,7 +200,7 @@ test.describe("FilterEditor", () => {
     test.describe("WHEN rendered with new FilterClauseModel", () => {
       test.describe("WHEN Enter is pressed twice to accept default selections", () => {
         test("THEN filter clause value is focused", async ({ mount, page }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
           await page.getByRole("combobox").press("Enter");
           await expect(page.getByRole("listbox")).toBeVisible();
@@ -217,7 +215,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           await page.getByRole("combobox").press("Enter");
@@ -241,7 +239,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           await page.getByRole("combobox").press("Enter");
@@ -276,7 +274,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -294,7 +292,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -317,7 +315,7 @@ test.describe("FilterEditor", () => {
 
     test.describe("WHEN second clause is completed and SAVE pressed", () => {
       test("THEN two clause filter is saved", async ({ mount, page }) => {
-        await mount("Filters/FilterEditor/NewFilter");
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -371,7 +369,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/NewFilter");
+          await mount("Filters/FilterBar/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           // accept all the default values
@@ -401,7 +399,7 @@ test.describe("FilterEditor", () => {
             mount,
             page,
           }) => {
-            await mount("Filters/FilterEditor/NewFilter");
+            await mount("Filters/FilterBar/FilterEditor/NewFilter");
             await assertComboboxReady(page);
 
             await page.getByRole("combobox").press("Enter");
@@ -437,7 +435,7 @@ test.describe("FilterEditor", () => {
             mount,
             page,
           }) => {
-            await mount("Filters/FilterEditor/NewFilter");
+            await mount("Filters/FilterBar/FilterEditor/NewFilter");
             await assertComboboxReady(page);
 
             await page.getByRole("combobox").press("Enter");
@@ -483,7 +481,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
+          await mount("Filters/FilterBar/FilterEditor/EditMultiClauseOrFilter");
 
           await expect(page.getByRole("combobox")).toHaveCount(6);
 
@@ -547,7 +545,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
+          await mount("Filters/FilterBar/FilterEditor/EditMultiClauseOrFilter");
 
           await expect(page.getByRole("combobox")).toHaveCount(6);
 
@@ -600,6 +598,311 @@ test.describe("FilterEditor", () => {
           await expect(combo0).toHaveSelection(0, 0);
         });
       });
+    });
+  });
+
+  test.describe("Numeric values", () => {
+    test("editing a numeric filter shows the existing value", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditNumericFilter");
+      await expect(page.getByRole("textbox")).toHaveValue("1000");
+      await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
+    });
+
+    test("a typed numeric value is saved without pressing Enter", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
+      await selectListItem(page, "lotSize");
+      await selectListItem(page, ">");
+      await page.getByRole("textbox").fill("1000");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeEnabled();
+      await save.click();
+
+      await expect(page.getByTestId("save-records")).toHaveValue(
+        JSON.stringify([{ column: "lotSize", op: ">", value: 1000 }]),
+      );
+    });
+
+    for (const text of ["12abc", "10.5"]) {
+      test(`'${text}' is not a valid value for an int column`, async ({
+        mount,
+        page,
+      }) => {
+        await mount("Filters/FilterBar/FilterEditor/NewFilter");
+        await selectListItem(page, "lotSize");
+        await selectListItem(page, ">");
+        const value = page.getByRole("textbox");
+        await value.fill(text);
+        await value.press("Enter");
+
+        await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
+        await expect(page.locator(".vuuExpandoInput-error")).toBeVisible();
+      });
+    }
+  });
+
+  test.describe("Column types", () => {
+    test("only columns that can be filtered are offered", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/NewFilterAllColumnTypes");
+      await assertComboboxReady(page);
+      await expect(
+        page.getByRole("option", { name: "side", exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("option", { name: "supported", exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("option", { name: "wishlist", exact: true }),
+      ).toHaveCount(0);
+    });
+  });
+
+  test.describe("Without typeahead", () => {
+    test("a text value can be entered as free text", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/NewFilterNoTypeahead");
+      await selectListItem(page, "currency");
+      await selectListItem(page, "=");
+      const value = page.getByRole("textbox");
+      await expect(value).toBeFocused();
+      await value.fill("EUR");
+      await value.press("Enter");
+
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Enter");
+      await expect(page.getByTestId("save-records")).toHaveValue(
+        JSON.stringify([{ column: "currency", op: "=", value: "EUR" }]),
+      );
+    });
+
+    test("multiple text values can be entered, comma separated", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/NewFilterNoTypeahead");
+      await selectListItem(page, "currency");
+      await selectListItem(page, "in");
+      const value = page.getByRole("textbox");
+      await value.fill("EUR, GBP");
+      await value.press("Enter");
+
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Enter");
+      await expect(page.getByTestId("save-records")).toHaveValue(
+        JSON.stringify([
+          { column: "currency", op: "in", values: ["EUR", "GBP"] },
+        ]),
+      );
+    });
+  });
+
+  test.describe("Save menu", () => {
+    test("editing an AND filter offers only AND to add a clause", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseAndFilter");
+      await expect(page.getByRole("combobox").first()).toBeFocused();
+      const save = page.getByRole("button", { name: "Save" });
+      await save.focus();
+      await save.press("ArrowDown");
+      await expect(page.getByRole("menuitem", { name: "OR" })).toHaveCount(0);
+      await page.getByRole("menuitem", { name: "AND" }).press("Enter");
+
+      await expect(page.locator(".vuuFilterClause")).toHaveCount(3);
+      await expect(page.locator(".vuuFilterClauseCombinator")).toHaveCount(2);
+    });
+
+    test("editing an OR filter does not offer AND", async ({ mount, page }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseOrFilter");
+      await expect(page.getByRole("combobox").first()).toBeFocused();
+      const save = page.getByRole("button", { name: "Save" });
+      await save.focus();
+      await save.press("ArrowDown");
+      await expect(page.getByRole("menuitem", { name: "OR" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "AND" })).toHaveCount(0);
+    });
+  });
+
+  test.describe("Shift+Tab", () => {
+    test("moves back through value, operator and column, then out of the editor", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/NewFilter");
+      // Shift+Tab out of the editor needs somewhere to go: Firefox keeps
+      // focus in place when Shift+Tab would leave the page.
+      await page.evaluate(() => {
+        const input = document.createElement("input");
+        input.setAttribute("aria-label", "Before");
+        document.body.prepend(input);
+      });
+      await assertComboboxReady(page);
+      await page.getByRole("combobox").press("Enter");
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await page.getByRole("combobox").nth(1).press("Enter");
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await page.getByRole("combobox").nth(2).press("Enter");
+
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Shift+Tab");
+      const [column, operator, value] = [0, 1, 2].map((i) =>
+        page.getByRole("combobox").nth(i),
+      );
+      await expect(value).toBeFocused();
+      await value.press("Shift+Tab");
+      await expect(operator).toBeFocused();
+      await operator.press("Shift+Tab");
+      await expect(column).toBeFocused();
+      await column.press("Shift+Tab");
+      await expect(page.getByRole("textbox", { name: "Before" })).toBeFocused();
+    });
+  });
+});
+
+test.describe("Value suggestions", () => {
+  test("editing a value suggests all values until text is typed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+    const value = page.getByRole("combobox").nth(2);
+    await expect(value).toHaveValue("EUR");
+    await value.click();
+
+    await expect(
+      page.getByRole("option", { name: "GBP", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("option", { name: "EUR", exact: true }),
+    ).toBeVisible();
+
+    await value.fill("G");
+    await expect(
+      page.getByRole("option", { name: "GBX", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("option", { name: "EUR", exact: true }),
+    ).toHaveCount(0);
+  });
+  test.describe("WHEN Shift+Tab moves back through a complete clause", () => {
+    test("THEN the clause values are unchanged", async ({ mount, page }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseAndFilter");
+      const comboboxes = page.getByRole("combobox");
+      await expect(comboboxes.first()).toBeFocused();
+      await comboboxes.first().press("Tab");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+
+      await save.press("Shift+Tab");
+      await expect(comboboxes.nth(5)).toBeFocused();
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await comboboxes.nth(5).press("Shift+Tab");
+      await expect(comboboxes.nth(4)).toBeFocused();
+      await expect(page.getByRole("listbox")).toBeVisible();
+      await comboboxes.nth(4).press("Shift+Tab");
+      await expect(comboboxes.nth(3)).toBeFocused();
+
+      await expect(comboboxes.nth(3)).toHaveValue("exchange");
+      await expect(comboboxes.nth(4)).toHaveValue("=");
+      await expect(comboboxes.nth(5)).toHaveValue("XLON");
+    });
+
+    test("THEN Enter on the value keeps it", async ({ mount, page }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+      const comboboxes = page.getByRole("combobox");
+      await expect(comboboxes.first()).toBeFocused();
+      await comboboxes.first().press("Tab");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Shift+Tab");
+      const value = comboboxes.nth(2);
+      await expect(value).toBeFocused();
+      await expect(
+        page.getByRole("option", { name: "GBP", exact: true }),
+      ).toBeVisible();
+      await value.press("Enter");
+      await expect(save).toBeFocused();
+      await expect(value).toHaveValue("EUR");
+    });
+  });
+
+  test.describe("WHEN the value of the first of two clauses is re-edited", () => {
+    test("THEN committing it moves focus to Save, second clause unchanged", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditMultiClauseAndFilter");
+      const comboboxes = page.getByRole("combobox");
+      await expect(comboboxes.first()).toBeFocused();
+      const firstValue = comboboxes.nth(2);
+      await expect(firstValue).toHaveValue("EUR");
+
+      await firstValue.click();
+      await page.getByRole("option", { name: "GBP", exact: true }).click();
+
+      await expect(page.getByRole("button", { name: "Save" })).toBeFocused();
+      await expect(firstValue).toHaveValue("GBP");
+      await expect(comboboxes.nth(3)).toHaveValue("exchange");
+      await expect(comboboxes.nth(5)).toHaveValue("XLON");
+    });
+  });
+
+  test.describe("WHEN navigating back through a complete clause", () => {
+    test("THEN every field lists all options, current value first", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+      const comboboxes = page.getByRole("combobox");
+      const options = page.getByRole("option");
+      await expect(comboboxes.first()).toBeFocused();
+      await comboboxes.first().press("Tab");
+      const save = page.getByRole("button", { name: "Save" });
+      await expect(save).toBeFocused();
+      await save.press("Shift+Tab");
+
+      await expect(comboboxes.nth(2)).toBeFocused();
+      await expect(options.first()).toHaveText("EUR");
+      await expect(options.filter({ hasText: "GBP" })).toHaveCount(1);
+
+      await comboboxes.nth(2).press("ArrowLeft");
+      await expect(comboboxes.nth(1)).toBeFocused();
+      await expect(options.first()).toHaveText("=");
+      await expect(options.filter({ hasText: "contains" })).toHaveCount(1);
+
+      await comboboxes.nth(1).press("ArrowLeft");
+      await expect(comboboxes.first()).toBeFocused();
+      await expect(options.first()).toHaveText("currency");
+      await expect(options.filter({ hasText: "exchange" })).toHaveCount(1);
+
+      await comboboxes.first().press("Enter");
+      await expect(comboboxes.first()).toHaveValue("currency");
+      await expect(comboboxes.nth(1)).toHaveValue("=");
+      await expect(comboboxes.nth(2)).toHaveValue("EUR");
+    });
+
+    test("THEN typing filters the options", async ({ mount, page }) => {
+      await mount("Filters/FilterBar/FilterEditor/EditSimplerFilter");
+      const comboboxes = page.getByRole("combobox");
+      const options = page.getByRole("option");
+      await expect(comboboxes.first()).toBeFocused();
+      await expect(options.filter({ hasText: "exchange" })).toHaveCount(1);
+      await comboboxes.first().fill("exc");
+      await expect(options).toHaveText(["exchange"]);
     });
   });
 });

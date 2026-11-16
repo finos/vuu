@@ -1,13 +1,11 @@
 import { Filter, FilterHandler, FilterState } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { Icon } from "@vuu-ui/vuu-ui-controls";
-import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, useMemo } from "react";
-import { CustomFilters } from "../custom-filters";
-import { QuickFilterProps, QuickFilters } from "../quick-filters";
+import { HTMLAttributes, useCallback, useState } from "react";
+import { CustomFilters } from "./custom-filters";
+import { QuickFilterProps, QuickFilters } from "./quick-filters";
 import { FilterMode, useFilterBar } from "./useFilterBar";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
@@ -21,7 +19,12 @@ export type FilterBarVariant =
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   QuickFilterProps?: Pick<
     QuickFilterProps,
-    "quickFilterColumns" | "onChangeQuickFilterColumns"
+    | "allowAddColumn"
+    | "allowFind"
+    | "defaultQuickFilterColumns"
+    | "onChangeQuickFilterColumns"
+    | "quickFilterColumns"
+    | "showFind"
   >;
   /**
    * Used to ensure we present filter editors appropriate to the data type of column.
@@ -83,76 +86,70 @@ export const FilterBar = ({
       ? "custom-filter"
       : filterModeProp;
 
-  const { filterMode, onChangeFilterMode } = useFilterBar({
+  const {
+    applyCustomFilter,
+    applyQuickFilter,
+    clearCustomFilter,
+    filterMode,
+    quickFilter,
+    quickFilterCount,
+    toggleFilterMode,
+  } = useFilterBar({
     defaultFilterMode,
     filterMode: controlledFilterMode,
+    onApplyFilter,
     onChangeFilterMode: onChangeFilterModeProp,
+    onClearFilter,
   });
 
+  // clearing quick filters from the summary starts them afresh
+  const [quickFiltersKey, setQuickFiltersKey] = useState(0);
+  const clearQuickFilter = useCallback(() => {
+    setQuickFiltersKey((key) => key + 1);
+    applyQuickFilter(undefined, 0);
+  }, [applyQuickFilter]);
+
+  const quickFiltersShown = filterMode === "quick-filter";
   const className = cx(classBase, classNameProp);
 
-  const startAdornment = useMemo(() => {
-    if (!allowQuickFilters) {
-      return <Icon name="sliders" size={16} style={{ top: 2 }} />;
-    } else {
-      return (
-        <ToggleButtonGroup
-          data-variant="secondary"
-          onChange={onChangeFilterMode}
-          value={filterMode}
-        >
-          <ToggleButton
-            className="vuuIconToggleButton"
-            key="custom-filter"
-            value="custom-filter"
-            aria-label="Custom filters"
-            tabIndex={-1}
-          >
-            <Icon name="grid" size={16} />
-          </ToggleButton>
-          <ToggleButton
-            className="vuuIconToggleButton"
-            key="quick-filter"
-            value="quick-filter"
-            aria-label="Quick filters"
-            tabIndex={-1}
-          >
-            <Icon name="tune" size={16} />
-          </ToggleButton>
-        </ToggleButtonGroup>
-      );
-    }
-  }, [allowQuickFilters, filterMode, onChangeFilterMode]);
-
+  // Both stay mounted while hidden, so neither loses its state, and the
+  // filters of both apply.
   return (
     <div
       {...htmlAttributes}
       className={cx(className, `${classBase}-${filterMode}-mode`)}
     >
-      {variant === "quick-filters-only" ? null : (
-        <div className={`${classBase}-iconContainer`}>{startAdornment}</div>
-      )}
-      {filterMode === "custom-filter" ? (
+      {allowCustomFilters ? (
         <CustomFilters
           columnDescriptors={columnDescriptors}
           defaultFilterState={defaultFilterState}
           filterState={filterState}
-          onApplyFilter={onApplyFilter}
-          onClearFilter={onClearFilter}
+          onApplyFilter={applyCustomFilter}
+          onClearFilter={clearCustomFilter}
+          onClearQuickFilter={allowQuickFilters ? clearQuickFilter : undefined}
           onFilterDeleted={onFilterDeleted}
           onFilterRenamed={onFilterRenamed}
           onFilterStateChanged={onFilterStateChanged}
+          onToggleQuickFilters={
+            allowQuickFilters ? toggleFilterMode : undefined
+          }
+          quickFilter={quickFilter}
+          quickFilterCount={quickFilterCount}
+          quickFiltersShown={quickFiltersShown}
+          showFilterSummary
           vuuTable={vuuTable}
         />
-      ) : (
+      ) : null}
+      {allowQuickFilters ? (
         <QuickFilters
           {...QuickFilterProps}
           availableColumns={columnDescriptors}
-          onApplyFilter={onApplyFilter}
-          onClearFilter={onClearFilter}
+          hidden={!quickFiltersShown}
+          key={quickFiltersKey}
+          onQuickFilterChange={applyQuickFilter}
           vuuTable={vuuTable}
         />
-      )}
+      ) : null}
     </div>
   );
 };

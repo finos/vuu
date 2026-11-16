@@ -37,6 +37,7 @@ See [Layout](./06-Layout.mdx).
 | `showColumnHeaders`   | `boolean`            | `true`         | Set to `false` to hide the column headers.                                                                                        |
 | `customHeader`        | `CustomHeader \| CustomHeader[]` |  | Components or elements rendered below the column headers. Components receive [`BaseRowProps`](#baserowprops).                    |
 | `EmptyDisplay`        | `ComponentType`      |                | Rendered in place of rows when the data source has no rows.                                                                       |
+| `showColumnHeadersWhenEmpty`| `boolean`            | `false`        | Keep the column headers visible when `EmptyDisplay` is shown, with `EmptyDisplay` below them.                                     |
 | `className`, `style`, `id` |                 |                | Applied to the outer container.                                                                                                   |
 
 Don't set `height`, `rowHeight` and `viewportRowLimit` together.

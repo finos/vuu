@@ -183,8 +183,8 @@ export function getNextCellPos(
     }
   } else if (key === "ArrowDown") {
     if (rowIdx === -1) {
-      return [1, colIdx];
-    } else if (rowIdx === maxRowIndex) {
+      return maxRowIndex >= 1 ? [1, colIdx] : [rowIdx, colIdx];
+    } else if (rowIdx >= maxRowIndex) {
       return [rowIdx, colIdx];
     } else {
       return [rowIdx + 1, colIdx];

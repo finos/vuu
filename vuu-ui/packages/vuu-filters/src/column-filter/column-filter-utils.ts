@@ -16,7 +16,7 @@ import {
 import {
   numericOperators,
   textOperators,
-} from "../filter-clause/operator-picker/operator-utils";
+} from "../operator-picker/operator-utils";
 
 export type SelectableColumnFilterOp = Exclude<ColumnFilterOp, "in">;
 

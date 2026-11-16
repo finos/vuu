@@ -283,8 +283,16 @@
   position: absolute;
 }
 
-.vuuTable-emptyDisplay ~ .vuuTable-contentContainer {
+.vuuTable-emptyDisplay:not(.vuuTable-emptyDisplay-belowHeaders)
+  ~ .vuuTable-contentContainer {
   visibility: hidden;
+}
+
+/* Above the content container, which stays visible for its column headers,
+   so the EmptyDisplay can be interacted with. */
+.vuuTable-emptyDisplay-belowHeaders {
+  inset: var(--total-header-height) 0 0 0;
+  z-index: 1;
 }
 
 .vuuRowProxy {

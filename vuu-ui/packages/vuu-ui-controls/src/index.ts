@@ -3,6 +3,7 @@ export * from "./common-hooks";
 export {
   ContextPanelProvider,
   useContextPanel,
+  useContextPanelAvailable,
   useHideContextPanel,
   type ShowContextPanel,
 } from "./context-panel-provider/ContextPanelProvider";

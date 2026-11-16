@@ -9,6 +9,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { containsPoint } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import hoverOverlayCss from "./HoverOverlay.css";
 
@@ -17,12 +18,16 @@ const classBase = "vuuHoverOverlay";
 const OPEN_DELAY = 400;
 const CLOSE_DELAY = 300;
 
-export interface HoverOverlayProps extends Pick<
-  OverlayProps,
-  "placement" | "onOpenChange"
-> {
+export interface HoverOverlayProps
+  extends Pick<OverlayProps, "placement" | "onOpenChange"> {
   children: ReactNode;
   open?: boolean;
+  /**
+   * With openOn hover, whether a click on the trigger also opens the
+   * overlay. Defaults to true. Set it to false when the trigger has its own
+   * click action, then a click closes the overlay instead.
+   */
+  openOnClick?: boolean;
   /**
    * hover (default) opens the overlay after a short delay when pointer
    * enters trigger and closes it when pointer leaves both trigger and
@@ -37,6 +42,7 @@ export const HoverOverlay = ({
   open: openProp = false,
   onOpenChange,
   openOn = "hover",
+  openOnClick = true,
   placement = "right",
   trigger,
 }: HoverOverlayProps) => {
@@ -129,6 +135,35 @@ export const HoverOverlay = ({
     }
   }, [clearHideTimer, open, openOn, startHideTimer]);
 
+  // While open, the inert trigger does not receive a click: it lands on an
+  // ancestor. When the trigger has its own click action, a click within the
+  // trigger bounds closes the overlay, then clicks the trigger element under
+  // the pointer.
+  useEffect(() => {
+    if (openOn === "hover" && !openOnClick) {
+      const doc = triggerRef.current?.ownerDocument ?? document;
+      const handleClick = ({ clientX, clientY, target }: MouseEvent) => {
+        const trigger = triggerRef.current;
+        if (
+          trigger &&
+          !trigger.contains(target as Node) &&
+          !panelRef.current?.contains(target as Node) &&
+          containsPoint(trigger, clientX, clientY)
+        ) {
+          clearShowTimer();
+          clearHideTimer();
+          flushSync(() => setOpen(false));
+          const element = doc.elementFromPoint(clientX, clientY);
+          if (element instanceof HTMLElement && trigger.contains(element)) {
+            element.click();
+          }
+        }
+      };
+      doc.addEventListener("click", handleClick, true);
+      return () => doc.removeEventListener("click", handleClick, true);
+    }
+  }, [clearHideTimer, clearShowTimer, openOn, openOnClick, setOpen]);
+
   const handleMouseEnter = useCallback(() => {
     if (!isOpen.current && showHandle.current === undefined) {
       showHandle.current = setTimeout(() => {
@@ -146,16 +181,23 @@ export const HoverOverlay = ({
   const handleClick = useCallback(() => {
     // Salt Overlay opens on click, no need to wait for open timer
     clearShowTimer();
-  }, [clearShowTimer]);
+    if (!openOnClick) {
+      clearHideTimer();
+      setOpen(false);
+    }
+  }, [clearHideTimer, clearShowTimer, openOnClick, setOpen]);
 
   // Salt Overlay requests open on click, close on Escape or click outside
   const handleOpenChange = useCallback(
     (open: boolean) => {
+      if (open && openOn === "hover" && !openOnClick) {
+        return;
+      }
       clearShowTimer();
       clearHideTimer();
       setOpen(open);
     },
-    [clearHideTimer, clearShowTimer, setOpen],
+    [clearHideTimer, clearShowTimer, openOn, openOnClick, setOpen],
   );
 
   const triggerProps =

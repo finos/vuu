@@ -6,6 +6,7 @@ import type {
 } from "@vuu-ui/vuu-filter-types";
 import {
   CSSProperties,
+  isValidElement,
   ReactElement,
   SyntheticEvent,
   useCallback,
@@ -17,7 +18,18 @@ import {
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import {
+  DataSourceProvider,
+  toColumnName,
+  useData,
+  VuuShellLocation,
+} from "@vuu-ui/vuu-utils";
+import { FlexboxLayout } from "@vuu-ui/vuu-layout";
+import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
+import {
+  ContextPanelProvider,
+  type ShowContextPanel,
+} from "@vuu-ui/vuu-ui-controls";
 
 const useInstrumentsDataSource = () => {
   const instrumentsSchema = getSchema("instruments");
@@ -80,6 +92,7 @@ const DefaultFilterBarCore = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
+  style,
   variant,
 }: Partial<FilterBarProps>) => {
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
@@ -143,6 +156,7 @@ const DefaultFilterBarCore = ({
           onFilterDeleted={handleFilterDeleted}
           onFilterRenamed={handleFilterRenamed}
           onFilterStateChanged={handleFilterStateChange}
+          style={style}
           vuuTable={tableSchema.table}
           variant={variant}
         />
@@ -264,6 +278,37 @@ export const FilterBarOneSimpleFilter = () => {
         filterState={{
           filters: [
             { column: "currency", name: "Filter One", op: "=", value: "EUR" },
+          ],
+          activeIndices: [],
+        }}
+      />
+    </DataSourceProvider>
+  );
+};
+
+/** tags=data-consumer */
+export const FilterBarMixedNestedFilter = () => {
+  const dataSource = useInstrumentsDataSource();
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <FilterBarTemplate
+        filterState={{
+          filters: [
+            {
+              name: "Mixed",
+              op: "and",
+              filters: [
+                { column: "currency", op: "=", value: "EUR" },
+                {
+                  op: "or",
+                  filters: [
+                    { column: "exchange", op: "=", value: "XLON" },
+                    { column: "lotSize", op: ">", value: 1000 },
+                  ],
+                },
+              ],
+            },
           ],
           activeIndices: [],
         }}
@@ -467,9 +512,37 @@ export const QuickFiltersThreeColumns = () => {
   );
 };
 
+/**
+ * Column labels, as a Table shows them in column headers, that differ from
+ * the column names. Filters show the labels and are built with the names.
+ */
+const INSTRUMENT_COLUMN_LABELS: Record<string, string> = {
+  bbg: "Bloomberg ID",
+  currency: "Ccy",
+  description: "Name",
+  exchange: "Venue",
+  isin: "ISIN",
+  lotSize: "Lot size",
+  ric: "RIC",
+  lastUpdated: "Last updated",
+};
+
+const useLabelledInstrumentColumns = () =>
+  useMemo<ColumnDescriptor[]>(
+    () =>
+      [...getSchema("instruments").columns, lastUpdatedColumn].map(
+        (column) => ({
+          ...column,
+          label: INSTRUMENT_COLUMN_LABELS[column.name],
+        }),
+      ),
+    [],
+  );
+
 /** tags=data-consumer */
 export const FullFilters = () => {
   const dataSource = useInstrumentsDataSource();
+  const columnDescriptors = useLabelledInstrumentColumns();
 
   return (
     <>
@@ -478,8 +551,127 @@ export const FullFilters = () => {
       .vuuFilterBar { width: 100%; }
   `}</style>
       <DataSourceProvider dataSource={dataSource}>
-        <FilterBarTemplate variant="full-filters" />
+        <FilterBarTemplate
+          QuickFilterProps={{
+            quickFilterColumns: ["currency", "exchange", "lotSize"],
+          }}
+          columnDescriptors={columnDescriptors}
+          filterState={{
+            filters: [
+              { column: "currency", name: "Euro trades", op: "=", value: "EUR" },
+              { column: "exchange", name: "London", op: "=", value: "XLON" },
+              { column: "lotSize", name: "Large lots", op: ">", value: 1000 },
+            ],
+            activeIndices: [0],
+          }}
+          variant="full-filters"
+        />
       </DataSourceProvider>
     </>
+  );
+};
+
+/**
+ * FullFilters inside a layout with a context panel. The quick filter column
+ * chooser opens in the context panel, so the bar does not shift under the
+ * picker as columns are added.
+ *
+ * tags=data-consumer
+ */
+export const FullFiltersWithContextPanel = () => {
+  const dataSource = useInstrumentsDataSource();
+  const columnDescriptors = useLabelledInstrumentColumns();
+  const [contextPanelProps, setContextPanelProps] = useState<
+    ContextPanelProps | undefined
+  >(undefined);
+
+  const showContextPanel = useCallback<ShowContextPanel>((content, title) => {
+    if (isValidElement(content)) {
+      setContextPanelProps({ content, expanded: true, title });
+    }
+  }, []);
+  const hideContextPanel = useCallback(() => {
+    setContextPanelProps(undefined);
+  }, []);
+
+  return (
+    <ContextPanelProvider
+      hideContextPanel={hideContextPanel}
+      showContextPanel={showContextPanel}
+    >
+      <style>{`
+      .filter-container { background: var(--salt-container-secondary-background);}
+      .vuuFilterBar { width: 100%; }
+  `}</style>
+      <FlexboxLayout style={{ height: 600, width: "100%" }}>
+        <div style={{ flex: 1, position: "relative" }}>
+          <DataSourceProvider dataSource={dataSource}>
+            <FilterBarTemplate
+              QuickFilterProps={{
+                quickFilterColumns: ["currency", "exchange", "lotSize"],
+              }}
+              columnDescriptors={columnDescriptors}
+              filterState={{
+                filters: [
+                  {
+                    column: "currency",
+                    name: "Euro trades",
+                    op: "=",
+                    value: "EUR",
+                  },
+                  { column: "exchange", name: "London", op: "=", value: "XLON" },
+                ],
+                activeIndices: [0],
+              }}
+              variant="full-filters"
+            />
+          </DataSourceProvider>
+        </div>
+        <ContextPanel
+          {...contextPanelProps}
+          id={VuuShellLocation.ContextPanel}
+          overlay
+        />
+      </FlexboxLayout>
+    </ContextPanelProvider>
+  );
+};
+
+/**
+ * More filters than fit on one row: labels truncate, then filters move
+ * into the "+N" menu at the end of the row.
+ *
+ * tags=data-consumer
+ */
+export const FilterBarOverflow = () => {
+  const dataSource = useInstrumentsDataSource();
+  const names = [
+    "Euro trades",
+    "London",
+    "Large orders",
+    "Buys only",
+    "Tech names",
+    "Today",
+    "Desk 4 flow",
+    "High touch",
+    "Algo fills",
+  ];
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <div style={{ position: "relative", width: 560 }}>
+        <FilterBarTemplate
+          filterState={{
+            filters: names.map((name, i) => ({
+              column: "lotSize",
+              name,
+              op: ">",
+              value: i * 100,
+            })),
+            activeIndices: [0, 1, 5, 8],
+          }}
+          style={{ width: "100%" }}
+        />
+      </div>
+    </DataSourceProvider>
   );
 };
