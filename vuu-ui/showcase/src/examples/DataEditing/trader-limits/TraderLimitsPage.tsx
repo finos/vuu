@@ -109,6 +109,7 @@ export const TraderLimitsPage = ({
         <TableEditorTable
           EmptyDisplay={isViewMode ? EmptyDisplay : undefined}
           config={traderLimitsTableConfig}
+          showColumnHeadersWhenEmpty
           showInlineAddRow
         />
         <EditableTableFooter />
