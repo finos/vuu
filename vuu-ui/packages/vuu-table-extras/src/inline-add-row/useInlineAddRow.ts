@@ -93,6 +93,28 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
     cell?.querySelector<HTMLElement>("input, button, [tabindex]")?.focus();
   }, []);
 
+  // The row is shown when an edit session begins. Start in its first
+  // editable cell, so the user can type a new row straight away. The row
+  // can first render with the columns of the view, before the table has
+  // applied the editable columns, so wait for an editable column.
+  const initialFocusDoneRef = useRef(false);
+  useEffect(() => {
+    if (initialFocusDoneRef.current) {
+      return;
+    }
+    const firstEditableIndex = visibleColumns.findIndex((column) =>
+      isDataValueEditable(column, "insert"),
+    );
+    if (firstEditableIndex === -1) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      initialFocusDoneRef.current = true;
+      focusEditor(firstEditableIndex);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusEditor, visibleColumns]);
+
   useEffect(() => {
     editSession.configureNewRow(
       visibleInsertColumns.map(({ name }) => name),
