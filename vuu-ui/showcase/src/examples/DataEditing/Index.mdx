@@ -9,6 +9,7 @@ down a layer only when you need to.
 | #   | Pattern                         | Use it when                                                              | Example                                       |
 | --- | ------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------- |
 | 1   | View/Edit toggle                | Users browse a table and occasionally edit several cells, then Save      | `EditableTable / ViewEditToggle`              |
+| 1b  | View/Edit toggle outside table | The toggle belongs in the page header, away from the table               | `EditableTable / ExternalModeToggle`          |
 | 2   | Insert / update / delete + undo | Users maintain a reference table: add, change and remove rows            | `EditableTable / InsertUpdateDelete`          |
 | 2b  | Inline edit, form for new rows  | Cells are edited in a session, but new rows need several values at once  | `EditableTable / SessionCreateForm`           |
 | 3   | Custom cell editors             | Some columns need a dropdown or other editor; only some are editable     | `EditableTable / CustomEditors`               |
@@ -32,7 +33,7 @@ down a layer only when you need to.
    `useCustomEditField`, `useConfirmDiscard`, `useEditSessionState`. Use these to build your own
    layout around the same behaviour.
 3. **Core** – `EditSession`, `DirectEditSession`, `DataEditingProvider`,
-   `EditModeProvider`. Use these when the hooks do not fit.
+   `EditModeToggle`, `EditModeProvider`. Use these when the hooks do not fit.
 
 See the Data Editing section of the Vuu documentation for a getting started
 guide and the detailed reference.

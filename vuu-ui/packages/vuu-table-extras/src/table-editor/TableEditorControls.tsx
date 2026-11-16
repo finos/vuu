@@ -1,17 +1,12 @@
-import {
-  Button,
-  type ButtonProps,
-  SidePanelCloseButton,
-  ToggleButton,
-  ToggleButtonGroup,
-  type ToggleButtonGroupProps,
-} from "@salt-ds/core";
+import { Button, type ButtonProps, SidePanelCloseButton } from "@salt-ds/core";
 import {
   EditButtons,
   EditFormButtons,
+  EditModeToggle,
+  type EditModeToggleProps,
   useEditFormContext,
 } from "@vuu-ui/vuu-data-editing";
-import { type SyntheticEvent, forwardRef, useCallback } from "react";
+import { forwardRef } from "react";
 import { useTableEditorContext } from "./TableEditorContext";
 
 export interface TableEditorButtonsProps {
@@ -71,58 +66,15 @@ export const TableEditorButtons = ({
   return null;
 };
 
-export interface TableEditorModeToggleProps
-  extends Omit<ToggleButtonGroupProps, "children" | "onChange" | "value"> {
-  /** Suffix appended to the `toggle-view` and `toggle-edit` test ids. */
-  testId?: string;
-}
+export type TableEditorModeToggleProps = EditModeToggleProps;
 
 /**
- * View/Edit toggle for the enclosing `EditableTable`. Switching to View
- * discards changes, asking `confirmCancel` first. It is disabled while a row
- * is being created and, when editing in a form, until a row is selected.
+ * View/Edit toggle for the enclosing `EditableTable`: an `EditModeToggle`.
+ * Switching to View discards changes, asking `confirmCancel` first. It is
+ * disabled while a row is being created and, when editing in a form, until
+ * a row is selected.
  */
-export const TableEditorModeToggle = ({
-  "aria-label": ariaLabel = "Mode",
-  disabled,
-  testId = "",
-  ...props
-}: TableEditorModeToggleProps) => {
-  const { cancel, editStrategy, mode, selectedRow, startEdit } =
-    useTableEditorContext("TableEditorModeToggle");
-
-  const handleChange = useCallback(
-    (e: SyntheticEvent<HTMLButtonElement>) => {
-      if (e.currentTarget.value === "edit") {
-        startEdit();
-      } else {
-        void cancel();
-      }
-    },
-    [cancel, startEdit],
-  );
-
-  return (
-    <ToggleButtonGroup
-      {...props}
-      aria-label={ariaLabel}
-      disabled={
-        disabled ||
-        mode === "create" ||
-        (editStrategy === "form" && selectedRow === undefined)
-      }
-      onChange={handleChange}
-      value={mode === "edit" ? "edit" : "view"}
-    >
-      <ToggleButton data-testid={`toggle-view${testId}`} value="view">
-        View
-      </ToggleButton>
-      <ToggleButton data-testid={`toggle-edit${testId}`} value="edit">
-        Edit
-      </ToggleButton>
-    </ToggleButtonGroup>
-  );
-};
+export const TableEditorModeToggle = EditModeToggle;
 
 export type TableEditorEditButtonProps = Omit<ButtonProps, "onClick">;
 

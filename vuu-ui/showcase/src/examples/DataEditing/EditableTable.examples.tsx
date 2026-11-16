@@ -1,10 +1,14 @@
+import { StackLayout, Text } from "@salt-ds/core";
 import {
+  DataEditingProvider,
   type EditFormValidator,
+  EditModeToggle,
   useConfirmDiscard,
 } from "@vuu-ui/vuu-data-editing";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   EditableTable,
+  type EditableTableEditStrategy,
   EditableTableFooter,
   type EditableTableMode,
   TableEditorModeToggle,
@@ -99,6 +103,57 @@ const ViewEditToggleTemplate = () => {
 export const ViewEditToggle = () => (
   <LocalDataSourceProvider>
     <ViewEditToggleTemplate />
+  </LocalDataSourceProvider>
+);
+
+const ExternalModeToggleTemplate = ({
+  editStrategy = "inline",
+}: {
+  editStrategy?: EditableTableEditStrategy;
+}) => {
+  const dataSource = useInstrumentsDataSource();
+  const confirmDiscard = useConfirmDiscard();
+  return (
+    <DataEditingProvider>
+      <StackLayout gap={1} style={{ height: 440, width: 1000 }}>
+        <StackLayout align="center" direction="row" gap={2}>
+          <Text styleAs="h3">Instruments</Text>
+          <EditModeToggle testId="-page" />
+        </StackLayout>
+        {editStrategy === "form" ? (
+          <EditableTable
+            config={readOnlyRicConfig}
+            confirmCancel={confirmDiscard}
+            dataSource={dataSource}
+            editStrategy="form"
+          />
+        ) : (
+          <EditableTable confirmCancel={confirmDiscard} dataSource={dataSource}>
+            <TableEditorTable config={readOnlyRicConfig} />
+            <EditableTableFooter />
+          </EditableTable>
+        )}
+      </StackLayout>
+    </DataEditingProvider>
+  );
+};
+
+/**
+ * Pattern 1b. The View/Edit toggle is in the page header, outside the
+ * table. `DataEditingProvider` holds the editing mode, so an
+ * `EditModeToggle` anywhere inside it controls the `EditableTable`, with the
+ * same behaviour as the table's own toggle: switching to View asks before
+ * discarding unsaved changes.
+ */
+export const ExternalModeToggle = ({
+  editStrategy,
+}: {
+  editStrategy?: EditableTableEditStrategy;
+}) => (
+  <LocalDataSourceProvider>
+    <ModalProvider>
+      <ExternalModeToggleTemplate editStrategy={editStrategy} />
+    </ModalProvider>
   </LocalDataSourceProvider>
 );
 

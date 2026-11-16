@@ -35,9 +35,13 @@ flowchart LR
   sends edits to the session data source and keeps count of edits, inserts,
   deletes and invalid values. It emits events when its state changes.
 - **`DataEditingProvider`** makes an edit session available to the cells,
-  fields and buttons below it.
+  fields and buttons below it. Without an `editSession`, it holds the mode
+  (view, edit or create) of the editable component inside it, such as an
+  `EditableTable`, so an `EditModeToggle` elsewhere on the page can control
+  it.
 - **`EditModeProvider`** holds whether the UI is in view or edit mode, for
-  controls such as `EditField` that read it.
+  controls such as `EditField` that read it. A `DataEditingProvider` without
+  an `editSession` provides this too.
 - **`useEditableTable`** creates an `EditSession` for a data source, begins and
   ends it as edit mode changes, and gives you the data source to show: the
   source in view mode, the session table while editing.

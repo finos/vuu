@@ -14,7 +14,8 @@ export interface EditModeContextProps {
 
 let warnedMissingProvider = false;
 
-const EditModeContext = createContext<EditModeContextProps>({
+/** Internal: also provided by `DataEditingProvider`. */
+export const EditModeContext = createContext<EditModeContextProps>({
   isEditMode: false,
   setEditMode: () => {
     if (process.env.NODE_ENV !== "production" && !warnedMissingProvider) {

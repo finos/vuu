@@ -1,4 +1,5 @@
 import type {
+  DataEditingMode,
   EditFormHookProps,
   EditFormValues,
   EditSession,
@@ -32,7 +33,7 @@ export type TableEditorCreateStrategy = "inline" | "form";
 export type TableEditorEditModel = "session" | "direct";
 
 /** `create` is only used with a create form. */
-export type TableEditorMode = "view" | "edit" | "create";
+export type TableEditorMode = DataEditingMode;
 
 /**
  * With a side panel (form editing, or a create form).
