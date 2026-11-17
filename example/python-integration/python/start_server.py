@@ -38,15 +38,14 @@ Usage:
     pip install -r requirements.txt
     python start_server.py
 """
+import jpype
+import jpype.imports
 import os
 import random
 import socket
 import threading
 import time
 from pathlib import Path
-
-import jpype
-import jpype.imports
 
 MODULE_DIR = Path(__file__).resolve().parent.parent  # example/python-integration
 REPO_ROOT = MODULE_DIR.parents[1]
@@ -404,8 +403,7 @@ def main() -> None:
 
     ssl = VuuSSLByCertAndKey(cert_path, key_path, ScalaOption.empty(), VuuSSLCipherSuiteOptions.apply())
 
-    config = (
-        VuuServerConfig config = VuuServerConfig.apply()
+    config = (VuuServerConfig.apply()
             .withWebSocketOptions(VuuWebSocketOptions.apply()
                 .withUri("websocket")
                 .withWsPort(WS_PORT)
@@ -418,11 +416,11 @@ def main() -> None:
                 .withViewPortThreads(1))
             .withClientConnectionOptions(VuuClientConnectionOptions.apply()
                 .withHeartbeatEnabled())
-            .withHttpServerFactory(VuuHttp2ServerFactory.apply()
+              .withHttpServerFactory(VuuHttp2ServerFactory.apply(
                 VuuHttp2ServerOptions.apply()
                     .withWebRoot(AbsolutePathWebRoot(webroot, True))
                     .withSsl(ssl)
-                    .withPort(HTTPS_PORT))
+                .withPort(HTTPS_PORT)))
             .withModule(PriceModule.apply(clock, lifecycle, table_def_container))
             .withModule(SimulationModule.apply(clock, lifecycle, table_def_container))
             .withModule(MetricsModule.apply(clock, lifecycle, metrics, table_def_container))
