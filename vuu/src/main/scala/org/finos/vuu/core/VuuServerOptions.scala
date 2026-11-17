@@ -170,11 +170,11 @@ trait VuuServerConfig {
 
   def withRpcOptions(rpcOptions: VuuRpcOptions): VuuServerConfig
 
-  def withModules(modules: List[ViewServerModule]): VuuServerConfig
+  def withModules(additionalModules: List[ViewServerModule]): VuuServerConfig
 
   def withModule(module: ViewServerModule): VuuServerConfig
 
-  def withPlugins(plugins: List[Plugin]): VuuServerConfig
+  def withPlugins(additionalPlugins: List[Plugin]): VuuServerConfig
 
   def withPlugin(plugin: Plugin): VuuServerConfig
 
@@ -212,7 +212,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
 
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
 
-  override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
+  override def withBindAddress(bindAddress: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
 
   override def withSslDisabled(): VuuWebSocketOptions = this.withSsl(VuuSSLDisabled)
 
@@ -235,7 +235,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
     this.copy(clientIdleTimeout = clientIdleTimeout)
 }
 
-case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: Int) extends VuuThreadingOptions {
+private case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: Int) extends VuuThreadingOptions {
   override def withViewPortThreads(threads: Int): VuuThreadingOptions = this.copy(viewPortThreads = threads)
 
   override def withTreeThreads(threads: Int): VuuThreadingOptions = this.copy(treeViewPortThreads = threads)
@@ -245,7 +245,7 @@ case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: In
   override def treeThreads: Int = treeViewPortThreads
 }
 
-case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
+private case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
   override def withHeartbeat(hasHeartbeat: Boolean): VuuClientConnectionOptions = this.copy(hasHeartbeat = hasHeartbeat)
 
   override def withHeartbeatEnabled(): VuuClientConnectionOptions = this.copy(true)
@@ -254,22 +254,22 @@ case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClie
 }
 
 
-case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
+private case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
   override def withBatchSize(batchSize: Int): VuuJoinTableProviderOptions = this.copy(batchSize = batchSize)
 
   override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
 }
 
-case class VuuRpcOptionsImpl(maxSessionTableSize: Int) extends VuuRpcOptions {
+private case class VuuRpcOptionsImpl(maxSessionTableSize: Int) extends VuuRpcOptions {
   override def withMaxSessionTableSize(maxSessionTableSize: Int): VuuRpcOptions = this.copy(maxSessionTableSize = maxSessionTableSize)
 }
 
-case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions {
+private case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions {
   override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions =
     this.copy(loginTokenService = loginTokenService)
 }
 
-case class VuuServerConfigImpl(webSocketOptions: VuuWebSocketOptions,
+private case class VuuServerConfigImpl(webSocketOptions: VuuWebSocketOptions,
                                securityOptions: VuuSecurityOptions,
                                threadingOptions: VuuThreadingOptions,
                                clientConnectionOptions: VuuClientConnectionOptions,
@@ -300,23 +300,23 @@ case class VuuServerConfigImpl(webSocketOptions: VuuWebSocketOptions,
   }
 
   def withRpcOptions(rpcOptions: VuuRpcOptions): VuuServerConfig = {
-    this.copy(joinTableProviderOptions = joinTableProviderOptions)
+    this.copy(rpcOptions = rpcOptions)
   }
 
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
 
-  def withModules(modules: List[ViewServerModule]): VuuServerConfig = {
-    this.copy(modules = modules)
+  def withModules(additionalModules: List[ViewServerModule]): VuuServerConfig = {
+    this.copy(modules = modules ++ additionalModules)
   }
 
   def withPlugin(plugin: Plugin): VuuServerConfig = {
     this.copy(plugins = plugins ++ List(plugin))
   }
 
-  def withPlugins(plugins: List[Plugin]): VuuServerConfig = {
-    this.copy(plugins = plugins)
+  def withPlugins(additionalPlugins: List[Plugin]): VuuServerConfig = {
+    this.copy(plugins = plugins ++ additionalPlugins)
   }
 
   def withHttpServerFactory(httpServerFactory: HttpServerFactory): VuuServerConfig = {
