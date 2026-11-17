@@ -307,6 +307,18 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
     ? false
     : serverDataType === "char" || serverDataType === "string";
 
+/**
+ * True when the named column in tableSchema holds text (string or char).
+ * A column not found in the schema is treated as text.
+ */
+export const isTextColumnInSchema = (
+  tableSchema: TableSchema,
+  columnName: string,
+) => {
+  const column = tableSchema.columns.find((col) => col.name === columnName);
+  return column === undefined || isTextColumn(column);
+};
+
 export const toColumnDescriptor = (
   name: string,
   serverDataType?: ColumnDescriptor["serverDataType"],

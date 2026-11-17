@@ -367,6 +367,9 @@ export const CustomProperties = () => {
 | `--vuuTableCell-outline`                     | `solid 2px --salt-focused-outlineColor`     | Outline of the focused cell.                                      |
 | `--vuuTablePinnedColumn-borderColor`         | `--salt-container-primary-borderColor`      | Border color at the edge of pinned columns.                       |
 | `--vuuTable-column-selected-borderColor`     | `--salt-selectable-borderColor-selected`    | Border color of a selected column header.                         |
+| `--vuuTable-pinnedRows-background`           | the table background                        | Background of the pinned rows area.                               |
+| `--vuuTable-pinnedDivider-color`             | `--salt-separable-primary-borderColor`      | Color of the divider below pinned rows.                           |
+| `--vuuTable-pinnedDivider-size`              | `2px`                                       | Thickness of the divider below pinned rows.                       |
 
 ### CSS class names
 
@@ -384,6 +387,9 @@ To style parts of the Table not covered by custom properties, target these class
 | `.vuuTableCell-right`          | A right-aligned data cell.                                      |
 | `.vuuTableHeaderCell`          | A column header cell.                                           |
 | `.vuuPinLeft`, `.vuuPinRight`  | A cell or header cell in a pinned column.                       |
+| `.vuuTable-pinnedRows`         | The area above the body that holds pinned rows.                 |
+| `.vuuTableRow-pinned`          | A pinned row.                                                   |
+| `.vuuTable-pinnedDivider`      | The divider below the pinned rows.                              |
 
 ### Best practices
 

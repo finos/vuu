@@ -100,7 +100,44 @@ export declare type TableCellEditHandler<T extends EditType = EditType> = (
   editPhase: T,
 ) => T extends "commit" ? Promise<RpcResult | undefined> : undefined;
 
-export declare type TableRowSelectHandler = (dataRow: DataRow | null) => void;
+/**
+ * The area of the Table a row belongs to. Pinned rows (see TablePinnedRows)
+ * are displayed above the scrolling body.
+ */
+export declare type TableRowArea = "pinned" | "body";
+
+/**
+ * Rows to be pinned above the scrolling body of a Table. The Table creates
+ * a second data source for these rows, on the same Vuu table as the main
+ * data source, and excludes them from the main data source.
+ */
+export interface TablePinnedRows {
+  /**
+   * Values of keyColumn for the rows to pin.
+   */
+  keys: string[] | number[];
+  /**
+   * The column that keys refer to. Defaults to the key column of the
+   * table schema.
+   */
+  keyColumn?: string;
+  /**
+   * The maximum number of rows that will be pinned. Keys beyond this
+   * limit are ignored, those rows remain in the body.
+   * @default 5
+   */
+  maxPinnedRows?: number;
+  /**
+   * If more rows than this are pinned, the pinned area scrolls.
+   * @default maxPinnedRows
+   */
+  maxVisibleRows?: number;
+}
+
+export declare type TableRowSelectHandler = (
+  dataRow: DataRow | null,
+  area?: TableRowArea,
+) => void;
 export declare type TableRowSelectHandlerInternal = (
   dataRow: DataRow | null,
 ) => void;
@@ -111,6 +148,7 @@ export declare type TableRowSelectHandlerInternal = (
 export declare type TableRowClickHandler = (
   evt: MouseEvent<HTMLDivElement>,
   row: DataRow,
+  area?: TableRowArea,
 ) => void;
 
 export declare type TableRowClickHandlerInternal = (
@@ -687,6 +725,7 @@ export interface TableContextMenuDef {
 export declare type SelectionChange = Omit<SelectRequest, "vpId">;
 export declare type SelectionChangeHandler = (
   selectionChange: SelectionChange,
+  area?: TableRowArea,
 ) => void;
 
 export interface ColumnPinAction {
