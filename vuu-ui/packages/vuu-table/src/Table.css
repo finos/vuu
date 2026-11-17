@@ -461,3 +461,58 @@
     }
   }
 }
+
+/*
+ * Pinned rows sit between the column headers and the body. They are within
+ * the content container, so share its horizontal scroll and the sticky
+ * positioning of pinned columns.
+ */
+.vuuTable-pinnedRows {
+  --vuu-table-pinned-divider-color: var(--vuuTable-pinnedDivider-color, var(--salt-separable-primary-borderColor));
+  --vuu-table-pinned-divider-size: var(--vuuTable-pinnedDivider-size, 2px);
+  background: var(--vuuTable-pinnedRows-background, var(--table-background));
+  position: sticky;
+  top: var(--pinned-rows-top);
+  z-index: 1;
+}
+
+.vuuTable-pinnedRowsViewport {
+  /* not a scroll container, pinned columns must stick to the content container */
+  overflow-y: clip;
+  position: relative;
+}
+
+.vuuTable-pinnedDivider {
+  background: var(--vuu-table-pinned-divider-color);
+  height: var(--vuu-table-pinned-divider-size);
+}
+
+.vuuTable-pinnedRowsScrollbar {
+  height: var(--pinned-rows-height);
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: var(--pinned-rows-top);
+  width: 10px;
+  z-index: 2;
+}
+
+.vuuTable-pinnedRowsScrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.vuuTable-pinnedRowsScrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.vuuTable-pinnedRowsScrollbar::-webkit-scrollbar-thumb {
+  background-clip: padding-box;
+  border-radius: 10px;
+  border: 2px solid rgba(0, 0, 0, 0);
+  background-color: var(--vuu-color-gray-30);
+}
+
+.vuuTable-pinnedRowsScrollbarContent {
+  width: 1px;
+}

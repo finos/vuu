@@ -238,6 +238,11 @@ export interface TableScrollHookProps {
   cellFocusStateRef: RefObject<ICellFocusState>;
   columns: RuntimeColumnDescriptor[];
   getRowAtPosition: RowAtPositionFunc;
+  /**
+   * The number of rows, column headers and pinned rows, that precede the
+   * first body row in aria-rowindex order.
+   */
+  headerCount: number;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
   /**
@@ -252,6 +257,11 @@ export interface TableScrollHookProps {
    */
   rowCount: number;
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
+  /**
+   * Pinned rows scroll independently of the body, when there are more
+   * than can be displayed.
+   */
+  scrollPinnedRowIntoView?: (ariaRowIndex: number) => void;
   setRange: (range: VuuRange) => void;
   showPaginationControls?: boolean;
   viewportMeasurements: ViewportMeasurements;
@@ -261,12 +271,14 @@ export const useTableScroll = ({
   cellFocusStateRef,
   columns,
   getRowAtPosition,
+  headerCount,
   onHorizontalScroll,
   onVerticalScroll,
   onVerticalScrollInSitu,
   rowHeight,
   rowCount,
   scrollingApiRef,
+  scrollPinnedRowIntoView,
   setRange,
   viewportMeasurements,
 }: TableScrollHookProps) => {
@@ -353,9 +365,10 @@ export const useTableScroll = ({
         // Conversely, if we scroll the focussed cell back into the viewport,
         // we must re-apply focus to it. We use the placeholder cell for this.
         const { current: focusState } = cellFocusStateRef;
-        if (focusState.cellPos) {
+        // Header and pinned rows do not scroll with the body
+        if (focusState.cellPos && focusState.cellPos[0] > headerCount) {
           const prevLastRow = prevFirstRow + viewportRowCount;
-          const [row] = focusState.cellPos;
+          const row = focusState.cellPos[0] - headerCount - 1;
           const wasInViewport = row >= prevFirstRow && row < prevLastRow;
           const isInViewport = row >= firstRow && row < lastRow;
 
@@ -374,6 +387,7 @@ export const useTableScroll = ({
       cellFocusStateRef,
       // focusCell,
       getRowAtPosition,
+      headerCount,
       onVerticalScroll,
       onVerticalScrollInSitu,
       setRange,
@@ -570,7 +584,9 @@ export const useTableScroll = ({
                 scrollRequest.rowIndex,
               );
 
-              if (activeRow !== null) {
+              if (activeRow?.closest(".vuuTable-pinnedRows")) {
+                scrollPinnedRowIntoView?.(scrollRequest.rowIndex);
+              } else if (activeRow !== null) {
                 const [direction, distance] = howFarIsRowOutsideViewport(
                   activeRow,
                   totalHeaderHeight,
@@ -649,6 +665,7 @@ export const useTableScroll = ({
       onVerticalScrollInSitu,
       rowCount,
       rowHeight,
+      scrollPinnedRowIntoView,
       setRange,
       totalHeaderHeight,
       viewportBodyHeight,

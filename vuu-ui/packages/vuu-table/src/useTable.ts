@@ -2,6 +2,7 @@ import { useEditSession } from '@vuu-ui/vuu-data-editing';
 import type {
   DataSourceConfigChangeHandler,
   DataSourceSubscribedMessage,
+  TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
@@ -14,6 +15,7 @@ import type {
   ColumnPinAction,
   DataRow,
   RuntimeColumnDescriptor,
+  SelectionChange,
   SelectionChangeHandler,
   TableColumnResizeHandler,
   TableConfig,
@@ -47,6 +49,7 @@ import {
 import {
   type FocusEvent,
   type KeyboardEvent,
+  type MouseEvent,
   type MouseEventHandler,
   type RefObject,
   useCallback,
@@ -57,6 +60,8 @@ import {
 } from "react";
 import type { TableCellBlock } from "./cell-block/cellblock-utils";
 import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
+import { usePinnedDataSource } from "./pinned-rows/usePinnedDataSource";
+import { usePinnedRowsScroll } from "./pinned-rows/usePinnedRowsScroll";
 import { CellFocusState } from "./CellFocusState";
 import type { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
@@ -117,12 +122,14 @@ export interface TableHookProps
     | "navigationStyle"
     | "onConfigChange"
     | "onDragStart"
+    | "onPinnedRowCountChange"
     | "onDrop"
     | "onHighlight"
     | "onSelect"
     | "onSelectCellBlock"
     | "onSelectionChange"
     | "onRowClick"
+    | "pinnedRows"
     | "renderBufferSize"
     | "revealSelected"
     | "scrollingApiRef"
@@ -143,6 +150,17 @@ const NULL_DRAG_DROP = {
 };
 const useNullDragDrop = () => NULL_DRAG_DROP;
 
+const isWithinPinnedRows = (target: EventTarget | null) =>
+  target instanceof Element && target.closest(".vuuTable-pinnedRows") !== null;
+
+const isSelectOperation = ({ type }: SelectionChange) =>
+  type === "SELECT_ROW" || type === "SELECT_ROW_RANGE" || type === "SELECT_ALL";
+
+type PinnedRowsState = {
+  count: number;
+  height: number;
+};
+
 export const useTable = ({
   allowCellBlockSelection,
   allowSelectCheckboxRow,
@@ -162,10 +180,12 @@ export const useTable = ({
   onDragStart,
   onDrop,
   onHighlight,
+  onPinnedRowCountChange,
   onRowClick: onRowClickProp,
   onSelect,
   onSelectCellBlock,
   onSelectionChange,
+  pinnedRows,
   renderBufferSize = 0,
   revealSelected,
   rowHeight,
@@ -193,9 +213,69 @@ export const useTable = ({
   // Needed to avoid circular dependency between useTableScroll and useCellFocus
   const focusCellRef = useRef<FocusCell>(undefined);
 
-  const [headerState, setHeaderState] = useState<HeaderState>(
+  const [columnHeaderState, setHeaderState] = useState<HeaderState>(
     showColumnHeaders ? nullHeaderState : zeroHeaderState,
   );
+
+  const [subscribedTableSchema, setSubscribedTableSchema] =
+    useState<TableSchema>();
+  const tableSchemaForPinnedRows =
+    dataSource.tableSchema ?? subscribedTableSchema;
+
+  const { maxPinnedRows, maxVisibleRows, pinnedDataSource } =
+    usePinnedDataSource({
+      dataSource,
+      pinnedRows,
+      tableSchema: tableSchemaForPinnedRows,
+    });
+
+  const [pinnedRowsState, setPinnedRowsState] = useState<PinnedRowsState>({
+    count: 0,
+    height: 0,
+  });
+  const pinnedRowCount = pinnedDataSource ? pinnedRowsState.count : 0;
+  const pinnedRowsHeight = pinnedDataSource ? pinnedRowsState.height : 0;
+
+  const onPinnedRowCountChangeRef = useRef(onPinnedRowCountChange);
+  onPinnedRowCountChangeRef.current = onPinnedRowCountChange;
+  const handlePinnedRowCountChange = useCallback((count: number) => {
+    setPinnedRowsState((state) =>
+      state.count === count ? state : { ...state, count },
+    );
+  }, []);
+  useEffect(() => {
+    onPinnedRowCountChangeRef.current?.(pinnedRowCount);
+  }, [pinnedRowCount]);
+
+  const handlePinnedRowsHeightChange = useCallback((height: number) => {
+    setPinnedRowsState((state) =>
+      state.height === height ? state : { ...state, height },
+    );
+  }, []);
+
+  /**
+   * Pinned rows sit between the column headers and the body. For the
+   * purposes of layout, scrolling and aria row indices, they are treated
+   * as part of the header.
+   */
+  const headerState = useMemo<HeaderState>(
+    () =>
+      columnHeaderState.height === -1
+        ? columnHeaderState
+        : {
+            height: columnHeaderState.height + pinnedRowsHeight,
+            count: columnHeaderState.count + pinnedRowCount,
+          },
+    [columnHeaderState, pinnedRowCount, pinnedRowsHeight],
+  );
+
+  const pinnedRowsScroll = usePinnedRowsScroll({
+    containerRef,
+    headerCount: Math.max(0, columnHeaderState.count),
+    maxVisibleRows,
+    rowCount: pinnedRowCount,
+    rowHeight,
+  });
 
   const [rowCount, setRowCount] = useState<number>(Math.min(dataSource.size, dataSource.maxRangeEnd ?? Number.MAX_SAFE_INTEGER));
   if (dataSource === undefined) {
@@ -270,19 +350,46 @@ export const useTable = ({
     ],
   );
 
+  /**
+   * There is a single selection across body and pinned rows. Selecting a
+   * row in one area clears the selection in the other.
+   */
   const handleSelectionChange: SelectionChangeHandler =
     useCallback<SelectionChangeHandler>(
       (selectRequest) => {
+        if (
+          pinnedDataSource &&
+          isSelectOperation(selectRequest) &&
+          pinnedDataSource.selectedRowsCount > 0
+        ) {
+          pinnedDataSource.select?.({ type: "DESELECT_ALL" });
+          onSelectionChange?.({ type: "DESELECT_ALL" }, "pinned");
+        }
         dataSource.select?.(selectRequest);
-        onSelectionChange?.(selectRequest);
+        onSelectionChange?.(selectRequest, "body");
       },
-      [dataSource, onSelectionChange],
+      [dataSource, onSelectionChange, pinnedDataSource],
     );
+
+  const handlePinnedSelectionChange = useCallback(
+    (selectRequest: SelectionChange) => {
+      if (
+        isSelectOperation(selectRequest) &&
+        dataSource.selectedRowsCount > 0
+      ) {
+        dataSource.select?.({ type: "DESELECT_ALL" });
+        onSelectionChange?.({ type: "DESELECT_ALL" }, "body");
+      }
+      pinnedDataSource?.select?.(selectRequest);
+      onSelectionChange?.(selectRequest, "pinned");
+    },
+    [dataSource, onSelectionChange, pinnedDataSource],
+  );
 
   const handleSelect = useCallback<TableRowSelectHandlerInternal>(
     (dataRow) => {
       if (onSelect) {
-        onSelect(dataRow);
+        onSelect(dataRow, "body");
       }
     },
     [onSelect],
@@ -291,6 +398,7 @@ export const useTable = ({
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
+        setSubscribedTableSchema(tableSchema);
         dispatchTableModelAction({
           type: "setTableSchema",
           tableSchema,
@@ -340,6 +448,8 @@ export const useTable = ({
     cellFocusStateRef,
     columns,
     getRowAtPosition,
+    headerCount: headerState.count,
+    scrollPinnedRowIntoView: pinnedRowsScroll.scrollPinnedRowIntoView,
     rowCount,
     rowHeight,
     scrollingApiRef,
@@ -683,6 +793,7 @@ export const useTable = ({
     headerCount: headerState.count,
     highlightedIndex: highlightedIndexProp,
     navigationStyle,
+    pinnedRowCount,
     requestScroll,
     rowCount,
     onHighlight,
@@ -712,13 +823,23 @@ export const useTable = ({
     [editingFocus, navigationFocus],
   );
 
-  const onContextMenu = useTableContextMenu({
+  const bodyContextMenu = useTableContextMenu({
     columns,
     dataRows,
     dataSource,
     getSelectedRows,
     headerCount: headerState.count,
   });
+
+  // pinned rows handle their own context menu
+  const onContextMenu = useCallback(
+    (evt: MouseEvent<HTMLElement>) => {
+      if (!isWithinPinnedRows(evt.target)) {
+        bodyContextMenu?.(evt);
+      }
+    },
+    [bodyContextMenu],
+  );
 
   const onMoveGroupColumn = useCallback(
     (columns: ColumnDescriptor[]) => {
@@ -789,9 +910,23 @@ export const useTable = ({
         rangeSelect,
         keepExistingSelection,
       );
-      onRowClickProp?.(evt, dataRow);
+      onRowClickProp?.(evt, dataRow, "body");
     },
     [onRowClickProp, selectionHookOnRowClick],
+  );
+
+  const handlePinnedRowClick = useCallback<TableRowClickHandlerInternal>(
+    (evt, dataRow) => {
+      onRowClickProp?.(evt, dataRow, "pinned");
+    },
+    [onRowClickProp],
+  );
+
+  const handlePinnedRowSelect = useCallback(
+    (selectRequest: SelectionChange) => {
+      handlePinnedSelectionChange(selectRequest);
+    },
+    [handlePinnedSelectionChange],
   );
 
   const handleKeyDown = useCallback(
@@ -909,6 +1044,10 @@ export const useTable = ({
 
   const handleMouseDown = useCallback<MouseEventHandler>(
     (evt) => {
+      // Pinned rows do not support row drag drop or cell block selection
+      if (isWithinPinnedRows(evt.target)) {
+        return;
+      }
       rowDragMouseDown?.(evt);
       if (!evt.isPropagationStopped()) {
         cellBlockHookMouseDown?.(evt);
@@ -923,7 +1062,7 @@ export const useTable = ({
   return {
     ...containerProps,
     allRowsSelected,
-    "aria-rowcount": dataSource.size,
+    "aria-rowcount": Math.max(0, headerState.count) + dataSource.size,
     cellBlock,
     columns,
     dataRows,
@@ -934,6 +1073,7 @@ export const useTable = ({
     focusCellPlaceholderRef,
     getRowOffset,
     handleColumnAction,
+    columnHeaderState,
     headerState,
     headings,
     highlightedIndex: highlightedIndexRef.current,
@@ -950,6 +1090,20 @@ export const useTable = ({
     onMoveGroupColumn,
     onRemoveGroupColumn,
     onRowClick: handleRowClick,
+    onPinnedRowClick: handlePinnedRowClick,
+    onPinnedRowsHeightChange: handlePinnedRowsHeightChange,
+    onPinnedRowCountChange: handlePinnedRowCountChange,
+    onPinnedSelectionChange: handlePinnedRowSelect,
+    pinnedDataSource,
+    pinnedRowCount,
+    pinnedRowsLayout: {
+      isScrollable: pinnedRowsScroll.isScrollable,
+      maxPinnedRows,
+      maxVisibleRows,
+      scrollTop: pinnedRowsScroll.scrollTop,
+      setScrollbarRef: pinnedRowsScroll.setScrollbarRef,
+      visibleHeight: pinnedRowsScroll.visibleHeight,
+    },
     onSortColumn: handleSort,
     onResizeColumn,
     onToggleGroup,

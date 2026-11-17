@@ -8,6 +8,7 @@ import {
   LargeDataset,
   MaxViewportRowLimit,
   NoColumnHeaders,
+  PinnedRows,
   RowHeight,
   ViewportRowLimit,
 } from "./06-Layout.examples";
@@ -401,6 +402,61 @@ export const CustomHeader = () => {
 ```
 
 </LivePreview>
+
+## Pinned rows
+
+`pinnedRows` keeps a few rows fixed above the scrolling body. Pass the keys of the rows to pin. The Table does the rest:
+
+- It creates a second data source for the pinned rows, on the same Vuu table as `dataSource`, and removes those rows from `dataSource`, so each row appears once.
+- Pinned rows share everything with the body: columns, widths, pinned columns, horizontal scroll, cell renderers, row class names, hover and selection styles.
+- Pinned rows follow the body's sort, and stay flat when the body is grouped.
+- The user's filter does not apply to pinned rows. A pinned row stays visible whatever the filter.
+
+<LivePreview>
+  <PinnedRows />
+
+```tsx
+export const PinnedRows = () => {
+  const { VuuDataSource } = useData();
+  const [pinnedKeys, setPinnedKeys] = useState(["AAOP.N", "AAOT.PA"]);
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: { module: "SIMUL", table: "instrumentPrices" } }),
+    [VuuDataSource],
+  );
+
+  return (
+    <Table
+      config={config}
+      dataSource={dataSource}
+      height={300}
+      pinnedRows={{ keys: pinnedKeys }}
+    />
+  );
+};
+```
+
+</LivePreview>
+
+| `pinnedRows` property | Default                  | Description                                                                                    |
+| --------------------- | ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `keys`                |                          | Values of `keyColumn` for the rows to pin. An empty array means no pinned area.                |
+| `keyColumn`           | the table schema's key   | The column that `keys` refer to.                                                               |
+| `maxPinnedRows`       | `5`                      | Keys beyond this limit are ignored, and those rows stay in the body.                           |
+| `maxVisibleRows`      | `maxPinnedRows`          | With more pinned rows than this, the pinned area scrolls on its own.                           |
+
+How it works, and what to expect:
+
+- **A Vuu table is required.** Pinned rows are fetched with a second `VuuDataSource`, created with the `VuuDataSource` class from `useData`. A data source without a `table`, such as `ArrayDataSource`, shows no pinned rows.
+- **Exclusion uses the base filter.** Pinned rows are removed from `dataSource` by adding `ric != "A" and ric != "B"` to its `baseFilter`, combined with any base filter you set. The user's own filter is untouched, and filter UI never shows the exclusion.
+- **Row counts.** Row counts reported for `dataSource`, for example by `DataSourceStats`, cover the body only. Use `onPinnedRowCountChange` to get the number of pinned rows.
+- **One selection.** Selecting a pinned row clears the body selection, and the other way round. `onSelect`, `onSelectionChange` and `onRowClick` receive a second argument, `"pinned"` or `"body"`, saying where the row is.
+- **Keyboard.** Arrow keys move between pinned and body rows, keeping the column. **Home**, **End**, **PageUp** and **PageDown** treat the two as one list. Pinned rows have `aria-rowindex` values between the header rows and the body rows.
+- **Not supported on pinned rows:** dragging rows and cell block selection. Pinned rows are not shown with `showPaginationControls`.
+
+### Best practices
+
+- Pin only a handful of rows. Pinned rows are not virtualized, and every pinned row takes space from the body.
+- Keep `keys` in state, and pass a new array when the set changes. The Table compares keys by value, so an equal array doesn't cause any work.
 
 ## Large datasets
 

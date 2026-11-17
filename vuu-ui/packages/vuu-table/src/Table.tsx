@@ -14,6 +14,7 @@ import {
   ShowColumnHeaderMenus,
   TableConfig,
   TableConfigChangeHandler,
+  TablePinnedRows,
   TableRowClickHandler,
   TableRowSelectHandler,
   TableSelectionModel,
@@ -44,6 +45,7 @@ import {
 import { Row as DefaultRow } from "./Row";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { PaginationControl } from "./pagination";
+import { PinnedRows } from "./pinned-rows/PinnedRows";
 import { getRowsInRenderOrder } from "./render-order";
 import { ScrollLimitNotice } from "./scroll-limit-notice";
 import { TableHeader } from "./table-header";
@@ -223,6 +225,11 @@ export interface TableProps extends Omit<
 
   onHighlight?: (idx: number) => void;
   /**
+   * Invoked when the number of pinned rows changes. Row count reporting for
+   * the Table body (e.g. via DataSourceStats) does not include pinned rows.
+   */
+  onPinnedRowCountChange?: (count: number) => void;
+  /**
    * callback invoked when user 'clicks' a table row. CLick triggered either
    * via mouse click or keyboard (default ENTER);
    */
@@ -240,6 +247,14 @@ export interface TableProps extends Omit<
   onSelectCellBlock?: (cellBlock: TableCellBlock) => void;
 
   onSelectionChange?: SelectionChangeHandler;
+  /**
+   * Rows to display above the scrolling body, identified by key. The Table
+   * creates a second data source for these rows, on the same Vuu table as
+   * dataSource, and excludes them from dataSource via its baseFilter. Pinned
+   * rows follow the sort and columns of dataSource and are never grouped.
+   * Pinned rows require a dataSource with a Vuu table.
+   */
+  pinnedRows?: TablePinnedRows;
   renderBufferSize?: number;
 
   /**
@@ -352,10 +367,12 @@ const TableCore = ({
   onDragStart,
   onDrop,
   onHighlight,
+  onPinnedRowCountChange,
   onRowClick: onRowClickProp,
   onSelect,
   onSelectCellBlock,
   onSelectionChange,
+  pinnedRows,
   renderBufferSize = 0,
   revealSelected,
   rowActionHandlers,
@@ -389,6 +406,7 @@ const TableCore = ({
   const {
     allRowsSelected,
     cellBlock,
+    columnHeaderState,
     columns,
     dataRows,
     draggableRow,
@@ -406,11 +424,18 @@ const TableCore = ({
     onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
+    onPinnedRowClick,
+    onPinnedRowCountChange: handlePinnedRowCountChange,
+    onPinnedRowsHeightChange,
+    onPinnedSelectionChange,
     onRemoveGroupColumn,
     onResizeColumn,
     onRowClick,
     onSortColumn,
     onToggleGroup,
+    pinnedDataSource,
+    pinnedRowCount,
+    pinnedRowsLayout,
     rowClassNameGenerator,
     scrollLimitInEffect,
     scrollProps,
@@ -437,10 +462,12 @@ const TableCore = ({
     onDragStart,
     onDrop,
     onHighlight,
+    onPinnedRowCountChange,
     onRowClick: onRowClickProp,
     onSelect,
     onSelectCellBlock,
     onSelectionChange,
+    pinnedRows,
     renderBufferSize,
     revealSelected,
     rowHeight,
@@ -470,6 +497,8 @@ const TableCore = ({
     "--content-width": `${viewportMeasurements.contentWidth}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
+    "--pinned-rows-top": `${Math.max(0, columnHeaderState.height)}px`,
+    "--pinned-rows-height": `${pinnedRowsLayout.visibleHeight}px`,
     "--total-header-height": `${headerHeight}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
     "--table-selection-bookend-width": `${selectionBookendWidth}px`,
@@ -495,11 +524,27 @@ const TableCore = ({
         </div>
       ) : null}
 
+      {pinnedDataSource && pinnedRowsLayout.isScrollable ? (
+        <div
+          aria-hidden
+          className={`${classBase}-pinnedRowsScrollbar`}
+          ref={pinnedRowsLayout.setScrollbarRef}
+          style={cssVariables}
+          tabIndex={-1}
+        >
+          <div
+            className={`${classBase}-pinnedRowsScrollbarContent`}
+            style={{ height: pinnedRowCount * rowHeight }}
+          />
+        </div>
+      ) : null}
+
       {dataSource.size === 0 && EmptyDisplay ? (
         <div
           className={cx(`${classBase}-emptyDisplay`, {
             [`${classBase}-emptyDisplay-belowHeaders`]:
-              showColumnHeaders && showColumnHeadersWhenEmpty,
+              (showColumnHeaders && showColumnHeadersWhenEmpty) ||
+              pinnedRowCount > 0,
           })}
           style={cssVariables}
         >
@@ -544,6 +589,35 @@ const TableCore = ({
               tableConfig={tableConfig}
               tableId={id}
               virtualColSpan={scrollProps.virtualColSpan}
+            />
+          ) : null}
+          {pinnedDataSource && headersReady ? (
+            <PinnedRows
+              Row={Row}
+              allowSelectCheckboxRow={allowSelectCheckboxRow}
+              columns={scrollProps.columnsWithinViewport}
+              dataSource={pinnedDataSource}
+              groupToggleTarget={groupToggleTarget}
+              headerCount={columnHeaderState.count}
+              highlightedIndex={highlightedIndex}
+              isRowSelectable={isRowSelectable}
+              lowerCaseSearchPattern={lowerCaseSearchPattern}
+              maxPinnedRows={pinnedRowsLayout.maxPinnedRows}
+              maxVisibleRows={pinnedRowsLayout.maxVisibleRows}
+              menuActionHandler={handleColumnAction}
+              onHeightChange={onPinnedRowsHeightChange}
+              onRowClick={onPinnedRowClick}
+              onRowCountChange={handlePinnedRowCountChange}
+              onSelect={onSelect}
+              onSelectionChange={onPinnedSelectionChange}
+              rowActionHandlers={rowActionHandlers}
+              rowClassNameGenerator={rowClassNameGenerator}
+              rowHeight={rowHeight}
+              scrollTop={pinnedRowsLayout.scrollTop}
+              selectionModel={selectionModel}
+              showBookends={selectionBookendWidth > 0}
+              virtualColSpan={scrollProps.virtualColSpan}
+              zebraStripes={tableAttributes.zebraStripes}
             />
           ) : null}
           {readyToRenderTableBody ? (
@@ -676,10 +750,12 @@ export const Table = forwardRef(function Table(
     onDragStart,
     onDrop,
     onHighlight,
+    onPinnedRowCountChange,
     onRowClick,
     onSelect,
     onSelectCellBlock,
     onSelectionChange,
+    pinnedRows,
     renderBufferSize,
     revealSelected,
     resizeStrategy,
@@ -727,6 +803,12 @@ export const Table = forwardRef(function Table(
   }
   if (dataSource === undefined) {
     throw Error("vuu Table requires dataSource prop");
+  }
+
+  if (showPaginationControls && pinnedRows) {
+    console.warn(
+      `Table: pinnedRows are not supported with pagination controls and will not be shown`,
+    );
   }
 
   if (showPaginationControls && renderBufferSize !== undefined) {
@@ -831,10 +913,12 @@ export const Table = forwardRef(function Table(
           onDragStart={onDragStart}
           onDrop={onDrop}
           onHighlight={onHighlight}
+          onPinnedRowCountChange={onPinnedRowCountChange}
           onRowClick={onRowClick}
           onSelect={onSelect}
           onSelectCellBlock={onSelectCellBlock}
           onSelectionChange={onSelectionChange}
+          pinnedRows={showPaginationControls ? undefined : pinnedRows}
           renderBufferSize={
             showPaginationControls ? 0 : Math.max(5, renderBufferSize ?? 0)
           }

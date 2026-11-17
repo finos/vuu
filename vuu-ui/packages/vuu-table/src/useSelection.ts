@@ -183,6 +183,15 @@ export const useSelection = ({
         if (rowIndex !== undefined && rowIndex !== -1 && container) {
           const rowEl = getRowElementByAriaIndex(container, rowIndex);
           if (rowEl) {
+            // Space would otherwise scroll the content container. Controls
+            // within cells (e.g the row selection checkbox) keep their
+            // default behaviour.
+            if (
+              !(e.target instanceof HTMLInputElement) &&
+              !(e.target instanceof HTMLButtonElement)
+            ) {
+              e.preventDefault();
+            }
             dispatchMouseEvent(rowEl, "click");
           }
         }

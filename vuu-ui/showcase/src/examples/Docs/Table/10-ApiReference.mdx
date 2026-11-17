@@ -38,6 +38,8 @@ See [Layout](./06-Layout.mdx).
 | `customHeader`        | `CustomHeader \| CustomHeader[]` |  | Components or elements rendered below the column headers. Components receive [`BaseRowProps`](#baserowprops).                    |
 | `EmptyDisplay`        | `ComponentType`      |                | Rendered in place of rows when the data source has no rows.                                                                       |
 | `showColumnHeadersWhenEmpty`| `boolean`            | `false`        | Keep the column headers visible when `EmptyDisplay` is shown, with `EmptyDisplay` below them.                                     |
+| `pinnedRows`          | [`TablePinnedRows`](#tablepinnedrows) |  | Rows, identified by key, kept fixed above the scrolling body. See [Pinned rows](./06-Layout.mdx#pinned-rows).                 |
+| `onPinnedRowCountChange` | `(count: number) => void` |          | Called when the number of pinned rows changes.                                                                                    |
 | `className`, `style`, `id` |                 |                | Applied to the outer container.                                                                                                   |
 
 Don't set `height`, `rowHeight` and `viewportRowLimit` together.
@@ -68,7 +70,7 @@ See [Selection](./04-Selection.mdx).
 | `revealSelected`          | `boolean`                           |              | With grouped data, expands the groups that contain selected rows.                                             |
 | `rowSelectionBorder`      | `boolean`                           |              | Draws a border around each block of adjacent selected rows.                                                   |
 | `allowCellBlockSelection` | `boolean`                           |              | Lets users select a rectangular block of cells with the mouse or **Shift+Arrow** keys.                        |
-| `onSelect`                | `(dataRow: DataRow \| null) => void` |             | Called when the user selects a row, or with `null` when they deselect it.                                     |
+| `onSelect`                | `TableRowSelectHandler`             |              | Called when the user selects a row, or with `null` when they deselect it.                                     |
 | `onSelectionChange`       | `SelectionChangeHandler`            |              | Called with the select request sent to the data source.                                                       |
 | `onSelectCellBlock`       | `(cellBlock: TableCellBlock) => void` |            | Called when the user finishes selecting a block of cells.                                                     |
 
@@ -229,12 +231,22 @@ Event handlers and cell renderers receive rows as `DataRow` objects. Read column
 
 | Type                       | Signature                                                                       |
 | -------------------------- | ------------------------------------------------------------------------------- |
-| `TableRowClickHandler`     | `(evt: MouseEvent, row: DataRow) => void`                                       |
-| `TableRowSelectHandler`    | `(dataRow: DataRow \| null) => void`                                             |
-| `SelectionChangeHandler`   | `(selectionChange: SelectionChange) => void`. `selectionChange.type` is `"SELECT_ROW"`, `"DESELECT_ROW"`, `"SELECT_ROW_RANGE"`, `"SELECT_ALL"` or `"DESELECT_ALL"`. |
+| `TableRowClickHandler`     | `(evt: MouseEvent, row: DataRow, area?: TableRowArea) => void`                  |
+| `TableRowSelectHandler`    | `(dataRow: DataRow \| null, area?: TableRowArea) => void`                        |
+| `TableRowArea`             | `"pinned" \| "body"`, where the row is displayed. See [Pinned rows](./06-Layout.mdx#pinned-rows). |
+| `SelectionChangeHandler`   | `(selectionChange: SelectionChange, area?: TableRowArea) => void`. `selectionChange.type` is `"SELECT_ROW"`, `"DESELECT_ROW"`, `"SELECT_ROW_RANGE"`, `"SELECT_ALL"` or `"DESELECT_ALL"`. |
 | `TableConfigChangeHandler` | `(config: TableConfig, changeType: TableConfigChangeType) => void`. `changeType.type` is `"column-added"`, `"column-removed"`, `"column-moved"`, `"column-resized"`, `"column-pinned"`, `"columns-hidden"`, `"calculated-column-added"` or `"settings-panel"`. |
 | `RowActionHandler`         | `(rowActionId: string, dataRow: DataRow) => void`                               |
 | `TableCellBlock`           | `{ columnRange: VuuRange; rowRange: VuuRange }`                                 |
+
+## TablePinnedRows
+
+| Property         | Type                   | Default                | Description                                                                 |
+| ---------------- | ---------------------- | ---------------------- | --------------------------------------------------------------------------- |
+| `keys`           | `string[] \| number[]` |                        | Values of `keyColumn` for the rows to pin.                                  |
+| `keyColumn`      | `string`               | the table schema's key | The column that `keys` refer to.                                            |
+| `maxPinnedRows`  | `number`               | `5`                    | Keys beyond this limit are ignored, and those rows stay in the body.        |
+| `maxVisibleRows` | `number`               | `maxPinnedRows`        | With more pinned rows than this, the pinned area scrolls on its own.        |
 
 ## BaseRowProps
 

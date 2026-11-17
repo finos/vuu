@@ -5,8 +5,10 @@ import {
   type ToggleButtonGroupProps,
 } from "@salt-ds/core";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import { Table } from "@vuu-ui/vuu-table";
 import type { BaseRowProps, TableConfig } from "@vuu-ui/vuu-table-types";
+import { useData } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import {
   generateStockData,
@@ -259,5 +261,54 @@ export const LargeDataset = () => {
 
   return (
     <Table config={config} dataSource={dataSource} height={350} width={700} />
+  );
+};
+
+const pinnedRowsSchema = getSchema("instrumentPrices");
+
+export const PinnedRows = () => {
+  const { VuuDataSource } = useData();
+  const [pinnedKeys, setPinnedKeys] = useState(["AAOP.N", "AAOT.PA"]);
+
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: [
+        { name: "ric", pin: "left", width: 100 },
+        { name: "description", width: 180 },
+        { name: "currency", width: 80 },
+        { name: "bid", type: "number" },
+        { name: "ask", type: "number" },
+        { name: "last", type: "number" },
+      ],
+      rowSeparators: true,
+    }),
+    [],
+  );
+
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: pinnedRowsSchema.table }),
+    [VuuDataSource],
+  );
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) =>
+    setPinnedKeys(
+      e.currentTarget.value === "none" ? [] : e.currentTarget.value.split(","),
+    );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <ToggleButtonGroup onChange={handleChange} value={pinnedKeys.join(",")}>
+        <ToggleButton value="AAOP.N,AAOT.PA">Pin two</ToggleButton>
+        <ToggleButton value="AAOQ.OQ,AAOU.MI,AAOV.FR">Pin three</ToggleButton>
+        <ToggleButton value="none">None</ToggleButton>
+      </ToggleButtonGroup>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={300}
+        pinnedRows={{ keys: pinnedKeys }}
+        width="100%"
+      />
+    </div>
   );
 };

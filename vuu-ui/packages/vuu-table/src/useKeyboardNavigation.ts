@@ -125,6 +125,10 @@ export interface NavigationHookProps {
   highlightedIndex?: number;
   label?: string;
   navigationStyle: TableNavigationStyle;
+  /**
+   * Pinned rows are included in headerCount, but are navigable data rows.
+   */
+  pinnedRowCount?: number;
   viewportRange: VuuRange;
   onHighlight?: (idx: number) => void;
   onToggleGroup: GroupToggleHandler;
@@ -147,6 +151,7 @@ export const useKeyboardNavigation = ({
   headerCount,
   highlightedIndex: highlightedIndexProp,
   navigationStyle,
+  pinnedRowCount = 0,
   requestScroll,
   onHighlight,
   onToggleGroup,
@@ -201,13 +206,20 @@ export const useKeyboardNavigation = ({
       key: "PageDown" | "PageUp" | "Home" | "End",
       [rowIdx, colIdx]: CellPos,
     ): CellPos => {
-      const minRowIndex = headerCount + 1;
+      // Home and PageUp treat pinned rows and body rows as a single list
+      const minRowIndex = headerCount - pinnedRowCount + 1;
       let newRowIdx = rowIdx;
       switch (key) {
         case "PageDown": {
           newRowIdx = Math.min(maxRowIndex, rowIdx + viewportRowCount);
           if (newRowIdx !== rowIdx) {
-            requestScroll?.({ type: "scroll-page", direction: "down" });
+            if (rowIdx <= headerCount) {
+              // From a pinned row, the target is within the first page of
+              // the body.
+              requestScroll?.({ type: "scroll-end", direction: "home" });
+            } else {
+              requestScroll?.({ type: "scroll-page", direction: "down" });
+            }
           }
           break;
         }
@@ -235,7 +247,7 @@ export const useKeyboardNavigation = ({
       }
       return [newRowIdx, colIdx];
     },
-    [headerCount, maxRowIndex, requestScroll, viewportRowCount],
+    [headerCount, maxRowIndex, pinnedRowCount, requestScroll, viewportRowCount],
   );
 
   const handleFocus = useCallback(() => {
