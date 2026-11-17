@@ -14,3 +14,16 @@ export const TraderLimits = () => (
     <TraderLimitsPage showNextBusinessDay />
   </LocalDataSourceProvider>
 );
+
+/**
+ * As Trader limits, with the View/Edit toggle in the page header, outside
+ * the EditableTable. A DataEditingProvider around the page holds the mode,
+ * so the toggle and the table share it, and the page reads it with
+ * `useDataEditingControl` to disable Download and Import while editing.
+ * @title Trader limits, toggle in page header
+ */
+export const TraderLimitsHeaderToggle = () => (
+  <LocalDataSourceProvider>
+    <TraderLimitsPage modeTogglePlacement="header" showNextBusinessDay />
+  </LocalDataSourceProvider>
+);
