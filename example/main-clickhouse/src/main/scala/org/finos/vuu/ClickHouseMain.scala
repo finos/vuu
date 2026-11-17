@@ -49,17 +49,15 @@ object ClickHouseMain extends App with StrictLogging {
     .withUsername(container.getDefaultUsername)
     .withPassword(container.getDefaultPassword))
 
-  private val config = VuuServerConfig(
-    createWebSocketOptions(defaultConfig),
-    VuuSecurityOptions()
-      .withLoginTokenService(loginTokenService),
-    VuuThreadingOptions()
+  private val config = VuuServerConfig()
+    .withWebSocketOptions(createWebSocketOptions(defaultConfig))
+    .withSecurityOptions(VuuSecurityOptions()
+      .withLoginTokenService(loginTokenService))
+    .withThreadingOptions(VuuThreadingOptions()
       .withViewPortThreads(4)
-      .withTreeThreads(4),
-    VuuClientConnectionOptions()
-      .withHeartbeatEnabled(),
-    httpServerFactory = createHttpServerFactory(defaultConfig)
-  ).withModule(AuthNModule(loginTokenService))
+      .withTreeThreads(4))
+    .withHttpServerFactory(createHttpServerFactory(defaultConfig))
+    .withModule(AuthNModule(loginTokenService))
     .withModule(ClickHouseTableModule(client))
     .withPlugin(VirtualizedTablePlugin)
 
