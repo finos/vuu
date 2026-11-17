@@ -583,7 +583,7 @@ const FormProvider = ({
  * Internal: the provider behind `EditableTable`. Owns the editing state
  * shared by the `TableEditor` components: the edit session and, with a side
  * panel, the selected row and the panel. The mode (view, edit or create) is
- * owned by the enclosing `DataEditingProvider`, with which this registers
+ * owned by the enclosing `DataEditingModeProvider`, with which this registers
  * how the table enters and leaves edit mode.
  * Lay out `TableEditorTable`, `TableEditorForm`, `TableEditorButtons` etc
  * anywhere inside it; read its state with `useTableEditor`.

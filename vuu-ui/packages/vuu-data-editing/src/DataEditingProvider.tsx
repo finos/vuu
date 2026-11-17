@@ -25,7 +25,7 @@ const DataEditingContext = createContext<TableEditSession | undefined>(
 export type DataEditingMode = "view" | "edit" | "create";
 
 /**
- * The editing state shared by everything inside a `DataEditingProvider`,
+ * The editing state shared by everything inside a `DataEditingModeProvider`,
  * e.g. an `EditModeToggle` in a page header and the `EditableTable` it
  * controls.
  */
@@ -48,7 +48,7 @@ export interface DataEditingState {
 }
 
 /**
- * How the editable component inside a `DataEditingProvider` enters and
+ * How the editable component inside a `DataEditingModeProvider` enters and
  * leaves edit mode. Registered with `useDataEditingEditor`.
  */
 export interface DataEditingEditor {
@@ -71,7 +71,7 @@ const DataEditingControlContext = createContext<DataEditingControl | undefined>(
   undefined,
 );
 
-export interface DataEditingSessionProviderProps {
+export interface DataEditingProviderProps {
   children: ReactNode;
   /** Provides this session to the edit controls inside. */
   editSession: TableEditSession;
@@ -86,14 +86,14 @@ export interface DataEditingModeProviderProps {
   onModeChange?: (mode: DataEditingMode) => void;
 }
 
-export type DataEditingProviderProps =
-  | DataEditingSessionProviderProps
-  | DataEditingModeProviderProps;
-
-const SessionProvider = ({
+/**
+ * Provides an edit session to the edit controls inside it, e.g. the cells of
+ * a Table or an `EditField`. Read it with `useEditSession`.
+ */
+export const DataEditingProvider = ({
   children,
   editSession,
-}: DataEditingSessionProviderProps) => (
+}: DataEditingProviderProps) => (
   <DataEditingContext.Provider value={editSession}>
     {children}
   </DataEditingContext.Provider>
@@ -101,7 +101,15 @@ const SessionProvider = ({
 
 let warnedSecondEditor = false;
 
-const ModeProvider = ({
+/**
+ * Owns the editing mode (view, edit or create) of an editable component,
+ * e.g. an `EditableTable`, and shares it with controls placed anywhere
+ * inside, e.g. an `EditModeToggle` in a page header. The editable component
+ * registers how it enters and leaves edit mode, and its edit session, which
+ * `useEditSession` then returns. Read the state with `useDataEditing`.
+ * `useEditMode` follows the mode too.
+ */
+export const DataEditingModeProvider = ({
   children,
   defaultMode = "view",
   mode: modeProp,
@@ -139,7 +147,7 @@ const ModeProvider = ({
         ) {
           warnedSecondEditor = true;
           console.warn(
-            "[DataEditingProvider] more than one editable component registered, only the last one is controlled",
+            "[DataEditingModeProvider] more than one editable component registered, only the last one is controlled",
           );
         }
         editorRef.current = editor;
@@ -201,38 +209,22 @@ const ModeProvider = ({
 };
 
 /**
- * Shares editing state with the edit controls inside it.
- *
- * - With `editSession`: provides that session, e.g. to the cells of a Table.
- * - Without `editSession`: owns the editing mode (view, edit or create) of
- *   an editable component, e.g. an `EditableTable`, and shares it with
- *   controls placed anywhere inside, e.g. an `EditModeToggle` in a page
- *   header. The editable component registers how it enters and leaves edit
- *   mode, and its edit session, which `useEditSession` then returns. Read
- *   the state with `useDataEditing`. `useEditMode` follows the mode too.
- */
-export const DataEditingProvider = (props: DataEditingProviderProps) =>
-  "editSession" in props ? (
-    <SessionProvider {...props} />
-  ) : (
-    <ModeProvider {...props} />
-  );
-
-/**
- * The editing state of the enclosing `DataEditingProvider` (without
- * `editSession`), or undefined if there is none.
+ * The editing state of the enclosing `DataEditingModeProvider`, or undefined
+ * if there is none.
  */
 export const useDataEditingControl = () =>
   useContext(DataEditingControlContext);
 
 /**
- * The editing state of the enclosing `DataEditingProvider`. Throws if there
- * is none.
+ * The editing state of the enclosing `DataEditingModeProvider`. Throws if
+ * there is none.
  */
 export const useDataEditing = (componentName = "useDataEditing") => {
   const control = useContext(DataEditingControlContext);
   if (control === undefined) {
-    throw Error(`${componentName} must be used within a DataEditingProvider`);
+    throw Error(
+      `${componentName} must be used within a DataEditingModeProvider`,
+    );
   }
   return control as DataEditingState;
 };
@@ -247,15 +239,18 @@ export interface DataEditingEditorHookProps extends DataEditingEditor {
 const useControl = (componentName: string) => {
   const control = useContext(DataEditingControlContext);
   if (control === undefined) {
-    throw Error(`${componentName} must be used within a DataEditingProvider`);
+    throw Error(
+      `${componentName} must be used within a DataEditingModeProvider`,
+    );
   }
   return control;
 };
 
 /**
- * For an editable component: the mode of the enclosing `DataEditingProvider`
- * and `setMode`, which changes it directly. Register how the component
- * enters and leaves edit mode with `useDataEditingEditor`.
+ * For an editable component: the mode of the enclosing
+ * `DataEditingModeProvider` and `setMode`, which changes it directly.
+ * Register how the component enters and leaves edit mode with
+ * `useDataEditingEditor`.
  */
 export const useDataEditingMode = (componentName: string) => {
   const { mode, registry } = useControl(componentName);
@@ -264,7 +259,7 @@ export const useDataEditingMode = (componentName: string) => {
 
 /**
  * Called by an editable component to register with the enclosing
- * `DataEditingProvider`, which then routes mode changes, e.g. from an
+ * `DataEditingModeProvider`, which then routes mode changes, e.g. from an
  * `EditModeToggle`, through `startEdit` and `cancel`.
  */
 export const useDataEditingEditor = (
@@ -291,7 +286,8 @@ export const useDataEditingEditor = (
 };
 
 /**
- * Returns the EditSession provided by an enclosing DataEditingProvider. If the
+ * Returns the EditSession provided by an enclosing DataEditingProvider, or
+ * registered with an enclosing DataEditingModeProvider. If the
  * provider holds some other TableEditSession (e.g. DirectEditSession), there is
  * no EditSession in scope and undefined is returned.
  */
