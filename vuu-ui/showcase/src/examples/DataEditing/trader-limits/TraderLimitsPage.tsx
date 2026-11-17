@@ -1,4 +1,9 @@
 import { Button, Text } from "@salt-ds/core";
+import {
+  DataEditingProvider,
+  EditModeToggle,
+  useDataEditingControl,
+} from "@vuu-ui/vuu-data-editing";
 import { limitsModule } from "@vuu-ui/vuu-data-test";
 import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
@@ -43,6 +48,15 @@ import "./TraderLimits.css";
 
 export interface TraderLimitsPageProps {
   /**
+   * Where the View/Edit toggle goes.
+   * - `toolbar`: in the table's toolbar. The page holds the mode and passes
+   *   it to `EditableTable`.
+   * - `header`: in the page header, outside the `EditableTable`. The page is
+   *   wrapped in a `DataEditingProvider`, which holds the mode.
+   * @default "toolbar"
+   */
+  modeTogglePlacement?: "toolbar" | "header";
+  /**
    * Show a button that simulates the start of the next business day, when
    * Pending limits become Active. Only works with local data.
    */
@@ -53,6 +67,7 @@ const toColumnNames = (columns: readonly { name: string }[]) =>
   new Set(columns.map(({ name }) => name));
 
 const TraderLimitsContent = ({
+  modeTogglePlacement = "toolbar",
   showNextBusinessDay = false,
 }: TraderLimitsPageProps) => {
   const { VuuDataSource } = useData();
@@ -64,7 +79,11 @@ const TraderLimitsContent = ({
       }),
     [VuuDataSource],
   );
-  const [mode, setMode] = useState<EditableTableMode>("view");
+  // Within a DataEditingProvider, the provider holds the mode and the
+  // EditableTable uses it. Otherwise the page holds it.
+  const dataEditing = useDataEditingControl();
+  const [pageMode, setPageMode] = useState<EditableTableMode>("view");
+  const mode = dataEditing?.mode ?? pageMode;
   const { chooseFile, importElements } = useLimitsImport(dataSource);
 
   const columnModel = useMemo(
@@ -112,16 +131,21 @@ const TraderLimitsContent = ({
 
   return (
     <div className="TraderLimits-main">
-      <Text styleAs="h2">Trader limits</Text>
+      <div className="TraderLimits-header">
+        <Text styleAs="h2">Trader limits</Text>
+        {modeTogglePlacement === "header" ? (
+          <EditModeToggle testId="-header" />
+        ) : null}
+      </div>
       <EditableTable
         allowDelete
         dataSource={dataSource}
-        mode={mode}
-        onModeChange={setMode}
+        mode={dataEditing ? undefined : pageMode}
+        onModeChange={dataEditing ? undefined : setPageMode}
         rowDefaults={traderLimitRowDefaults}
       >
         <TableEditorToolbar>
-          <TableEditorModeToggle />
+          {modeTogglePlacement === "toolbar" ? <TableEditorModeToggle /> : null}
           <div className="TraderLimits-toolbarSpacer" />
           {showNextBusinessDay ? (
             <Button
@@ -165,6 +189,8 @@ const TraderLimitsContent = ({
  *   existing row, delete rows. Changes are applied on Save.
  * - Download a CSV template, fill it in and Import it.
  * - The column picker, from the footer, opens in the context panel.
+ * - With `modeTogglePlacement="header"`, the View/Edit toggle is in the
+ *   page header, outside the table.
  */
 export const TraderLimitsPage = (props: TraderLimitsPageProps) => {
   const [contextPanelProps, setContextPanelProps] = useState<
@@ -187,7 +213,13 @@ export const TraderLimitsPage = (props: TraderLimitsPageProps) => {
       showContextPanel={showContextPanel}
     >
       <div className="TraderLimits">
-        <TraderLimitsContent {...props} />
+        {props.modeTogglePlacement === "header" ? (
+          <DataEditingProvider>
+            <TraderLimitsContent {...props} />
+          </DataEditingProvider>
+        ) : (
+          <TraderLimitsContent {...props} />
+        )}
         <ContextPanel
           {...contextPanelProps}
           id={VuuShellLocation.ContextPanel}
