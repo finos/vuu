@@ -14,7 +14,7 @@ export interface EditModeContextProps {
 
 let warnedMissingProvider = false;
 
-/** Internal: also provided by `DataEditingProvider`. */
+/** Internal: also provided by `DataEditingModeProvider`. */
 export const EditModeContext = createContext<EditModeContextProps>({
   isEditMode: false,
   setEditMode: () => {

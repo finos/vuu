@@ -377,7 +377,7 @@ Cancel; Done returns the form to read-only.
 | `editStrategy` | How existing rows are edited: `"inline"` (default) or `"form"`. |
 | `createStrategy` | How rows are added: `"inline"` (default with inline editing) or `"form"`. |
 | `editModel` | `"session"` (default) or `"direct"`. |
-| `mode`, `defaultMode`, `onModeChange` | `"view"`, `"edit"`, or (with a create form) `"create"`. Use `mode` with `onModeChange` to control the mode from the parent. `defaultMode` is `"edit"` for inline direct editing, otherwise `"view"`. Within a `DataEditingProvider`, set these on the provider instead. |
+| `mode`, `defaultMode`, `onModeChange` | `"view"`, `"edit"`, or (with a create form) `"create"`. Use `mode` with `onModeChange` to control the mode from the parent. `defaultMode` is `"edit"` for inline direct editing, otherwise `"view"`. Within a `DataEditingModeProvider`, set these on the provider instead. |
 | `onSaved`, `onCancelled` | Called after a successful save or cancel. |
 | `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./09-ErrorHandling.mdx). |
 | `className`, `style` | For the container. |
@@ -649,14 +649,17 @@ const [mode, setMode] = useState<EditableTableMode>("view");
 ### The View/Edit toggle outside the table
 
 To put the View/Edit toggle somewhere else on the page, such as a page
-header, wrap the page in a `DataEditingProvider` and place an
+header, wrap the page in a `DataEditingModeProvider` and place an
 `EditModeToggle` anywhere inside it. The provider holds the mode; the
 `EditableTable` inside it uses that, rather than a mode of its own.
 
 ```tsx
-import { DataEditingProvider, EditModeToggle } from "@vuu-ui/vuu-data-editing";
+import {
+  DataEditingModeProvider,
+  EditModeToggle,
+} from "@vuu-ui/vuu-data-editing";
 
-<DataEditingProvider>
+<DataEditingModeProvider>
   <PageHeader>
     <EditModeToggle />
   </PageHeader>
@@ -664,7 +667,7 @@ import { DataEditingProvider, EditModeToggle } from "@vuu-ui/vuu-data-editing";
     <TableEditorTable config={config} />
     <EditableTableFooter />
   </EditableTable>
-</DataEditingProvider>;
+</DataEditingModeProvider>;
 ```
 
 The toggle behaves as the table's own toggle does: switching to View asks

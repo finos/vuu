@@ -1,4 +1,5 @@
 export {
+  DataEditingModeProvider,
   DataEditingProvider,
   useDataEditing,
   useDataEditingControl,
@@ -11,7 +12,6 @@ export {
   type DataEditingMode,
   type DataEditingModeProviderProps,
   type DataEditingProviderProps,
-  type DataEditingSessionProviderProps,
   type DataEditingState,
 } from "./DataEditingProvider";
 export { EditModeToggle, type EditModeToggleProps } from "./EditModeToggle";
