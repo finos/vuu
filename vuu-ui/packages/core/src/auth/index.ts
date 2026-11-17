@@ -8,6 +8,14 @@ export {
   type AuthenticationErrorBoundaryProps
 } from "./AuthenticationErrorBoundary";
 export {
+  AuthenticationErrorScreen,
+  type AuthenticationErrorScreenProps
+} from "./AuthenticationErrorScreen";
+export {
+  describeAuthenticationError,
+  type AuthenticationErrorDescription
+} from "./describe-authentication-error";
+export {
   AuthenticationConfigurationError, AuthenticationProvider, normalizeVuuAuthTarget, useAuthenticatedUser,
   useIdentityToken,
   useModuleRegistry,
@@ -30,7 +38,10 @@ export type {
   AuthHandlerClass,
   User
 } from "./AuthHandler";
-export { KeycloakAuthHandler } from "./KeycloakAuthHandler";
+export {
+  IdentityProviderUnavailableError,
+  KeycloakAuthHandler
+} from "./KeycloakAuthHandler";
 export { VuuAuthHandler } from './VuuAuthHandler';
 export {
   authenticateWithUsernamePassword,

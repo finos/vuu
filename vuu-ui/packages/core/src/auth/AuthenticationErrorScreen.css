@@ -1,0 +1,68 @@
+.vuuAuthenticationErrorScreen {
+  align-items: center;
+  background: var(--salt-container-secondary-background);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--salt-spacing-300);
+}
+
+.vuuAuthenticationErrorScreen-panel {
+  background: var(--salt-container-primary-background);
+  border: var(--salt-size-border) var(--salt-container-borderStyle) var(--salt-container-primary-borderColor);
+  border-radius: var(--salt-palette-corner, 8px);
+  border-top: 4px solid var(--salt-status-error-borderColor);
+  box-shadow: var(--salt-overlayable-shadow-popout);
+  box-sizing: border-box;
+  max-width: 560px;
+  padding: var(--salt-spacing-400);
+  width: 100%;
+}
+
+.vuuAuthenticationErrorScreen-heading {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-150);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.vuuAuthenticationErrorScreen-icon {
+  --vuu-icon-size: 24px;
+  flex: none;
+}
+
+.vuuAuthenticationErrorScreen-checks {
+  margin: var(--salt-spacing-100) 0 0;
+  padding-left: var(--salt-spacing-300);
+
+  li + li {
+    margin-top: var(--salt-spacing-50);
+  }
+}
+
+.vuuAuthenticationErrorScreen-actions {
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAuthenticationErrorScreen-details {
+  background: var(--salt-container-secondary-background);
+  border-radius: var(--salt-palette-corner-weak, 4px);
+  color: var(--salt-content-secondary-foreground);
+  font-family: var(--salt-text-code-fontFamily, monospace);
+  font-size: var(--salt-text-label-fontSize);
+  margin: 0;
+  max-height: 200px;
+  overflow: auto;
+  padding: var(--salt-spacing-150);
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  &[hidden] {
+    display: none;
+  }
+}

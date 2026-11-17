@@ -53,6 +53,8 @@ export class VuuConnectionError extends Error {
   /** Set when the VUU server rejected the login, e.g. an invalid or expired token. */
   readonly loginError?: LoginErrorMessage;
   readonly status?: number;
+  /** The token exchange endpoint, when the token exchange failed. */
+  readonly url?: string;
 
   constructor(
     readonly connectionId: string,
@@ -72,6 +74,7 @@ export class VuuConnectionError extends Error {
     if (cause instanceof VuuTokenExchangeError) {
       this.failure = cause.failure;
       this.status = cause.status;
+      this.url = cause.url;
     }
     if (isLoginErrorMessage(causeMessage)) {
       this.loginError = causeMessage;

@@ -1,6 +1,7 @@
 import { init } from "@module-federation/enhanced/runtime";
 import {
   AuthenticationErrorBoundary,
+  AuthenticationErrorScreen,
   AuthenticationProvider,
   KeycloakAuthHandler,
 } from "@vuu-ui/core";
@@ -8,6 +9,7 @@ import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { loadThemeMode } from "./theme-mode";
 
 import "@vuu-ui/vuu-icons/index.css";
 
@@ -38,7 +40,7 @@ async function start(): Promise<void> {
     root.render(
       <AuthenticationErrorBoundary
         fallback={(error) => (
-          <div role="alert">Unable to authenticate: {error.message}</div>
+          <AuthenticationErrorScreen error={error} mode={loadThemeMode()} />
         )}
       >
         <AuthenticationProvider

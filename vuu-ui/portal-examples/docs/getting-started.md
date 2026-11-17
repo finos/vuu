@@ -311,11 +311,7 @@ const root = document.getElementById("root");
 if (!root) throw new Error("No React root defined in page");
 
 createRoot(root).render(
-  <AuthenticationErrorBoundary
-    fallback={(error) => (
-      <div role="alert">Unable to authenticate: {error.message}</div>
-    )}
-  >
+  <AuthenticationErrorBoundary>
     <AuthenticationProvider
       authConfig={config}
       authHandlerClass={KeycloakAuthHandler}
@@ -341,6 +337,23 @@ The active sequence is:
 
 The portal server is responsible for returning only modules the user is
 authorized to access.
+
+If any of the first three steps fails, `AuthenticationErrorBoundary` replaces
+the portal with an `AuthenticationErrorScreen`. It says what failed, what to
+check and has a Try again button. Each failure has its own message:
+
+- **Keycloak can't be reached** (`IdentityProviderUnavailableError`):
+  `KeycloakAuthHandler` checks this before starting sign-in, so it's reported
+  within seconds.
+- **The Vuu server can't be reached** (`VuuConnectionError` with failure
+  `service-unavailable`).
+- **The Vuu server rejects the sign-in or denies access.**
+- **The configuration is invalid** (`AuthenticationConfigurationError`).
+
+Pass `fallback` to render something else, or render
+`AuthenticationErrorScreen` yourself to set its light or dark `mode`.
+`describeAuthenticationError` returns the screen's text for any of these
+errors.
 
 ### Configure local mode
 

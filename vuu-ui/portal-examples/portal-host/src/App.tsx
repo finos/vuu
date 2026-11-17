@@ -16,6 +16,7 @@ import {
 } from "react";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 import { PortalDemoNav } from "./PortalDemoNav";
+import { loadThemeMode, saveThemeMode } from "./theme-mode";
 
 import "./App.css";
 
@@ -30,24 +31,6 @@ const workspaces: PortalWorkspacesOptions = {
   // The portal example offers Vuu tables only, not modules.
   palette: { tabs: ["tables"] },
   settingsCodecs,
-};
-
-const THEME_MODE_KEY = "portal-demo-theme-mode";
-
-const loadThemeMode = (): Mode => {
-  try {
-    return localStorage.getItem(THEME_MODE_KEY) === "dark" ? "dark" : "light";
-  } catch {
-    return "light";
-  }
-};
-
-const saveThemeMode = (mode: Mode) => {
-  try {
-    localStorage.setItem(THEME_MODE_KEY, mode);
-  } catch {
-    // Storage unavailable: the choice lasts for this page only.
-  }
 };
 
 export interface AppProps {

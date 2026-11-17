@@ -59,6 +59,21 @@ describe("exchangeVuuToken", () => {
     await expect(exchange).rejects.toThrow(message);
   });
 
+  it("reports an unreachable server as service-unavailable, with its url", async () => {
+    const cause = new TypeError("Failed to fetch");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(cause));
+
+    await expect(
+      exchangeVuuToken("identity-token", target),
+    ).rejects.toMatchObject({
+      cause,
+      failure: "service-unavailable",
+      name: "VuuTokenExchangeError",
+      status: undefined,
+      url: target.restUrl,
+    });
+  });
+
   it("forwards a profile-specific authentication endpoint", async () => {
     const moduleAdminTarget = {
       connectionId: "module-admin",

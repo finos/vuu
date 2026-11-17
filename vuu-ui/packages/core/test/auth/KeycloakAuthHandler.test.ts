@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const keycloak = vi.hoisted(() => ({
   init: vi.fn().mockResolvedValue(true),
@@ -23,9 +23,23 @@ vi.mock("keycloak-js", () => ({
   },
 }));
 
+const authConfig = {
+  authUrl: "https://identity.example.test/",
+  restUrl: "https://vuu.example.test/api/authn",
+  websocketUrl: "wss://vuu.example.test/websocket",
+};
+
 describe("KeycloakAuthHandler", () => {
+  const fetchMock = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("initializes Keycloak once and refreshes the identity token", async () => {
@@ -88,5 +102,42 @@ describe("KeycloakAuthHandler", () => {
       "identity-token",
       "identity-token",
     ]);
+  });
+
+  describe("when the identity provider can't be reached", () => {
+    beforeEach(() => {
+      vi.resetModules();
+      fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+    });
+
+    it("reports the url without initializing Keycloak", async () => {
+      const { IdentityProviderUnavailableError, KeycloakAuthHandler } =
+        await import("../../src/auth/KeycloakAuthHandler");
+      const handler = new KeycloakAuthHandler(authConfig);
+
+      const error = await handler.authenticate().catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(IdentityProviderUnavailableError);
+      expect(error).toMatchObject({ url: "https://identity.example.test" });
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://identity.example.test/realms/vuu/.well-known/openid-configuration",
+        expect.objectContaining({ mode: "no-cors" }),
+      );
+      expect(keycloak.init).not.toHaveBeenCalled();
+    });
+
+    it("tries again on the next authenticate", async () => {
+      const { KeycloakAuthHandler } = await import(
+        "../../src/auth/KeycloakAuthHandler"
+      );
+      const handler = new KeycloakAuthHandler(authConfig);
+      await expect(handler.authenticate()).rejects.toThrow();
+
+      fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+      await expect(handler.authenticate()).resolves.toMatchObject({
+        user: { userName: "alice" },
+      });
+      expect(keycloak.init).toHaveBeenCalledTimes(1);
+    });
   });
 });

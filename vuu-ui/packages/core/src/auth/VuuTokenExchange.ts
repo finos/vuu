@@ -53,15 +53,19 @@ const getFailureMessage = (target: VuuAuthTarget, status: number) => {
 
 export class VuuTokenExchangeError extends Error {
   readonly failure: VuuTokenExchangeFailure;
+  /** The token exchange endpoint, when known. */
+  readonly url?: string;
 
   constructor(
     message: string,
     readonly status?: number,
     failure: VuuTokenExchangeFailure = getFailure(status),
+    options?: ErrorOptions & { url?: string },
   ) {
-    super(message);
+    super(message, options);
     this.name = "VuuTokenExchangeError";
     this.failure = failure;
+    this.url = options?.url;
   }
 }
 
@@ -126,10 +130,20 @@ export const exchangeVuuToken = async (
     identityToken: identityTokenDiagnostics,
     restUrl: target.restUrl,
   });
-  const response = await fetch(target.restUrl, {
-    headers: { Authorization: `Bearer ${identityToken}` },
-    method: "POST",
-  });
+  let response: Response;
+  try {
+    response = await fetch(target.restUrl, {
+      headers: { Authorization: `Bearer ${identityToken}` },
+      method: "POST",
+    });
+  } catch (cause) {
+    throw new VuuTokenExchangeError(
+      `Unable to reach the VUU authentication service at ${target.restUrl}`,
+      undefined,
+      "service-unavailable",
+      { cause, url: target.restUrl },
+    );
+  }
   console.info("[VuuTokenExchange] token response", {
     connectionId: target.connectionId,
     status: response.status,
@@ -138,6 +152,8 @@ export const exchangeVuuToken = async (
     throw new VuuTokenExchangeError(
       getFailureMessage(target, response.status),
       response.status,
+      undefined,
+      { url: target.restUrl },
     );
   }
 
@@ -150,6 +166,9 @@ export const exchangeVuuToken = async (
   ) {
     throw new VuuTokenExchangeError(
       `VUU token exchange returned no token for ${target.connectionId}`,
+      undefined,
+      undefined,
+      { url: target.restUrl },
     );
   }
 
