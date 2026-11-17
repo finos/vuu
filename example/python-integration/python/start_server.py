@@ -405,33 +405,31 @@ def main() -> None:
     ssl = VuuSSLByCertAndKey(cert_path, key_path, ScalaOption.empty(), VuuSSLCipherSuiteOptions.apply())
 
     config = (
-        VuuServerConfig(
-            VuuWebSocketOptions.apply()
-            .withUri("websocket")
-            .withWsPort(WS_PORT)
-            .withSsl(ssl)
-            .withBindAddress("0.0.0.0"),
-            VuuSecurityOptions.apply().withLoginTokenService(login_token_service),
-            VuuThreadingOptions.apply().withTreeThreads(1).withViewPortThreads(1),
-            VuuClientConnectionOptions.apply().withHeartbeatEnabled(),
-            VuuJoinTableProviderOptions.apply(),
-            VuuRpcOptions.apply(),
-            ListBuffer().toList(),
-            ListBuffer().toList(),
-            VuuHttp2ServerFactory.apply(
-                VuuHttp2ServerOptions.apply()
-                .withWebRoot(AbsolutePathWebRoot(webroot, True))
+        VuuServerConfig config = VuuServerConfig.apply()
+            .withWebSocketOptions(VuuWebSocketOptions.apply()
+                .withUri("websocket")
+                .withWsPort(WS_PORT)
                 .withSsl(ssl)
-                .withPort(HTTPS_PORT)
-            ),
-        )
-        .withModule(PriceModule.apply(clock, lifecycle, table_def_container))
-        .withModule(SimulationModule.apply(clock, lifecycle, table_def_container))
-        .withModule(MetricsModule.apply(clock, lifecycle, metrics, table_def_container))
-        .withModule(
-            AuthNModule.apply(login_token_service, ScalaOption.empty(), clock, lifecycle, table_def_container)
-        )
-        .withModule(snakes_module)
+                .withBindAddress("0.0.0.0"))
+            .withSecurityOptions(VuuSecurityOptions.apply()
+                .withLoginTokenService(loginTokenService))
+            .withThreadingOptions(VuuThreadingOptions.apply()
+                .withTreeThreads(1)
+                .withViewPortThreads(1))
+            .withClientConnectionOptions(VuuClientConnectionOptions.apply()
+                .withHeartbeatEnabled())
+            .withHttpServerFactory(VuuHttp2ServerFactory.apply()
+                VuuHttp2ServerOptions.apply()
+                    .withWebRoot(AbsolutePathWebRoot(webroot, True))
+                    .withSsl(ssl)
+                    .withPort(HTTPS_PORT))
+            .withModule(PriceModule.apply(clock, lifecycle, table_def_container))
+            .withModule(SimulationModule.apply(clock, lifecycle, table_def_container))
+            .withModule(MetricsModule.apply(clock, lifecycle, metrics, table_def_container))
+            .withModule(
+                AuthNModule.apply(login_token_service, ScalaOption.empty(), clock, lifecycle, table_def_container)
+            )
+            .withModule(snakes_module)
     )
 
     server = VuuServer(config, lifecycle, clock, metrics)
