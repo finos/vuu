@@ -1,65 +1,80 @@
-import { describe, expect, it } from "vitest";
-import { constrainRange, getFullRange, rangeNewItems } from "../src/range-utils";
+import { describe, expect, it, vi } from "vitest";
+import {
+  constrainRange,
+  getFullRange,
+  rangeNewItems,
+} from "../src/range-utils";
 
 describe("range-utils", () => {
   describe("rangeNewItems", () => {
     it("returns new range when ranges do not overlap", () => {
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 0, to: 10 }, { from: 20, to: 30 })
-      ).toEqual({ from: 20, to: 30 });
+      expect(rangeNewItems({ from: 0, to: 10 }, { from: 20, to: 30 })).toEqual({
+        from: 20,
+        to: 30,
+      });
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 0, to: 10 }, { from: 10, to: 20 })
-      ).toEqual({ from: 10, to: 20 });
+      expect(rangeNewItems({ from: 0, to: 10 }, { from: 10, to: 20 })).toEqual({
+        from: 10,
+        to: 20,
+      });
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 20, to: 30 }, { from: 0, to: 10 })
-      ).toEqual({ from: 0, to: 10 });
+      expect(rangeNewItems({ from: 20, to: 30 }, { from: 0, to: 10 })).toEqual({
+        from: 0,
+        to: 10,
+      });
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 20, to: 30 }, { from: 10, to: 20 })
-      ).toEqual({ from: 10, to: 20 });
+      expect(rangeNewItems({ from: 20, to: 30 }, { from: 10, to: 20 })).toEqual(
+        { from: 10, to: 20 },
+      );
     });
     it("returns items when new range overlaps end of existing range", () => {
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 0, to: 10 }, { from: 1, to: 11 })
-      ).toEqual({ from: 10, to: 11 });
+      expect(rangeNewItems({ from: 0, to: 10 }, { from: 1, to: 11 })).toEqual({
+        from: 10,
+        to: 11,
+      });
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 0, to: 10 }, { from: 3, to: 13 })
-      ).toEqual({ from: 10, to: 13 });
+      expect(rangeNewItems({ from: 0, to: 10 }, { from: 3, to: 13 })).toEqual({
+        from: 10,
+        to: 13,
+      });
     });
     it("returns items when new range overlaps start of existing range", () => {
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 10, to: 20 }, { from: 2, to: 12 })
-      ).toEqual({ from: 2, to: 10 });
+      expect(rangeNewItems({ from: 10, to: 20 }, { from: 2, to: 12 })).toEqual({
+        from: 2,
+        to: 10,
+      });
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 5, to: 15 }, { from: 0, to: 10 })
-      ).toEqual({ from: 0, to: 5 });
+      expect(rangeNewItems({ from: 5, to: 15 }, { from: 0, to: 10 })).toEqual({
+        from: 0,
+        to: 5,
+      });
     });
     it("returns items when new range extends existing range", () => {
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 0, to: 10 }, { from: 0, to: 12 })
-      ).toEqual({ from: 10, to: 12 });
+      expect(rangeNewItems({ from: 0, to: 10 }, { from: 0, to: 12 })).toEqual({
+        from: 10,
+        to: 12,
+      });
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 0, to: 10 }, { from: 0, to: 20 })
-      ).toEqual({ from: 10, to: 20 });
+      expect(rangeNewItems({ from: 0, to: 10 }, { from: 0, to: 20 })).toEqual({
+        from: 10,
+        to: 20,
+      });
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 5, to: 15 }, { from: 0, to: 15 })
-      ).toEqual({ from: 0, to: 5 });
+      expect(rangeNewItems({ from: 5, to: 15 }, { from: 0, to: 15 })).toEqual({
+        from: 0,
+        to: 5,
+      });
     });
     it("returns new range when original range is subset", () => {
       // prettier-ignore
-      expect(
-        rangeNewItems({ from: 5, to: 15 }, { from: 0, to: 20 })
-      ).toEqual({ from: 0, to: 20 });
+      expect(rangeNewItems({ from: 5, to: 15 }, { from: 0, to: 20 })).toEqual({
+        from: 0,
+        to: 20,
+      });
       // prettier-ignore
     });
   });
@@ -147,10 +162,34 @@ describe("range-utils", () => {
       });
     });
 
-    it("throws when maxRangeEnd cannot be applied to range", () => {
-      expect(() => constrainRange({ from: 20, to: 40 }, 20)).toThrow(
-        "constrainRange: cannot apply the maxRangeEnd 20 to range 20 - 40",
+    it("shifts a range that starts at or beyond maxRangeEnd to end at maxRangeEnd, and warns", () => {
+      const warn = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => undefined);
+      expect(constrainRange({ from: 2063381, to: 2063508 }, 100000)).toEqual({
+        from: 99873,
+        to: 100000,
+      });
+      expect(constrainRange({ from: 20, to: 40 }, 20)).toEqual({
+        from: 0,
+        to: 20,
+      });
+      expect(warn).toHaveBeenCalledTimes(2);
+      expect(warn.mock.calls[0][0]).toContain(
+        "range 2063381 - 2063508 is beyond maxRangeEnd 100000",
       );
+      warn.mockRestore();
+    });
+
+    it("applies maxRangeWidth to a shifted range", () => {
+      const warn = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => undefined);
+      expect(constrainRange({ from: 200, to: 300 }, 100, 30)).toEqual({
+        from: 0,
+        to: 30,
+      });
+      warn.mockRestore();
     });
   });
 });
