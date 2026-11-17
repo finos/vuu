@@ -14,10 +14,10 @@ import org.finos.vuu.core.module.editable.EditableModule
 import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
+import org.finos.vuu.example.notifications.module.SimulatedNotificationsModule
 import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
-import org.finos.vuu.example.notifications.module.SimulatedNotificationsModule
 import org.finos.vuu.http2.server.VuuHttp2ServerFactory
 import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.auth.LoginTokenService
@@ -40,7 +40,7 @@ object SimulMain extends App with StrictLogging {
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
   implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
-  val omsApi = OmsApi()
+  private val omsApi = OmsApi()
 
   logger.info("[VUU] Starting...")
 
@@ -50,17 +50,17 @@ object SimulMain extends App with StrictLogging {
 
   private val defaultConfig = ConfigFactory.load()
 
-  val config = VuuServerConfig(
-    createWebSocketOptions(defaultConfig),
-    VuuSecurityOptions()
-      .withLoginTokenService(loginTokenService),
-    VuuThreadingOptions()
-      .withViewPortThreads(4)
-      .withTreeThreads(4),
-    VuuClientConnectionOptions()
-      .withHeartbeatEnabled(),
-    httpServerFactory = createHttpServerFactory(defaultConfig)
-  ).withModule(PriceModule())
+  val config = VuuServerConfig()
+    .withWebSocketOptions(
+      createWebSocketOptions(defaultConfig))
+    .withSecurityOptions(VuuSecurityOptions()
+      .withLoginTokenService(loginTokenService))
+    .withThreadingOptions(VuuThreadingOptions()
+        .withViewPortThreads(4)
+        .withTreeThreads(4))
+    .withHttpServerFactory(
+      createHttpServerFactory(defaultConfig))
+    .withModule(PriceModule())
     .withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(AuthNModule(loginTokenService))
@@ -72,7 +72,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(SimulatedNotificationsModule())
     .withPlugin(VirtualizedTablePlugin)
 
-  val vuuServer = new VuuServer(config)
+  private val vuuServer = new VuuServer(config)
 
   //  LifecycleGraphviz("vuu", lifecycle.dependencyGraph)
 

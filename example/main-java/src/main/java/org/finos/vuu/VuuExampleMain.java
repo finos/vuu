@@ -5,9 +5,13 @@ import org.finos.toolbox.jmx.MetricsProviderImpl;
 import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
-import org.finos.vuu.core.*;
+import org.finos.vuu.core.VuuClientConnectionOptions;
+import org.finos.vuu.core.VuuSecurityOptions;
+import org.finos.vuu.core.VuuServer;
+import org.finos.vuu.core.VuuServerConfig;
+import org.finos.vuu.core.VuuThreadingOptions;
+import org.finos.vuu.core.VuuWebSocketOptions;
 import org.finos.vuu.core.module.TableDefContainer;
-import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.module.authn.AuthNModule;
 import org.finos.vuu.core.module.metrics.MetricsModule;
 import org.finos.vuu.core.module.price.PriceModule;
@@ -19,7 +23,6 @@ import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.net.auth.LoginTokenService;
 import org.finos.vuu.net.ssl.VuuSSLByCertAndKey;
 import org.finos.vuu.net.ssl.VuuSSLCipherSuiteOptions;
-import org.finos.vuu.plugin.Plugin;
 import scala.Option;
 
 /**
@@ -45,28 +48,24 @@ public class VuuExampleMain {
         final String certPath = "example/main/src/main/resources/certs/cert.pem";
         final String keyPath = "example/main/src/main/resources/certs/key.pem";
 
-        final VuuServerConfig config = new VuuServerConfig(
-                VuuWebSocketOptions.apply()
+        final VuuServerConfig config = VuuServerConfig.apply()
+                .withWebSocketOptions(VuuWebSocketOptions.apply()
                         .withUri("websocket")
                         .withWsPort(8090)
                         .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
-                        .withBindAddress("0.0.0.0"),
-                VuuSecurityOptions.apply()
-                        .withLoginTokenService(loginTokenService),
-                VuuThreadingOptions.apply()
+                        .withBindAddress("0.0.0.0"))
+                .withSecurityOptions(VuuSecurityOptions.apply()
+                        .withLoginTokenService(loginTokenService))
+                .withThreadingOptions(VuuThreadingOptions.apply()
                         .withTreeThreads(4)
-                        .withViewPortThreads(4),
-                VuuClientConnectionOptions.apply()
-                        .withHeartbeatEnabled(),
-                VuuJoinTableProviderOptions.apply(),
-                VuuRpcOptions.apply(),
-                new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
-                new scala.collection.mutable.ListBuffer<Plugin>().toList(),
-                VuuHttp2ServerFactory.apply(VuuHttp2ServerOptions.apply()
+                        .withViewPortThreads(4))
+                .withClientConnectionOptions(VuuClientConnectionOptions.apply()
+                        .withHeartbeatEnabled())
+                .withHttpServerFactory(VuuHttp2ServerFactory.apply(VuuHttp2ServerOptions.apply()
                         .withWebRoot(new AbsolutePathWebRoot(webRoot, true))
                         .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
-                        .withPort(8443))
-        ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
+                        .withPort(8443)))
+                .withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
                 .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
                 .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
                 .withModule(AuthNModule.apply(loginTokenService, Option.empty(), clock, lifecycle, tableDefContainer))

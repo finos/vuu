@@ -139,6 +139,65 @@ trait VuuRpcOptions {
   def withMaxSessionTableSize(maxSessionTableSize: Int): VuuRpcOptions
 }
 
+trait VuuServerConfig {
+  def webSocketOptions: VuuWebSocketOptions
+
+  def securityOptions: VuuSecurityOptions
+
+  def threadingOptions: VuuThreadingOptions
+
+  def clientConnectionOptions: VuuClientConnectionOptions
+
+  def joinTableProviderOptions: VuuJoinTableProviderOptions
+
+  def rpcOptions: VuuRpcOptions
+
+  def modules: List[ViewServerModule]
+
+  def plugins: List[Plugin]
+
+  def httpServerFactory: HttpServerFactory
+
+  def withWebSocketOptions(webSocketOptions: VuuWebSocketOptions): VuuServerConfig
+
+  def withSecurityOptions(securityOptions: VuuSecurityOptions): VuuServerConfig
+
+  def withThreadingOptions(threadingOptions: VuuThreadingOptions): VuuServerConfig
+
+  def withClientConnectionOptions(clientConnectionOptions: VuuClientConnectionOptions): VuuServerConfig
+
+  def withJoinTableProviderOptions(joinTableProviderOptions: VuuJoinTableProviderOptions): VuuServerConfig
+
+  def withRpcOptions(rpcOptions: VuuRpcOptions): VuuServerConfig
+
+  def withModules(additionalModules: List[ViewServerModule]): VuuServerConfig
+
+  def withModule(module: ViewServerModule): VuuServerConfig
+
+  def withPlugins(additionalPlugins: List[Plugin]): VuuServerConfig
+
+  def withPlugin(plugin: Plugin): VuuServerConfig
+
+  def withHttpServerFactory(httpServerFactory: HttpServerFactory): VuuServerConfig
+}
+
+object VuuServerConfig {
+
+  def apply(): VuuServerConfig = {
+    VuuServerConfigImpl(
+      webSocketOptions = VuuWebSocketOptions(),
+      securityOptions = VuuSecurityOptions(),
+      threadingOptions = VuuThreadingOptions(),
+      clientConnectionOptions = VuuClientConnectionOptions(),
+      joinTableProviderOptions = VuuJoinTableProviderOptions(),
+      rpcOptions = VuuRpcOptions(),
+      modules = List.empty,
+      plugins = List.empty,
+      httpServerFactory = NoHttpServerFactory
+    )
+  }
+}
+
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                            uri: String,
                                            bindAddress: String,
@@ -153,7 +212,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
 
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
 
-  override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
+  override def withBindAddress(bindAddress: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
 
   override def withSslDisabled(): VuuWebSocketOptions = this.withSsl(VuuSSLDisabled)
 
@@ -176,7 +235,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
     this.copy(clientIdleTimeout = clientIdleTimeout)
 }
 
-case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: Int) extends VuuThreadingOptions {
+private case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: Int) extends VuuThreadingOptions {
   override def withViewPortThreads(threads: Int): VuuThreadingOptions = this.copy(viewPortThreads = threads)
 
   override def withTreeThreads(threads: Int): VuuThreadingOptions = this.copy(treeViewPortThreads = threads)
@@ -186,7 +245,7 @@ case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: In
   override def treeThreads: Int = treeViewPortThreads
 }
 
-case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
+private case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
   override def withHeartbeat(hasHeartbeat: Boolean): VuuClientConnectionOptions = this.copy(hasHeartbeat = hasHeartbeat)
 
   override def withHeartbeatEnabled(): VuuClientConnectionOptions = this.copy(true)
@@ -195,36 +254,73 @@ case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClie
 }
 
 
-case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
+private case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
   override def withBatchSize(batchSize: Int): VuuJoinTableProviderOptions = this.copy(batchSize = batchSize)
 
   override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
 }
 
-case class VuuRpcOptionsImpl(maxSessionTableSize: Int) extends VuuRpcOptions {
+private case class VuuRpcOptionsImpl(maxSessionTableSize: Int) extends VuuRpcOptions {
   override def withMaxSessionTableSize(maxSessionTableSize: Int): VuuRpcOptions = this.copy(maxSessionTableSize = maxSessionTableSize)
 }
 
-case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions {
+private case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions {
   override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions =
     this.copy(loginTokenService = loginTokenService)
 }
 
-case class VuuServerConfig(wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(),
-                           security: VuuSecurityOptions = VuuSecurityOptions(),
-                           threading: VuuThreadingOptions = VuuThreadingOptions(),
-                           clientConnection: VuuClientConnectionOptions = VuuClientConnectionOptions(),
-                           joinProvider: VuuJoinTableProviderOptions = VuuJoinTableProviderOptions(),
-                           rpcOptions: VuuRpcOptions = VuuRpcOptions(),
-                           modules: List[ViewServerModule] = List(),
-                           plugins: List[Plugin] = List(),
-                           httpServerFactory: HttpServerFactory = NoHttpServerFactory) {
+private case class VuuServerConfigImpl(webSocketOptions: VuuWebSocketOptions,
+                               securityOptions: VuuSecurityOptions,
+                               threadingOptions: VuuThreadingOptions,
+                               clientConnectionOptions: VuuClientConnectionOptions,
+                               joinTableProviderOptions: VuuJoinTableProviderOptions,
+                               rpcOptions: VuuRpcOptions,
+                               modules: List[ViewServerModule],
+                               plugins: List[Plugin],
+                               httpServerFactory: HttpServerFactory) extends VuuServerConfig {
+
+  def withWebSocketOptions(webSocketOptions: VuuWebSocketOptions): VuuServerConfig = {
+    this.copy(webSocketOptions = webSocketOptions)
+  }
+
+  def withSecurityOptions(securityOptions: VuuSecurityOptions): VuuServerConfig = {
+    this.copy(securityOptions = securityOptions)
+  }
+
+  def withThreadingOptions(threadingOptions: VuuThreadingOptions): VuuServerConfig = {
+    this.copy(threadingOptions = threadingOptions)
+  }
+
+  def withClientConnectionOptions(clientConnectionOptions: VuuClientConnectionOptions): VuuServerConfig = {
+    this.copy(clientConnectionOptions = clientConnectionOptions)
+  }
+
+  def withJoinTableProviderOptions(joinTableProviderOptions: VuuJoinTableProviderOptions): VuuServerConfig = {
+    this.copy(joinTableProviderOptions = joinTableProviderOptions)
+  }
+
+  def withRpcOptions(rpcOptions: VuuRpcOptions): VuuServerConfig = {
+    this.copy(rpcOptions = rpcOptions)
+  }
+
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
 
+  def withModules(additionalModules: List[ViewServerModule]): VuuServerConfig = {
+    this.copy(modules = modules ++ additionalModules)
+  }
+
   def withPlugin(plugin: Plugin): VuuServerConfig = {
     this.copy(plugins = plugins ++ List(plugin))
+  }
+
+  def withPlugins(additionalPlugins: List[Plugin]): VuuServerConfig = {
+    this.copy(plugins = plugins ++ additionalPlugins)
+  }
+
+  def withHttpServerFactory(httpServerFactory: HttpServerFactory): VuuServerConfig = {
+    this.copy(httpServerFactory = httpServerFactory)
   }
 
 }

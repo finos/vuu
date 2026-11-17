@@ -12,12 +12,12 @@ import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.http.HttpServer
-import org.finos.vuu.net.rest.{RestContext, RestService}
+import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.ws.WebSocketServer
-import org.finos.vuu.net.{ClientSessionContainer, MessageBody, ViewServerHandlerFactoryImpl}
+import org.finos.vuu.net.{ClientSessionContainer, ViewServerHandlerFactoryImpl}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
-import org.finos.vuu.viewport.{InMemViewPortTreeCallable, InMemViewPortTreeWorkItem, ViewPort, ViewPortAction, ViewPortContainer}
+import org.finos.vuu.viewport.{InMemViewPortTreeCallable, InMemViewPortTreeWorkItem, ViewPort, ViewPortContainer}
 
 import java.util.UUID
 import java.util.concurrent.{Callable, FutureTask}
@@ -34,13 +34,13 @@ class VuuServer(config: VuuServerConfig)
   final val pluginRegistry: PluginRegistry = PluginRegistry()
   pluginRegistry.registerPlugin(new VuuInMemPlugin())
 
-  final val loginTokenService: LoginTokenService = config.security.loginTokenService
+  final val loginTokenService: LoginTokenService = config.securityOptions.loginTokenService
 
-  final val flowControllerFactory: FlowControllerFactory =  FlowControllerFactory(config.clientConnection.hasHeartbeat)
+  final val flowControllerFactory: FlowControllerFactory = FlowControllerFactory(config.clientConnectionOptions.hasHeartbeat)
 
-  final val sessionContainer: ClientSessionContainer = ClientSessionContainer(config.wsOptions.maxSessionsPerUser)
+  final val sessionContainer: ClientSessionContainer = ClientSessionContainer(config.webSocketOptions.maxSessionsPerUser)
 
-  final val joinProvider: JoinTableProvider = JoinTableProviderImpl(config.joinProvider)
+  final val joinProvider: JoinTableProvider = JoinTableProviderImpl(config.joinTableProviderOptions)
 
   final val tableContainer = new TableContainer(joinProvider, config.rpcOptions)
 
@@ -60,7 +60,7 @@ class VuuServer(config: VuuServerConfig)
     moduleContainer, flowControllerFactory, vuuServerId)
 
   //order of creation here is important
-  final val server = new WebSocketServer(config.wsOptions, factory)
+  final val server = new WebSocketServer(config.webSocketOptions, factory)
 
   final private val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
 
@@ -72,10 +72,10 @@ class VuuServer(config: VuuServerConfig)
   private final val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
-  private val viewPortRunner = if(config.threading.viewportThreads == 1){
+  private val viewPortRunner = if (config.threadingOptions.viewportThreads == 1) {
     new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   } else {
-    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () => {
+    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threadingOptions.viewportThreads}]", config.threadingOptions.viewportThreads, () => {
       viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => {
         pluginRegistry.withPlugin(vp.table.asTable.getTableDef.pluginType) {
           plugin => plugin.viewPortCallableFactory.createWorkItem(vp, viewPortContainer)
@@ -98,10 +98,10 @@ class VuuServer(config: VuuServerConfig)
 
   lifecycle(viewPortRunner).dependsOn(server)
 
-  private val groupByRunner: LifeCycleRunner = if (config.threading.treeThreads == 1) {
+  private val groupByRunner: LifeCycleRunner = if (config.threadingOptions.treeThreads == 1) {
     new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
   } else {
-    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () => {
+    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threadingOptions.treeThreads}]", config.threadingOptions.treeThreads, () => {
       viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => InMemViewPortTreeWorkItem(vp, viewPortContainer))
     }) {
       override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = InMemViewPortTreeCallable(r, viewPortContainer)

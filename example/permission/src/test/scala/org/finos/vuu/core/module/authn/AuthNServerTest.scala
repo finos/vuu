@@ -10,7 +10,7 @@ import org.finos.toolbox.thread.Async
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.{VuuClientConnectionOptions, VuuJoinTableProviderOptions, VuuRpcOptions, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
+import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import org.finos.vuu.http2.server.VuuHttp2ServerFactory
 import org.finos.vuu.http2.server.config.VuuHttp2ServerOptions
 import org.finos.vuu.net.auth.LoginTokenService
@@ -40,21 +40,16 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
       val http = 10020
       val ws = 10030
 
-      val config = VuuServerConfig(
-        VuuWebSocketOptions()
+      val config = VuuServerConfig()
+        .withWebSocketOptions(VuuWebSocketOptions()
           .withUri("websocket")
-          .withWsPort(ws),
-        VuuSecurityOptions()
-          .withLoginTokenService(loginTokenService),
-        VuuThreadingOptions(),
-        VuuClientConnectionOptions(),
-        VuuJoinTableProviderOptions(),
-        VuuRpcOptions(),
-        List(AuthNModule(loginTokenService, Option(Map(username -> password)))),
-        List.empty,
-        VuuHttp2ServerFactory(VuuHttp2ServerOptions()
-          .withPort(http))
-      )
+          .withWsPort(ws))
+        .withSecurityOptions(VuuSecurityOptions()
+          .withLoginTokenService(loginTokenService))
+        .withModule(AuthNModule(loginTokenService, Option(Map(username -> password))))
+        .withHttpServerFactory(VuuHttp2ServerFactory(
+          VuuHttp2ServerOptions()
+            .withPort(http)))
 
       val viewServer = new VuuServer(config)
 

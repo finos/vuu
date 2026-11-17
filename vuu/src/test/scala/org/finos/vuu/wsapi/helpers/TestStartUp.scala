@@ -36,33 +36,31 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule,
     val module: ViewServerModule = moduleFactoryFunc()
     val plugin: Plugin = pluginFactoryFunc()
 
-    val config = VuuServerConfig(
-      VuuWebSocketOptions()
+    val config = VuuServerConfig()
+      .withWebSocketOptions(VuuWebSocketOptions()
         .withBindAddress("0.0.0.0")
         .withUri("websocket")
         .withWsPort(ws)
-        .withSslDisabled(),
-      VuuSecurityOptions(),
-      VuuThreadingOptions()
+        .withSslDisabled())
+      .withThreadingOptions(VuuThreadingOptions()
         .withViewPortThreads(1)
-        .withTreeThreads(1),
-      VuuClientConnectionOptions()
-        .withHeartbeatDisabled()
-    )
+        .withTreeThreads(1))
+      .withClientConnectionOptions(VuuClientConnectionOptions()
+        .withHeartbeatDisabled())
       .withModule(module)
       .withPlugin(plugin)
 
     val viewServer = new VuuServer(config)
 
     val options = VuuClientOptions()
-      .withPath(config.wsOptions.uri)
-      .withPort(config.wsOptions.wsPort)
+      .withPath(config.webSocketOptions.uri)
+      .withPort(config.webSocketOptions.wsPort)
       .withSslDisabled()
-      .withCompression(config.wsOptions.compressionEnabled)
-      .withNativeTransport(config.wsOptions.nativeTransportEnabled)
+      .withCompression(config.webSocketOptions.compressionEnabled)
+      .withNativeTransport(config.webSocketOptions.nativeTransportEnabled)
     val client = new WebSocketClient(options)
     val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client)
-    val vuuClient = new TestVuuClient(viewServerClient, config.security.loginTokenService)
+    val vuuClient = new TestVuuClient(viewServerClient, config.securityOptions.loginTokenService)
 
     //set up a dependency on ws server from ws client.
     lifecycle(client).dependsOn(viewServer)
