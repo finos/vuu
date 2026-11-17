@@ -1,4 +1,5 @@
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { TraderLimitsHeaderTogglePage } from "./trader-limits/TraderLimitsHeaderTogglePage";
 import { TraderLimitsPage } from "./trader-limits/TraderLimitsPage";
 
 /**
@@ -17,13 +18,13 @@ export const TraderLimits = () => (
 
 /**
  * As Trader limits, with the View/Edit toggle in the page header, outside
- * the EditableTable. A DataEditingProvider around the page holds the mode,
- * so the toggle and the table share it, and the page reads it with
- * `useDataEditingControl` to disable Download and Import while editing.
+ * the EditableTable. A DataEditingModeProvider around the page holds the
+ * mode, so the toggle and the table share it, and the page reads it with
+ * `useDataEditing` to disable Download and Import while editing.
  * @title Trader limits, toggle in page header
  */
 export const TraderLimitsHeaderToggle = () => (
   <LocalDataSourceProvider>
-    <TraderLimitsPage modeTogglePlacement="header" showNextBusinessDay />
+    <TraderLimitsHeaderTogglePage showNextBusinessDay />
   </LocalDataSourceProvider>
 );
