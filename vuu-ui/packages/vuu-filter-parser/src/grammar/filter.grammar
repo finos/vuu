@@ -1,6 +1,6 @@
 @precedence {
-  or @left,
-  and @left
+  and @left,
+  or @left
 }
 
 @top Filter { filterExpression }
