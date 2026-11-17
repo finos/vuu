@@ -2,7 +2,7 @@ import { SidePanelContent, SidePanelTitle } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
-  DataEditingProvider,
+  DataEditingModeProvider,
   type EditableTableHookProps,
   type EditFormValidator,
   useDataEditingControl,
@@ -88,7 +88,7 @@ export interface EditableTableBaseProps
   /**
    * Uncontrolled initial mode. Defaults to `edit` (always editable) for
    * inline direct editing, otherwise to `view`. Within a
-   * `DataEditingProvider`, set the mode props on the provider instead.
+   * `DataEditingModeProvider`, set the mode props on the provider instead.
    */
   defaultMode?: EditableTableMode;
   /** Controlled mode. Pair with `onModeChange`. */
@@ -449,7 +449,7 @@ export const EditableTable = (props: EditableTableProps) => {
   } = props as AllProps;
 
   const isInlineDirect = editStrategy === "inline" && editModel === "direct";
-  const hasDataEditingProvider = useDataEditingControl() !== undefined;
+  const hasModeProvider = useDataEditingControl() !== undefined;
   const hasModeProps =
     defaultMode !== undefined ||
     mode !== undefined ||
@@ -458,14 +458,14 @@ export const EditableTable = (props: EditableTableProps) => {
   useEffect(() => {
     if (
       process.env.NODE_ENV !== "production" &&
-      hasDataEditingProvider &&
+      hasModeProvider &&
       hasModeProps
     ) {
       console.warn(
-        "[EditableTable] mode, defaultMode and onModeChange are ignored within a DataEditingProvider, set them on the provider",
+        "[EditableTable] mode, defaultMode and onModeChange are ignored within a DataEditingModeProvider, set them on the provider",
       );
     }
-  }, [hasDataEditingProvider, hasModeProps]);
+  }, [hasModeProvider, hasModeProps]);
 
   const content = (
     <TableEditorProvider
@@ -501,15 +501,15 @@ export const EditableTable = (props: EditableTableProps) => {
     </TableEditorProvider>
   );
 
-  return hasDataEditingProvider ? (
+  return hasModeProvider ? (
     content
   ) : (
-    <DataEditingProvider
+    <DataEditingModeProvider
       defaultMode={defaultMode ?? (isInlineDirect ? "edit" : "view")}
       mode={mode}
       onModeChange={onModeChange}
     >
       {content}
-    </DataEditingProvider>
+    </DataEditingModeProvider>
   );
 };

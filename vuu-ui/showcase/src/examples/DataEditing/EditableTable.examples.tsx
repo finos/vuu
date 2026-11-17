@@ -1,6 +1,6 @@
 import { StackLayout, Text } from "@salt-ds/core";
 import {
-  DataEditingProvider,
+  DataEditingModeProvider,
   type EditFormValidator,
   EditModeToggle,
   useConfirmDiscard,
@@ -114,7 +114,7 @@ const ExternalModeToggleTemplate = ({
   const dataSource = useInstrumentsDataSource();
   const confirmDiscard = useConfirmDiscard();
   return (
-    <DataEditingProvider>
+    <DataEditingModeProvider>
       <StackLayout gap={1} style={{ height: 440, width: 1000 }}>
         <StackLayout align="center" direction="row" gap={2}>
           <Text styleAs="h3">Instruments</Text>
@@ -134,13 +134,13 @@ const ExternalModeToggleTemplate = ({
           </EditableTable>
         )}
       </StackLayout>
-    </DataEditingProvider>
+    </DataEditingModeProvider>
   );
 };
 
 /**
  * Pattern 1b. The View/Edit toggle is in the page header, outside the
- * table. `DataEditingProvider` holds the editing mode, so an
+ * table. `DataEditingModeProvider` holds the editing mode, so an
  * `EditModeToggle` anywhere inside it controls the `EditableTable`, with the
  * same behaviour as the table's own toggle: switching to View asks before
  * discarding unsaved changes.
