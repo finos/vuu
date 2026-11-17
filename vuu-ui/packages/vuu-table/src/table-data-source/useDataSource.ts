@@ -102,7 +102,13 @@ export const useDataSource = ({
               previousBinding !== undefined &&
               previousBinding.dataSource !== dataSource,
             range,
-            rangeLimits: { ...defaultRangeLimits },
+            // A dataSource that is re-enabled, rather than subscribed afresh,
+            // sends no 'subscribed' message, so take any limits it already has.
+            rangeLimits: {
+              ...defaultRangeLimits,
+              maxRangeEnd:
+                dataSource.maxRangeEnd ?? defaultRangeLimits.maxRangeEnd,
+            },
             rangeRequested: false,
             rowAutoSelected: false,
           };
