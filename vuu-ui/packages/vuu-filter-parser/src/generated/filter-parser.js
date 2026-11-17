@@ -2,8 +2,8 @@
 import {LRParser} from "@lezer/lr"
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "%QOVQPOOOOQO'#C_'#C_O_QQO'#C^OOQO'#DR'#DRO!PQQO'#DPOOQO'#DU'#DUOVQPO'#CxOOQO'#DQ'#DQQOQPOOOOQO'#C`'#C`O!_QQO,58xO!mQPO,59YOVQPO,59`OVQPO,59bO!rQPO,59kO!wQQO,59dOOQO'#DT'#DTOOQO1G.d1G.dO!_QQO1G.tO#SQQO1G.zOOQO1G.|1G.|OOQO'#Cz'#CzOOQO1G/V1G/VOOQO1G/O1G/OO#eQPO'#CqO#mQPO7+$`O!_QQO'#C{O#rQPO,59]OOQO<<Gz<<GzOOQO,59g,59gOOQO-E6y-E6y",
-  stateData: "#z~OrOS~OvPOyUO~OTXOUXOVXOWXOXXOYXOZXO[XO]XOcZO~Oi[Ok]Om^OpsX~O^`O_`O``Oa`O~OdbO~OveO~Oi[Ok]OzgO~Ok]Oihimhiphizhi~OfjOgeX~OglO~OfjOgea~O",
+  states: "%QOVQPOOOOQO'#C_'#C_O_QQO'#C^OOQO'#DR'#DRO!PQQO'#DPOOQO'#DU'#DUOVQPO'#CxOOQO'#DQ'#DQQOQPOOOOQO'#C`'#C`O!_QQO,58xO!mQPO,59YOVQPO,59`OVQPO,59bO!rQPO,59kO!wQQO,59dOOQO'#DT'#DTOOQO1G.d1G.dO!_QQO1G.tOOQO1G.z1G.zO#SQQO1G.|OOQO'#Cz'#CzOOQO1G/V1G/VOOQO1G/O1G/OO#eQPO'#CqO#mQPO7+$`O!_QQO'#C{O#rQPO,59]OOQO<<Gz<<GzOOQO,59g,59gOOQO-E6y-E6y",
+  stateData: "#z~OrOS~OvPOyUO~OTXOUXOVXOWXOXXOYXOZXO[XO]XOcZO~Oi[Ok]Om^OpsX~O^`O_`O``Oa`O~OdbO~OveO~Oi[Ok]OzgO~Oi[Okjimjipjizji~OfjOgeX~OglO~OfjOgea~O",
   goto: "#]yPPz!Q!WPPPPPPPPPPPPPzPP!ZPP!^P!^P!dP!j!mPPP!s!v!dP#S!dXROU[]XQOU[]RYQRibXTOU[]XVOU[]Rf^QkhRnkRWOQSOQ_UQc[Rd]QaYQhbRmj",
   nodeNames: "⚠ Filter ColumnValueExpression Column Operator Eq NotEq Gt Gte Lt Lte Starts Ends Contains Number String True False ColumnSetExpression In LBrack Values Comma RBrack AndExpression And OrExpression Or ParenthesizedExpression As FilterName",
   maxTerm: 42,

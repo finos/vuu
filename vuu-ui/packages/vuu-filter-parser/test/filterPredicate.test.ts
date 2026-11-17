@@ -2,6 +2,7 @@ import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { describe, expect, it } from "vitest";
 import { filterPredicate } from "../src/filter-evaluation-utils";
+import { parseFilter } from "../src/FilterParser";
 
 /**
  * Long filter values are held as strings (see getTypedValue), long values in
@@ -71,5 +72,26 @@ describe("filterPredicate, long values held as strings", () => {
     expect(
       matching({ column: "code", op: "in", values: ["123", "789"] }),
     ).toEqual([4_000_000_000_721, 4_000_000_000_723]);
+  });
+});
+
+describe("filterPredicate, nested boolean expression parsed from a string", () => {
+  it("applies a parenthesised 'or' within an 'and'", () => {
+    const predicate = filterPredicate(
+      { ric: 0, buy: 1, sell: 2 },
+      parseFilter('ric = "AAB.L" and (buy > 0 or sell > 0)'),
+    );
+    const rows = [
+      ["AAB.L", 1, 0],
+      ["AAB.L", 0, 1],
+      ["AAB.L", 0, 0],
+      ["BBB.L", 5, 5],
+    ];
+    expect(rows.map((row) => predicate(row as never))).toEqual([
+      true,
+      true,
+      false,
+      false,
+    ]);
   });
 });

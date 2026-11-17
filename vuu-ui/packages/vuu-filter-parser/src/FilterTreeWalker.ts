@@ -1,149 +1,150 @@
-import { Tree } from "@lezer/common";
-import {
+import type { SyntaxNode, Tree } from "@lezer/common";
+import type {
   Filter,
   FilterCombinatorOp,
   MultipleValueFilterClauseOp,
   SingleValueFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
-import {
-  isMultiClauseFilter,
-  isMultiValueFilter,
-  isSingleValueFilter,
-} from "@vuu-ui/vuu-utils";
 
-class FilterExpression {
-  public name: string | undefined;
-  #filter: Partial<Filter> | undefined = undefined;
+type FilterValue = string | number | boolean;
 
-  setFilterCombinatorOp(op: string, filter = this.#filter) {
-    if (isMultiClauseFilter(filter) && filter.op === op) {
-      return;
-    } else {
-      this.#filter = {
-        op: op as FilterCombinatorOp,
-        filters: [this.#filter as Filter],
-      };
-    }
+const expressionNodeNames = new Set([
+  "ColumnValueExpression",
+  "ColumnSetExpression",
+  "AndExpression",
+  "OrExpression",
+  "ParenthesizedExpression",
+]);
+
+const children = (node: SyntaxNode) => {
+  const result: SyntaxNode[] = [];
+  for (let child = node.firstChild; child; child = child.nextSibling) {
+    result.push(child);
   }
+  return result;
+};
 
-  add(filter: Partial<Filter>) {
-    if (this.#filter === undefined) {
-      this.#filter = filter;
-    } else if (isMultiClauseFilter(this.#filter)) {
-      this.#filter.filters.push(filter as Filter);
-    } else {
-      throw Error(`Invalid filter passed to FilterExpression`);
+const childExpressions = (node: SyntaxNode) =>
+  children(node).filter(({ name }) => expressionNodeNames.has(name));
+
+const text = (node: SyntaxNode, source: string) =>
+  source.substring(node.from, node.to);
+
+const parseValue = (
+  node: SyntaxNode,
+  source: string,
+): FilterValue | undefined => {
+  switch (node.name) {
+    case "String":
+      return source.substring(node.from + 1, node.to - 1);
+    case "Number": {
+      const numericText = text(node, source);
+      const numericValue = parseFloat(numericText);
+      // Integers too large to be represented safely (e.g epoch nanos) are
+      // preserved as string, to avoid loss of precision.
+      return /^-?\d+$/.test(numericText) && !Number.isSafeInteger(numericValue)
+        ? numericText
+        : numericValue;
     }
+    case "True":
+      return true;
+    case "False":
+      return false;
+    default:
+      return undefined;
   }
+};
 
-  setColumn(column: string, filter = this.#filter) {
-    if (isMultiClauseFilter(filter)) {
-      const target = filter.filters.at(-1);
-      if (target) {
-        this.setColumn(column, target);
+const buildColumnValueFilter = (node: SyntaxNode, source: string) => {
+  const filter: Partial<Filter> & { value?: FilterValue } = {};
+  for (const child of children(node)) {
+    if (child.name === "Column") {
+      filter.column = text(child, source);
+    } else if (child.name === "Operator") {
+      filter.op = text(child, source) as SingleValueFilterClauseOp;
+    } else {
+      const value = parseValue(child, source);
+      if (value !== undefined) {
+        filter.value = value;
       }
+    }
+  }
+  return filter;
+};
+
+const buildColumnSetFilter = (node: SyntaxNode, source: string) => {
+  const filter: {
+    column?: string;
+    op: MultipleValueFilterClauseOp;
+    values?: FilterValue[];
+  } = { op: "in" };
+  for (const child of children(node)) {
+    if (child.name === "Column") {
+      filter.column = text(child, source);
+    } else if (child.name === "Values") {
+      filter.values = children(child)
+        .map((valueNode) => parseValue(valueNode, source))
+        .filter((value) => value !== undefined);
+    }
+  }
+  return filter as Partial<Filter>;
+};
+
+/**
+ * Operands with the same combinator as their parent are merged into it, so
+ * 'a and b and c' produces a single 'and' with three filters. An operand with
+ * a different combinator (only possible via parentheses or precedence) stays
+ * a nested filter.
+ */
+const buildMultiClauseFilter = (
+  node: SyntaxNode,
+  op: FilterCombinatorOp,
+  source: string,
+): Partial<Filter> | undefined => {
+  const filters: Partial<Filter>[] = [];
+  for (const operand of childExpressions(node)) {
+    const filter = buildFilter(operand, source);
+    if (filter?.op === op && "filters" in filter) {
+      filters.push(...(filter.filters as Partial<Filter>[]));
     } else if (filter) {
-      filter.column = column;
+      filters.push(filter);
     }
   }
-  setOp(value: string, filter = this.#filter) {
-    if (isMultiClauseFilter(filter)) {
-      const target = filter.filters.at(-1);
-      if (target) {
-        this.setOp(value, target);
-      }
-    } else if (filter) {
-      filter.op = value as
-        | SingleValueFilterClauseOp
-        | MultipleValueFilterClauseOp;
-    }
+  if (filters.length <= 1) {
+    return filters[0];
   }
-  setValue(value: string | number | boolean, filter = this.#filter) {
-    if (isMultiClauseFilter(filter)) {
-      const target = filter.filters.at(-1);
-      if (target) {
-        this.setValue(value, target);
-      }
-    } else if (isMultiValueFilter(filter)) {
-      filter.values ??= [];
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      filter.values.push(value);
-    } else if (isSingleValueFilter(filter)) {
-      filter.value = value;
-    }
-  }
+  return { op, filters } as Filter;
+};
 
-  toJSON(filter = this.#filter) {
-    if (this.name) {
-      return {
-        ...filter,
-        name: this.name,
-      };
-    } else {
-      return filter;
+const buildFilter = (
+  node: SyntaxNode,
+  source: string,
+): Partial<Filter> | undefined => {
+  switch (node.name) {
+    case "ColumnValueExpression":
+      return buildColumnValueFilter(node, source);
+    case "ColumnSetExpression":
+      return buildColumnSetFilter(node, source);
+    case "AndExpression":
+      return buildMultiClauseFilter(node, "and", source);
+    case "OrExpression":
+      return buildMultiClauseFilter(node, "or", source);
+    case "ParenthesizedExpression": {
+      const [expression] = childExpressions(node);
+      return expression ? buildFilter(expression, source) : undefined;
     }
+    default:
+      return undefined;
   }
-}
+};
 
 export const walkTree = (tree: Tree, source: string) => {
-  const filterExpression = new FilterExpression();
-  const cursor = tree.cursor();
-  do {
-    const { name, from, to } = cursor;
-    switch (name) {
-      case "ColumnValueExpression":
-        filterExpression.add({});
-        break;
-      case "ColumnSetExpression":
-        filterExpression.add({ op: "in" });
-        break;
-
-      case "Or":
-      case "And":
-        filterExpression.setFilterCombinatorOp(source.substring(from, to));
-        break;
-
-      case "Column":
-        filterExpression.setColumn(source.substring(from, to));
-        break;
-
-      case "Operator":
-        filterExpression.setOp(source.substring(from, to));
-        break;
-
-      case "String":
-        filterExpression.setValue(source.substring(from + 1, to - 1));
-        break;
-
-      case "Number": {
-        const numericText = source.substring(from, to);
-        const numericValue = parseFloat(numericText);
-        // Integers too large to be represented safely (e.g epoch nanos) are
-        // preserved as string, to avoid loss of precision.
-        filterExpression.setValue(
-          /^-?\d+$/.test(numericText) && !Number.isSafeInteger(numericValue)
-            ? numericText
-            : numericValue,
-        );
-        break;
-      }
-
-      case "True":
-        filterExpression.setValue(true);
-        break;
-
-      case "False":
-        filterExpression.setValue(false);
-        break;
-
-      case "FilterName":
-        filterExpression.name = source.substring(from, to);
-        break;
-
-      default:
-    }
-  } while (cursor.next());
-
-  return filterExpression.toJSON();
+  const { topNode } = tree;
+  const [expression] = childExpressions(topNode);
+  const filter = expression ? buildFilter(expression, source) : undefined;
+  const filterName = topNode.getChild("FilterName");
+  if (filter && filterName) {
+    return { ...filter, name: text(filterName, source) };
+  }
+  return filter;
 };
