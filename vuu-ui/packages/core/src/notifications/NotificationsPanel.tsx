@@ -46,7 +46,11 @@ import {
   type RemoteModuleDescriptor,
 } from "../RemoteModuleDescriptor";
 import { useModuleServerStatus } from "../server-monitor/VuuServerMonitorProvider";
-import type { PortalNotificationsAPI } from "./PortalNotificationsContext";
+import { matchesNotificationQuery } from "./NotificationStore";
+import type {
+  NotificationsPanelRequest,
+  PortalNotificationsAPI,
+} from "./PortalNotificationsContext";
 import { sourceLabel } from "./PortalNotificationsPresentation";
 import {
   useNotificationList,
@@ -68,7 +72,10 @@ const classBase = "vuuNotificationsPanel";
 export const NOTIFICATIONS_PANEL_STATE_KEY = "notificationsPanel";
 
 export interface NotificationsPanelFilters {
-  /** Empty shows every application. */
+  /**
+   * Empty shows every application. Set by the request the panel is opened
+   * with, so it is not saved.
+   */
   moduleIds: ModuleId[];
   /** Empty shows every level. */
   levels: NotificationLevel[];
@@ -77,8 +84,24 @@ export interface NotificationsPanelFilters {
   unreadOnly: boolean;
   /** Expired notifications are shown, dimmed, unless this is set. */
   hideExpired: boolean;
+  /** Not saved. */
   text: string;
 }
+
+/** The filters kept in saved state: the user's viewing preferences. */
+type SavedFilters = Omit<NotificationsPanelFilters, "moduleIds" | "text">;
+
+const toSavedFilters = ({
+  hideExpired,
+  kinds,
+  levels,
+  unreadOnly,
+}: NotificationsPanelFilters): SavedFilters => ({
+  hideExpired,
+  kinds,
+  levels,
+  unreadOnly,
+});
 
 const DEFAULT_FILTERS: NotificationsPanelFilters = {
   hideExpired: false,
@@ -184,20 +207,50 @@ const deliveryLine = ({
     .join(" · ");
 
 /** Saves the panel's filters in the portal's own saved state. */
-const usePanelFilters = () => {
+/**
+ * The filters for a request to open the panel. Opened without modules, e.g.
+ * from the bell, the panel shows them all. A notification it is opened at is
+ * always shown.
+ */
+const filtersForRequest = (
+  current: NotificationsPanelFilters,
+  { focusKey, moduleIds = [] }: NotificationsPanelRequest,
+  notifications: readonly PortalNotification[],
+): NotificationsPanelFilters => {
+  const requested = { ...current, moduleIds };
+  const focused = focusKey
+    ? notifications.find(({ key }) => key === focusKey)
+    : undefined;
+  return focused && !matchesNotificationQuery(focused, toQuery(requested))
+    ? { ...DEFAULT_FILTERS, moduleIds }
+    : requested;
+};
+
+const usePanelFilters = (
+  request: NotificationsPanelRequest | undefined,
+  notifications: readonly PortalNotification[],
+) => {
   const portalState = useOptionalApplicationState();
   const [filters, setFilters] = useState<NotificationsPanelFilters>(() => {
     const saved: unknown = portalState?.get(NOTIFICATIONS_PANEL_STATE_KEY);
-    return isFilters(saved)
-      ? { ...DEFAULT_FILTERS, ...saved }
+    const initial = isFilters(saved)
+      ? {
+          ...DEFAULT_FILTERS,
+          ...toSavedFilters({ ...DEFAULT_FILTERS, ...saved }),
+        }
       : DEFAULT_FILTERS;
+    return request
+      ? filtersForRequest(initial, request, notifications)
+      : initial;
   });
   const update = (changes: Partial<NotificationsPanelFilters>) => {
     setFilters((current) => {
       const next = { ...current, ...changes };
       portalState?.set(
         NOTIFICATIONS_PANEL_STATE_KEY,
-        next as unknown as Parameters<typeof portalState.set>[1],
+        toSavedFilters(next) as unknown as Parameters<
+          typeof portalState.set
+        >[1],
         { label: "Notifications panel filters" },
       );
       return next;
@@ -452,33 +505,47 @@ const NotificationsPanelContent = ({
   const presentation = useNotificationPresentation();
   const moduleServerMap = useOptionalIdentityContext()?.moduleServerMap;
   const canNavigate = useInRouterContext();
-  const [filters, setFilters] = usePanelFilters();
+  const request = presentation?.panelRequest;
+  const allNotifications = useNotificationList();
+  const [filters, setFilters] = usePanelFilters(request, allNotifications);
   const [selectedKey, setSelectedKey] = useState<string>();
   const listRef = useRef<HTMLDivElement>(null);
   const notifications = useNotificationList(toQuery(filters));
-  const allNotifications = useNotificationList();
-  const request = presentation?.panelRequest;
 
+  // Applies a request made while the panel is open. One made before it opened
+  // set the initial filters.
+  const appliedRequest = useRef(request);
   // biome-ignore lint/correctness/useExhaustiveDependencies: apply each request once
   useEffect(() => {
-    if (request?.moduleIds) {
-      setFilters({ moduleIds: request.moduleIds });
+    if (request && request !== appliedRequest.current) {
+      setFilters(filtersForRequest(filters, request, allNotifications));
     }
+    appliedRequest.current = request;
     if (request?.focusKey) {
       setSelectedKey(request.focusKey);
     }
   }, [request]);
 
+  // The requested notification is focused once it is listed, which can be
+  // after the filters that hid it are cleared.
+  const pendingFocusKey = useRef<string>(undefined);
   useEffect(() => {
-    const focusKey = request?.focusKey;
-    if (focusKey) {
-      const item = listRef.current?.querySelector<HTMLElement>(
-        `[data-notification-key="${CSS.escape(focusKey)}"]`,
-      );
-      item?.scrollIntoView?.({ block: "nearest" });
-      item?.focus();
-    }
+    pendingFocusKey.current = request?.focusKey;
   }, [request]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the list changes
+  useEffect(() => {
+    const focusKey = pendingFocusKey.current;
+    const item = focusKey
+      ? listRef.current?.querySelector<HTMLElement>(
+          `[data-notification-key="${CSS.escape(focusKey)}"]`,
+        )
+      : undefined;
+    if (item) {
+      pendingFocusKey.current = undefined;
+      item.scrollIntoView?.({ block: "nearest" });
+      item.focus();
+    }
+  }, [notifications, request]);
 
   const moduleOptions = useMemo(() => {
     const ids = new Set<ModuleId>(filters.moduleIds);

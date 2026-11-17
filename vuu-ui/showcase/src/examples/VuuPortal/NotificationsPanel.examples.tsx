@@ -201,13 +201,43 @@ const Seeder = ({
   );
 };
 
+/**
+ * Opens the panel as the portal does: for an application from its nav
+ * badge, and at a notification from a toast.
+ */
+const OpenRequestButtons = () => {
+  const presentation = useNotificationPresentation();
+  return (
+    <>
+      <Button
+        appearance="bordered"
+        onClick={() =>
+          presentation?.openPanel({ moduleIds: ["order-management"] })
+        }
+        sentiment="neutral"
+      >
+        Open for Order Management
+      </Button>
+      <Button
+        appearance="bordered"
+        onClick={() => presentation?.openPanel({ focusKey: "vuu-emea:n4" })}
+        sentiment="neutral"
+      >
+        Open at Market Status
+      </Button>
+    </>
+  );
+};
+
 const PanelShell = ({
   doNotDisturb,
   mode,
+  openRequests = false,
   seeds = SEEDS,
 }: {
   doNotDisturb?: boolean;
   mode?: "light" | "dark";
+  openRequests?: boolean;
   seeds?: Seed[];
 }) => (
   <AuthenticationProvider mode="local" registry={registry}>
@@ -221,8 +251,9 @@ const PanelShell = ({
       title="Notifications panel"
     >
       <PortalLandingPage>
-        <main style={{ padding: 24 }}>
+        <main style={{ display: "flex", gap: 8, padding: 24 }}>
           <Seeder doNotDisturb={doNotDisturb} seeds={seeds} />
+          {openRequests ? <OpenRequestButtons /> : null}
         </main>
       </PortalLandingPage>
     </PortalShell>
@@ -240,3 +271,10 @@ export const Dark = () => <PanelShell mode="dark" />;
 
 /** Nothing yet today. */
 export const Empty = () => <PanelShell seeds={[]} />;
+
+/**
+ * Opened for an application, the panel shows only its notifications; opened
+ * again from the bell, it shows them all. Opened at a notification, it
+ * clears any filter that would hide it.
+ */
+export const OpenRequests = () => <PanelShell openRequests />;

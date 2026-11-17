@@ -80,6 +80,31 @@ const matchesText = (notification: PortalNotification, text: string) => {
   );
 };
 
+/** True if the notification is one the query selects. */
+export const matchesNotificationQuery = (
+  n: PortalNotification,
+  {
+    connectionIds,
+    includeExpired = true,
+    kinds,
+    levels,
+    moduleIds,
+    read,
+    since,
+    text,
+  }: NotificationQuery,
+) =>
+  (includeExpired || !n.expired) &&
+  (read === undefined || n.read === read) &&
+  (since === undefined || n.createdAt >= since) &&
+  (!levels || levels.includes(n.level)) &&
+  (!kinds || kinds.includes(n.kind)) &&
+  (!connectionIds ||
+    (n.origin.connectionId !== undefined &&
+      connectionIds.includes(n.origin.connectionId))) &&
+  (!moduleIds || n.origin.moduleIds.some((id) => moduleIds.includes(id))) &&
+  (!text || matchesText(n, text));
+
 /**
  * Consolidated notification history and read state, from every server and
  * from client code. Unread counts per module and per server are maintained
@@ -300,20 +325,7 @@ export class NotificationStore {
     ) {
       return sorted;
     }
-    return sorted.filter(
-      (n) =>
-        (includeExpired || !n.expired) &&
-        (read === undefined || n.read === read) &&
-        (since === undefined || n.createdAt >= since) &&
-        (!levels || levels.includes(n.level)) &&
-        (!kinds || kinds.includes(n.kind)) &&
-        (!connectionIds ||
-          (n.origin.connectionId !== undefined &&
-            connectionIds.includes(n.origin.connectionId))) &&
-        (!moduleIds ||
-          n.origin.moduleIds.some((id) => moduleIds.includes(id))) &&
-        (!text || matchesText(n, text)),
-    );
+    return sorted.filter((n) => matchesNotificationQuery(n, q));
   }
 
   latest(): PortalNotification | undefined {
