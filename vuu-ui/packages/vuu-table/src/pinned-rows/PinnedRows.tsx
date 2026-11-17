@@ -1,11 +1,9 @@
-import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import type {
   DataRow,
   GroupToggleTarget,
   RowProps,
   RuntimeColumnDescriptor,
-  SelectionChange,
   TableRowClickHandlerInternal,
   TableRowSelectHandler,
   TableSelectionModel,
@@ -25,6 +23,7 @@ import { getRowsInRenderOrder } from "../render-order";
 import { useDataSource } from "../table-data-source/useDataSource";
 import { useSelection } from "../useSelection";
 import { useTableContextMenu } from "../useTableContextMenu";
+import type { PinnedRowsModel } from "./usePinnedRows";
 
 const classBase = "vuuTable";
 
@@ -35,28 +34,16 @@ export interface PinnedRowsProps {
   Row: FC<RowProps>;
   allowSelectCheckboxRow?: boolean;
   columns: RuntimeColumnDescriptor[];
-  dataSource: DataSource;
   groupToggleTarget?: GroupToggleTarget;
-  /**
-   * The number of column header rows, pinned rows follow these in
-   * aria-rowindex order.
-   */
-  headerCount: number;
   highlightedIndex?: number;
   isRowSelectable?: (dataRow: DataRow) => boolean;
   lowerCaseSearchPattern: Lowercase<string>;
-  maxPinnedRows: number;
-  maxVisibleRows: number;
   menuActionHandler: ComponentProps<typeof TableProvider>["menuActionHandler"];
-  onHeightChange: (height: number) => void;
-  onRowClick?: TableRowClickHandlerInternal;
-  onRowCountChange: (count: number) => void;
+  model: PinnedRowsModel;
   onSelect?: TableRowSelectHandler;
-  onSelectionChange: (selectionChange: SelectionChange) => void;
   rowActionHandlers?: ComponentProps<typeof TableProvider>["rowActionHandlers"];
   rowClassNameGenerator?: RowClassNameGenerator;
   rowHeight: number;
-  scrollTop: number;
   selectionModel: TableSelectionModel;
   showBookends: boolean;
   virtualColSpan: number;
@@ -74,24 +61,26 @@ export const PinnedRows = ({
   Row,
   allowSelectCheckboxRow,
   columns,
-  dataSource,
   groupToggleTarget,
-  headerCount,
   highlightedIndex,
   isRowSelectable,
   lowerCaseSearchPattern,
-  maxPinnedRows,
-  maxVisibleRows,
   menuActionHandler,
-  onHeightChange,
-  onRowClick,
-  onRowCountChange,
+  model: {
+    dataSource,
+    headerCount,
+    maxPinnedRows,
+    maxVisibleRows,
+    onHeightChange,
+    onRowClick,
+    onRowCountChange,
+    onSelectionChange,
+    scrollTop,
+  },
   onSelect,
-  onSelectionChange,
   rowActionHandlers,
   rowClassNameGenerator,
   rowHeight,
-  scrollTop,
   selectionModel,
   showBookends,
   virtualColSpan,

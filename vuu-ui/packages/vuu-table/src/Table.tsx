@@ -424,18 +424,12 @@ const TableCore = ({
     onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
-    onPinnedRowClick,
-    onPinnedRowCountChange: handlePinnedRowCountChange,
-    onPinnedRowsHeightChange,
-    onPinnedSelectionChange,
     onRemoveGroupColumn,
     onResizeColumn,
     onRowClick,
     onSortColumn,
     onToggleGroup,
-    pinnedDataSource,
-    pinnedRowCount,
-    pinnedRowsLayout,
+    pinnedRows: pinnedRowsModel,
     rowClassNameGenerator,
     scrollLimitInEffect,
     scrollProps,
@@ -498,7 +492,7 @@ const TableCore = ({
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--pinned-rows-top": `${Math.max(0, columnHeaderState.height)}px`,
-    "--pinned-rows-height": `${pinnedRowsLayout.visibleHeight}px`,
+    "--pinned-rows-height": `${pinnedRowsModel?.visibleHeight ?? 0}px`,
     "--total-header-height": `${headerHeight}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
     "--table-selection-bookend-width": `${selectionBookendWidth}px`,
@@ -524,17 +518,17 @@ const TableCore = ({
         </div>
       ) : null}
 
-      {pinnedDataSource && pinnedRowsLayout.isScrollable ? (
+      {pinnedRowsModel?.isScrollable ? (
         <div
           aria-hidden
           className={`${classBase}-pinnedRowsScrollbar`}
-          ref={pinnedRowsLayout.setScrollbarRef}
+          ref={pinnedRowsModel.setScrollbarRef}
           style={cssVariables}
           tabIndex={-1}
         >
           <div
             className={`${classBase}-pinnedRowsScrollbarContent`}
-            style={{ height: pinnedRowCount * rowHeight }}
+            style={{ height: pinnedRowsModel.rowCount * rowHeight }}
           />
         </div>
       ) : null}
@@ -544,7 +538,7 @@ const TableCore = ({
           className={cx(`${classBase}-emptyDisplay`, {
             [`${classBase}-emptyDisplay-belowHeaders`]:
               (showColumnHeaders && showColumnHeadersWhenEmpty) ||
-              pinnedRowCount > 0,
+              (pinnedRowsModel?.rowCount ?? 0) > 0,
           })}
           style={cssVariables}
         >
@@ -591,29 +585,21 @@ const TableCore = ({
               virtualColSpan={scrollProps.virtualColSpan}
             />
           ) : null}
-          {pinnedDataSource && headersReady ? (
+          {pinnedRowsModel && headersReady ? (
             <PinnedRows
               Row={Row}
               allowSelectCheckboxRow={allowSelectCheckboxRow}
               columns={scrollProps.columnsWithinViewport}
-              dataSource={pinnedDataSource}
               groupToggleTarget={groupToggleTarget}
-              headerCount={columnHeaderState.count}
               highlightedIndex={highlightedIndex}
               isRowSelectable={isRowSelectable}
               lowerCaseSearchPattern={lowerCaseSearchPattern}
-              maxPinnedRows={pinnedRowsLayout.maxPinnedRows}
-              maxVisibleRows={pinnedRowsLayout.maxVisibleRows}
               menuActionHandler={handleColumnAction}
-              onHeightChange={onPinnedRowsHeightChange}
-              onRowClick={onPinnedRowClick}
-              onRowCountChange={handlePinnedRowCountChange}
+              model={pinnedRowsModel}
               onSelect={onSelect}
-              onSelectionChange={onPinnedSelectionChange}
               rowActionHandlers={rowActionHandlers}
               rowClassNameGenerator={rowClassNameGenerator}
               rowHeight={rowHeight}
-              scrollTop={pinnedRowsLayout.scrollTop}
               selectionModel={selectionModel}
               showBookends={selectionBookendWidth > 0}
               virtualColSpan={scrollProps.virtualColSpan}
