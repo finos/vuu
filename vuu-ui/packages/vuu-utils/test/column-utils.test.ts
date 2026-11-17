@@ -1,4 +1,5 @@
 //Testing for issue #639
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { describe, expect, it } from "vitest";
 import {
@@ -6,6 +7,7 @@ import {
   applyRuntimeColumnWidthsToConfig,
   applyWidthToColumns,
   getColumnsInViewport,
+  isTextColumnInSchema,
 } from "../src/column-utils";
 
 describe("applyWidthToColumns", () => {
@@ -538,5 +540,32 @@ describe("applyRuntimeColumnWidthsToConfig", () => {
         { name: "qty", width: 100 },
       ],
     });
+  });
+});
+
+describe("isTextColumnInSchema", () => {
+  const tableSchema: TableSchema = {
+    columns: [
+      { name: "ric", serverDataType: "string" },
+      { name: "side", serverDataType: "char" },
+      { name: "price", serverDataType: "double" },
+      { name: "quantity", serverDataType: "long" },
+    ],
+    key: "ric",
+    table: { module: "TEST", table: "instruments" },
+  };
+
+  it("is true for string and char columns", () => {
+    expect(isTextColumnInSchema(tableSchema, "ric")).toBe(true);
+    expect(isTextColumnInSchema(tableSchema, "side")).toBe(true);
+  });
+
+  it("is false for numeric columns", () => {
+    expect(isTextColumnInSchema(tableSchema, "price")).toBe(false);
+    expect(isTextColumnInSchema(tableSchema, "quantity")).toBe(false);
+  });
+
+  it("treats a column not in the schema as text", () => {
+    expect(isTextColumnInSchema(tableSchema, "unknown")).toBe(true);
   });
 });

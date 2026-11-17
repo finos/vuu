@@ -5,21 +5,12 @@ import type {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import type { TablePinnedRows } from "@vuu-ui/vuu-table-types";
-import { useData } from "@vuu-ui/vuu-utils";
+import { isTextColumnInSchema, useData } from "@vuu-ui/vuu-utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export const DEFAULT_MAX_PINNED_ROWS = 5;
 
 const NO_KEYS: (string | number)[] = [];
-
-const isStringColumn = (tableSchema: TableSchema, columnName: string) => {
-  const column = tableSchema.columns.find((col) => col.name === columnName);
-  return (
-    column === undefined ||
-    column.serverDataType === "string" ||
-    column.serverDataType === "char"
-  );
-};
 
 const formatKey = (key: string | number, quoted: boolean) =>
   quoted ? JSON.stringify(`${key}`) : `${key}`;
@@ -76,7 +67,7 @@ export const usePinnedDataSource = ({
     if (keyColumn === undefined || tableSchema === undefined) {
       return [];
     }
-    const quoted = isStringColumn(tableSchema, keyColumn);
+    const quoted = isTextColumnInSchema(tableSchema, keyColumn);
     const keys: (string | number)[] = JSON.parse(keysJson);
     return keys.slice(0, maxPinnedRows).map((key) => formatKey(key, quoted));
   }, [keysJson, keyColumn, maxPinnedRows, tableSchema]);
