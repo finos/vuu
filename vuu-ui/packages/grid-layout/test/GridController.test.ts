@@ -556,3 +556,108 @@ describe("GridController transactions", () => {
     });
   });
 });
+
+describe("GridController fluid tracks", () => {
+  const fluidModel = (rows: `${number}${"fr" | "px"}`[]) => {
+    const model = new GridModel(
+      "fluid-grid",
+      descriptor(["1fr"], rows, {
+        top: item("1/1/2/2", { title: "Top" }),
+        middle: item("2/1/3/2", { title: "Middle" }),
+        bottom: item("3/1/4/2", { title: "Bottom" }),
+      }),
+    );
+    return model;
+  };
+
+  const commitResize = (controller: GridController, command: GridCommand) => {
+    const start = controller.beginTransaction("resize");
+    if (!start.ok) {
+      throw Error(start.error.message);
+    }
+    expect(start.transaction.dispatch(command)).toMatchObject({ ok: true });
+    expect(start.transaction.commit()).toMatchObject({ ok: true });
+  };
+
+  it("restores fractional rows when a resize commits", () => {
+    const model = fluidModel(["1fr", "1fr", "1fr"]);
+    const controller = new GridController(model);
+    commitResize(controller, {
+      contraTrackIndex: 0,
+      delta: 50,
+      distribution: "adjacent",
+      measuredSizes: [200, 200, 200],
+      resizedTrackIndex: 1,
+      track: "row",
+      type: "resize-tracks",
+    });
+    expect(model.tracks.rows).toEqual(["0.75fr", "1.25fr", "1fr"]);
+    expect(controller.getSnapshot().rows.map(({ size }) => size)).toEqual([
+      "0.75fr",
+      "1.25fr",
+      "1fr",
+    ]);
+  });
+
+  it("restores fractional rows after a proportional resize", () => {
+    const model = fluidModel(["1fr", "1fr", "1fr"]);
+    const controller = new GridController(model);
+    commitResize(controller, {
+      afterTrackIndices: [1, 2],
+      beforeTrackIndices: [0],
+      delta: -60,
+      distribution: "proportional",
+      initialSizes: [200, 200, 200],
+      measuredSizes: [200, 200, 200],
+      track: "row",
+      type: "resize-tracks",
+    });
+    expect(model.tracks.rows).toEqual(["1.3fr", "0.85fr", "0.85fr"]);
+  });
+
+  it("keeps a pixel row fixed when its neighbour is resized", () => {
+    const model = fluidModel(["60px", "1fr", "1fr"]);
+    const controller = new GridController(model);
+    commitResize(controller, {
+      contraTrackIndex: 2,
+      delta: 40,
+      distribution: "adjacent",
+      measuredSizes: [60, 200, 200],
+      resizedTrackIndex: 1,
+      track: "row",
+      type: "resize-tracks",
+    });
+    expect(model.tracks.rows).toEqual(["60px", "1.2fr", "0.8fr"]);
+  });
+
+  it("keeps an explicitly sized row as pixels", () => {
+    const model = fluidModel(["1fr", "1fr", "1fr"]);
+    const controller = new GridController(model);
+    model.tracks.getTracks("row").forEach((track) => {
+      track.measuredValue = 200;
+    });
+    controller.dispatch({
+      index: 0,
+      size: "120px",
+      track: "row",
+      type: "resize-track",
+    });
+    expect(model.tracks.rows).toEqual(["120px", "1fr", "1fr"]);
+  });
+
+  it("undoes a resize to the original fractions", () => {
+    const model = fluidModel(["1fr", "1fr", "1fr"]);
+    const controller = new GridController(model);
+    commitResize(controller, {
+      contraTrackIndex: 0,
+      delta: 50,
+      distribution: "adjacent",
+      measuredSizes: [200, 200, 200],
+      resizedTrackIndex: 1,
+      track: "row",
+      type: "resize-tracks",
+    });
+    controller.history.undo();
+    expect(model.tracks.rows).toEqual(["1fr", "1fr", "1fr"]);
+  });
+});

@@ -485,10 +485,7 @@ export const useGridSplitterResizing = ({
           gridModel.tracks.measure(trackType);
         }
 
-        if (
-          !reducedTrack.isFraction &&
-          reducedTrack.numericValue - Math.abs(moveBy) <= 0
-        ) {
+        if (reducedTrack.numericValue - Math.abs(moveBy) <= 0) {
           if (directionOfTravel === "fwd") {
             removeTrack(moveBy, "expand");
           } else {

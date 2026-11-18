@@ -507,7 +507,10 @@ export const removeTrack = (
   if (isFraction(contraTrack) && isFraction(removedTrack)) {
     if (otherTracksAreFractions) {
       nextContraTrack = {
-        measured: contraTrack.measured,
+        measured:
+          isMeasured(contraTrack) && isMeasured(removedTrack)
+            ? contraTrack.measured + removedTrack.measured
+            : -1,
         size: fractionSize(
           parseFloat(contraTrack.size) + parseFloat(removedTrack.size),
         ),
@@ -896,6 +899,72 @@ export const resizeTracksProportionally = (
   if (afterError) {
     return { error: afterError, ok: false };
   }
+  return ok(transition(next, identitySources(tracks.length)));
+};
+
+const FLUID_FRACTION_PRECISION = 10_000;
+
+const roundFraction = (value: number) =>
+  Math.round(value * FLUID_FRACTION_PRECISION) / FLUID_FRACTION_PRECISION;
+
+/**
+ * Express the fluid tracks of a dimension as fractions, so that the grid keeps
+ * adapting to the space available to it. Tracks flagged in `fixed` keep their
+ * pixel size. `availableSize` is the space the tracks fill. Fractional tracks
+ * share what the pixel tracks leave of it, which gives the pixels-per-fraction
+ * ratio at which fluid pixel tracks are converted, so existing fractions are
+ * kept and the layout renders as it did. When there are no fractional tracks,
+ * the fluid tracks share as many fractions as there are fluid tracks, in
+ * proportion to their pixel sizes. Converted tracks keep their pixel size as
+ * their measured value.
+ */
+export const normaliseFluidTracks = (
+  tracks: readonly GridGeometryTrack[],
+  fixed: readonly boolean[],
+  availableSize: number,
+): GridGeometryResult<GridTrackTransition | undefined> => {
+  const fluidPixelIndices = tracks
+    .map((_, index) => index)
+    .filter((index) => !fixed[index] && isPixelValue(tracks[index]));
+  if (fluidPixelIndices.length === 0) {
+    return ok(undefined);
+  }
+  const pixelsOf = (indices: readonly number[]) =>
+    indices.reduce((total, index) => total + numericValue(tracks[index]), 0);
+  const fractionIndices = tracks
+    .map((_, index) => index)
+    .filter((index) => isFraction(tracks[index]));
+
+  let fractionsPerPixel: number;
+  if (fractionIndices.length === 0) {
+    const fluidPixels = pixelsOf(fluidPixelIndices);
+    if (fluidPixels <= 0) {
+      return ok(undefined);
+    }
+    fractionsPerPixel = fluidPixelIndices.length / fluidPixels;
+  } else {
+    const pixelIndices = tracks
+      .map((_, index) => index)
+      .filter((index) => isPixelValue(tracks[index]));
+    const fractionSpace = availableSize - pixelsOf(pixelIndices);
+    if (fractionSpace <= 0) {
+      return ok(undefined);
+    }
+    const fractions = fractionIndices.reduce(
+      (total, index) => total + parseFloat(tracks[index].size),
+      0,
+    );
+    fractionsPerPixel = fractions / fractionSpace;
+  }
+
+  const next = [...tracks];
+  fluidPixelIndices.forEach((index) => {
+    const pixels = numericValue(tracks[index]);
+    next[index] = {
+      measured: pixels,
+      size: fractionSize(roundFraction(pixels * fractionsPerPixel)),
+    };
+  });
   return ok(transition(next, identitySources(tracks.length)));
 };
 

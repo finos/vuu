@@ -796,6 +796,39 @@ test.describe("GridLayout browser interactions", () => {
     expect(bottomReduction).toBeCloseTo(topReduction, 0);
   });
 
+  test("a resized grid keeps filling its container as the container grows", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "proportional" });
+    const grid = new GridLayoutDriver(component, page);
+    const splitter = grid.item("proportional-middle-splitter-v");
+    await grid.resize(splitter, 0, 60);
+
+    const heights = async () =>
+      Promise.all(
+        [
+          "proportional-header",
+          "proportional-middle",
+          "proportional-bottom",
+        ].map(async (id) => (await grid.item(id).boundingBox())?.height ?? 0),
+      );
+    const [header, middle, bottom] = await heights();
+
+    await page.evaluate(() => {
+      const gridLayout = document.getElementById("ct-grid");
+      if (gridLayout) {
+        gridLayout.style.height = "900px";
+      }
+    });
+    const [headerAfter, middleAfter, bottomAfter] = await heights();
+    const gridBox = await component.getByTestId("grid-layout").boundingBox();
+    expect(gridBox?.height).toBeCloseTo(900, 0);
+    expect(headerAfter / header).toBeCloseTo(middleAfter / middle, 1);
+    expect(middleAfter / middle).toBeCloseTo(bottomAfter / bottom, 1);
+    expect(headerAfter).toBeGreaterThan(header * 1.4);
+  });
+
   test("proportional row resize preserves unequal lower-row ratios", async ({
     mount,
     page,

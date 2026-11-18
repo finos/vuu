@@ -9,6 +9,7 @@ import {
   getProportionalResizeAllowance,
   insertTrack,
   insertTrackForResize,
+  normaliseFluidTracks,
   readTracks,
   regeneratePlaceholders,
   removeGridItem,
@@ -377,23 +378,28 @@ describe("GridGeometry item transitions", () => {
     ["south", ["dropped@2/1/3/2", "target@1/1/2/2"], "rows"],
     ["east", ["dropped@1/2/2/3", "target@1/1/2/2"], "columns"],
     ["west", ["dropped@1/1/2/2", "target@1/2/2/3"], "columns"],
-  ] as const)("splits a single cell target %s", (splitDirection, expected, changedTracks) => {
-    const transition = unwrap(
-      splitGridItem(singleCell(), {
-        droppedItemId: "dropped",
-        splitDirection,
-        targetItemId: "target",
-      }),
-    );
+  ] as const)(
+    "splits a single cell target %s",
+    (splitDirection, expected, changedTracks) => {
+      const transition = unwrap(
+        splitGridItem(singleCell(), {
+          droppedItemId: "dropped",
+          splitDirection,
+          targetItemId: "target",
+        }),
+      );
 
-    expect(gridAreas(transition.geometry).sort()).toEqual([...expected].sort());
-    expect(transition.geometry[changedTracks]).toEqual(["1fr", "1fr"]);
-    // the split target and dropped item are broadcast, track shifts are not
-    expect(transition.updates.map(({ id }) => id)).toEqual([
-      "target",
-      "dropped",
-    ]);
-  });
+      expect(gridAreas(transition.geometry).sort()).toEqual(
+        [...expected].sort(),
+      );
+      expect(transition.geometry[changedTracks]).toEqual(["1fr", "1fr"]);
+      // the split target and dropped item are broadcast, track shifts are not
+      expect(transition.updates.map(({ id }) => id)).toEqual([
+        "target",
+        "dropped",
+      ]);
+    },
+  );
 
   it("reuses an existing bisecting grid line for a spanning target", () => {
     const transition = unwrap(
@@ -449,39 +455,45 @@ describe("GridGeometry item transitions", () => {
   it.each([
     ["north", false],
     ["east", false],
-  ] as const)("rejects a split of a non resizable target (%s)", (splitDirection) => {
-    const target = item("target", "1/1/2/2", { resizeable: false });
-    expect(canSplitGridItem(target, splitDirection)).toBe(false);
-    expect(
-      splitGridItem(
-        geometry(["1fr"], ["1fr"], [target, item("dropped", "1/1/2/2")]),
-        {
-          droppedItemId: "dropped",
-          splitDirection,
-          targetItemId: "target",
+  ] as const)(
+    "rejects a split of a non resizable target (%s)",
+    (splitDirection) => {
+      const target = item("target", "1/1/2/2", { resizeable: false });
+      expect(canSplitGridItem(target, splitDirection)).toBe(false);
+      expect(
+        splitGridItem(
+          geometry(["1fr"], ["1fr"], [target, item("dropped", "1/1/2/2")]),
+          {
+            droppedItemId: "dropped",
+            splitDirection,
+            targetItemId: "target",
+          },
+        ),
+      ).toMatchObject({
+        error: {
+          code: "NON_RESIZABLE",
+          message: `Grid item #target cannot be split ${splitDirection}`,
         },
-      ),
-    ).toMatchObject({
-      error: {
-        code: "NON_RESIZABLE",
-        message: `Grid item #target cannot be split ${splitDirection}`,
-      },
-      ok: false,
-    });
-  });
+        ok: false,
+      });
+    },
+  );
 
   it.each([
     ["h", "north", "east"],
     ["v", "east", "north"],
-  ] as const)("wires resizeable %s to the directions it allows", (resizeable, rejected, allowed) => {
-    const target = item("target", "1/1/2/2", { resizeable });
-    expect(
-      canSplitGridItem(target, rejected as GridGeometrySplitDirection),
-    ).toBe(false);
-    expect(
-      canSplitGridItem(target, allowed as GridGeometrySplitDirection),
-    ).toBe(true);
-  });
+  ] as const)(
+    "wires resizeable %s to the directions it allows",
+    (resizeable, rejected, allowed) => {
+      const target = item("target", "1/1/2/2", { resizeable });
+      expect(
+        canSplitGridItem(target, rejected as GridGeometrySplitDirection),
+      ).toBe(false);
+      expect(
+        canSplitGridItem(target, allowed as GridGeometrySplitDirection),
+      ).toBe(true);
+    },
+  );
 
   it("gives the dropped item the target position on centre replacement", () => {
     const transition = unwrap(
@@ -944,5 +956,80 @@ describe("GridGeometry item transitions", () => {
     );
 
     expect(JSON.stringify(source)).toBe(before);
+  });
+});
+
+describe("normaliseFluidTracks", () => {
+  it("leaves tracks unchanged when no fluid track is a pixel track", () => {
+    expect(
+      unwrap(
+        normaliseFluidTracks(
+          tracksOf(["40px", "1fr", "2fr"]),
+          [true, false, false],
+          600,
+        ),
+      ),
+    ).toBeUndefined();
+  });
+
+  it("shares fractions in proportion when every fluid track is a pixel track", () => {
+    const transition = unwrap(
+      normaliseFluidTracks(
+        tracksOf(["150px", "225px", "225px"]),
+        [false, false, false],
+        600,
+      ),
+    );
+    expect(trackSizes(transition?.tracks ?? [])).toEqual([
+      "0.75fr",
+      "1.125fr",
+      "1.125fr",
+    ]);
+    expect(transition?.tracks.map(({ measured }) => measured)).toEqual([
+      150, 225, 225,
+    ]);
+  });
+
+  it("converts fluid pixel tracks at the ratio of the space left to fractions", () => {
+    const transition = unwrap(
+      normaliseFluidTracks(
+        // the measured size of the fractional track is out of date
+        tracksOf(["250px", "150px", "1fr"], [250, 150, 300]),
+        [false, false, false],
+        600,
+      ),
+    );
+    expect(trackSizes(transition?.tracks ?? [])).toEqual([
+      "1.25fr",
+      "0.75fr",
+      "1fr",
+    ]);
+  });
+
+  it("keeps fixed tracks as pixels", () => {
+    const transition = unwrap(
+      normaliseFluidTracks(
+        tracksOf(["60px", "260px", "1fr"]),
+        [true, false, false],
+        520,
+      ),
+    );
+    expect(trackSizes(transition?.tracks ?? [])).toEqual([
+      "60px",
+      "1.3fr",
+      "1fr",
+    ]);
+  });
+
+  it("keeps pixels when pixel tracks leave no space for fractions", () => {
+    expect(
+      unwrap(
+        normaliseFluidTracks(
+          tracksOf(["300px", "300px", "1fr"]),
+          [false, false, false],
+          600,
+        ),
+      ),
+    ).toBeUndefined();
   });
 });
