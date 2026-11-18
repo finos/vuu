@@ -1,4 +1,5 @@
 import { useIdMemo } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 import type {
   DataSource,
@@ -8,7 +9,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { buildColumnMap, metadataKeys, useData } from "@vuu-ui/vuu-utils";
+import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { InstrumentTile } from "./InstrumentTile";
 import { InstrumentTileContainer } from "./InstrumentTileContainer";

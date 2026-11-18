@@ -1,5 +1,6 @@
+import { useData } from "@vuu-ui/core";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { DemoTableContainer } from "../DemoTableContainer";
 import { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";

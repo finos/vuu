@@ -3,8 +3,8 @@ import { useCallback, useMemo, useState } from "react";
 import { BasketSelectorProps } from "feature-basket-trading/src/basket-selector";
 import { BasketChangeHandler } from "feature-basket-trading/src/basket-toolbar";
 import { BasketStatus } from "feature-basket-trading/src/VuuBasketTradingFeature";
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { useData } from "@vuu-ui/vuu-utils";
 
 const testBasket: Basket = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

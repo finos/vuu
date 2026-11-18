@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { FlexboxLayout } from "@vuu-ui/vuu-layout";
@@ -25,7 +26,7 @@ import {
   ShowContextPanel,
   useContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
-import { toColumnName, useData, VuuShellLocation } from "@vuu-ui/vuu-utils";
+import { toColumnName, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import {
   isValidElement,
   useCallback,

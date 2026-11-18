@@ -36,6 +36,11 @@ export class NullDataSourceConstructor {
   }
 }
 
+/**
+ * @deprecated Use `DataContext` from `@vuu-ui/core`. This is a separate React
+ * context: a component that reads it under core's `DataProvider` gets no data
+ * source.
+ */
 export const DataContext = createContext<DataContextProps>({
   isLocalData: false,
   getServerAPI,

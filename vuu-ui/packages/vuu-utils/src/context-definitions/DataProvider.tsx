@@ -1,6 +1,10 @@
 import { ReactNode, useContext } from "react";
 import { DataContext, DataContextProps } from "./DataContext";
 
+/**
+ * @deprecated Use `DataProvider` from `@vuu-ui/core`. It uses a different React
+ * context from this one, which core's components read.
+ */
 export const DataProvider = ({
   children,
   getServerAPI,
@@ -17,4 +21,8 @@ export const DataProvider = ({
   );
 };
 
+/**
+ * @deprecated Use `useData` from `@vuu-ui/core`. It uses a different React
+ * context from this one, which core's components read.
+ */
 export const useData = () => useContext(DataContext);

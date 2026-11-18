@@ -1,4 +1,5 @@
 import { H3, StackLayout, StatusIndicator, Text } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { FilterTable } from "@vuu-ui/vuu-datatable";
@@ -7,7 +8,7 @@ import type { FilterBarProps } from "@vuu-ui/vuu-filters";
 import { View } from "@vuu-ui/vuu-layout";
 import { TableProps } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
 
 type FilterTableTemplateProps = {

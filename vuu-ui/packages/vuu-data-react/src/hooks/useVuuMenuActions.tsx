@@ -42,9 +42,8 @@ import {
   isActionMessage,
   isCustomComponentActionMessage,
   isSessionTableActionMessage,
-  useData,
 } from "@vuu-ui/vuu-utils";
-import { useModal } from "@vuu-ui/core";
+import { useModal, useData } from "@vuu-ui/core";
 import { useCallback } from "react";
 import {
   type FormConfig,

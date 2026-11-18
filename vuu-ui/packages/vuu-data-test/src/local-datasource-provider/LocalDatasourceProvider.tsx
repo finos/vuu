@@ -6,11 +6,7 @@ import type {
   WithBaseFilter,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import {
-  DataProvider as CoreDataProvider,
-  type LocalVuuServer,
-} from "@vuu-ui/core";
-import { DataProvider as LegacyDataProvider } from "@vuu-ui/vuu-utils";
+import { DataProvider, type LocalVuuServer } from "@vuu-ui/core";
 import type { ReactNode } from "react";
 import moduleContainer, {
   ensureVuuModule,
@@ -18,8 +14,8 @@ import moduleContainer, {
 import type { VuuModule } from "../core/module/VuuModule";
 
 /**
- * Creates a Provider that installs both legacy and core data contexts,
- * backed by in-browser VuuModules. When `modules` is supplied, only those
+ * Creates a Provider that installs the core data context, backed by
+ * in-browser VuuModules. When `modules` is supplied, only those
  * module instances are visible; otherwise every registered module is.
  */
 // biome-ignore lint/suspicious/noExplicitAny: Modules use different table-name unions.
@@ -101,19 +97,13 @@ const createLocalDataSourceProvider = (modules?: VuuModule<any>[]) => {
 
   const DataSourceProvider = ({ children }: { children: ReactNode }) => {
     return (
-      <LegacyDataProvider
+      <DataProvider
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         VuuDataSource={VuuDataSource as any}
         getServerAPI={getServerAPI}
       >
-        <CoreDataProvider
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          VuuDataSource={VuuDataSource as any}
-          getServerAPI={getServerAPI}
-        >
-          {children}
-        </CoreDataProvider>
-      </LegacyDataProvider>
+        {children}
+      </DataProvider>
     );
   };
 

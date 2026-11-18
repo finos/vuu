@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import type {
   CopyOption,
   DataSource,
@@ -5,7 +6,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { useData, useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
+import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   EditSession,

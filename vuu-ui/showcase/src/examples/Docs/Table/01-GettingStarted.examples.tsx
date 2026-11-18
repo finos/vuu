@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { Table } from "@vuu-ui/vuu-table";
@@ -5,7 +6,6 @@ import type {
   TableConfig,
   TableConfigChangeHandler,
 } from "@vuu-ui/vuu-table-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import { stockColumns, stockData } from "./sample-data";
 

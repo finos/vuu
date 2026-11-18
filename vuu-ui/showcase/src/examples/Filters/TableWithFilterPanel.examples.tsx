@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import {
@@ -15,7 +16,6 @@ import {
   getColumnsByNameForFilter,
   isTypeDescriptor,
   toColumnName,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import {

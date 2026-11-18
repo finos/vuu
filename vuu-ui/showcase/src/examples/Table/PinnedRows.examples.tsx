@@ -1,4 +1,5 @@
 import { Button, Switch } from "@salt-ds/core";
+import { DataProvider, useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { Table } from "@vuu-ui/vuu-table";
 import type { VuuGroupBy, VuuSort } from "@vuu-ui/vuu-protocol-types";
@@ -10,7 +11,7 @@ import type {
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
 import type { DataSourceConstructorProps } from "@vuu-ui/vuu-data-types";
-import { DataProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import {
   type ChangeEvent,
   StrictMode,
@@ -256,5 +257,22 @@ export const PinnedRowsStrictModeRemoteSubscribe = (
         <PinnedRowsTemplate pinnedKeys={["AAOO.L", "AAOQ.OQ"]} {...props} />
       </DataProvider>
     </StrictMode>
+  );
+};
+
+/**
+ * Pinned rows under core's DataProvider alone, the way a portal module or an
+ * app using VuuDataSourceProvider renders a Table.
+ *
+ * tags=data-consumer
+ */
+export const PinnedRowsWithCoreDataProvider = (
+  props: PinnedRowsExampleProps,
+) => {
+  const { getServerAPI, VuuDataSource } = useData();
+  return (
+    <DataProvider getServerAPI={getServerAPI} VuuDataSource={VuuDataSource}>
+      <PinnedRowsTemplate {...props} />
+    </DataProvider>
   );
 };

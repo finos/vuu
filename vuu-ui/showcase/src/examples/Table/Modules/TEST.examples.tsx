@@ -1,11 +1,12 @@
 import { Button } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import {
   getSchema,
   LocalDataSourceProvider,
   TestTableName,
 } from "@vuu-ui/vuu-data-test";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import { DemoTableContainer } from "../DemoTableContainer";
 

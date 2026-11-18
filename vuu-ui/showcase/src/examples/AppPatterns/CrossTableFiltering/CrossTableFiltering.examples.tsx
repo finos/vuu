@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import {
   Table as DataTable,
   getSchema,
@@ -22,7 +23,6 @@ import { useCallback, useMemo } from "react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { LinkedDataSources, LinkedTableView } from "@vuu-ui/vuu-datatable";
 import { TableSearch } from "@vuu-ui/vuu-ui-controls";
-import { useData } from "@vuu-ui/vuu-utils";
 
 // prettier-ignore
 const ParentTableSchema:TableSchema = {

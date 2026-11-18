@@ -1,4 +1,5 @@
 import { Input } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { getSchema, type VuuTableName } from "@vuu-ui/vuu-data-test";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
@@ -10,7 +11,6 @@ import {
   DataSourceProvider,
   Range,
   toColumnName,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import { CSSProperties, ReactNode, useMemo, useState } from "react";
 

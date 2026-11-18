@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { useMemo, useState } from "react";
 import { TestTableName, getSchema } from "@vuu-ui/vuu-data-test";
@@ -6,7 +7,7 @@ import { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { getMaxScrollHeight, useData } from "@vuu-ui/vuu-utils";
+import { getMaxScrollHeight } from "@vuu-ui/vuu-utils";
 
 const extendColumnConfig = (
   columns: readonly SchemaColumn[],

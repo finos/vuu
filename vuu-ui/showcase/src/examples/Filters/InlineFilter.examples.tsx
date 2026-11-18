@@ -1,7 +1,8 @@
 import { useMemo } from "react";
+import { useData } from "@vuu-ui/core";
 import { InlineFilter } from "@vuu-ui/vuu-filters";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
-import { DataSourceProvider, useData } from "@vuu-ui/vuu-utils";
+import { DataSourceProvider } from "@vuu-ui/vuu-utils";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { Table } from "@vuu-ui/vuu-table";
 import { FilterHandler } from "@vuu-ui/vuu-filter-types";

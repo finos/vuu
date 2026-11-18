@@ -1,9 +1,10 @@
+import { useData } from "@vuu-ui/core";
 import type {
   DataSourceSubscribeCallback,
   DataSourceRow,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { Range, useData } from "@vuu-ui/vuu-utils";
+import { Range } from "@vuu-ui/vuu-utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   lookupOptionsFromRows,

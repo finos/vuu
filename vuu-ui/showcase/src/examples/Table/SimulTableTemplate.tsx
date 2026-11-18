@@ -1,5 +1,5 @@
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { ModalProvider } from "@vuu-ui/core";
+import { ModalProvider, useData } from "@vuu-ui/core";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
 import { Table, TableProps, useTableConfig } from "@vuu-ui/vuu-table";
@@ -19,7 +19,6 @@ import {
 import {
   applyDefaultColumnConfig,
   toColumnName,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import { ReactNode, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";

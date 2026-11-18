@@ -1,7 +1,8 @@
+import { useData } from "@vuu-ui/core";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { SelectRowRequest } from "@vuu-ui/vuu-protocol-types";
-import { buildColumnMap, useData } from "@vuu-ui/vuu-utils";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
 

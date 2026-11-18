@@ -1,9 +1,9 @@
+import { useData } from "@vuu-ui/core";
 import {
   DataSource,
   DataSourceConstructorProps,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import {
   LinkedDataSources,
   LinkedTableConfig,

@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import {
   DataEditingProvider,
   useEditableTable,
@@ -6,7 +7,6 @@ import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { Table } from "@vuu-ui/vuu-table";
 import { InlineAddRow as InlineAddRowHeader } from "@vuu-ui/vuu-table-extras";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 const schema = getSchema("instruments");

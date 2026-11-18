@@ -1,9 +1,10 @@
+import { useData } from "@vuu-ui/core";
 import { FlexboxLayout } from "@vuu-ui/vuu-layout";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { Table } from "@vuu-ui/vuu-table";
 import { useMemo } from "react";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 
 const tableSchema = getSchema("instruments");
 

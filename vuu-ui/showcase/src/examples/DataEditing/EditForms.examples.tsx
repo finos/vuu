@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import {
   CreateRowForm,
   type CreateRowFormField,
@@ -43,7 +44,6 @@ import {
   TabTrigger,
   Text,
 } from "@salt-ds/core";
-import { useData } from "@vuu-ui/vuu-utils";
 import { type CSSProperties, useCallback, useMemo, useState } from "react";
 import {
   CURRENCIES,

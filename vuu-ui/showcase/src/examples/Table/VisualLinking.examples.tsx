@@ -1,5 +1,6 @@
 import { Button } from "@salt-ds/core";
-import { isVisualLinksMessage, useData } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/core";
+import { isVisualLinksMessage } from "@vuu-ui/vuu-utils";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 
 const Source = ({

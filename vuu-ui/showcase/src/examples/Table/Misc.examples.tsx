@@ -1,4 +1,5 @@
 import { Button, Input, InputProps } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import {
@@ -45,7 +46,6 @@ import {
   Range,
   registerComponent,
   toColumnName,
-  useData,
   VuuShellLocation,
 } from "@vuu-ui/vuu-utils";
 import {

@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import {
   Table as DataTable,
   getSchema,
@@ -12,7 +13,6 @@ import {
   CommitHandler,
   DataSourceProvider,
   toColumnName,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 

@@ -1,8 +1,7 @@
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { Table } from "@vuu-ui/vuu-table";
 import { useBulkEditDialog } from "@vuu-ui/vuu-table-extras";
-import { ModalProvider } from "@vuu-ui/core";
-import { useData } from "@vuu-ui/vuu-utils";
+import { ModalProvider, useData } from "@vuu-ui/core";
 import { Button } from "@salt-ds/core";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useEffect, useMemo, useState } from "react";

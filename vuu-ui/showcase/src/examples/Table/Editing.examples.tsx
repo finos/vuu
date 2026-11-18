@@ -41,13 +41,12 @@ import type {
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
-import { ModalProvider, useModal } from "@vuu-ui/core";
+import { ModalProvider, useModal, useData } from "@vuu-ui/core";
 import {
   DataSourceProvider,
   EventEmitter,
   registerComponent,
   toColumnName,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {

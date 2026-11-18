@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import type { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
@@ -8,7 +9,7 @@ import {
   type FilterEditSaveHandler,
 } from "@vuu-ui/vuu-filters";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 const instrumentsSchema = getSchema("instruments");

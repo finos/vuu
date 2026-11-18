@@ -4,11 +4,11 @@ import {
   ToggleButtonGroup,
   type ToggleButtonGroupProps,
 } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { Table } from "@vuu-ui/vuu-table";
 import type { BaseRowProps, TableConfig } from "@vuu-ui/vuu-table-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import {
   generateStockData,

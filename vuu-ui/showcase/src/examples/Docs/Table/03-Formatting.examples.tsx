@@ -1,4 +1,5 @@
 import { Input } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { Table } from "@vuu-ui/vuu-table";
 // Importing vuu-table-extras registers its cell renderers
 import "@vuu-ui/vuu-table-extras";
@@ -8,7 +9,7 @@ import type {
   TableCellRendererProps,
   TableConfig,
 } from "@vuu-ui/vuu-table-types";
-import { registerComponent, useData } from "@vuu-ui/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { type ChangeEvent, useMemo, useState } from "react";
 import { stockColumns, useStockDataSource } from "./sample-data";
 

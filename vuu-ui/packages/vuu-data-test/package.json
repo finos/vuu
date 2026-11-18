@@ -10,6 +10,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
+    "@vuu-ui/core": "5.0.0-alpha.5",
     "@vuu-ui/vuu-data-local": "5.0.0-alpha.5",
     "@vuu-ui/vuu-utils": "5.0.0-alpha.5",
     "@heswell/module-admin": "1.1.0",

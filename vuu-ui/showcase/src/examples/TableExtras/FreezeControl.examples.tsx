@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { Table } from "@vuu-ui/vuu-table";
 import { useCallback, useMemo } from "react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
@@ -10,7 +11,7 @@ import { Button } from "@salt-ds/core";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 
 export const DefaultFreezeControl = ({
   frozen = false,

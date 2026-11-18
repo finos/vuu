@@ -1,5 +1,6 @@
 import { SimulTable } from "./SimulTableTemplate";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/core";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   ColumnDescriptor,

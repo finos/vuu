@@ -6,6 +6,7 @@ const PINNED_ROWS = "Table/PinnedRows/PinnedRows";
 const SCROLLING_PINNED_ROWS = "Table/PinnedRows/ScrollingPinnedRows";
 const STRICT_MODE_REMOTE_SUBSCRIBE =
   "Table/PinnedRows/PinnedRowsStrictModeRemoteSubscribe";
+const CORE_DATA_PROVIDER = "Table/PinnedRows/PinnedRowsWithCoreDataProvider";
 
 // One column header row, so pinned rows begin at aria-rowindex 2
 const FIRST_PINNED_ROW = 2;
@@ -77,6 +78,23 @@ test.describe("Table pinned rows", () => {
 
       await expect(pinnedRows(page)).toHaveCount(2);
       expect(await pinnedRics(page)).toEqual(["AAOO.L", "AAOQ.OQ"]);
+      expect(pageErrors).toEqual([]);
+    });
+  });
+
+  test.describe("WHEN the only data provider is core's DataProvider", () => {
+    test("THEN the pinned data source is created without throwing", async ({
+      mount,
+      page,
+    }) => {
+      const pageErrors: string[] = [];
+      page.on("pageerror", (error) => pageErrors.push(error.message));
+
+      await mount(CORE_DATA_PROVIDER, { pinnedKeys: ["AAOP.N", "AAOT.PA"] });
+      await new PwTable(page).dataLoaded;
+
+      await expect(pinnedRows(page)).toHaveCount(2);
+      expect(await pinnedRics(page)).toEqual(["AAOP.N", "AAOT.PA"]);
       expect(pageErrors).toEqual([]);
     });
   });

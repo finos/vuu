@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
 import { DataSource, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
@@ -21,7 +22,7 @@ import {
   IconButton,
   useContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
