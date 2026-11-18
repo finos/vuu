@@ -4,6 +4,8 @@ import { expect, test } from "../../../../../playwright/fixtures";
 
 const PINNED_ROWS = "Table/PinnedRows/PinnedRows";
 const SCROLLING_PINNED_ROWS = "Table/PinnedRows/ScrollingPinnedRows";
+const STRICT_MODE_REMOTE_SUBSCRIBE =
+  "Table/PinnedRows/PinnedRowsStrictModeRemoteSubscribe";
 
 // One column header row, so pinned rows begin at aria-rowindex 2
 const FIRST_PINNED_ROW = 2;
@@ -62,6 +64,23 @@ const expectColumnsAligned = async (page: Page, pinned: Locator) => {
 };
 
 test.describe("Table pinned rows", () => {
+  test.describe("WHEN StrictMode re-runs effects while the pinned data source is still subscribing", () => {
+    test("THEN the Table does not throw and pinned rows render once subscribed", async ({
+      mount,
+      page,
+    }) => {
+      const pageErrors: string[] = [];
+      page.on("pageerror", (error) => pageErrors.push(error.message));
+
+      await mount(STRICT_MODE_REMOTE_SUBSCRIBE);
+      await new PwTable(page).dataLoaded;
+
+      await expect(pinnedRows(page)).toHaveCount(2);
+      expect(await pinnedRics(page)).toEqual(["AAOO.L", "AAOQ.OQ"]);
+      expect(pageErrors).toEqual([]);
+    });
+  });
+
   test.describe("WHEN rows are pinned by key", () => {
     test("THEN pinned rows render above the body and are excluded from it", async ({
       mount,

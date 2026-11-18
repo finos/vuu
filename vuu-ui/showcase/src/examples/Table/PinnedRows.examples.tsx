@@ -9,8 +9,16 @@ import type {
   TableRowArea,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { type ChangeEvent, useCallback, useMemo, useState } from "react";
+import type { DataSourceConstructorProps } from "@vuu-ui/vuu-data-types";
+import { DataProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import {
+  type ChangeEvent,
+  StrictMode,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
+import { withRemoteSubscribe } from "./remoteSubscribeDataSource";
 
 const schema = getSchema("instrumentPrices");
 
@@ -210,3 +218,43 @@ export const ScrollingPinnedRows = (props: PinnedRowsExampleProps) => (
     {...props}
   />
 );
+
+type DataSourceConstructor = ReturnType<typeof useData>["VuuDataSource"];
+
+const SUBSCRIBE_DELAY = 300;
+
+/**
+ * Pinned rows in StrictMode, with data sources that subscribe asynchronously,
+ * as remote ones do. StrictMode runs the Table's effects twice while the
+ * pinned rows data source is still subscribing.
+ *
+ * tags=data-consumer
+ */
+export const PinnedRowsStrictModeRemoteSubscribe = (
+  props: PinnedRowsExampleProps,
+) => {
+  const { getServerAPI, VuuDataSource } = useData();
+  const remoteSubscribeDataSource = useMemo(
+    () =>
+      function remoteSubscribeDataSource(
+        constructorProps: DataSourceConstructorProps,
+      ) {
+        return withRemoteSubscribe(
+          new VuuDataSource(constructorProps),
+          (completeSubscription) =>
+            setTimeout(completeSubscription, SUBSCRIBE_DELAY),
+        );
+      } as unknown as DataSourceConstructor,
+    [VuuDataSource],
+  );
+  return (
+    <StrictMode>
+      <DataProvider
+        getServerAPI={getServerAPI}
+        VuuDataSource={remoteSubscribeDataSource}
+      >
+        <PinnedRowsTemplate pinnedKeys={["AAOO.L", "AAOQ.OQ"]} {...props} />
+      </DataProvider>
+    </StrictMode>
+  );
+};
