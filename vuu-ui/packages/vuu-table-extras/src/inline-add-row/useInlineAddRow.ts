@@ -156,7 +156,7 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
           index > currentIndex && isDataValueEditable(column, "insert"),
       );
       if (firstInvalidIndex !== -1) {
-        requestAnimationFrame(() => focusEditor(firstInvalidIndex));
+        focusEditor(firstInvalidIndex);
       } else if (nextEditableIndex !== -1) {
         focusEditor(nextEditableIndex);
       } else if (firstEditableIndex !== -1) {
