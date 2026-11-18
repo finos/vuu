@@ -289,6 +289,59 @@ describe("VuuDataSource", () => {
     });
   });
 
+  describe("suspend while subscribing", () => {
+    const subscribed = {
+      type: "subscribed",
+      tableSchema: { columns: [], key: "id", table },
+    } as unknown as Parameters<VuuDataSource["handleMessageFromServer"]>[0];
+
+    it("defers the suspend until subscribed", async () => {
+      const dataSource = new VuuDataSource({ table, viewport: "vp-1" });
+      const callback = vi.fn();
+      const subscribing = dataSource.subscribe({}, callback);
+      dataSource.suspend(true, 1000);
+      await subscribing;
+
+      const serverAPI = await ConnectionManager.serverAPI;
+      expect(dataSource.status).toEqual("subscribing");
+      expect(serverAPI.send).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: "suspend" }),
+      );
+
+      dataSource.handleMessageFromServer(subscribed);
+
+      expect(callback).toHaveBeenCalledWith(subscribed);
+      expect(dataSource.status).toEqual("suspended");
+      expect(serverAPI.send).toHaveBeenCalledWith({
+        escalateDelay: 1000,
+        escalateToDisable: true,
+        type: "suspend",
+        viewport: "vp-1",
+      });
+    });
+
+    it("cancels the deferred suspend when resumed before subscribed", async () => {
+      const dataSource = new VuuDataSource({ table, viewport: "vp-1" });
+      const subscribing = dataSource.subscribe({}, vi.fn());
+      dataSource.suspend();
+      const callback = vi.fn();
+      dataSource.resume(callback);
+      await subscribing;
+
+      dataSource.handleMessageFromServer(subscribed);
+
+      const serverAPI = await ConnectionManager.serverAPI;
+      expect(callback).toHaveBeenCalledWith(subscribed);
+      expect(dataSource.status).toEqual("subscribed");
+      expect(serverAPI.send).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: "suspend" }),
+      );
+      expect(serverAPI.send).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: "resume" }),
+      );
+    });
+  });
+
   describe("prop setters", () => {
     const callback = () => undefined;
     it("calls server when range set", async () => {

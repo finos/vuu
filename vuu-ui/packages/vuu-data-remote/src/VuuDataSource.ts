@@ -106,6 +106,13 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #maxRangeWidth = Number.MAX_SAFE_INTEGER;
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
+  /**
+   * A suspend requested while subscribing, applied once subscribed unless
+   * resume is called first.
+   */
+  #pendingSuspend:
+    | { escalateDelay?: number; escalateToDisable?: boolean }
+    | undefined;
   #selectedRowsCount = 0;
   #session: SessionDataSourceOverrides | undefined;
   #sessionTableMessageColumn: string | undefined = undefined;
@@ -235,6 +242,11 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         this.#pendingVisualLink = undefined;
       }
       this.emit("subscribed", message);
+      if (this.#pendingSuspend) {
+        const { escalateDelay, escalateToDisable } = this.#pendingSuspend;
+        this.#pendingSuspend = undefined;
+        this.suspend(escalateToDisable, escalateDelay);
+      }
     } else if (message.type === "disabled") {
       this.#status = "disabled";
     } else if (message.type === "enabled") {
@@ -303,6 +315,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   };
 
   unsubscribe(notifyServer = true) {
+    this.#pendingSuspend = undefined;
     if (this.#status !== "unsubscribed") {
       info?.(`unsubscribe #${this.viewport}`);
       const viewport = this.viewport;
@@ -325,7 +338,10 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     escalateToDisable = this._defaultSuspenseProps.escalateToDisable,
     escalateDelay = this._defaultSuspenseProps.escalateDelay,
   ) {
-    if (this.#status !== "unsubscribed") {
+    if (this.#status === "subscribing") {
+      info?.(`suspend #${this.viewport} deferred until subscribed`);
+      this.#pendingSuspend = { escalateDelay, escalateToDisable };
+    } else if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       if (this.viewport) {
         this.#status = "suspended";
@@ -364,7 +380,9 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     if (callback) {
       this._clientCallback = callback;
     }
-    if (this.viewport) {
+    if (this.#status === "subscribing") {
+      this.#pendingSuspend = undefined;
+    } else if (this.viewport) {
       if (isDisabled) {
         this.enable();
       } else if (isSuspended) {

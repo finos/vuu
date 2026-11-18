@@ -336,7 +336,13 @@ export const useDataSource = ({
     }
     dataSource.on("resumed", handleResume);
 
-    if (status !== "initialising" && status !== "unsubscribed") {
+    if (
+      status !== "initialising" &&
+      status !== "unsubscribed" &&
+      status !== "subscribing"
+    ) {
+      // A subscribing dataSource has no tableSchema yet, the 'subscribed'
+      // message brings it to datasourceMessageHandler.
       const { columns, tableSchema } = dataSource;
       if (tableSchema) {
         createDataRow(columns, tableSchema.columns);
@@ -353,10 +359,13 @@ export const useDataSource = ({
 
     if (status === "disabled" || status === "disabling") {
       dataSource.enable?.(datasourceMessageHandler);
+    } else if (status === "subscribing") {
+      // An effect re-run (e.g. StrictMode) suspends the dataSource before it
+      // is subscribed. Resuming cancels that suspension.
+      dataSource.resume?.(datasourceMessageHandler);
     } else if (
       status !== "initialising" &&
       status !== "unsubscribed" &&
-      status !== "subscribing" &&
       status !== "enabling"
     ) {
       dataSource.resume?.(datasourceMessageHandler);
