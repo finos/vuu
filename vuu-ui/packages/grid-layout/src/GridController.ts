@@ -161,6 +161,7 @@ export class GridController implements GridHistoryTarget {
     if (!result.ok) {
       return result;
     }
+    this.#normaliseFluidTracks(checkpoint);
     const candidate = this.#readSnapshot(previous.revision);
     if (semanticSnapshot(candidate) === semanticSnapshot(previous)) {
       return result;
@@ -391,8 +392,10 @@ export class GridController implements GridHistoryTarget {
     if (this.#activeTransaction !== transaction) {
       return this.#closedResult("commit");
     }
+    this.#normaliseFluidTracks(transaction.checkpoint);
     const changed =
-      semanticSnapshot(this.#snapshot) !== semanticSnapshot(baseline);
+      semanticSnapshot(this.#readSnapshot(baseline.revision)) !==
+      semanticSnapshot(baseline);
     this.#activeTransaction = undefined;
     if (!changed) {
       this.#snapshot = baseline;
@@ -427,6 +430,14 @@ export class GridController implements GridHistoryTarget {
       this.#notifyState();
     }
     return { ok: true, snapshot: this.#snapshot };
+  }
+
+  /**
+   * Commands and transactions move grid lines in pixels. Once they are
+   * complete, tracks that were fluid before them become fractions again.
+   */
+  #normaliseFluidTracks(before: GridModelCheckpoint) {
+    this.gridModel.tracks.normaliseFluidTracks(before.tracks);
   }
 
   #closedResult(action: "commit" | "rollback"): GridTransactionCloseResult {

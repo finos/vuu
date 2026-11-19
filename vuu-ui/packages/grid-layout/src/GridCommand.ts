@@ -448,6 +448,7 @@ export class LegacyGridCommandExecutor {
           command.track,
           resized.value,
         );
+        this.gridModel.tracks.setExplicitlySized(command.track, command.index);
         return success(command);
       }
       case "resize-tracks": {

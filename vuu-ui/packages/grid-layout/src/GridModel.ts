@@ -14,6 +14,7 @@ import {
   removeTrack,
   resizeTrackTo,
   resizeTracksAdjacent,
+  normaliseFluidTracks,
   resizeTracksProportionally,
   shiftItemsForInsertedTrack,
   shiftItemsForNewTrack,
@@ -745,6 +746,8 @@ type GridTracksCheckpoint = {
 export class GridTracks extends EventEmitter<GridTrackEvents> {
   #columns: GridTrack[];
   #rows: GridTrack[];
+  /** Tracks given an explicit size, which normalisation leaves alone. */
+  #explicitlySized = new WeakSet<GridTrack>();
 
   constructor(
     private gridId: string,
@@ -1060,6 +1063,70 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
         ),
       ),
     );
+  }
+
+  /**
+   * The space the tracks fill, read from the rendered grid. Operations that
+   * move grid lines do not change it, so it holds while a preview is
+   * rendered. Without a rendered grid, it is the total of the tracks' known
+   * sizes, or undefined when a track size is unknown.
+   */
+  #measureAvailableSize(trackType: TrackType) {
+    const el = document.getElementById(this.gridId);
+    if (el) {
+      return getComputedStyle(el)
+        .getPropertyValue(`grid-template-${trackType}s`)
+        .split(" ")
+        .reduce((total, value) => total + parseFloat(value), 0);
+    }
+    const tracks = this.getTracks(trackType);
+    return tracks.every((track) => track.hasNumericValue)
+      ? tracks.reduce((total, track) => total + track.numericValue, 0)
+      : undefined;
+  }
+
+  /** Mark a track as sized by the application, rather than by the user. */
+  setExplicitlySized(trackType: TrackType, trackIndex: number) {
+    const track = this.getTracks(trackType)[trackIndex];
+    if (track) {
+      this.#explicitlySized.add(track);
+    }
+  }
+
+  /**
+   * Express as fractions the tracks of each dimension that had a fractional
+   * track at `initial`, except tracks that were pixel tracks at `initial` and
+   * tracks given an explicit size.
+   * Operations that move grid lines work in pixels; this restores fluid
+   * sizing once the operation is complete, so the grid keeps filling the
+   * space available to it.
+   */
+  normaliseFluidTracks(initial: GridTracksCheckpoint) {
+    for (const trackType of ["column", "row"] as const) {
+      const initialTracks =
+        trackType === "column" ? initial.columns : initial.rows;
+      if (!initialTracks.some(({ size }) => isFractionUnit(size))) {
+        continue;
+      }
+      const fixedTracks = new Set(
+        initialTracks
+          .filter(({ size }) => isPixelUnit(size))
+          .map(({ track }) => track),
+      );
+      const fixed = this.getTracks(trackType).map(
+        (track) => fixedTracks.has(track) || this.#explicitlySized.has(track),
+      );
+      const availableSize = this.#measureAvailableSize(trackType);
+      if (availableSize === undefined) {
+        continue;
+      }
+      const transition = this.runTrackTransition(trackType, (tracks) =>
+        normaliseFluidTracks(tracks, fixed, availableSize),
+      );
+      if (transition) {
+        this.applyTrackTransition(trackType, transition);
+      }
+    }
   }
 
   getProportionalResizeAllowance(
