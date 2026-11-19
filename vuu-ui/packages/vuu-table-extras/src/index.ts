@@ -38,7 +38,17 @@ export {
 export { FreezeControl } from "./freeze-control/FreezeControl";
 export { FrozenBanner } from "./freeze-control/FrozenBanner";
 export * from "./inline-add-row";
-export { TabbedTableConfigPanel } from "./tabbed-table-config-panel/TabbedTableConfigPanel";
+export {
+  ConfigPanelTab,
+  type ConfigPanelTabProps,
+  TabbedConfigPanel,
+  type TabbedConfigPanelProps,
+} from "./tabbed-config-panel/TabbedConfigPanel";
+export {
+  TabbedTableConfigPanel,
+  type TabbedTableConfigPanelProps,
+  type TabbedTableConfigPanelTab,
+} from "./tabbed-table-config-panel/TabbedTableConfigPanel";
 export { TabbedTableSettingsAction } from "./tabbed-table-config-panel/TabbedTableSettingsAction";
 export { TableFooter, TableFooterTray } from "./table-footer/TableFooter";
 export { TableProvider, useTableContext } from "./table-provider/TableProvider";

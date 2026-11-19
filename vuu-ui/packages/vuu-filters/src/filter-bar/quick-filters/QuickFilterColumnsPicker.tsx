@@ -1,13 +1,22 @@
 import { Button } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { type ItemDescriptor, ItemPicker } from "@vuu-ui/vuu-ui-controls";
+import type { ItemTypeName } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useCallback, useState } from "react";
+
+import quickFilterColumnsPickerCss from "./QuickFilterColumnsPicker.css";
 
 const classBase = "vuuQuickFilters";
 
 export interface QuickFilterColumnsPickerProps {
   allItems: ItemDescriptor[];
   className?: string;
+  /**
+   * What the picker calls an item, e.g. "field". Defaults to "column".
+   */
+  itemTypeName?: ItemTypeName;
   onChangeColumns: (columns: string[]) => void;
   onResetColumns: () => void;
   selectedItems: ItemDescriptor[];
@@ -20,10 +29,18 @@ export interface QuickFilterColumnsPickerProps {
 export const QuickFilterColumnsPicker = ({
   allItems,
   className,
+  itemTypeName = "column",
   onChangeColumns,
   onResetColumns,
   selectedItems,
 }: QuickFilterColumnsPickerProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-quick-filter-columns-picker",
+    css: quickFilterColumnsPickerCss,
+    window: targetWindow,
+  });
+
   const handleSelectedItemsChange = useCallback(
     (items: readonly ItemDescriptor[]) =>
       onChangeColumns(items.map(({ name }) => name)),
@@ -33,7 +50,7 @@ export const QuickFilterColumnsPicker = ({
     <div className={cx(`${classBase}-columnsPicker`, className)}>
       <ItemPicker
         allItems={allItems}
-        itemTypeName="column"
+        itemTypeName={itemTypeName}
         onSelectedItemsChange={handleSelectedItemsChange}
         selectedItems={selectedItems}
       />
