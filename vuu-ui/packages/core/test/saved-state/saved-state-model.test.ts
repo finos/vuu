@@ -19,8 +19,11 @@ import {
   nodeId,
   pruneSelection,
   summariseSelection,
+  allWorkspaces,
   toClearSelection,
   toTreeSelection,
+  toWorkspaceSelection,
+  WORKSPACES_KEY,
 } from "../../src/saved-state/saved-state-model";
 import { toSavedStateApplications } from "../../src/saved-state/SavedStateContext";
 import { describeClearResult } from "../../src/saved-state/SavedStateDialog";
@@ -438,6 +441,140 @@ describe("describeClearResult", () => {
       status: "error",
       title: "Saved state couldn't be cleared",
       body: "Saved state for Instruments couldn't be cleared. It is still selected, so you can try again.",
+    });
+  });
+});
+
+describe("saved workspaces (§9.16)", () => {
+  const workspaces = [
+    {
+      id: "trader",
+      kind: "system" as const,
+      name: "Trader",
+      open: true,
+      updatedAt: hoursAgo(3),
+    },
+    {
+      id: "ws-1",
+      kind: "named" as const,
+      name: "My layout",
+      open: true,
+      updatedAt: hoursAgo(30),
+    },
+  ];
+  const withWorkspaces = () =>
+    buildSavedStateModel({
+      applications,
+      now: NOW,
+      summaries,
+      workspaces,
+    });
+  const traderId = nodeId("workspace", "trader");
+  const namedId = nodeId("workspace", "ws-1");
+
+  it("lists workspaces in a group after the applications", () => {
+    const m = withWorkspaces();
+    expect(m.workspaces).toMatchObject({
+      kind: "workspaces",
+      label: "Workspaces",
+      meta: "2 workspaces",
+    });
+    expect(
+      m.workspaces?.children?.map(({ label, meta, open }) => ({
+        label,
+        meta,
+        open,
+      })),
+    ).toEqual([
+      { label: "Trader", meta: "Changed layout · 3 hours ago", open: true },
+      // A named workspace is closed when deleted, not reset in place.
+      { label: "My layout", meta: "Saved workspace · Yesterday", open: false },
+    ]);
+    const roots = filterSavedStateModel(m, {}).nodes.map(({ kind }) => kind);
+    expect(roots.slice(-2)).toEqual(["workspaces", "unavailable"]);
+  });
+
+  it("omits the group when there are no workspaces, and isn't empty with only workspaces", () => {
+    expect(model().workspaces).toBeUndefined();
+    const onlyWorkspaces = buildSavedStateModel({
+      now: NOW,
+      summaries: [],
+      workspaces,
+    });
+    expect(onlyWorkspaces.empty).toBe(false);
+    expect(buildSavedStateModel({ now: NOW, summaries: [] }).empty).toBe(true);
+  });
+
+  it("scopes to workspaces and finds them by name", () => {
+    const m = withWorkspaces();
+    expect(
+      filterSavedStateModel(m, { scope: WORKSPACES_KEY }).nodes.map(
+        ({ id }) => id,
+      ),
+    ).toEqual([nodeId("workspaces")]);
+    const found = filterSavedStateModel(m, { search: "layout" });
+    expect(collectLeafIds(found.nodes)).toContain(namedId);
+  });
+
+  it("keeps workspaces out of the ClearSelection and lists them separately", () => {
+    const m = withWorkspaces();
+    const selection = new Set([traderId, entryId("instruments", 2, "scratch")]);
+    expect(toClearSelection(m, selection)).toEqual([
+      {
+        applicationKey: "instruments",
+        applicationVersion: 2,
+        keys: ["scratch"],
+      },
+    ]);
+    expect(toWorkspaceSelection(m, selection)).toEqual([
+      { id: "trader", kind: "system" },
+    ]);
+    expect(allWorkspaces(m)).toEqual([
+      { id: "trader", kind: "system" },
+      { id: "ws-1", kind: "named" },
+    ]);
+    expect(summariseSelection(m, selection)).toEqual({
+      items: 2,
+      applications: 2,
+    });
+  });
+
+  it("describes each workspace for the confirmation", () => {
+    const m = withWorkspaces();
+    expect(describeSelection(m, new Set([traderId, namedId]))).toEqual([
+      {
+        applicationKey: WORKSPACES_KEY,
+        title: "Trader",
+        description: "changed layout, restored to the default",
+        open: true,
+      },
+      {
+        applicationKey: WORKSPACES_KEY,
+        title: "My layout",
+        description: "saved workspace",
+        open: false,
+      },
+    ]);
+  });
+
+  it("counts cleared workspaces and names the ones that couldn't be cleared", () => {
+    const m = withWorkspaces();
+    const none = { cleared: [], failed: [], requiresReload: [] };
+    expect(
+      describeClearResult(m, [], none, {
+        cleared: ["trader", "ws-1"],
+        failed: [],
+      }).body,
+    ).toBe("2 items cleared from 1 application.");
+    expect(
+      describeClearResult(m, [], none, {
+        cleared: ["trader"],
+        failed: [{ id: "ws-1", error: Error("offline") }],
+      }),
+    ).toEqual({
+      status: "error",
+      title: "Some saved state couldn't be cleared",
+      body: "Saved state for My layout couldn't be cleared. It is still selected, so you can try again.",
     });
   });
 });

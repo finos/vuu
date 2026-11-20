@@ -15,6 +15,7 @@ import {
   getApplicationKey,
   SavedStateContext,
   type SavedStateContextValue,
+  type SavedStateWorkspaces,
   toSavedStateApplications,
 } from "./SavedStateContext";
 import { SavedStateDialog } from "./SavedStateDialog";
@@ -77,6 +78,9 @@ export const SavedStateProvider = ({
     { applicationKey?: string; instance: number } | undefined
   >(undefined);
   const [toasts, setToasts] = useState<SavedStateToastItem[]>([]);
+  const [workspaces, registerWorkspaces] = useState<
+    SavedStateWorkspaces | undefined
+  >(undefined);
   const nextId = useRef(1);
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
@@ -149,7 +153,13 @@ export const SavedStateProvider = ({
   );
 
   const value = useMemo<SavedStateContextValue>(
-    () => ({ applicationKeyForModule, notify, open, reportCarryForward }),
+    () => ({
+      applicationKeyForModule,
+      notify,
+      open,
+      registerWorkspaces,
+      reportCarryForward,
+    }),
     [applicationKeyForModule, notify, open, reportCarryForward],
   );
 
@@ -165,6 +175,7 @@ export const SavedStateProvider = ({
             if (!isOpen) setDialog(undefined);
           }}
           open
+          workspaces={workspaces}
         />
       ) : null}
       <SavedStateToasts onDismiss={dismiss} toasts={toasts} />

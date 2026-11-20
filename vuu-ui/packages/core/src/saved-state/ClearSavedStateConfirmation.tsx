@@ -18,6 +18,8 @@ export const MAX_CONFIRMATION_LINES = 5;
 export interface ClearSavedStateConfirmationProps {
   /** Clear all uses a single sentence rather than a list. */
   clearAll?: boolean;
+  /** Clear all also clears saved workspaces (§9.16). */
+  includesWorkspaces?: boolean;
   lines: readonly ClearDescription[];
   /** Titles of affected applications that are open. */
   openApplications: readonly string[];
@@ -29,6 +31,7 @@ export interface ClearSavedStateConfirmationProps {
 /** Confirms clearing saved state (§9.6). */
 export const ClearSavedStateConfirmation = ({
   clearAll = false,
+  includesWorkspaces = false,
   lines,
   onCancel,
   onConfirm,
@@ -55,7 +58,9 @@ export const ClearSavedStateConfirmation = ({
         <StackLayout gap={1}>
           {clearAll ? (
             <Text>
-              All saved state for all applications will be permanently removed.
+              {includesWorkspaces
+                ? "All saved state for all applications, and your saved workspaces, will be permanently removed. Workspaces provided by the portal return to their default layout."
+                : "All saved state for all applications will be permanently removed."}
             </Text>
           ) : (
             <>

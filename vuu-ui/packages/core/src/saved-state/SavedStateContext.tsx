@@ -1,10 +1,40 @@
 import { createContext, useContext, useMemo } from "react";
 import type { CarryForwardReport } from "../persistence/ApplicationStateStore";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
-import type { SavedStateApplicationInfo } from "./saved-state-model";
+import type {
+  SavedStateApplicationInfo,
+  SavedStateWorkspaceInfo,
+  SavedStateWorkspaceRef,
+} from "./saved-state-model";
 import type { SavedStateToastProps } from "./SavedStateToasts";
 
+export interface SavedStateWorkspacesClearResult {
+  cleared: readonly string[];
+  failed: ReadonlyArray<{ id: string; error: Error }>;
+}
+
+/**
+ * The portal's saved workspaces, registered by the workspace provider so
+ * the Saved state dialog can list and clear them (§9.16). Workspaces are
+ * saved by their own persistence service, not the portal's.
+ */
+export interface SavedStateWorkspaces {
+  items: readonly SavedStateWorkspaceInfo[];
+  /**
+   * Resets personal copies of system workspaces to their default and
+   * deletes named workspaces.
+   */
+  clear: (
+    workspaces: readonly SavedStateWorkspaceRef[],
+  ) => Promise<SavedStateWorkspacesClearResult>;
+}
+
 export interface SavedStateContextValue {
+  /**
+   * Lists saved workspaces in the dialog. Pass `undefined` to remove them,
+   * e.g. when the workspace provider unmounts.
+   */
+  registerWorkspaces?: (workspaces: SavedStateWorkspaces | undefined) => void;
   /** Opens the Saved state dialog, scoped to one application if given (§9.4). */
   open: (applicationKey?: string) => void;
   /** The saved-state key of a registered module, if it has one. */

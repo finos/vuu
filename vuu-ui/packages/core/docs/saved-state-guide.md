@@ -433,6 +433,11 @@ props, so a module opened in its own window uses the same saved state.
 
 - The portal saves its own state (such as which navigation groups are
   expanded) under the reserved application key `vuu.portal`.
+- With `workspaces`, the user's saved workspaces (personal copies of system
+  workspaces, and named workspaces) appear in the Saved state dialog under
+  **Workspaces**, whichever `persistenceService` saves them. Clearing a
+  personal copy resets it to the default; clearing a named workspace deletes
+  it.
 - `PortalHeader` shows the user menu with **Saved state…** and **Log out**.
   Log out saves pending changes before signing the user out. Extra menu items
   go in its `userMenuItems` prop.

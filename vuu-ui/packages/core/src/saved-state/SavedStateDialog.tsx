@@ -46,6 +46,7 @@ import { ClearSavedStateConfirmation } from "./ClearSavedStateConfirmation";
 import { formatList, plural } from "./saved-state-format";
 import {
   ALL_APPLICATIONS,
+  allWorkspaces,
   buildSavedStateModel,
   collectParentIds,
   describeSelection,
@@ -59,8 +60,15 @@ import {
   summariseSelection,
   toClearSelection,
   toTreeSelection,
+  toWorkspaceSelection,
+  WORKSPACES_KEY,
+  WORKSPACES_TITLE,
 } from "./saved-state-model";
-import { useOptionalSavedState } from "./SavedStateContext";
+import {
+  type SavedStateWorkspaces,
+  type SavedStateWorkspacesClearResult,
+  useOptionalSavedState,
+} from "./SavedStateContext";
 import { SavedStateTree } from "./SavedStateTree";
 import type { SavedStateToastProps } from "./SavedStateToasts";
 
@@ -78,7 +86,14 @@ export interface SavedStateDialogProps {
   /** Announces and shows the outcome of clearing. Defaults to the shell's toasts. */
   onNotify?: (toast: SavedStateToastProps) => void;
   portalTitle?: string;
+  /** Saved workspaces, listed and cleared beside applications (§9.16). */
+  workspaces?: SavedStateWorkspaces;
 }
+
+const NO_WORKSPACES_CLEARED: SavedStateWorkspacesClearResult = {
+  cleared: [],
+  failed: [],
+};
 
 type LoadState =
   | { status: "loading" }
@@ -88,12 +103,21 @@ type LoadState =
 type Confirmation = { clearAll: boolean } | undefined;
 
 /** Parents to expand for an application: itself and its groups (§9.4). */
-const applicationExpansion = (model: SavedStateModel, applicationKey: string) =>
-  collectParentIds(
-    model.applications
-      .filter((application) => application.applicationKey === applicationKey)
-      .map(({ node }) => node),
-  ).filter((id) => JSON.parse(id)[0] !== "previous-versions");
+const applicationExpansion = (
+  model: SavedStateModel,
+  applicationKey: string,
+) =>
+  applicationKey === WORKSPACES_KEY
+    ? model.workspaces
+      ? [model.workspaces.id]
+      : []
+    : collectParentIds(
+        model.applications
+          .filter(
+            (application) => application.applicationKey === applicationKey,
+          )
+          .map(({ node }) => node),
+      ).filter((id) => JSON.parse(id)[0] !== "previous-versions");
 
 const initialExpansion = (model: SavedStateModel, scope: string) => {
   if (scope !== ALL_APPLICATIONS) {
@@ -103,6 +127,7 @@ const initialExpansion = (model: SavedStateModel, scope: string) => {
     ({ applicationKey, node, open }) =>
       open ? applicationExpansion(model, applicationKey) : [node.id],
   );
+  if (model.workspaces) expanded.push(model.workspaces.id);
   if (model.unavailable) expanded.push(model.unavailable.id);
   return expanded;
 };
@@ -142,6 +167,7 @@ export const describeClearResult = (
   model: SavedStateModel,
   selection: ClearSelection,
   result: ClearResult,
+  workspaceResult: SavedStateWorkspacesClearResult = NO_WORKSPACES_CLEARED,
 ): SavedStateToastProps => {
   const failedKeys = new Set(
     result.failed.map(
@@ -152,9 +178,11 @@ export const describeClearResult = (
     (item) =>
       !failedKeys.has(`${item.applicationKey}\u0000${item.applicationVersion}`),
   );
-  const items = selectionWeight(model, succeeded);
-  const applications = new Set(succeeded.map((item) => item.applicationKey))
-    .size;
+  const items =
+    selectionWeight(model, succeeded) + workspaceResult.cleared.length;
+  const applications =
+    new Set(succeeded.map((item) => item.applicationKey)).size +
+    (workspaceResult.cleared.length > 0 ? 1 : 0);
   const reloadTitles = [
     ...new Set(
       result.requiresReload.map(({ applicationKey }) =>
@@ -169,16 +197,21 @@ export const describeClearResult = (
         }.`
       : "";
 
-  if (result.failed.length > 0) {
+  if (result.failed.length > 0 || workspaceResult.failed.length > 0) {
     const failedTitles = [
-      ...new Set(
-        result.failed.map(({ ref }) => titleFor(model, ref.applicationKey)),
-      ),
+      ...new Set([
+        ...result.failed.map(({ ref }) => titleFor(model, ref.applicationKey)),
+        ...workspaceResult.failed.map(
+          ({ id }) =>
+            model.leaves.get(nodeId("workspace", id))?.label ??
+            WORKSPACES_TITLE,
+        ),
+      ]),
     ];
     return {
       status: "error",
       title:
-        succeeded.length > 0
+        succeeded.length > 0 || workspaceResult.cleared.length > 0
           ? "Some saved state couldn't be cleared"
           : "Saved state couldn't be cleared",
       body: `Saved state for ${formatList(failedTitles)} couldn't be cleared. It is still selected, so you can try again.${reload}`,
@@ -199,6 +232,7 @@ export const SavedStateDialog = ({
   onOpenChange,
   open,
   portalTitle,
+  workspaces,
 }: SavedStateDialogProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -259,8 +293,9 @@ export const SavedStateDialog = ({
         now: load.status === "ready" ? load.now : new Date(),
         portalTitle,
         summaries: load.status === "ready" ? load.summaries : [],
+        workspaces: workspaces?.items,
       }),
-    [applications, load, portalTitle, service],
+    [applications, load, portalTitle, service, workspaces?.items],
   );
 
   const currentSelection = pruneSelection(model, selection);
@@ -350,7 +385,14 @@ export const SavedStateDialog = ({
   );
   const openApplications = useMemo(() => {
     const titles = confirmation?.clearAll
-      ? model.applications.filter(({ open }) => open).map(({ title }) => title)
+      ? [
+          ...model.applications
+            .filter(({ open }) => open)
+            .map(({ title }) => title),
+          ...(model.workspaces?.children ?? [])
+            .filter(({ open }) => open)
+            .map(({ label }) => label),
+        ]
       : confirmationLines.filter(({ open }) => open).map(({ title }) => title);
     return [...new Set(titles)];
   }, [confirmation, confirmationLines, model]);
@@ -370,11 +412,18 @@ export const SavedStateDialog = ({
           ),
         ]
       : clearSelection;
+    const workspacesToClear = workspaces
+      ? clearAll
+        ? allWorkspaces(model)
+        : toWorkspaceSelection(model, currentSelection)
+      : [];
     let result: ClearResult;
     try {
       result = clearAll
         ? await service.clearAll()
-        : await service.clear(selectionToClear);
+        : selectionToClear.length > 0
+          ? await service.clear(selectionToClear)
+          : { cleared: [], failed: [], requiresReload: [] };
     } catch (error) {
       result = {
         cleared: [],
@@ -385,7 +434,26 @@ export const SavedStateDialog = ({
         requiresReload: [],
       };
     }
-    const toast = describeClearResult(model, selectionToClear, result);
+    let workspaceResult = NO_WORKSPACES_CLEARED;
+    if (workspaces && workspacesToClear.length > 0) {
+      try {
+        workspaceResult = await workspaces.clear(workspacesToClear);
+      } catch (error) {
+        workspaceResult = {
+          cleared: [],
+          failed: workspacesToClear.map(({ id }) => ({
+            id,
+            error: error instanceof Error ? error : Error(String(error)),
+          })),
+        };
+      }
+    }
+    const toast = describeClearResult(
+      model,
+      selectionToClear,
+      result,
+      workspaceResult,
+    );
     const reloadAction =
       result.requiresReload.length > 0
         ? {
@@ -401,12 +469,18 @@ export const SavedStateDialog = ({
         ({ ref }) => `${ref.applicationKey}\u0000${ref.applicationVersion}`,
       ),
     );
+    const failedWorkspaces = new Set(
+      workspaceResult.failed.map(({ id }) => id),
+    );
     setSelection((current) => {
-      if (failed.size === 0) return new Set();
+      if (failed.size === 0 && failedWorkspaces.size === 0) return new Set();
       return new Set(
         [...current].filter((id) => {
           const leaf = model.leaves.get(id);
           if (!leaf) return false;
+          if (leaf.kind === "workspace") {
+            return failedWorkspaces.has(leaf.workspaceId);
+          }
           const versions =
             leaf.kind === "removed"
               ? leaf.applicationVersions
@@ -431,6 +505,9 @@ export const SavedStateDialog = ({
       key: applicationKey,
       title,
     })),
+    ...(model.workspaces
+      ? [{ key: WORKSPACES_KEY, title: WORKSPACES_TITLE }]
+      : []),
   ];
   if (!scopeOptions.some(({ key }) => key === scope)) {
     scopeOptions.push({
@@ -629,6 +706,7 @@ export const SavedStateDialog = ({
       {confirmation ? (
         <ClearSavedStateConfirmation
           clearAll={confirmation.clearAll}
+          includesWorkspaces={model.workspaces !== undefined}
           lines={confirmationLines}
           onCancel={() => setConfirmation(undefined)}
           onConfirm={runClear}

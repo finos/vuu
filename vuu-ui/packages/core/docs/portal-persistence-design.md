@@ -1168,6 +1168,44 @@ Additional copy:
 | Toast title / body | Some saved state wasn't carried forward / {Application} has been updated. N items couldn't be kept: {labels}. |
 | Toast action | Review |
 
+### 9.16 Saved workspaces
+
+Workspaces are saved by the workspace persistence service
+(`PortalWorkspacesOptions.persistenceService`, browser local storage under
+`vuu-workspace:…` by default), not by the portal persistence service. Without
+help from the dialog, users couldn't clear them here, and **Clear all saved
+state** left a stale personal copy of a system workspace in place.
+
+- When the portal has workspaces, `PortalWorkspacesProvider` registers them
+  with the dialog (`SavedStateContextValue.registerWorkspaces`). The dialog
+  lists them in a **Workspaces** group after the applications, and offers
+  **Workspaces** in the **Show** dropdown (scope key `vuu-portal:workspaces`).
+- Two kinds of workspace are listed:
+  - a personal copy of a system workspace, with *"Changed layout"* in its
+    metadata. Clearing it resets the workspace to its default, as **Reset to
+    default** does. An open one shows the **Open** tag, and the confirmation
+    says it will return to its default view.
+  - a named workspace, with *"Saved workspace"* in its metadata. Clearing it
+    deletes it and closes any open instance.
+- A system workspace the user hasn't changed isn't listed: there is nothing
+  to clear.
+- **Clear selected** and **Clear all** clear workspaces through the workspace
+  provider, after the portal's saved state. The confirmation lists one line
+  per workspace. The outcome toast counts the Workspaces group as one
+  application.
+- The open-workspace session (which workspaces are open, in which order) and
+  workspace snapshots aren't listed. Resetting or deleting a workspace removes
+  its snapshot.
+
+Additional copy:
+
+| Context | Text |
+| ------- | ---- |
+| Group | Workspaces · N workspaces |
+| Item metadata | Changed layout · {time} / Saved workspace · {time} |
+| Confirmation line | {Workspace} — changed layout, restored to the default / {Workspace} — saved workspace |
+| Clear all confirmation | All saved state for all applications, and your saved workspaces, will be permanently removed. Workspaces provided by the portal return to their default layout. |
+
 ## 10. Package structure
 
 ```text
