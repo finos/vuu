@@ -1,0 +1,28 @@
+/* the column chooser: the picker above a Reset footer. In the context
+   panel it fills the panel height, in the popover it has a fixed height. */
+.vuuQuickFilters-columnsPicker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  .vuuItemPicker {
+    flex: 1 1 auto;
+    gap: var(--salt-spacing-100);
+    min-height: 0;
+    padding: var(--salt-spacing-100) 0 0;
+  }
+}
+.vuuQuickFilters-columnsFooter {
+  border-top: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
+  justify-content: flex-start;
+  padding: var(--salt-spacing-100) var(--salt-spacing-200);
+
+  .saltButton {
+    --saltButton-height: 24px;
+    --saltButton-textTransform: none;
+    font-size: 11px;
+    padding: 0 var(--salt-spacing-100);
+  }
+}
