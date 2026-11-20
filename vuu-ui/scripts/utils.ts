@@ -57,6 +57,39 @@ export const getCommandLineArg = (
   }
 };
 
+const NPM_ERROR = /^npm (?:error|ERR!)\s*/;
+const NPM_NOISE = /^npm (?:notice|warn|WARN)\b/;
+// An "npm error" line with nothing after the prefix but a status code.
+const NPM_EMPTY_ERROR = /^npm (?:error|ERR!)(?:\s+\d{3})?$/;
+const NPM_LOG_POINTER = /complete log of this run/i;
+
+/**
+ * Picks up to `maxLines` lines from a failed command's stderr that explain the
+ * failure, joined with " | ". npm writes notices (for `npm publish`, the whole
+ * tarball listing) before its errors, so `npm error` lines are preferred.
+ */
+export const summarizeStderr = (stderr: string, maxLines = 3) => {
+  const lines = stderr
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const npmErrors = lines
+    .filter(
+      (line) =>
+        NPM_ERROR.test(line) &&
+        !NPM_EMPTY_ERROR.test(line) &&
+        !NPM_LOG_POINTER.test(line),
+    )
+    .map((line) => line.replace(NPM_ERROR, "").replace(/\s+/g, " "));
+  if (npmErrors.length > 0) {
+    return npmErrors.slice(0, maxLines).join(" | ");
+  }
+  const otherLines = lines.filter((line) => !NPM_NOISE.test(line));
+  return (otherLines.length > 0 ? otherLines : lines)
+    .slice(0, maxLines)
+    .join(" | ");
+};
+
 export const execWait = async (
   command: string,
   cwd = ".",
@@ -107,12 +140,7 @@ export const execWait = async (
       process.stdout.write(stdout);
       process.stderr.write(stderr);
     }
-    const details = stderr
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .slice(0, 3)
-      .join(" | ");
+    const details = summarizeStderr(stderr);
     throw new Error(
       details || (error instanceof Error ? error.message : String(error)),
     );

@@ -8,6 +8,7 @@ export default defineConfig({
       "sample-apps/app-vuu-example/test/**/**.test.(js|ts|tsx)",
       "portal-examples/**/test/**/**.test.(js|ts|tsx)",
       "tools/portal-build-tool/test/**/**.test.(js|ts|tsx)",
+      "scripts/test/**/**.test.(js|ts|tsx)",
     ],
     environment: "happy-dom",
   },
