@@ -7,6 +7,9 @@
  *   npm run pub -- --version-check
  *
  * Add --package <name> to publish (or version-check) a single package.
+ * Add --otp <code> when your npm account requires two-factor authentication
+ * to publish. The code from your authenticator app is passed to every
+ * npm publish, so run the command straight after reading it.
  * Add --verbose to print complete command output when a command fails.
  * Add --help to print out the available command flags.
  */
@@ -80,6 +83,12 @@ const FLAGS: FlagSpec[] = [
     description: `Publish a single package instead of all packages. One of: ${packages.join(", ")}.`,
   },
   {
+    name: "--otp",
+    expectsValue: true,
+    description:
+      "One-time password from your authenticator app, for accounts that require 2FA to publish.",
+  },
+  {
     name: "--version-check",
     description: "Check published npm package versions without publishing.",
   },
@@ -148,9 +157,18 @@ const verbose = getArgument("--verbose") !== undefined;
 const publishTag = getArgument("--tag", true);
 const versionCheck = getArgument("--version-check") !== undefined;
 const packageArgument = getArgument("--package", true);
+const otp = getArgument("--otp", true);
 
 if (publishTag && !["alpha", "beta"].includes(publishTag)) {
   throw Error(`Unsupported publish tag "${publishTag}". Use alpha or beta.`);
+}
+
+// The code is added to a shell command, so accept only letters, digits and
+// dashes (authenticator codes and npm recovery codes).
+if (otp !== undefined && !/^[A-Za-z0-9-]+$/.test(otp)) {
+  throw Error(
+    "--otp needs the code from your authenticator app, e.g. --otp 123456.",
+  );
 }
 
 if (packageArgument && !packages.includes(packageArgument as PackageName)) {
@@ -196,7 +214,7 @@ const assertDistMatchesSource = (packageNames: readonly PackageName[]) => {
 const publishPackage = async (packageName: PackageName) => {
   await execWait(
     `npm publish --registry ${registry} --access public${publishTag ? ` --tag ${publishTag}` : ""
-    }`,
+    }${otp ? ` --otp ${otp}` : ""}`,
     `dist/${packageName}`,
     verbose,
     true,
