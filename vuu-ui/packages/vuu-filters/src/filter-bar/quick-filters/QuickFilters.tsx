@@ -42,7 +42,13 @@ import {
 import { ColumnFilter } from "../../column-filter/ColumnFilter";
 import type { FilterBarProps } from "../FilterBar";
 import { useOverflowItems } from "../useOverflowItems";
-import { type QuickFilterValue, useQuickFilters } from "./useQuickFilters";
+import {
+  type QuickFilterValue,
+  type QuickFilterValues,
+  useQuickFilters,
+} from "./useQuickFilters";
+
+export type { QuickFilterValue, QuickFilterValues };
 
 import quickFiltersCss from "./QuickFilters.css";
 
@@ -68,6 +74,12 @@ export interface QuickFilterProps
    * searched.
    */
   allowFind?: boolean;
+  /**
+   * Apply committed values on columns that are not quick filter columns.
+   * Defaults to false: a value stays while its column is out of the bar, but
+   * only filters while the column is in the bar.
+   */
+  applyHiddenValues?: boolean;
   availableColumns: readonly ColumnDescriptor[];
   /**
    * The quick filter columns, in order, for an uncontrolled QuickFilters.
@@ -81,10 +93,20 @@ export interface QuickFilterProps
    */
   onQuickFilterChange?: (filter: Filter | undefined, count: number) => void;
   /**
+   * Called with all committed values when a value is committed or cleared.
+   */
+  onQuickFilterValuesChange?: (values: QuickFilterValues) => void;
+  /**
    * The quick filter columns, in order. If provided, QuickFilters is
    * controlled.
    */
   quickFilterColumns?: string[];
+  /**
+   * The committed values, keyed by column name. If provided, the values are
+   * controlled: the host updates them from onQuickFilterValuesChange, and a
+   * value removed by the host clears its control.
+   */
+  quickFilterValues?: QuickFilterValues;
   /**
    * The columns searched by the Search control: all string columns if true
    * or not provided, otherwise the named columns.
@@ -179,6 +201,7 @@ const QuickFilterField = ({
 export const QuickFilters = ({
   allowAddColumn = true,
   allowFind = true,
+  applyHiddenValues,
   availableColumns,
   className,
   defaultQuickFilterColumns,
@@ -187,7 +210,9 @@ export const QuickFilters = ({
   onChangeQuickFilterColumns,
   onClearFilter,
   onQuickFilterChange,
+  onQuickFilterValuesChange,
   quickFilterColumns,
+  quickFilterValues,
   showFind,
   vuuTable,
 }: QuickFilterProps) => {
@@ -219,13 +244,16 @@ export const QuickFilters = ({
     searchText,
   } = useQuickFilters({
     allowFind,
+    applyHiddenValues,
     availableColumns,
     defaultQuickFilterColumns,
     onApplyFilter,
     onChangeQuickFilterColumns,
     onClearFilter,
     onQuickFilterChange,
+    onQuickFilterValuesChange,
     quickFilterColumns,
+    quickFilterValues,
     showFind,
   });
 

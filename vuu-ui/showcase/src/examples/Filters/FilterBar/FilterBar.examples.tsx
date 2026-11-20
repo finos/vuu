@@ -1,4 +1,8 @@
-import { FilterBar, FilterBarProps } from "@vuu-ui/vuu-filters";
+import {
+  FilterBar,
+  FilterBarProps,
+  type QuickFilterValues,
+} from "@vuu-ui/vuu-filters";
 import type {
   Filter,
   FilterHandler,
@@ -15,7 +19,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import {
+  Input,
+  Pill,
+  Text,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
@@ -28,6 +38,7 @@ import { FlexboxLayout } from "@vuu-ui/vuu-layout";
 import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
   ContextPanelProvider,
+  Icon,
   type ShowContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
 
@@ -670,6 +681,100 @@ export const FilterBarOverflow = () => {
             activeIndices: [0, 1, 5, 8],
           }}
           style={{ width: "100%" }}
+        />
+      </div>
+    </DataSourceProvider>
+  );
+};
+
+const QUICK_FILTER_COLUMN_SETS: Record<string, string[]> = {
+  Listing: ["currency", "exchange", "lotSize"],
+  Identifiers: ["bbg", "isin", "ric"],
+};
+
+/**
+ * The host owns the quick filter values. Each column set shows its own quick
+ * filter columns. Values on columns outside the current set still apply
+ * (applyHiddenValues) and are listed under "Also applied", where the host
+ * can clear them.
+ *
+ * tags=data-consumer
+ */
+export const ControlledQuickFilterValues = () => {
+  const dataSource = useInstrumentsDataSource();
+  const columnDescriptors = useLabelledInstrumentColumns();
+  const [columnSet, setColumnSet] = useState("Listing");
+  const [quickFilterValues, setQuickFilterValues] = useState<QuickFilterValues>(
+    { currency: { op: "=", value: "EUR" } },
+  );
+  const [quickFilterCount, setQuickFilterCount] = useState(0);
+
+  const quickFilterColumns = QUICK_FILTER_COLUMN_SETS[columnSet];
+  const hiddenValues = Object.entries(quickFilterValues).filter(
+    ([name]) => !quickFilterColumns.includes(name),
+  );
+
+  const clearValue = (name: string) =>
+    setQuickFilterValues(({ [name]: _, ...rest }) => rest);
+
+  const getLabel = (name: string) =>
+    columnDescriptors.find((column) => column.name === name)?.label ?? name;
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <style>{`
+      .filter-container { background: var(--salt-container-secondary-background);}
+      .vuuFilterBar { width: 100%; }
+  `}</style>
+      <div style={{ display: "flex", gap: 8, padding: "8px 20px" }}>
+        <ToggleButtonGroup
+          aria-label="Column set"
+          onChange={(e) => setColumnSet(e.currentTarget.value)}
+          value={columnSet}
+        >
+          {Object.keys(QUICK_FILTER_COLUMN_SETS).map((name) => (
+            <ToggleButton key={name} value={name}>
+              {name}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        {hiddenValues.length > 0 ? <Text>Also applied</Text> : null}
+        {hiddenValues.map(([name, { op, value }]) => (
+          <Pill
+            aria-label={`Clear ${getLabel(name)}`}
+            key={name}
+            onClick={() => clearValue(name)}
+          >
+            {`${getLabel(name)} ${op} ${value}`}
+            <Icon name="close" size={10} />
+          </Pill>
+        ))}
+      </div>
+      <input
+        data-testid="quick-filter-values"
+        hidden
+        readOnly
+        value={JSON.stringify(quickFilterValues)}
+      />
+      <input
+        data-testid="quick-filter-count"
+        hidden
+        readOnly
+        value={quickFilterCount}
+      />
+      <div style={{ position: "relative" }}>
+        <DefaultFilterBarCore
+          QuickFilterProps={{
+            allowAddColumn: false,
+            applyHiddenValues: true,
+            onQuickFilterChange: (_filter, count) =>
+              setQuickFilterCount(count),
+            onQuickFilterValuesChange: setQuickFilterValues,
+            quickFilterColumns,
+            quickFilterValues,
+          }}
+          columnDescriptors={columnDescriptors}
+          variant="quick-filters-only"
         />
       </div>
     </DataSourceProvider>

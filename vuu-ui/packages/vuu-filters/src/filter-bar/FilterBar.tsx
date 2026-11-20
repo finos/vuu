@@ -21,9 +21,13 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
     QuickFilterProps,
     | "allowAddColumn"
     | "allowFind"
+    | "applyHiddenValues"
     | "defaultQuickFilterColumns"
     | "onChangeQuickFilterColumns"
+    | "onQuickFilterChange"
+    | "onQuickFilterValuesChange"
     | "quickFilterColumns"
+    | "quickFilterValues"
     | "showFind"
   >;
   /**
@@ -102,12 +106,23 @@ export const FilterBar = ({
     onClearFilter,
   });
 
+  const { onQuickFilterChange, onQuickFilterValuesChange } =
+    QuickFilterProps ?? {};
+  const handleQuickFilterChange = useCallback(
+    (filter: Filter | undefined, count: number) => {
+      applyQuickFilter(filter, count);
+      onQuickFilterChange?.(filter, count);
+    },
+    [applyQuickFilter, onQuickFilterChange],
+  );
+
   // clearing quick filters from the summary starts them afresh
   const [quickFiltersKey, setQuickFiltersKey] = useState(0);
   const clearQuickFilter = useCallback(() => {
     setQuickFiltersKey((key) => key + 1);
-    applyQuickFilter(undefined, 0);
-  }, [applyQuickFilter]);
+    onQuickFilterValuesChange?.({});
+    handleQuickFilterChange(undefined, 0);
+  }, [handleQuickFilterChange, onQuickFilterValuesChange]);
 
   const quickFiltersShown = filterMode === "quick-filter";
   const className = cx(classBase, classNameProp);
@@ -146,7 +161,7 @@ export const FilterBar = ({
           availableColumns={columnDescriptors}
           hidden={!quickFiltersShown}
           key={quickFiltersKey}
-          onQuickFilterChange={applyQuickFilter}
+          onQuickFilterChange={handleQuickFilterChange}
           vuuTable={vuuTable}
         />
       ) : null}
