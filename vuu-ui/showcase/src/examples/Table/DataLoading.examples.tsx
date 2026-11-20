@@ -1,4 +1,5 @@
 import { Button } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import {
   buildDataColumnMapFromSchema,
   getSchema,
@@ -9,7 +10,7 @@ import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { withRemoteSubscribe } from "./remoteSubscribeDataSource";
 

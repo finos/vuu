@@ -1,4 +1,5 @@
 import { Text } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   ContextPanelColumnsPicker,
@@ -25,7 +26,7 @@ import {
   type ItemDescriptor,
   useContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 
