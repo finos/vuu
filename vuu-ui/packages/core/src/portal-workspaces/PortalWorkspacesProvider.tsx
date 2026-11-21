@@ -12,6 +12,7 @@ import { LocalWorkspacePersistenceService } from "../workspace/LocalWorkspacePer
 import type { WorkspacePersistenceService } from "../workspace/WorkspacePersistenceService";
 import { WorkspaceProvider } from "../workspace/WorkspaceProvider";
 import type { NamedWorkspaceDefinitionV1 } from "../workspace/workspace-schemas";
+import { SavedStateWorkspaces } from "./SavedStateWorkspaces";
 
 /** Workspace persistence namespace of portal workspaces. */
 export const PORTAL_WORKSPACE_NAMESPACE = "vuu-portal";
@@ -103,6 +104,7 @@ export const PortalWorkspacesProvider = ({
       settingsCodecs={settingsCodecs}
       systemWorkspaces={systemWorkspaces}
     >
+      <SavedStateWorkspaces />
       {children}
     </WorkspaceProvider>
   );

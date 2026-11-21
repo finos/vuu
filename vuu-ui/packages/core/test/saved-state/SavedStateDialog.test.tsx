@@ -6,7 +6,7 @@ import {
   waitFor,
 } from "@testing-library/dom";
 import { MenuItem, SaltProvider } from "@salt-ds/core";
-import { act, type ReactNode } from "react";
+import { act, type ReactNode, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -18,7 +18,13 @@ import {
 import type { PersistenceBackend } from "../../src/persistence/PersistenceBackend";
 import { PortalUserMenu } from "../../src/portal-header/PortalUserMenu";
 import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
-import { SavedStateProvider, useSavedStateDialog } from "../../src/saved-state";
+import {
+  SavedStateProvider,
+  type SavedStateWorkspaceInfo,
+  type SavedStateWorkspaces,
+  useOptionalSavedState,
+  useSavedStateDialog,
+} from "../../src/saved-state";
 
 vi.mock("@vuu-ui/core", () => ({
   useLogout: () => async () => undefined,
@@ -41,6 +47,33 @@ const modules = [
 ] as RemoteModuleDescriptor[];
 
 let openDialog: (applicationKey?: string) => void;
+
+/** Registers workspaces, as PortalWorkspacesProvider does (§9.16). */
+const Workspaces = ({
+  clear,
+  items,
+}: {
+  clear: SavedStateWorkspaces["clear"];
+  items: SavedStateWorkspaceInfo[];
+}) => {
+  const register = useOptionalSavedState()?.registerWorkspaces;
+  useEffect(() => {
+    register?.({ clear, items });
+    return () => register?.(undefined);
+  }, [clear, items, register]);
+  return null;
+};
+
+const workspaceItems: SavedStateWorkspaceInfo[] = [
+  {
+    id: "trader",
+    kind: "system",
+    name: "Trader",
+    open: true,
+    updatedAt: new Date().toISOString(),
+  },
+  { id: "mine", kind: "named", name: "My layout" },
+];
 const Opener = () => {
   const { open } = useSavedStateDialog();
   openDialog = open;
@@ -305,6 +338,105 @@ describe("Saved state dialog", () => {
     expect(list).toHaveBeenCalledTimes(2);
   });
 
+  it("lists saved workspaces and clears the selected ones (§9.16)", async () => {
+    const clear = vi.fn(async (refs: readonly { id: string }[]) => ({
+      cleared: refs.map(({ id }) => id),
+      failed: [],
+    }));
+    await renderShell(<Workspaces clear={clear} items={workspaceItems} />);
+    await open();
+    const roots = [
+      ...dialog().querySelectorAll('[role="tree"] > [role="treeitem"]'),
+    ].map((element) => element.getAttribute("aria-label"));
+    expect(roots[roots.length - 1]).toMatch(/^Workspaces, 2 workspaces/);
+    expect(treeItem(/^Trader, open, changed layout/)).toBeTruthy();
+    expect(treeItem(/^My layout, saved workspace/)).toBeTruthy();
+
+    await toggle(/^Trader,/);
+    expect(dialog().textContent).toContain("1 item selected in 1 application");
+    await act(async () => fireEvent.click(button("Clear selected…")));
+    const confirmation = getByRole(document.body, "dialog", {
+      name: "Clear saved state?",
+    });
+    expect(confirmation.textContent).toContain(
+      "Trader — changed layout, restored to the default",
+    );
+    expect(confirmation.textContent).toContain(
+      "Trader is open and will return to its default view.",
+    );
+    await act(async () =>
+      fireEvent.click(button("Clear saved state", confirmation)),
+    );
+    await waitFor(() =>
+      expect(document.body.textContent).toContain(
+        "1 item cleared from 1 application.",
+      ),
+    );
+    expect(clear).toHaveBeenCalledWith([{ id: "trader", kind: "system" }]);
+    // Application state is untouched.
+    expect((await service.list()).length).toBe(2);
+  });
+
+  it("scopes the dialog to workspaces (§9.16)", async () => {
+    const clear = vi.fn();
+    await renderShell(<Workspaces clear={clear} items={workspaceItems} />);
+    await open("vuu-portal:workspaces");
+    expect(
+      queryByRole(dialog(), "treeitem", { name: /^Instruments,/ }),
+    ).toBeNull();
+    expect(treeItem(/^My layout,/)).toBeTruthy();
+  });
+
+  it("clears saved workspaces with Clear all (§9.16)", async () => {
+    const clear = vi.fn(async (refs: readonly { id: string }[]) => ({
+      cleared: refs.map(({ id }) => id),
+      failed: [],
+    }));
+    await renderShell(<Workspaces clear={clear} items={workspaceItems} />);
+    await open();
+    await act(async () => fireEvent.click(button("Clear all saved state…")));
+    const confirmation = getByRole(document.body, "dialog", {
+      name: "Clear saved state?",
+    });
+    expect(confirmation.textContent).toContain(
+      "and your saved workspaces, will be permanently removed",
+    );
+    await act(async () =>
+      fireEvent.click(button("Clear saved state", confirmation)),
+    );
+    await waitFor(() => expect(clear).toHaveBeenCalled());
+    expect(clear).toHaveBeenCalledWith([
+      { id: "trader", kind: "system" },
+      { id: "mine", kind: "named" },
+    ]);
+    expect(await service.list()).toEqual([]);
+  });
+
+  it("keeps a workspace that couldn't be cleared selected (§9.16)", async () => {
+    const clear = vi.fn(async (refs: readonly { id: string }[]) => ({
+      cleared: [],
+      failed: refs.map(({ id }) => ({ id, error: Error("offline") })),
+    }));
+    await renderShell(<Workspaces clear={clear} items={workspaceItems} />);
+    await open();
+    await toggle(/^My layout,/);
+    await act(async () => fireEvent.click(button("Clear selected…")));
+    await act(async () =>
+      fireEvent.click(
+        button(
+          "Clear saved state",
+          getByRole(document.body, "dialog", { name: "Clear saved state?" }),
+        ),
+      ),
+    );
+    await waitFor(() =>
+      expect(document.body.textContent).toContain(
+        "Saved state for My layout couldn't be cleared.",
+      ),
+    );
+    expect(dialog().textContent).toContain("1 item selected in 1 application");
+  });
+
   it("closes with the Close button", async () => {
     await renderShell();
     await open();
@@ -353,12 +485,8 @@ describe("PortalUserMenu without saved state", () => {
         root.render(
           <SaltProvider>
             <PortalUserMenu>
-              <MenuItem onClick={onSettings}>
-                Settings
-              </MenuItem>
-              <MenuItem disabled>
-                Unavailable
-              </MenuItem>
+              <MenuItem onClick={onSettings}>Settings</MenuItem>
+              <MenuItem disabled>Unavailable</MenuItem>
             </PortalUserMenu>
           </SaltProvider>,
         ),

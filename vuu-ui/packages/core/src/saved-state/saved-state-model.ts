@@ -23,8 +23,38 @@ export interface SavedStateApplicationInfo {
   version?: number;
 }
 
+/**
+ * The **Show** scope and `applicationKey` of the Workspaces group. Workspaces
+ * are saved by the workspace persistence service, not the portal's, so they
+ * are listed beside the applications rather than as one.
+ */
+export const WORKSPACES_KEY = "vuu-portal:workspaces";
+
+export const WORKSPACES_TITLE = "Workspaces";
+
+/** A saved workspace the user can clear. */
+export interface SavedStateWorkspaceInfo {
+  id: string;
+  name: string;
+  /**
+   * "system": the user's personal copy of a system workspace, which clearing
+   * resets to its default layout. "named": a workspace the user saved, which
+   * clearing deletes.
+   */
+  kind: "system" | "named";
+  updatedAt?: string;
+  open?: boolean;
+}
+
+export type SavedStateWorkspaceRef = Pick<
+  SavedStateWorkspaceInfo,
+  "id" | "kind"
+>;
+
 export type SavedStateNodeKind =
   | "application"
+  | "workspaces"
+  | "workspace"
   | "group"
   | "entry"
   | "not-carried-forward-group"
@@ -67,6 +97,12 @@ export type SavedStateLeaf = {
   | { kind: "document"; applicationVersion: number }
   | { kind: "removed"; applicationVersions: readonly number[] }
   | { kind: "unreadable"; applicationVersion: number }
+  | {
+      kind: "workspace";
+      workspaceId: string;
+      workspaceKind: SavedStateWorkspaceInfo["kind"];
+      open: boolean;
+    }
 );
 
 export interface SavedStateApplicationModel {
@@ -79,6 +115,8 @@ export interface SavedStateApplicationModel {
 export interface SavedStateModel {
   applications: readonly SavedStateApplicationModel[];
   unavailable?: SavedStateNode;
+  /** Saved workspaces, when the portal has workspaces (§9.16). */
+  workspaces?: SavedStateNode;
   leaves: ReadonlyMap<string, SavedStateLeaf>;
   /** Entry and not-carried-forward keys of each document, by document id. */
   documents: ReadonlyMap<
@@ -98,6 +136,8 @@ export interface BuildSavedStateModelOptions {
   portalTitle?: string;
   isOpen?: (applicationKey: string, applicationVersion: number) => boolean;
   now?: Date;
+  /** Saved workspaces, listed in a Workspaces group (§9.16). */
+  workspaces?: readonly SavedStateWorkspaceInfo[];
 }
 
 export const nodeId = (...parts: Array<string | number>) =>
@@ -135,6 +175,7 @@ export const buildSavedStateModel = ({
   now = new Date(),
   portalTitle = "Portal",
   summaries,
+  workspaces: workspaceInfo = [],
 }: BuildSavedStateModelOptions): SavedStateModel => {
   const leaves = new Map<string, SavedStateLeaf>();
   const documents = new Map<
@@ -515,12 +556,70 @@ export const buildSavedStateModel = ({
         }
       : undefined;
 
+  const workspaceChildren = workspaceInfo.map(
+    ({ id: workspaceId, kind, name, open = false, updatedAt }) => {
+      const id = nodeId("workspace", workspaceId);
+      const isSystem = kind === "system";
+      // Personal copies are open when the system workspace is; clearing one
+      // resets it in place. A named workspace is closed when it is deleted.
+      const shownOpen = isSystem && open;
+      leaves.set(id, {
+        kind: "workspace",
+        applicationKey: WORKSPACES_KEY,
+        applicationTitle: WORKSPACES_TITLE,
+        label: name,
+        open: shownOpen,
+        weight: 1,
+        workspaceId,
+        workspaceKind: kind,
+      });
+      const description = isSystem ? "Changed layout" : "Saved workspace";
+      const time = formatRelativeTime(updatedAt, now);
+      return {
+        id,
+        kind: "workspace",
+        applicationKey: WORKSPACES_KEY,
+        label: name,
+        open: shownOpen,
+        meta: metaText(description, time),
+        accessibleName: accessibleText(
+          name,
+          shownOpen && "open",
+          description.toLowerCase(),
+          `saved ${time.toLowerCase()}`,
+        ),
+        tooltip: formatAbsoluteTime(updatedAt),
+        searchText: [name, workspaceId],
+      } satisfies SavedStateNode;
+    },
+  );
+  const workspaces: SavedStateNode | undefined =
+    workspaceChildren.length > 0
+      ? {
+          id: nodeId("workspaces"),
+          kind: "workspaces",
+          applicationKey: WORKSPACES_KEY,
+          label: WORKSPACES_TITLE,
+          meta: plural(workspaceChildren.length, "workspace"),
+          accessibleName: accessibleText(
+            WORKSPACES_TITLE,
+            plural(workspaceChildren.length, "workspace"),
+          ),
+          searchText: [WORKSPACES_TITLE],
+          children: workspaceChildren,
+        }
+      : undefined;
+
   return {
     applications: available,
     unavailable,
+    workspaces,
     leaves,
     documents,
-    empty: available.length === 0 && unavailable === undefined,
+    empty:
+      available.length === 0 &&
+      unavailable === undefined &&
+      workspaces === undefined,
   };
 };
 
@@ -564,11 +663,16 @@ export const filterSavedStateModel = (
     scope === ALL_APPLICATIONS
       ? [
           ...model.applications.map(({ node }) => node),
+          ...(model.workspaces ? [model.workspaces] : []),
           ...(model.unavailable ? [model.unavailable] : []),
         ]
-      : model.applications
-          .filter(({ applicationKey }) => applicationKey === scope)
-          .map(({ node }) => node);
+      : scope === WORKSPACES_KEY
+        ? model.workspaces
+          ? [model.workspaces]
+          : []
+        : model.applications
+            .filter(({ applicationKey }) => applicationKey === scope)
+            .map(({ node }) => node);
   const query = search.trim().toLowerCase();
   if (query === "") {
     return { nodes: roots, matchedAncestors: [] };
@@ -742,6 +846,9 @@ export const toClearSelection = (
       case "unreadable":
         item(leaf.applicationKey, leaf.applicationVersion).unreadable = true;
         break;
+      case "workspace":
+        // Cleared by the workspace service: see toWorkspaceSelection.
+        break;
     }
   }
   return [...items.entries()].map(([id, value]) => {
@@ -768,6 +875,39 @@ export const toClearSelection = (
   });
 };
 
+/** The selected workspaces, for the workspace service to clear (§9.16). */
+export const toWorkspaceSelection = (
+  model: SavedStateModel,
+  selection: ReadonlySet<string>,
+): SavedStateWorkspaceRef[] => {
+  const refs: SavedStateWorkspaceRef[] = [];
+  for (const id of selection) {
+    const leaf = model.leaves.get(id);
+    if (leaf?.kind === "workspace") {
+      refs.push({ id: leaf.workspaceId, kind: leaf.workspaceKind });
+    }
+  }
+  return refs;
+};
+
+/** Every workspace in the model, for Clear all (§9.16). */
+export const allWorkspaces = (model: SavedStateModel) =>
+  toWorkspaceSelection(
+    model,
+    new Set(model.workspaces ? collectLeafIds([model.workspaces]) : []),
+  );
+
+/** What clearing a workspace does, for the confirmation (§9.16). */
+const describeWorkspace = (leaf: SavedStateLeaf): ClearDescription => ({
+  applicationKey: WORKSPACES_KEY,
+  title: leaf.label,
+  description:
+    leaf.kind === "workspace" && leaf.workspaceKind === "system"
+      ? "changed layout, restored to the default"
+      : "saved workspace",
+  open: leaf.kind === "workspace" && leaf.open,
+});
+
 export interface ClearDescription {
   applicationKey: string;
   title: string;
@@ -784,6 +924,7 @@ export const describeSelection = (
   const lines: ClearDescription[] = [];
   const roots = [
     ...model.applications.map(({ node, open }) => ({ node, open })),
+    ...(model.workspaces ? [{ node: model.workspaces, open: false }] : []),
     ...(model.unavailable?.children ?? []).map((node) => ({
       node,
       open: false,
@@ -793,6 +934,13 @@ export const describeSelection = (
     const leafIds = collectLeafIds([node]);
     const selected = leafIds.filter((id) => selection.has(id));
     if (selected.length === 0) continue;
+    if (node.kind === "workspaces") {
+      for (const id of selected) {
+        const leaf = model.leaves.get(id);
+        if (leaf) lines.push(describeWorkspace(leaf));
+      }
+      continue;
+    }
     const title =
       node.kind === "application" || node.kind === "removed"
         ? node.label
