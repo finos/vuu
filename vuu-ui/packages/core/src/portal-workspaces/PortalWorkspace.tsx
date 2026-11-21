@@ -55,6 +55,11 @@ export interface PortalWorkspaceGridProps {
    */
   dockable?: boolean;
   /**
+   * Whether panel headers offer Maximize / Restore, see GridLayout
+   * `maximizable`. Default: false.
+   */
+  maximizable?: boolean;
+  /**
    * Placeholder content of an empty workspace when the Panels palette is
    * available: a node, or a function that receives `{ openPalette }` and
    * returns one. Defaults to a `WorkspaceDropZone`.
@@ -73,6 +78,7 @@ export const PortalWorkspaceGrid = ({
   controller,
   dockable = false,
   emptyContent = <WorkspaceDropZone />,
+  maximizable = false,
   paletteProps,
 }: PortalWorkspaceGridProps) => {
   const paletteState = usePanelsPaletteState();
@@ -116,6 +122,7 @@ export const PortalWorkspaceGrid = ({
             <GridLayout
               dockable={dockable}
               id={controller.snapshot.layout.layout.id}
+              maximizable={maximizable}
               placeholderContent={
                 isEmpty ? (
                   paletteAvailable ? (
@@ -165,6 +172,11 @@ export interface PortalWorkspaceProps {
    */
   dockable?: boolean;
   /**
+   * Whether panel headers offer Maximize / Restore. `PortalShell` passes
+   * `workspaces.maximizable`. Default: false.
+   */
+  maximizable?: boolean;
+  /**
    * Placeholder content of an empty workspace when the Panels palette is
    * available, see `PortalWorkspaceGridProps.emptyContent`. `PortalShell`
    * passes `workspaces.emptyContent`.
@@ -211,6 +223,7 @@ export const PortalWorkspace = ({
   emptyContent,
   headerActions,
   headerCenter,
+  maximizable,
   paletteProps,
 }: PortalWorkspaceProps) => {
   useComponentCssInjection({
@@ -333,6 +346,7 @@ export const PortalWorkspace = ({
               dockable={dockable}
               emptyContent={emptyContent}
               key={controller.instanceId}
+              maximizable={maximizable}
               paletteProps={paletteProps}
             />
           ) : (
