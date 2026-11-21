@@ -1,0 +1,64 @@
+# Choosing an Editing Model
+
+Not every edit needs a session table. There are two models.
+
+| | Staged session | Direct edit |
+| - | -------------- | ----------- |
+| Edits go to | a session table, applied on Save | the source table, immediately |
+| Save / Cancel | yes | no |
+| Insert | inline add row or create form | create form (`createStrategy="form"` or `editStrategy="form"`) |
+| Delete | yes | no |
+| Other users see changes | on Save | on each edit |
+| Server needs | session-table and edit RPC handlers | `editCell` on the source table |
+| Use | `EditableTable` (any `editStrategy`), `EditForm`, `useEditableTable` | `EditableTable editModel="direct"` (any `editStrategy`), `DirectEditSession` |
+
+## Staged session
+
+Use this by default. Changes to several cells or rows are saved together, the
+user can review and cancel them, and stale updates are detected. See
+[Editable tables](./04-EditableTables.mdx) and [Edit forms](./05-EditForms.mdx).
+
+## Direct edit
+
+Use this when every cell edit stands alone and should take effect straight
+away, like a spreadsheet: a status flag or a note. There is no session table,
+no Save step and nothing to undo.
+
+```tsx
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  editModel="direct"
+/>
+```
+
+Which columns can be edited comes from the server schema and the `editable`
+flags on `config.columns`. The table is always editable unless you ask for
+View and Edit modes; see
+[Direct editing](./04-EditableTables.mdx#direct-editing). The source table's
+service must support `editCell`.
+
+To wire it up yourself, for example in a `Table` with its own features, put a
+`DirectEditSession` in a `DataEditingProvider`:
+
+```tsx
+import {
+  DataEditingProvider,
+  DirectEditSession,
+  useEditableColumns,
+} from "@vuu-ui/vuu-data-editing";
+
+const editSession = useMemo(
+  () => new DirectEditSession({ dataSource }),
+  [dataSource],
+);
+const columns = useEditableColumns({
+  columns: config.columns,
+  editable: { notes: true, status: true },
+  isEditing: true,
+});
+
+<DataEditingProvider editSession={editSession}>
+  <Table config={{ ...config, columns }} dataSource={dataSource} />
+</DataEditingProvider>;
+```

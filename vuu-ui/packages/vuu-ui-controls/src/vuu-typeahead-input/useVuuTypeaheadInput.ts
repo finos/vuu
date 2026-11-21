@@ -1,5 +1,4 @@
 import { PillInputProps } from "@salt-ds/core/dist-types/pill-input";
-import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
 import {
@@ -8,6 +7,7 @@ import {
   NO_DATA_MATCH,
   type CommitHandler,
   dispatchKeyboardEvent,
+  useTypeaheadSuggestions,
 } from "@vuu-ui/vuu-utils";
 import {
   ComponentPropsWithoutRef,
