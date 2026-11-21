@@ -22,7 +22,6 @@ on:
       - "vuu-ui/packages/vuu-context-menu/**"
       - "vuu-ui/packages/vuu-data-editing/**"
       - "vuu-ui/packages/vuu-data-react/**"
-      - "vuu-ui/packages/vuu-popups/**"
       - "vuu-ui/packages/vuu-table-extras/**"
       - "vuu-ui/packages/vuu-ui-controls/**"
       - "vuu-ui/packages/vuu-utils/**"
@@ -63,7 +62,6 @@ env:
     vuu-ui/packages/vuu-context-menu
     vuu-ui/packages/vuu-data-editing
     vuu-ui/packages/vuu-data-react
-    vuu-ui/packages/vuu-popups
     vuu-ui/packages/vuu-table-extras
     vuu-ui/packages/vuu-ui-controls
     vuu-ui/packages/vuu-utils

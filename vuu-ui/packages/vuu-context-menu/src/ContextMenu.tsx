@@ -1,15 +1,8 @@
 import { VirtualElement } from "@floating-ui/dom";
-import { Menu, MenuPanel, MenuProps } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
-import cx from "clsx";
+import { Menu, MenuProps } from "@salt-ds/core";
+import { ContextMenuPanel } from "./ContextMenuPanel";
 import { MenuActionHandler } from "./ContextMenuProvider";
-import {
-  ContextMenuItemDescriptor,
-  menuItemsFromMenuDescriptors,
-} from "./menu-utils";
-
-import contextMenuCss from "./ContextMenu.css";
+import { ContextMenuItemDescriptor } from "./menu-utils";
 
 export interface ContextMenuProps
   extends Pick<MenuProps, "open" | "onOpenChange"> {
@@ -29,13 +22,6 @@ export const ContextMenu = ({
   x,
   y,
 }: ContextMenuProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-context-menu",
-    css: contextMenuCss,
-    window: targetWindow,
-  });
-
   const virtualElement: VirtualElement = {
     getBoundingClientRect: () => ({
       width: 0,
@@ -55,9 +41,11 @@ export const ContextMenu = ({
       onOpenChange={onOpenChange}
       open={open}
     >
-      <MenuPanel className={cx("vuuContextMenuPanel", className)}>
-        {menuItemsFromMenuDescriptors(menuItemDescriptors, menuHandler)}
-      </MenuPanel>
+      <ContextMenuPanel
+        className={className}
+        menuHandler={menuHandler}
+        menuItemDescriptors={menuItemDescriptors}
+      />
     </Menu>
   );
 };

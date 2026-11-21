@@ -14,7 +14,6 @@ export function cssInline() {
     "**/packages/vuu-filters/**/*.{tsx,jsx}",
     "**/packages/vuu-layout/**/*.{tsx,jsx}",
     "**/packages/vuu-notifications/**/*.{tsx,jsx}",
-    "**/packages/vuu-popups/**/*.{tsx,jsx}",
     "**/packages/vuu-shell/**/*.{tsx,jsx}",
     "**/packages/vuu-chart/**/*.{tsx,jsx}",
     "**/packages/vuu-table/**/*.{tsx,jsx}",

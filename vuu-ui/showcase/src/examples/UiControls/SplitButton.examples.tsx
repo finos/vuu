@@ -1,10 +1,10 @@
 import {
+  PopupMenuProps,
   SplitButton,
   SplitButtonProps,
   SplitStateButton,
 } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useMemo, useState } from "react";
-import { PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
 
 const menuBuilder: MenuBuilder = (_, options) => [

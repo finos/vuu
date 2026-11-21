@@ -236,7 +236,7 @@ export const useDragDropNaturalMovement = ({
           ".vuuPopupMenu",
         ) as HTMLElement;
         if (button) {
-          dispatchMouseEvent(button, "click");
+          dispatchMouseEvent(button, "mousedown");
         }
       }
     };
@@ -248,7 +248,7 @@ export const useDragDropNaturalMovement = ({
           ".vuuPopupMenu",
         ) as HTMLElement;
         if (button) {
-          dispatchMouseEvent(button, "click");
+          dispatchMouseEvent(button, "mousedown");
         }
       }
     };

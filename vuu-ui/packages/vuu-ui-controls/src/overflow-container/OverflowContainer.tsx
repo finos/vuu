@@ -1,9 +1,9 @@
-import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { asReactElements, orientationType, useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import React, { ForwardedRef, forwardRef, HTMLAttributes } from "react";
+import { PopupMenu, PopupMenuProps } from "../popup-menu";
 import { OverflowItem } from "./overflow-utils";
 import { useOverflowContainer } from "./useOverflowContainer";
 

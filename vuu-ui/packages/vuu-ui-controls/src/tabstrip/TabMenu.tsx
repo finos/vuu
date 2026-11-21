@@ -1,8 +1,8 @@
-import { PopupMenu } from "@vuu-ui/vuu-popups";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { useMemo } from "react";
+import { PopupMenu } from "../popup-menu";
 import { MenuOptions, closeCommand, renameCommand } from "./TabMenuOptions";
 
 import tabMenuCss from "./TabMenu.css";

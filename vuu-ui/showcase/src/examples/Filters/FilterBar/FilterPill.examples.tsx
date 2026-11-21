@@ -1,6 +1,9 @@
 import { FilterPill } from "@vuu-ui/vuu-filters";
-import { PopupMenuProps } from "@vuu-ui/vuu-popups";
-import { ExitEditModeHandler, Icon } from "@vuu-ui/vuu-ui-controls";
+import {
+  ExitEditModeHandler,
+  Icon,
+  PopupMenuProps,
+} from "@vuu-ui/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";

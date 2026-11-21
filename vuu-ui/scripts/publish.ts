@@ -29,7 +29,6 @@ const packages = [
   "vuu-filters",
   "vuu-icons",
   "vuu-layout",
-  "vuu-popups",
   "vuu-playwright-helpers",
   "vuu-protocol-types",
   "vuu-notifications",
