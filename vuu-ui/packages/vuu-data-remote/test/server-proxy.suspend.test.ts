@@ -86,6 +86,34 @@ describe("suspend and resume", () => {
     vi.useRealTimers();
   });
 
+  it("a row inserted whilst suspended, without escalation, is included in refresh on resume", async () => {
+    const t = await serverProxyHarness();
+    t.server.sends(size(100), rows(0, 10));
+    t.discard();
+    vi.useFakeTimers();
+
+    t.client.suspend(undefined, { escalateToDisable: false });
+    t.server.sends(size(101), update(3, 2004, { id: "inserted", vpSize: 101 }));
+    vi.advanceTimersByTime(3000);
+
+    t.expectClient();
+    t.expectServer();
+
+    t.client.resume();
+
+    expect(t.takeClient()).toEqual([
+      expect.objectContaining({
+        rows: expect.arrayContaining([
+          expect.arrayContaining(["key-inserted", "name inserted", 2004]),
+        ]),
+        size: 101,
+        type: "viewport-update",
+      }),
+    ]);
+
+    vi.useRealTimers();
+  });
+
   it("resume does not send message to server", async () => {
     const t = await serverProxyHarness();
     t.client.suspend();

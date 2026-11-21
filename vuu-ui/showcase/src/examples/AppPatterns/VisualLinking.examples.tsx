@@ -1,8 +1,9 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { FlexboxLayout, LayoutProvider, View } from "@vuu-ui/vuu-layout";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 const parentSchema = getSchema("LinkParent");

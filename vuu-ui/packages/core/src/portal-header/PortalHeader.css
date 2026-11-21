@@ -1,0 +1,7 @@
+.vuuPortalHeader {
+    background: var(--vuuPortalHeader-background, var(--salt-container-primary-background));
+}
+
+.vuuPortalUserMenu.saltButton {
+    gap: var(--salt-spacing-100);
+}

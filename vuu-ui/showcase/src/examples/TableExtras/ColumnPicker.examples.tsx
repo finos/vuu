@@ -1,4 +1,5 @@
 import { Button } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { Table, useTableConfig } from "@vuu-ui/vuu-table";
 import {
@@ -11,7 +12,7 @@ import {
   TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
 import { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { MouseEventHandler, useCallback, useMemo } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 

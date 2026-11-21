@@ -5,6 +5,7 @@ import {
   FormFieldLabel,
   Option,
 } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
@@ -17,7 +18,7 @@ import {
   TableRowSelectHandler,
   TableSelectionModel,
 } from "@vuu-ui/vuu-table-types";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 import "./Misc.examples.css";

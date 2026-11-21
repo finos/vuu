@@ -1,10 +1,11 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   VuuInput,
   VuuTypeaheadInput,
   VuuTypeaheadInputProps,
 } from "@vuu-ui/vuu-ui-controls";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState, type ChangeEventHandler } from "react";
 
 const containerStyle = {

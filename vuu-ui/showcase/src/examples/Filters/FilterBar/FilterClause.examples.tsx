@@ -1,4 +1,5 @@
 import { Input } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName } from "@vuu-ui/vuu-filter-types";
@@ -7,7 +8,7 @@ import {
   FilterClause,
   FilterClauseModel,
 } from "@vuu-ui/vuu-filters";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, toColumnName } from "@vuu-ui/vuu-utils";
 import { ReactNode, useMemo } from "react";
 
 import "./FilterClause.examples.css";

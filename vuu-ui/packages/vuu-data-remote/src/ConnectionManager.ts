@@ -1,4 +1,4 @@
-import {
+import type {
   ConnectOptions,
   DataSourceCallbackMessage,
   ServerAPI,
@@ -6,7 +6,7 @@ import {
   TableSchema,
   VuuUIMessageIn,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   SelectRequest,
   SelectResponse,
   VuuCreateVisualLink,
@@ -17,26 +17,28 @@ import {
   VuuTableListRequest,
   VuuTableMetaRequest,
   ShowNotificationAction,
+  VuuLoginSuccessResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   DeferredPromise,
   EventEmitter,
-  hasRpcResponseNotification,
   isConnectionQualityMetrics,
+  hasRpcResponseNotification,
   isRequestResponse,
   isTableSchemaMessage,
   messageHasResult,
   uuid,
 } from "@vuu-ui/vuu-utils";
-import {
+import type { ConnectionQualityMetrics } from "@vuu-ui/vuu-data-types";
+import type {
   ConnectionStatus,
   WebSocketConnectionEvents,
-  isWebSocketConnectionStatus,
 } from "./WebSocketConnection";
+import { isWebSocketConnectionStatus } from "./WebSocketConnection";
 import { DedicatedWorker } from "./DedicatedWorker";
 import { shouldMessageBeRoutedToDataSource } from "./data-source";
 
-import { ConnectionQualityMetrics } from "@vuu-ui/vuu-data-types";
+export const DEFAULT_CONNECTION_ID = "portal";
 
 export type PostMessageToClientCallback = (
   msg: DataSourceCallbackMessage,
@@ -45,11 +47,25 @@ export type PostMessageToClientCallback = (
 export type ConnectionEvents = WebSocketConnectionEvents & {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
   /**
-   * A notification the server attached to an RPC response. The caller gets
-   * only the response's result, so the notification is emitted here.
+   * A notification the server attached to an RPC response, on any
+   * connection. The caller gets only the response's result, so the
+   * notification is emitted here.
    */
   "server-notification": (action: ShowNotificationAction) => void;
 };
+export type ConnectionStatusListener = (status: ConnectionStatus) => void;
+export type VuuConnectionResult =
+  | {
+      loginResponse: VuuLoginSuccessResponse & { sessionId: string };
+      status: "connected" | "reconnected";
+    }
+  | { status: "rejected" };
+
+/**
+ * How many recently closed viewport ids are remembered, so that messages
+ * already in flight for them can be dropped silently.
+ */
+const MAX_CLOSED_VIEWPORTS = 500;
 
 type RegisteredViewport = {
   postMessageToClientDataSource: PostMessageToClientCallback;
@@ -57,25 +73,88 @@ type RegisteredViewport = {
   status: "subscribing";
 };
 
-class ConnectionManager extends EventEmitter<ConnectionEvents> {
-  static #instance: ConnectionManager;
+/**
+ * Owns the worker, request state, and viewport subscriptions for one VUU server
+ * connection. `ConnectionManager` creates one channel per connection ID and
+ * delegates connection-scoped operations to it; consumers do not instantiate or
+ * access channels directly.
+ *
+ * A channel exposes its `ServerAPI` only after the worker connects, routes
+ * worker responses back to the originating request or viewport, and is
+ * terminated when the manager is destroyed.
+ */
+class ConnectionChannel {
   #connectionStatus: ConnectionStatus = "closed";
   #deferredServerAPI = new DeferredPromise<ServerAPI>();
-  #pendingRequests = new Map();
+  #pendingRequests = new Map<string, { resolve: (value: unknown) => void }>();
   #viewports = new Map<string, RegisteredViewport>();
-  // #worker?: Worker;
+  /** Ids of viewports which have been unsubscribed, oldest first. */
+  #closedViewports = new Set<string>();
   #worker: DedicatedWorker;
+  readonly #serverAPI: ServerAPI;
 
-  private constructor() {
-    super();
+  constructor(
+    private readonly onConnectionStatus: (status: ConnectionStatus) => void,
+    private readonly onConnectionMetrics: (
+      message: ConnectionQualityMetrics,
+    ) => void,
+    private readonly onServerNotification: (
+      action: ShowNotificationAction,
+    ) => void,
+  ) {
     this.#worker = new DedicatedWorker(this.handleMessageFromWorker);
-  }
+    this.#serverAPI = {
+      subscribe: (message, callback) => {
+        if (this.#viewports.get(message.viewport)) {
+          throw Error(
+            "ConnectionManager attempting to subscribe with an existing viewport id",
+          );
+        }
+        this.#closedViewports.delete(message.viewport);
+        this.#viewports.set(message.viewport, {
+          status: "subscribing",
+          request: message,
+          postMessageToClientDataSource: callback,
+        });
+        this.#worker.send({ type: "subscribe", ...message });
+      },
 
-  public static get instance(): ConnectionManager {
-    if (!ConnectionManager.#instance) {
-      ConnectionManager.#instance = new ConnectionManager();
-    }
-    return ConnectionManager.#instance;
+      unsubscribe: (viewport) => {
+        this.#markClosed(viewport);
+        this.#worker.send({ type: "unsubscribe", viewport });
+      },
+
+      send: (message) => {
+        this.#worker.send(message);
+      },
+
+      destroy: (viewportId?: string) => {
+        if (viewportId && this.#viewports.has(viewportId)) {
+          this.#viewports.delete(viewportId);
+          this.#markClosed(viewportId);
+        }
+      },
+
+      rpcCall: async <T = unknown>(
+        message:
+          | VuuRpcServiceRequest
+          | VuuRpcMenuRequest
+          | VuuCreateVisualLink
+          | VuuRemoveVisualLink,
+      ) => this.asyncRequest<T>(message),
+
+      select: async (selectRequest: SelectRequest) =>
+        this.asyncRequest<SelectResponse>(selectRequest),
+
+      getTableList: async () =>
+        this.asyncRequest<VuuTableList>({ type: "GET_TABLE_LIST" }),
+
+      getTableSchema: async (table) =>
+        this.asyncRequest<TableSchema>({
+          type: "GET_TABLE_META",
+          table,
+        }),
+    };
   }
 
   get connectionStatus() {
@@ -89,40 +168,54 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     );
   }
 
-  /**
-   * Open a connection to the VuuServer. This method opens the websocket connection
-   * and logs in. It can be called from whichever client code has access to the auth
-   * token (eg. the login page, or just a hardcoded login script in a sample).
-   * This will unblock any DataSources which may have already tried to subscribe to data,
-   * but lacked access to the auth token.
-   *
-   * @param serverUrl
-   * @param token
-   */
+  get serverAPI() {
+    return this.#deferredServerAPI.promise;
+  }
+
   async connect(options: ConnectOptions, throwOnRejected = false) {
     try {
       const result = await this.#worker.connect(options);
-      if (result === "connected") {
-        this.#deferredServerAPI.resolve(this.connectedServerAPI);
+      if (result.status === "connected" || result.status === "reconnected") {
+        this.#deferredServerAPI.resolve(this.#serverAPI);
       }
       return result;
     } catch (err: unknown) {
       if (throwOnRejected) {
         throw err;
-      } else {
-        return "connection-failed";
       }
+      return { status: "rejected" } as const;
     }
   }
 
   disableActiveSubscriptions() {
-    console.log(`[ConnectionManager] disableActiveSubscriptions`);
     this.#worker.send({ type: "disable-all-active" });
   }
 
   enableActiveSubscriptions() {
-    console.log(`[ConnectionManager] enableActiveSubscriptions`);
     this.#worker.send({ type: "enable-all-active" });
+  }
+
+  async disconnect() {
+    try {
+      this.#worker.send({ type: "disconnect" });
+      this.#deferredServerAPI = new DeferredPromise<ServerAPI>();
+      return "disconnected";
+    } catch {
+      return "rejected";
+    }
+  }
+
+  destroy() {
+    this.#worker.terminate();
+  }
+
+  #markClosed(viewportId: string) {
+    this.#closedViewports.delete(viewportId);
+    this.#closedViewports.add(viewportId);
+    if (this.#closedViewports.size > MAX_CLOSED_VIEWPORTS) {
+      const [oldest] = this.#closedViewports;
+      this.#closedViewports.delete(oldest);
+    }
   }
 
   private handleMessageFromWorker = (
@@ -132,23 +225,27 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
       const viewport = this.#viewports.get(message.clientViewportId);
       if (viewport) {
         viewport.postMessageToClientDataSource(message);
+      } else if (this.#closedViewports.has(message.clientViewportId)) {
+        // Messages may still be in flight for a viewport which has just been
+        // unsubscribed, e.g. when its component unmounts. They are expected.
       } else {
         console.error(
-          `[ConnectionManager] ${message.type} message received, viewport not found`,
+          "[ConnectionManager] %s message received, viewport not found",
+          message.type,
         );
       }
     } else if (isWebSocketConnectionStatus(message)) {
       this.#connectionStatus = message;
-      this.emit("connection-status", message);
+      this.onConnectionStatus(message);
     } else if (isConnectionQualityMetrics(message)) {
-      this.emit("connection-metrics", message);
+      this.onConnectionMetrics(message);
     } else if (isRequestResponse(message)) {
       if (hasRpcResponseNotification(message)) {
-        this.emit("server-notification", message.action);
+        this.onServerNotification(message.action);
       }
       const { requestId } = message;
       if (this.#pendingRequests.has(requestId)) {
-        const { resolve } = this.#pendingRequests.get(requestId);
+        const { resolve } = this.#pendingRequests.get(requestId)!;
         this.#pendingRequests.delete(requestId);
         const { requestId: _, ...messageWithoutRequestId } = message;
 
@@ -168,61 +265,6 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     }
   };
 
-  get serverAPI() {
-    return this.#deferredServerAPI.promise;
-  }
-
-  private connectedServerAPI: ServerAPI = {
-    subscribe: (message, callback) => {
-      if (this.#viewports.get(message.viewport)) {
-        throw Error(
-          `ConnectionManager attempting to subscribe with an existing viewport id`,
-        );
-      }
-      // TODO we never use this status
-      this.#viewports.set(message.viewport, {
-        status: "subscribing",
-        request: message,
-        postMessageToClientDataSource: callback,
-      });
-      this.#worker.send({ type: "subscribe", ...message });
-    },
-
-    unsubscribe: (viewport) => {
-      this.#worker.send({ type: "unsubscribe", viewport });
-    },
-
-    send: (message) => {
-      this.#worker.send(message);
-    },
-
-    destroy: (viewportId?: string) => {
-      if (viewportId && this.#viewports.has(viewportId)) {
-        this.#viewports.delete(viewportId);
-      }
-    },
-
-    rpcCall: async <T = unknown>(
-      message:
-        | VuuRpcServiceRequest
-        | VuuRpcMenuRequest
-        | VuuCreateVisualLink
-        | VuuRemoveVisualLink,
-    ) => this.asyncRequest<T>(message),
-
-    select: async (selectRequest: SelectRequest) =>
-      this.asyncRequest<SelectResponse>(selectRequest),
-
-    getTableList: async () =>
-      this.asyncRequest<VuuTableList>({ type: "GET_TABLE_LIST" }),
-
-    getTableSchema: async (table) =>
-      this.asyncRequest<TableSchema>({
-        type: "GET_TABLE_META",
-        table,
-      }),
-  };
-
   private asyncRequest = <T = unknown>(
     msg:
       | VuuRpcServiceRequest
@@ -238,23 +280,176 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
       requestId,
       ...msg,
     });
-    return new Promise((resolve, reject) => {
-      this.#pendingRequests.set(requestId, { resolve, reject });
+    return new Promise<T>((resolve) => {
+      this.#pendingRequests.set(requestId, {
+        resolve: (value) => resolve(value as T),
+      });
     });
   };
+}
 
-  async disconnect() {
-    try {
-      this.#worker.send({ type: "disconnect" });
-      this.#deferredServerAPI = new DeferredPromise<ServerAPI>();
-      return "disconnected";
-    } catch (err: unknown) {
-      return "rejected";
+/**
+ * Process-wide registry for VUU server connections.
+ *
+ * Consumers use the exported singleton to connect, obtain a deferred
+ * `ServerAPI`, and control subscriptions. The unscoped methods operate on the
+ * legacy `portal` connection, while the `*To` and `*For` methods select an
+ * independent connection by ID. This allows remote modules to share the manager
+ * without sharing authentication, worker state, or viewport subscriptions.
+ *
+ * Connection status and metrics events are emitted for the default connection
+ * to preserve the existing application-level monitoring API.
+ */
+class ConnectionManager extends EventEmitter<ConnectionEvents> {
+  static #instance: ConnectionManager;
+  #connections = new Map<string, ConnectionChannel>();
+  #connectionStatusListeners = new Map<string, Set<ConnectionStatusListener>>();
+
+  private constructor() {
+    super();
+  }
+
+  public static get instance(): ConnectionManager {
+    if (!ConnectionManager.#instance) {
+      ConnectionManager.#instance = new ConnectionManager();
+    }
+    return ConnectionManager.#instance;
+  }
+
+  private getConnection(connectionId = DEFAULT_CONNECTION_ID) {
+    const existing = this.#connections.get(connectionId);
+    if (existing) {
+      return existing;
+    }
+
+    const connection = new ConnectionChannel(
+      (status) => {
+        this.#connectionStatusListeners
+          .get(connectionId)
+          ?.forEach((listener) => listener(status));
+        if (connectionId === DEFAULT_CONNECTION_ID) {
+          this.emit("connection-status", status);
+        }
+      },
+      (metrics) => {
+        if (connectionId === DEFAULT_CONNECTION_ID) {
+          this.emit("connection-metrics", metrics);
+        }
+      },
+      (action) => this.emit("server-notification", action),
+    );
+
+    this.#connections.set(connectionId, connection);
+    return connection;
+  }
+
+  get connectionStatus() {
+    return this.connectionStatusFor(DEFAULT_CONNECTION_ID);
+  }
+
+  get connected() {
+    return this.connectedFor(DEFAULT_CONNECTION_ID);
+  }
+
+  connectionStatusFor(connectionId: string) {
+    return this.getConnection(connectionId).connectionStatus;
+  }
+
+  connectedFor(connectionId: string) {
+    return this.getConnection(connectionId).connected;
+  }
+
+  onConnectionStatus(connectionId: string, listener: ConnectionStatusListener) {
+    const listeners =
+      this.#connectionStatusListeners.get(connectionId) ??
+      new Set<ConnectionStatusListener>();
+    listeners.add(listener);
+    this.#connectionStatusListeners.set(connectionId, listeners);
+    return () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        this.#connectionStatusListeners.delete(connectionId);
+      }
+    };
+  }
+
+  async connect(options: ConnectOptions, throwOnRejected = false) {
+    return this.connectTo(DEFAULT_CONNECTION_ID, options, throwOnRejected);
+  }
+
+  async connectTo(
+    connectionId: string,
+    options: ConnectOptions,
+    throwOnRejected = false,
+  ) {
+    const result = await this.connectWithLoginResponseTo(
+      connectionId,
+      options,
+      throwOnRejected,
+    );
+    return result.status === "rejected" ? "connection-failed" : result.status;
+  }
+
+  async connectWithLoginResponseTo(
+    connectionId: string,
+    options: ConnectOptions,
+    throwOnRejected = false,
+  ) {
+    return this.getConnection(connectionId).connect(options, throwOnRejected);
+  }
+
+  disableActiveSubscriptions() {
+    for (const connection of this.#connections.values()) {
+      connection.disableActiveSubscriptions();
     }
   }
 
+  enableActiveSubscriptions() {
+    for (const connection of this.#connections.values()) {
+      connection.enableActiveSubscriptions();
+    }
+  }
+
+  disableActiveSubscriptionsFor(connectionId: string) {
+    this.getConnection(connectionId).disableActiveSubscriptions();
+  }
+
+  enableActiveSubscriptionsFor(connectionId: string) {
+    this.getConnection(connectionId).enableActiveSubscriptions();
+  }
+
+  get serverAPI() {
+    return this.serverAPIFor(DEFAULT_CONNECTION_ID);
+  }
+
+  serverAPIFor(connectionId: string) {
+    return this.getConnection(connectionId).serverAPI;
+  }
+
+  async disconnect() {
+    return this.disconnectFrom(DEFAULT_CONNECTION_ID);
+  }
+
+  async disconnectFrom(connectionId: string) {
+    return this.getConnection(connectionId).disconnect();
+  }
+
+  async destroyConnection(connectionId: string) {
+    const connection = this.#connections.get(connectionId);
+    if (connection) {
+      await connection.disconnect();
+      connection.destroy();
+      this.#connections.delete(connectionId);
+    }
+    this.#connectionStatusListeners.delete(connectionId);
+  }
+
   destroy() {
-    this.#worker.terminate();
+    for (const connection of this.#connections.values()) {
+      connection.destroy();
+    }
+    this.#connections.clear();
+    this.#connectionStatusListeners.clear();
   }
 }
 

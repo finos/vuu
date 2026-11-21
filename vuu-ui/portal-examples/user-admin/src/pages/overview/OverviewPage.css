@@ -1,0 +1,184 @@
+.vuuAdminOverview.vuuIdentityAdmin-page {
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminOverview-panels {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-300);
+  min-height: 560px;
+}
+
+.vuuAdminOverview-panel.saltCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Few applications, many users: the users list gets more room. */
+.vuuAdminOverview-applications {
+  flex: 5 1 340px;
+}
+
+.vuuAdminOverview-users {
+  flex: 7 1 480px;
+}
+
+.vuuAdminOverview-panelHeader {
+  border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+}
+
+.vuuAdminOverview-titleRow {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-200);
+  justify-content: space-between;
+}
+
+.vuuAdminOverview-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-150);
+}
+
+.vuuAdminOverview-search {
+  flex: 1 1 260px;
+}
+
+/* Room for the label and the longest option, "Most applications". */
+.vuuAdminOverview-sort.saltFormField {
+  flex: none;
+  width: 280px;
+}
+
+.vuuAdminOverview-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+  list-style: none;
+  margin: 0;
+  overflow: auto;
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+}
+
+/* A card that opens its application; see the stretched title link below. */
+.vuuAdminOverview-application {
+  align-items: center;
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
+  border-radius: var(--salt-palette-corner, 4px);
+  display: flex;
+  gap: var(--salt-spacing-200);
+  padding: var(--salt-spacing-200);
+  position: relative;
+}
+
+.vuuAdminOverview-application:hover {
+  background: var(--salt-selectable-background-hover);
+  border-color: var(--salt-selectable-borderColor-hover, var(--salt-separable-primary-borderColor));
+}
+
+.vuuAdminOverview-application:has(.vuuAdminOverview-applicationLink:focus-visible) {
+  outline: var(--salt-focused-outline);
+  outline-offset: 1px;
+}
+
+.vuuAdminOverview-application > .vuuAdminUi-stack {
+  flex: 1;
+  gap: var(--salt-spacing-50);
+  min-width: 0;
+}
+
+.vuuAdminOverview-applicationTitle {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100);
+  justify-content: space-between;
+}
+
+.vuuAdminOverview-applicationLink.saltLink {
+  color: var(--salt-content-primary-foreground);
+  font-size: var(--salt-text-h3-fontSize);
+  font-weight: var(--salt-text-h3-fontWeight);
+  line-height: var(--salt-text-h3-lineHeight);
+  text-decoration: none;
+}
+
+/* Stretch the title link over the card, so a click anywhere opens it. */
+.vuuAdminOverview-applicationLink.saltLink::after {
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.vuuAdminOverview-applicationLink.saltLink:focus-visible {
+  outline: none;
+}
+
+.vuuAdminOverview-applicationDescription {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vuuAdminOverview-counts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-75);
+}
+
+/* Count links sit above the stretched title link. */
+.vuuAdminOverview-counts .saltLink {
+  position: relative;
+  z-index: 1;
+}
+
+.vuuAdminOverview-chevron {
+  color: var(--salt-content-secondary-foreground);
+  flex: none;
+}
+
+.vuuAdminOverview-empty {
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+}
+
+.vuuAdminOverview-table.vuuIdentityAdmin-tableCard {
+  border: 0;
+  border-radius: 0;
+  flex: 1;
+  min-height: 280px;
+}
+
+.vuuAdminUnassigned.saltCard {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminUnassigned-header {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-150);
+}
+
+.vuuAdminUnassigned-header > .vuuAdminUi-stack {
+  flex: 1;
+}
+
+.vuuAdminUnassigned-lists {
+  display: grid;
+  gap: var(--salt-spacing-300);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}

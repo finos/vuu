@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "scenario": {
+    "id": "load-1m-20",
+    "description": "Mount a table of 1M rows x 20 columns",
+    "dataset": {
+      "rows": 1000000,
+      "cols": 20,
+      "cellType": "formatted",
+      "seed": 20261020
+    },
+    "run": {
+      "kind": "load"
+    }
+  },
+  "env": {
+    "gitSha": "49f6f39f2b6490f4e42bedbba46b2a6c0ee73786-dirty",
+    "target": "current",
+    "buildMode": "production",
+    "browser": "chromium",
+    "browserVersion": "151.0.7922.34",
+    "headless": true,
+    "gpu": "on",
+    "cpuThrottle": 4,
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 8,
+    "platform": "darwin arm64"
+  },
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "scenarioId": "load-1m-20",
+      "pass": "timing",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:36:31.529Z",
+      "mount": {
+        "dataGenMs": 948,
+        "dataSourceMs": 1414,
+        "firstRowsMs": 203,
+        "firstPaintMs": 231
+      },
+      "result": {
+        "durationMs": 532,
+        "frames": {
+          "count": 29,
+          "mean": 17.85,
+          "p50": 16.7,
+          "p95": 17.7,
+          "p99": 49.5,
+          "max": 49.5,
+          "jankyFrames": 1,
+          "jankyPct": 3.45
+        },
+        "longFrames": {
+          "count": 2,
+          "blockingMs": 0
+        }
+      },
+      "cdp": {
+        "layoutCount": 0,
+        "layoutMs": 0,
+        "recalcStyleCount": 0,
+        "recalcStyleMs": 0,
+        "scriptMs": 2,
+        "taskMs": 112,
+        "jsHeapUsedMB": 478.1,
+        "domNodes": 1789,
+        "jsEventListeners": 300
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "load-1m-20",
+      "pass": "instrumented",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:36:35.308Z",
+      "mount": {
+        "dataGenMs": 1058,
+        "dataSourceMs": 1324,
+        "firstRowsMs": 188,
+        "firstPaintMs": 221
+      },
+      "result": {
+        "durationMs": 515,
+        "frames": {
+          "count": 29,
+          "mean": 17.27,
+          "p50": 16.7,
+          "p95": 17.7,
+          "p99": 33.6,
+          "max": 33.6,
+          "jankyFrames": 1,
+          "jankyPct": 3.45
+        },
+        "longFrames": {
+          "count": 1,
+          "blockingMs": 0
+        },
+        "dom": {
+          "rowMounts": 0,
+          "rowMoves": 0,
+          "elementsInserted": 0,
+          "elementsRemoved": 0,
+          "textChanges": 0,
+          "attributeChanges": 0,
+          "rowUnmounts": 0,
+          "tableNodes": 1011
+        }
+      },
+      "cdp": {
+        "layoutCount": 1,
+        "layoutMs": 0,
+        "recalcStyleCount": 1,
+        "recalcStyleMs": 1,
+        "scriptMs": 1,
+        "taskMs": 114,
+        "jsHeapUsedMB": 478.1,
+        "domNodes": 1789,
+        "jsEventListeners": 300
+      }
+    }
+  ],
+  "summary": {
+    "mount.dataGenMs": 948,
+    "mount.dataSourceMs": 1414,
+    "mount.firstRowsMs": 203,
+    "mount.firstPaintMs": 231,
+    "cdp.layoutCount": 0,
+    "cdp.layoutMs": 0,
+    "cdp.recalcStyleCount": 0,
+    "cdp.recalcStyleMs": 0,
+    "cdp.scriptMs": 2,
+    "cdp.taskMs": 112,
+    "cdp.jsHeapUsedMB": 478.1,
+    "cdp.domNodes": 1789,
+    "cdp.jsEventListeners": 300,
+    "frames.count": 29,
+    "frames.mean": 17.85,
+    "frames.p50": 16.7,
+    "frames.p95": 17.7,
+    "frames.p99": 49.5,
+    "frames.max": 49.5,
+    "frames.jankyFrames": 1,
+    "frames.jankyPct": 3.45,
+    "longFrames.count": 2,
+    "longFrames.blockingMs": 0,
+    "durationMs": 532,
+    "dom.rowMounts": 0,
+    "dom.rowMoves": 0,
+    "dom.elementsInserted": 0,
+    "dom.elementsRemoved": 0,
+    "dom.textChanges": 0,
+    "dom.attributeChanges": 0,
+    "dom.rowUnmounts": 0,
+    "dom.tableNodes": 1011,
+    "perUnit.layoutsPerFrame": 0.034
+  }
+}

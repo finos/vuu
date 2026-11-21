@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { isOpenBulkEditResponse } from "@vuu-ui/vuu-context-menu";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
@@ -6,7 +7,6 @@ import {
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import { SelectionChangeHandler } from "@vuu-ui/vuu-table-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 export const useTableEditManager = (vuuTable: VuuTable) => {

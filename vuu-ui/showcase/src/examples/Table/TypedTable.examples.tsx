@@ -1,8 +1,8 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { useAutoLoginToVuuServer } from "../utils";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import {
   SelectionChangeHandler,

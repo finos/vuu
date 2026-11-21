@@ -22,6 +22,7 @@ export * from "./debug-utils";
 export { isInlineEditingSession } from "./edit-utils";
 export { StaleUpdateError } from "./errors";
 export * from "./event-emitter";
+export * from "./errors";
 export * from "./feature-utils";
 export * from "./filters";
 export * from "./form-utils";
@@ -91,5 +92,9 @@ export {
 } from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
+export {
+  getTypeaheadParams,
+  useTypeaheadSuggestions,
+} from "./useTypeaheadSuggestions";
 export * from "./ShellContext";
 export { ThemeLoadChecker } from "./theme-utils";

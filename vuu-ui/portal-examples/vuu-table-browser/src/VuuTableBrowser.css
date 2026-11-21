@@ -1,0 +1,21 @@
+.vuuTableBrowser {
+  min-height: 480px;
+  min-width: 640px;
+}
+
+.vuuTableBrowser-save {
+  display: grid;
+  gap: var(--salt-spacing-150);
+  width: min(360px, 90vw);
+
+  h3 {
+    font-size: 13px;
+    margin: 0;
+  }
+}
+
+.vuuTableBrowser-saveActions {
+  display: flex;
+  gap: var(--salt-spacing-100);
+  justify-content: flex-end;
+}

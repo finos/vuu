@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { DataSourceFilter, type TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, type TableProps } from "@vuu-ui/vuu-table";
@@ -6,7 +7,7 @@ import type {
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
-import { registerComponent, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { registerComponent, toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { PinButtonCell } from "./pin-button-cell";
 import {

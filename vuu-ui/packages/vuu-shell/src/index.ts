@@ -1,14 +1,14 @@
-export * from "./application-provider";
 export * from "./app-header";
+export * from "./application-provider";
 export * from "./feature";
 export * from "./feature-and-layout-provider";
+export * from "./feature-list";
 export * from "./left-nav";
 export { LoginPanel, type LoginPanelProps } from "./login/LoginPanel";
+export { getRegisteredModules } from './module-registry/getRegisteredModules';
 export * from "./persistence-manager";
 export * from "./shell";
 export * from "./shell-layout-templates";
 export * from "./ShellContextProvider";
-export * from "./feature-list";
 export * from "./theme-switch";
-export * from "./user-settings";
 export * from "./workspace-management";

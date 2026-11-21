@@ -4,8 +4,8 @@ import {
   type HeadingFont,
   SaltProviderNext,
 } from "@salt-ds/core";
-import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { ShowcaseVuuConnection } from "./ShowcaseVuuConnection";
 import {
   type Density,
   getUrlParameter,
@@ -225,12 +225,7 @@ export const ShowcaseStandalone = ({
             </div>
           </LocalDataSourceProvider>
         ) : (
-          <VuuDataSourceProvider
-            authenticate={true}
-            autoConnect
-            autoLogin
-            websocketUrl="wss://localhost:8090/websocket"
-          >
+          <ShowcaseVuuConnection>
             <div
               className={cx("vuuShowcase-StandaloneRoot", {
                 "vuuShowcase-embed": embed,
@@ -239,7 +234,7 @@ export const ShowcaseStandalone = ({
             >
               {contentState?.component}
             </div>
-          </VuuDataSourceProvider>
+          </ShowcaseVuuConnection>
         )}
       </ThemeLoadChecker>
     </SaltProviderNext>

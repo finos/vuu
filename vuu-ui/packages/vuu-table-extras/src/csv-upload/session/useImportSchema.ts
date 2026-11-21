@@ -1,10 +1,10 @@
+import { useData } from "@vuu-ui/core";
 import type {
   DataSource,
   SessionDataSourceOverrides,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useEffect, useMemo, useState } from "react";
 
 export interface UseImportSchemaProps {

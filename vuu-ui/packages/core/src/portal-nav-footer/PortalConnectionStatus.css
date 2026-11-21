@@ -1,0 +1,190 @@
+.vuuPortalConnectionStatus {
+  --vuuPortalConnectionStatus-dot-size: 7px;
+  --vuuPortalConnectionStatus-dot-color: var(--salt-content-secondary-foreground);
+  display: flex;
+  min-width: 0;
+}
+
+.vuuPortalConnectionStatus-trigger {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--salt-palette-corner-weak, 0);
+  color: var(--salt-content-secondary-foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--salt-text-fontFamily);
+  font-size: var(--salt-text-label-fontSize);
+  gap: var(--salt-spacing-100);
+  line-height: var(--salt-text-label-lineHeight);
+  min-width: 0;
+  padding: var(--salt-spacing-50);
+  width: 100%;
+}
+
+.vuuPortalConnectionStatus-rail .vuuPortalConnectionStatus-trigger {
+  justify-content: center;
+  padding: var(--salt-spacing-100);
+  width: auto;
+}
+
+/*
+ * Expanded, the dot is centred in a slot as wide as the user menu's avatar,
+ * with the same inset, so the two stack on one axis and their labels align.
+ */
+.vuuPortalConnectionStatus-expanded {
+  .vuuPortalConnectionStatus-trigger {
+    padding-inline: var(--salt-spacing-75);
+  }
+
+  .vuuPortalConnectionStatus-dot {
+    margin-inline: calc((var(--salt-size-base) - var(--vuuPortalConnectionStatus-dot-size)) / 2);
+  }
+}
+
+.vuuPortalConnectionStatus-trigger:hover,
+.vuuPortalConnectionStatus-trigger[aria-expanded="true"] {
+  background: var(--salt-navigable-background-hover, var(--salt-selectable-background-hover));
+}
+
+.vuuPortalConnectionStatus-trigger:focus-visible {
+  outline: var(--salt-focused-outlineWidth) var(--salt-focused-outlineStyle) var(--salt-focused-outlineColor);
+  outline-offset: var(--salt-focused-outlineOffset);
+}
+
+.vuuPortalConnectionStatus-trigger[data-severity="warning"] {
+  color: var(--salt-status-warning-foreground-informative);
+}
+
+.vuuPortalConnectionStatus-trigger[data-severity="error"] {
+  color: var(--salt-status-error-foreground-informative);
+}
+
+.vuuPortalConnectionStatus-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vuuPortalConnectionStatus-dot {
+  background: var(--vuuPortalConnectionStatus-dot-color);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--vuuPortalConnectionStatus-dot-color) 20%, transparent);
+  flex: none;
+  height: var(--vuuPortalConnectionStatus-dot-size);
+  width: var(--vuuPortalConnectionStatus-dot-size);
+}
+
+.vuuPortalConnectionStatus-dot[data-severity="ok"] {
+  --vuuPortalConnectionStatus-dot-color: var(--salt-status-success-foreground-decorative);
+}
+
+.vuuPortalConnectionStatus-dot[data-severity="warning"] {
+  --vuuPortalConnectionStatus-dot-color: var(--salt-status-warning-foreground-decorative);
+}
+
+.vuuPortalConnectionStatus-dot[data-severity="error"] {
+  --vuuPortalConnectionStatus-dot-color: var(--salt-status-error-foreground-decorative);
+}
+
+.vuuPortalConnectionStatus-popover {
+  background: var(--salt-container-primary-background);
+  border: var(--salt-size-border) var(--salt-container-borderStyle) var(--salt-container-primary-borderColor);
+  border-radius: var(--salt-palette-corner, 0);
+  box-shadow: var(--salt-overlayable-shadow-popout);
+  color: var(--salt-content-primary-foreground);
+  font-family: var(--salt-text-fontFamily);
+  font-size: var(--salt-text-label-fontSize);
+  line-height: var(--salt-text-label-lineHeight);
+  margin: var(--salt-spacing-75);
+  overflow: hidden;
+  width: var(--vuuPortalConnectionStatus-popover-width, 300px);
+  z-index: var(--salt-zIndex-flyover);
+}
+
+.vuuPortalConnectionStatus-popover:focus-visible {
+  outline: var(--salt-focused-outlineWidth) var(--salt-focused-outlineStyle) var(--salt-focused-outlineColor);
+}
+
+.vuuPortalConnectionStatus-header {
+  align-items: center;
+  border-bottom: var(--salt-size-border) var(--salt-separable-borderStyle) var(--salt-separable-primary-borderColor);
+  display: flex;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-100) var(--salt-spacing-150);
+}
+
+.vuuPortalConnectionStatus-title {
+  font-weight: var(--salt-text-fontWeight-strong);
+  white-space: nowrap;
+}
+
+.vuuPortalConnectionStatus-empty {
+  color: var(--salt-content-secondary-foreground);
+  padding: var(--salt-spacing-100) var(--salt-spacing-150);
+}
+
+.vuuPortalConnectionStatus-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuPortalConnectionStatus-row {
+  align-items: center;
+  column-gap: var(--salt-spacing-100);
+  display: grid;
+  grid-template-columns: var(--vuuPortalConnectionStatus-dot-size) 1fr auto;
+  padding: var(--salt-spacing-100) var(--salt-spacing-150);
+  row-gap: var(--salt-spacing-50);
+}
+
+.vuuPortalConnectionStatus-row + .vuuPortalConnectionStatus-row {
+  border-top: var(--salt-size-border) var(--salt-separable-borderStyle) var(--salt-separable-primary-borderColor);
+}
+
+.vuuPortalConnectionStatus-name {
+  font-weight: var(--salt-text-fontWeight-strong);
+}
+
+.vuuPortalConnectionStatus-state {
+  color: var(--salt-content-secondary-foreground);
+  font-family: var(--salt-text-code-fontFamily);
+  font-size: var(--salt-text-notation-fontSize);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.vuuPortalConnectionStatus-row[data-severity="warning"] .vuuPortalConnectionStatus-state {
+  color: var(--salt-status-warning-foreground-informative);
+}
+
+.vuuPortalConnectionStatus-row[data-severity="error"] .vuuPortalConnectionStatus-state {
+  color: var(--salt-status-error-foreground-informative);
+}
+
+.vuuPortalConnectionStatus-detail,
+.vuuPortalConnectionStatus-impact,
+.vuuPortalConnectionStatus-actions {
+  grid-column: 2 / -1;
+}
+
+.vuuPortalConnectionStatus-detail,
+.vuuPortalConnectionStatus-impact {
+  color: var(--salt-content-secondary-foreground);
+  overflow-wrap: anywhere;
+}
+
+.vuuPortalConnectionStatus-endpoint {
+  background: var(--salt-container-secondary-background);
+  border-radius: var(--salt-palette-corner-weak, 0);
+  font-family: var(--salt-text-code-fontFamily);
+  font-size: var(--salt-text-notation-fontSize);
+  padding: 0 var(--salt-spacing-50);
+}
+
+.vuuPortalConnectionStatus-actions {
+  display: flex;
+  gap: var(--salt-spacing-75);
+  margin-top: var(--salt-spacing-50);
+}

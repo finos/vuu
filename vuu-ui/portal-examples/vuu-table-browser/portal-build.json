@@ -1,0 +1,26 @@
+{
+  "extends": "../portal-build.remote.json",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "output": "../../dist_portal/vuu-table-browser",
+    "publicPath": "http://localhost:5004/"
+  },
+  "html": {
+    "title": "vuuTableBrowser (standalone)"
+  },
+  "server": {
+    "corsOrigins": [
+      "http://localhost:5001"
+    ]
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {}
+  },
+  "moduleFederation": {
+    "name": "vuuTableBrowser",
+    "exposes": {
+      "./VuuTableBrowser": "./src/VuuTableBrowser"
+    }
+  }
+}

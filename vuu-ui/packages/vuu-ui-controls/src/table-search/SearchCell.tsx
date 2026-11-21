@@ -2,6 +2,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
+import { Icon } from "../icon-button";
 
 import searchCellCss from "./SearchCell.css";
 
@@ -28,7 +29,7 @@ export const SearchCell = ({
 
   return (
     <div className={classBase} tabIndex={-1}>
-      <span data-icon="draggable" />
+      <Icon name="draggable" />
       {valueWithHighlighting}
     </div>
   );

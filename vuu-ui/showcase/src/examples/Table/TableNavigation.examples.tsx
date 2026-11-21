@@ -1,6 +1,6 @@
+import { useData } from "@vuu-ui/core";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { useAutoLoginToVuuServer } from "../utils";
 import {

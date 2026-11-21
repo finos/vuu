@@ -1,8 +1,9 @@
+import { useData } from "@vuu-ui/core";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { BasketsTableName, getSchema } from "@vuu-ui/vuu-data-test";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 export const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {

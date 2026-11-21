@@ -1,0 +1,384 @@
+# `@vuu-ui/portal-build`
+
+`@vuu-ui/portal-build` is a reusable, JSON-configured build tool for portal
+applications and Module Federation remote modules. It owns the Rsbuild, React,
+CSS-inline, and Module Federation configuration while each application owns its
+paths, entries, remotes, shared dependencies, and generated manifest values.
+
+The package exposes `buildPortal` for JavaScript/TypeScript build scripts and a
+`portal-build` CLI:
+
+```sh
+portal-build --config ./portal-build.json
+portal-build --config ./portal-build.json --local
+portal-build --config ./portal-build.json --rsdoctor
+portal-build --all-config ./portal-build-all.json
+portal-build --all-config ./portal-build-all.json --local
+portal-build --all-config ./portal-build-all.json --target module-admin
+```
+
+The config path is resolved from the current working directory. All paths in
+the config are resolved relative to the directory containing that config, so
+the package does not depend on a repository layout.
+
+## Serving a portal
+
+The package also provides a `portal-serve` executable and package scripts for
+starting and stopping a configured host with its remotes. From a consuming
+application's root, add `@vuu-ui/portal-build` as a dependency, place a
+`portal-serve.config.json` there, and run:
+
+```sh
+npm exec -- portal-serve start
+npm exec -- portal-serve stop
+```
+
+The package's own scripts are also available when running commands from the
+package directory or as an npm workspace:
+
+```sh
+npm run portal:start -- --config ../../portal-serve.config.json
+npm run portal:stop -- --config ../../portal-serve.config.json
+```
+
+`portal-serve start` starts the configured default host and all configured
+remotes. Select a different host and only the remotes needed for a session with
+`--host <name>` and `--remotes <name,...>`, or start only the host with
+`--host-only`. Both the start and stop commands accept `--config <path>`; the
+path is relative to the current working directory, and output `directory`
+values in that JSON file are relative to the file itself.
+
+```sh
+npm exec -- portal-serve start --config configs/portal-serve.json \
+  --host demo-host --remotes orders,risk
+npm exec -- portal-serve stop --config configs/portal-serve.json
+```
+
+The configuration contains a `defaultHost`, a `hosts` array, and a `remotes`
+array. Each entry has a unique `name`, a `port`, and a `directory`:
+
+```json
+{
+  "defaultHost": "portal-host",
+  "hosts": [
+    {
+      "name": "portal-host",
+      "port": 5001,
+      "directory": "dist/portal-host"
+    }
+  ],
+  "remotes": [
+    {
+      "name": "orders",
+      "port": 5002,
+      "directory": "dist/orders"
+    }
+  ]
+}
+```
+
+## Building a complete portal
+
+Use a project-level `portal-build-all.json` when one command should build a
+host and its configured remote modules. Targets run in declaration order, and
+the order is stable for both the CLI and API. `--local` selects the host's
+local entry and manifest; remote-module targets always use their remote build
+and reject direct `--local` builds. Use `--target <name>` to build one
+configured target.
+
+```json
+{
+  "version": 1,
+  "shared": {
+    "react": {
+      "requiredVersion": "package",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "react-dom": {
+      "requiredVersion": "package",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "react-router-dom": {
+      "requiredVersion": "^6.2.1",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "@vuu-ui/core": {
+      "requiredVersion": "3.3.12",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "@vuu-ui/core/portal": {
+      "requiredVersion": "3.3.12",
+      "singleton": true,
+      "strictVersion": true
+    }
+  },
+  "targets": [
+    {
+      "name": "portal-host",
+      "packageDir": "./portal-examples/portal-host",
+      "config": "./portal-build.json",
+      "target": "host"
+    },
+    {
+      "name": "module-admin",
+      "packageDir": "./portal-examples/module-admin",
+      "config": "./portal-build.json",
+      "target": "remote-module",
+      "shared": {
+        "@vuu-ui/core": {
+          "singleton": true,
+          "strictVersion": true
+        }
+      }
+    }
+  ]
+}
+```
+
+`packageDir` is resolved relative to the project-level config and `config` is
+resolved relative to that package directory. The declared target kind must
+match the individual JSON config, so a miswired project fails before any
+build starts. Project-level `shared` declarations are inherited by every
+target. They are deep-merged per dependency in this order:
+project defaults, the standalone target config's `moduleFederation.shared`,
+then the target's optional `shared` exceptions. Later declarations override
+only the fields they specify, so a target can change `strictVersion` without
+repeating its required version or singleton setting. Standalone
+`portal-build.json` files (with their `extends` chain) behave the same when
+invoked directly. The API equivalent is `buildPortalAll({ configPath, mode,
+targetName })`; `createPortalBuildAllPlan` exposes the validated deterministic
+plan without running Rsbuild.
+
+Set `"target": "remote-module"` to build a federated remote instead of a host.
+The remote target emits the same standalone HTML bundle and Module Federation
+runtime as the legacy remote-module builder:
+
+```json
+{
+  "version": 1,
+  "target": "remote-module",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "htmlTemplate": "../remote-module-template/index.html",
+    "output": "../../dist_portal/example",
+    "publicPath": "http://localhost:5002/"
+  },
+  "html": {
+    "title": "example (standalone)"
+  },
+  "server": {
+    "corsOrigins": ["http://localhost:5002"]
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "connectionId": "example",
+      "restUrl": "https://localhost:8445/api/authn",
+      "websocketUrl": "wss://localhost:8093/websocket-example"
+    }
+  },
+  "moduleFederation": {
+    "name": "example",
+    "dts": false,
+    "exposes": {
+      "./Feature": "./src/Feature"
+    },
+    "shared": {
+      "react": {
+        "requiredVersion": "^19.2.3"
+      },
+      "@vuu-ui/core": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      }
+    }
+  }
+}
+```
+
+Every build empties its output folder first. Chunk and entry file names carry
+a content hash (`index.43e7174307.js`), so a browser never runs a stale chunk
+after a rebuild. A few files keep their names: `index.html`,
+`mf-manifest.json`, `config.json` and a remote's entry (`<name>.js`, which
+module registries reference by URL). Whatever serves the output must have
+browsers revalidate those, e.g. `Cache-Control: no-cache`.
+
+A remote-module build also writes a `serve.json` into its output folder for
+the `serve` static server used by `portal-serve`. It allows cross-origin loads
+from the host (`Access-Control-Allow-Origin: *`), sends
+`Cache-Control: no-cache` so browsers revalidate every file, and falls back to
+`index.html` for standalone routes. To use different settings, add
+`public/serve.json` to the application; it is copied into the output and the
+default is not written.
+
+Remote `moduleFederation.exposes` requests beginning with `src/` are normalized
+to `./src/` for Rspack. `publicPath` controls the runtime URL used to load
+remote chunks, while `server.corsOrigins` controls development-server CORS.
+A remote-module target must define `manifest`; the build writes
+`manifest.filename` (normally `./config.json`) next to `mf-manifest.json` using
+`manifest.remote` as the file contents. Use an empty object when the remote has
+no dedicated VUU server. Remote shared dependency versions may be explicit or
+use `requiredVersion: "package"` when the dependency is declared by the
+consuming application.
+
+Set `"target": "application"` for a standalone portal application that is not
+a Module Federation container. It uses the same entry, HTML, output, React, and
+CSS-inline build settings without emitting a federation container or manifest.
+
+## Configuration
+
+```json
+{
+  "version": 1,
+  "paths": {
+    "htmlTemplate": "./public/index.html",
+    "output": "./dist",
+    "assetPrefix": "./",
+    "entries": {
+      "remote": "./src/index.tsx",
+      "local": "./src/local-index.tsx"
+    },
+    "preEntry": "@vuu-ui/vuu-theme/index.css"
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "authUrl": "https://localhost:8080",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
+    },
+    "local": {
+      "authUrl": "https://localhost:8080",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
+    }
+  },
+  "moduleFederation": {
+    "name": "host",
+    "remoteType": "module",
+    "remotes": {},
+    "shared": {
+      "react": {
+        "requiredVersion": "package",
+        "singleton": true,
+        "strictVersion": true
+      }
+    }
+  },
+  "cssInline": {
+    "include": ["/packages/"],
+    "exclude": [".stories.tsx"]
+  }
+}
+```
+
+When `cssInline` is omitted, CSS imports are inlined for the VUU packages
+that need it (`/packages/core/`, `/packages/vuu-table/`, and so on), excluding
+`.stories.tsx` files. Set `include`/`exclude` to change that, or `false` to
+turn it off.
+
+### Sharing settings with `extends`
+
+A config can extend one or more base configs, so a family of remotes keeps
+their common settings in one place:
+
+```json
+{
+  "extends": "../portal-build.remote.json",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "output": "../../dist_portal/orders",
+    "publicPath": "http://localhost:5010/"
+  },
+  "manifest": { "filename": "./config.json", "remote": {} },
+  "moduleFederation": {
+    "name": "orders",
+    "exposes": { "./Orders": "./src/Orders" }
+  }
+}
+```
+
+`extends` takes a path or an array of paths (merged in order), each relative
+to the file that declares it, and a base can itself extend another. The
+extending config is merged on top: objects merge key by key, while arrays and
+other values replace the base value. File paths in a base config (`entry`,
+`entries`, `htmlTemplate`, `output`, `preEntry`) resolve relative to the base
+file. `publicPath` and `assetPrefix` are URLs and are used as written. A base
+config does not need to be valid on its own; only the merged result is
+validated. `portal-examples/portal-build.remote.json` is the base for the
+example remotes.
+
+`paths.assetPrefix` controls the URL prefix Rsbuild writes for JavaScript,
+CSS, and other static assets in the generated HTML. It defaults to `"./"` so
+the application can be hosted from a sub-folder; set it in the JSON
+configuration when assets need an absolute path or a CDN URL.
+
+For history-based routing, use a prefix independent of the current route:
+`"/"` for an application at the origin root, or `"/portal/"` for assets hosted
+under that deployment prefix. `"./"` resolves relative to the current page
+and can request scripts under `/window/` when loading a deep link.
+
+Each build uses the directory containing its configuration as the Rsbuild
+project root. Its `public/` assets (such as `manifest.json` and favicons) are
+copied into the output even when the CLI is invoked from another directory
+or through `build:mf`. Public asset URLs in the HTML template must also use
+the deployment prefix; a SPA fallback must not substitute HTML for missing
+JavaScript, CSS, or JSON files.
+
+`requiredVersion: "package"` reads the version from the application
+`package.json`. Use `package:<dependency-name>` when a federated request and
+the package dependency have different names, for example
+`@vuu-ui/core/portal` with `package:@vuu-ui/core`. A build variant can override
+`entry`, `output`, `manifest`, or `moduleFederation` under `builds.local` or
+`builds.remote`. For host builds, if no local manifest is provided, the remote
+manifest is used.
+
+For VUU packages that share the release version of `@vuu-ui/core`, use
+`requiredVersion: "package:@vuu-ui/core"` rather than hardcoding a VUU release
+number. This works for both packages that are not direct dependencies of every
+target and subpath requests such as `@vuu-ui/core/portal`; the target still
+must declare `@vuu-ui/core` so the version can be resolved from its
+`package.json`.
+
+## Publishing and consuming
+
+From the package directory, publish the package with the normal npm workflow:
+
+```sh
+npm publish --access public
+```
+
+An independent portal application can then install and invoke it from its own
+package:
+
+```sh
+npm install @vuu-ui/portal-build
+```
+
+```json
+{
+  "scripts": {
+    "build": "portal-build --all-config ./portal-build-all.json",
+    "build:local": "portal-build --config ./portal-build.json --local"
+  }
+}
+```
+
+Individual remote modules can still use their own package script:
+
+```json
+{
+  "scripts": {
+    "build:module-admin": "portal-build --config ./portal-build.json"
+  }
+}
+```
+
+The package supports Node 20 and newer. The published package contains compiled
+JavaScript and TypeScript declarations; the workspace source remains TypeScript
+so it can be typechecked alongside the VUU sources.

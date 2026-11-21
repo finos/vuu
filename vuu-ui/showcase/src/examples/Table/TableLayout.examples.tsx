@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import {
   LocalDataSourceProvider,
@@ -17,7 +18,6 @@ import { ListBox, Option } from "@salt-ds/core";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuRpcMenuRequest } from "@vuu-ui/vuu-protocol-types";
-import { useData } from "@vuu-ui/vuu-utils";
 import { useCell } from "@vuu-ui/vuu-table/src/useCell";
 
 type DataTableProps = Partial<

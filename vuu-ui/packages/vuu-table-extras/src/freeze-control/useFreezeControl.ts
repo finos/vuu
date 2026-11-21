@@ -1,9 +1,10 @@
+import { useData } from "@vuu-ui/core";
 import {
   DataSource,
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { messageHasSize, useData } from "@vuu-ui/vuu-utils";
+import { messageHasSize } from "@vuu-ui/vuu-utils";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 export interface FreezeProps {

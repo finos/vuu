@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import type { FilterState } from "@vuu-ui/vuu-filter-types";
 import { FilterBar } from "@vuu-ui/vuu-filters";
@@ -16,7 +17,7 @@ import {
   useColumnSetModel,
 } from "@vuu-ui/vuu-table-extras";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 

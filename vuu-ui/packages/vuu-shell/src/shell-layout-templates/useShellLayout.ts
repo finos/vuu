@@ -1,9 +1,9 @@
-import { HTMLAttributes, ReactElement, ReactNode } from "react";
+import type { HTMLAttributes, ReactElement, ReactNode } from "react";
 import { useFullHeightLeftPanel } from "./full-height-left-panel/useFullHeightLeftPanel";
 import { useInlayLeftPanel } from "./inlay-left-panel/useInlayLeftPanel";
 import { useLeftMainTabs } from "./left-main-tabs/useLeftMainTabs";
 import { useSimpleContentPane } from "./simple-content-pane/useSimpleContentPane";
-import { SidePanelProps as ShellSidePanelProps } from "./side-panel";
+import type { SidePanelProps as ShellSidePanelProps } from "./side-panel";
 
 const LayoutHook = {
   "full-height": useFullHeightLeftPanel,
@@ -57,6 +57,8 @@ export interface ShellLayoutProps {
    * If template renders Toolbar, these props will be provided
    */
   ToolbarProps?: ShellToolbarProps;
+  /** Supplied by Shell; application code should not normally set this. */
+  workspaceHost?: ReactNode;
 }
 
 /**

@@ -1,0 +1,27 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "playwright-gallery",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "vuu-ui",
+        "run",
+        "playwright:gallery"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "showcase",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "vuu-ui",
+        "run",
+        "showcase"
+      ],
+      "port": 5173
+    }
+  ]
+}

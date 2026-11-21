@@ -27,13 +27,13 @@ import {
   lastPathSegment,
   metadataKeys,
   NULL_RANGE,
-  TreeSourceNode,
+  type TreeSourceNode,
   treeToDataSourceRows,
   uuid,
 } from "@vuu-ui/vuu-utils";
 import { IconProvider } from "./IconProvider";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
-import { FilterClause } from "@vuu-ui/vuu-filter-types";
+import type { FilterClause } from "@vuu-ui/vuu-filter-types";
 
 // The number of Level columns depends on the depth of the tree
 const treeSchema = (columns: ColumnDescriptor[]): TableSchema => ({

@@ -1,0 +1,386 @@
+.vuuAdminApplication-breadcrumb {
+  align-items: baseline;
+  display: flex;
+  gap: var(--salt-spacing-50);
+}
+
+.vuuAdminApplication-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminApplication-header > .vuuAdminUi-stack {
+  flex: 1;
+  min-width: 260px;
+}
+
+.vuuAdminApplication-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-100) var(--salt-spacing-300);
+  padding-top: var(--salt-spacing-50);
+}
+
+.vuuAdminApplication-fact {
+  align-items: baseline;
+  display: inline-flex;
+  gap: var(--salt-spacing-75);
+}
+
+.vuuAdminApplication-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+  padding-top: var(--salt-spacing-200);
+}
+
+.vuuAdminApplication-tabHeader {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-200);
+  justify-content: space-between;
+}
+
+.vuuAdminApplication-issueList {
+  margin: 0;
+  padding-left: var(--salt-spacing-300);
+}
+
+.vuuAdminApplication-prefix {
+  color: var(--salt-content-secondary-foreground);
+  white-space: nowrap;
+}
+
+.vuuAdminApplication-usersScroll {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--salt-palette-corner, 8px);
+  max-height: 560px;
+  overflow: auto;
+}
+
+.vuuAdminApplication-users {
+  width: 100%;
+}
+
+/* Groups and roles tab */
+.vuuAdminApplication-groupsTab {
+  /* Role pills match the vuu theme's button height. */
+  --vuuAdminApplication-controlHeight: var(--saltButton-height, calc(var(--salt-size-base) + var(--salt-spacing-100)));
+
+  gap: var(--salt-spacing-400);
+}
+
+.vuuAdminApplication-groupsTab > section {
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminApplication-groupsTab > section + section {
+  margin-top: var(--salt-spacing-300);
+}
+
+/* A hairline between each section's header and its content. */
+.vuuAdminApplication-groupsTab > section > .vuuAdminApplication-tabHeader {
+  border-bottom: var(--salt-size-border) solid var(--salt-separable-tertiary-borderColor);
+  padding-bottom: var(--salt-spacing-150);
+}
+
+.vuuAdminApplication-kind {
+  min-width: 3.5em;
+}
+
+.vuuAdminApplication-groupCards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminApplication-groupCard {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--salt-palette-corner, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+}
+
+.vuuAdminApplication-groupCardHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-200);
+  justify-content: space-between;
+}
+
+.vuuAdminApplication-groupCardHeader > .vuuAdminUi-stack {
+  gap: var(--salt-spacing-75);
+}
+
+.vuuAdminApplication-groupTitle {
+  align-items: baseline;
+  display: flex;
+  font-size: var(--salt-text-h4-fontSize, 16px);
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAdminApplication-noDescription {
+  color: var(--salt-content-secondary-foreground);
+  font-style: italic;
+}
+
+/* Label, wrapping role pills, then the actions pinned to the right. */
+.vuuAdminApplication-groupRoles {
+  align-items: start;
+  display: grid;
+  gap: var(--salt-spacing-100) var(--salt-spacing-200);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.vuuAdminApplication-groupRoles > .vuuAdminApplication-kind {
+  line-height: var(--vuuAdminApplication-controlHeight);
+}
+
+.vuuAdminApplication-groupRoles > ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-100);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuAdminApplication-groupActions {
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+
+/* Pills and buttons share one height. */
+.vuuAdminApplication-roleChip {
+  align-items: center;
+  border: var(--salt-size-border) solid var(--salt-separable-primary-borderColor);
+  border-radius: var(--salt-palette-corner-weak, 4px);
+  box-sizing: border-box;
+  display: inline-flex;
+  gap: var(--salt-spacing-50);
+  height: var(--vuuAdminApplication-controlHeight);
+  padding: 0 var(--salt-spacing-25) 0 var(--salt-spacing-100);
+}
+
+.vuuAdminApplication-roleChip > .saltButton {
+  --saltButton-height: calc(var(--vuuAdminApplication-controlHeight) - 2 * var(--salt-size-border) - 2px);
+  min-height: 0;
+  padding: 0 var(--salt-spacing-50);
+}
+
+.vuuAdminApplication-roleChipAccess,
+.vuuAdminApplication-roleChipForeign {
+  padding-right: var(--salt-spacing-100);
+}
+
+.vuuAdminApplication-roleChipAdded {
+  background: var(--salt-status-warning-background);
+  border-color: var(--salt-status-warning-borderColor);
+}
+
+.vuuAdminApplication-roleChipRemoved {
+  border-style: dashed;
+}
+
+.vuuAdminApplication-roleChipRemoved .vuuAdminUi-roleName {
+  color: var(--salt-content-secondary-foreground);
+  text-decoration: line-through;
+}
+
+.vuuAdminApplication-roleList {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--salt-palette-corner, 8px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuAdminApplication-roleRow {
+  align-items: center;
+  display: grid;
+  gap: var(--salt-spacing-200);
+  grid-template-columns: minmax(140px, 1fr) minmax(0, 2fr) minmax(0, 2fr);
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+}
+
+.vuuAdminApplication-roleRow + .vuuAdminApplication-roleRow {
+  border-top: 1px solid var(--admin-border);
+}
+
+.vuuAdminApplication-roleGroups {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-50);
+}
+
+.vuuAdminApplication-dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+
+/* Users tab */
+.vuuAdminApplication-filter {
+  width: 300px;
+}
+
+.vuuAdminApplication-groupFilter {
+  width: 200px;
+}
+
+.vuuAdminApplication-batchBar {
+  align-items: center;
+  background: var(--salt-container-secondary-background);
+  border: 1px solid var(--salt-selectable-borderColor-selected);
+  border-radius: var(--salt-palette-corner, 8px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-100) var(--salt-spacing-150);
+}
+
+.vuuAdminApplication-batchBar > strong {
+  margin-right: var(--salt-spacing-100);
+}
+
+.vuuAdminApplication-batchClear {
+  margin-left: auto;
+}
+
+.vuuAdminApplication-selectColumn {
+  width: 40px;
+}
+
+.vuuAdminApplication-rowSelected > td {
+  background: var(--salt-selectable-background-selected);
+}
+
+.vuuAdminApplication-open {
+  align-items: center;
+  display: inline-flex;
+}
+
+/* New group panel and grant dialog */
+.vuuAdminApplication-panelForm {
+  flex: 1;
+}
+
+.vuuAdminApplication-fieldset {
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.vuuAdminApplication-fieldset > legend {
+  font-weight: var(--salt-text-fontWeight-strong);
+  padding: 0 0 var(--salt-spacing-75);
+}
+
+.vuuAdminApplication-members {
+  min-height: 320px;
+}
+
+.vuuAdminApplication-option {
+  border: 1px solid var(--admin-border);
+  border-radius: var(--salt-palette-corner, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-50);
+  padding: var(--salt-spacing-100) var(--salt-spacing-150);
+}
+
+.vuuAdminApplication-optionSelected {
+  background: var(--salt-selectable-background-selected);
+  border-color: var(--salt-selectable-borderColor-selected);
+}
+
+.vuuAdminApplication-summary,
+.vuuAdminApplication-grantSummary {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-75);
+}
+
+.vuuAdminApplication-summary {
+  border: 1px solid var(--admin-border);
+  border-radius: var(--salt-palette-corner, 8px);
+  padding: var(--salt-spacing-150);
+}
+
+.vuuAdminApplication-grantSummary {
+  flex: 1;
+  min-width: 0;
+}
+
+.vuuAdminApplication-grant {
+  display: grid;
+  gap: var(--salt-spacing-300);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 420px;
+}
+
+.vuuAdminApplication-grantColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  min-height: 0;
+  min-width: 0;
+}
+
+@container identity-admin (max-width: 760px) {
+  .vuuAdminApplication-grant {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vuuAdminApplication-filter {
+    width: 100%;
+  }
+}
+
+.vuuAdminApplication-dialogTitle {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAdminApplication-manageUsers {
+  margin-left: auto;
+}
+
+.vuuAdminApplication-grantHeading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  min-height: var(--salt-size-base);
+}
+
+.vuuAdminApplication-pickerGroups {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-50);
+}
+
+.vuuAdminApplication-pickerStatus {
+  flex: none;
+  margin-left: auto;
+}
+
+.vuuAdminApplication > .saltTabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}

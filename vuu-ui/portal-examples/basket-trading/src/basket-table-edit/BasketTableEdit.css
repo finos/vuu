@@ -1,0 +1,40 @@
+.vuuBasketTableEdit .vuuTableToggleCell {
+  --saltButton-height: 17px;
+  --saltButton-minWidth: 0;
+  --saltButton-padding: 4px;
+  align-items: center;
+  border: 0 !important;
+  border-radius: 3px;
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: var(--salt-text-fontWeight-strong);
+  height: 17px;
+  justify-content: center;
+  line-height: 17px;
+  min-height: 0;
+  min-width: 0;
+  padding: 0 4px;
+  position: static;
+  width: 100%;
+}
+
+.vuuBasketTableEdit .vuuTableToggleCell:focus {
+  border: 0 !important;
+  height: 17px !important;
+  outline: 2px solid var(--salt-focused-outlineColor);
+  outline-offset: 1px;
+}
+
+.vuuBasketTableEdit .vuuTableToggleCell.vuuCycleStateButton-buy {
+  background: var(--salt-color-green-500);
+  color: var(--salt-content-bold-foreground);
+}
+
+.vuuBasketTableEdit .vuuTableToggleCell.vuuCycleStateButton-sell {
+  background: var(--salt-color-red-500);
+  color: var(--salt-content-bold-foreground);
+}
+
+.vuuBasketTableEdit .vuuTableToggleCell:hover {
+  filter: brightness(0.9);
+}

@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import {
   FilterBar,
   FilterBarProps,
@@ -31,7 +32,6 @@ import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   DataSourceProvider,
   toColumnName,
-  useData,
   VuuShellLocation,
 } from "@vuu-ui/vuu-utils";
 import { FlexboxLayout } from "@vuu-ui/vuu-layout";

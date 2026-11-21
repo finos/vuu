@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import {
   DataEditingProvider,
   DirectEditSession,
@@ -18,7 +19,6 @@ import {
 import {
   applyDefaultColumnConfig,
   registerComponent,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { DataSourceStats, DropdownCell } from "@vuu-ui/vuu-table-extras";

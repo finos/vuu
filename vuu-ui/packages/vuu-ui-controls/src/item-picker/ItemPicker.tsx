@@ -1,28 +1,29 @@
 import {
   Input,
   ListBox,
-  ListBoxProps,
+  type ListBoxProps,
   Option,
-  OptionProps,
+  type OptionProps,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
 import {
   DragDropProvider,
-  ItemTypeName,
+  type ItemTypeName,
   pluralForm,
   singularForm,
   useSortable,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
-  ForwardedRef,
+  type ComponentType,
+  type ForwardedRef,
   forwardRef,
-  HTMLAttributes,
-  MouseEventHandler,
-  ReactNode,
-  RefCallback,
+  type HTMLAttributes,
+  type MouseEventHandler,
+  type ReactNode,
+  type RefCallback,
   useCallback,
   useMemo,
   useRef,
@@ -30,8 +31,8 @@ import {
 import { Icon, IconButton } from "../icon-button";
 import {
   getItemLabel,
-  ItemDescriptor,
-  ItemPickerHookProps,
+  type ItemDescriptor,
+  type ItemPickerHookProps,
   useItemPicker,
 } from "./useItemPicker";
 
@@ -41,16 +42,25 @@ const classBase = "vuuItemPicker";
 
 export const classBaseListItem = "vuuItemPickerListItem";
 
+export type ItemPickerLayout = 'v-available-selected' | 'v-selected-available';
+
 export interface ItemPickerProps
   extends
     ItemPickerHookProps,
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
+  AvailableListItem?: ComponentType<AvailableListItemProps>;
+  SelectedListItem?: ComponentType<SelectedListItemProps>;
   /**
    * Content shown above the search input.
    */
   header?: ReactNode;
-  itemTypeName: ItemTypeName;
+  itemTypeName?: ItemTypeName;
+  /**
+   * Display order of SelectedItems List / AvailableItems List
+   */
+  layout?: ItemPickerLayout;
+  searchForm?: boolean;
 }
 
 const searchIcon = <Icon name="search" />;
@@ -72,19 +82,21 @@ const useSorting = (id: string, index: number) => {
   };
 };
 
-const SelectedListItem = ({
+interface SelectedListItemProps extends OptionProps {
+  index: number;
+  item: ItemDescriptor;
+  onRemove: MouseEventHandler<HTMLButtonElement>;
+  searchPattern?: Lowercase<string>;
+}
+
+const DefaultSelectedListItem = ({
   className: classNameProp,
   index,
   item,
   onRemove,
   searchPattern = "",
   ...optionProps
-}: OptionProps & {
-  index: number;
-  item: ItemDescriptor;
-  onRemove: MouseEventHandler<HTMLButtonElement>;
-  searchPattern?: Lowercase<string>;
-}) => {
+}: SelectedListItemProps) => {
   const { handleRef, ref } = useSorting(item.name, index);
   const value = getItemLabel(item as ItemDescriptor);
   const valueWithHighlighting = applyHighlighting(value, searchPattern);
@@ -127,7 +139,14 @@ const SelectedListItem = ({
   );
 };
 
-const AvailableListItem = ({
+interface AvailableListItemProps extends OptionProps {
+  index: number;
+  item: ItemDescriptor;
+  onAdd: MouseEventHandler<HTMLButtonElement>;
+  searchPattern?: Lowercase<string>;
+}
+
+const DefaultAvailableListItem = ({
   className: classNameProp,
   index,
   item,
@@ -135,12 +154,7 @@ const AvailableListItem = ({
   searchPattern = "",
   disabled,
   ...optionProps
-}: OptionProps & {
-  index: number;
-  item: ItemDescriptor;
-  onAdd: MouseEventHandler<HTMLButtonElement>;
-  searchPattern?: Lowercase<string>;
-}) => {
+}: AvailableListItemProps) => {
   const value = getItemLabel(item as ItemDescriptor);
   const valueWithHighlighting = applyHighlighting(value, searchPattern);
 
@@ -165,16 +179,30 @@ const AvailableListItem = ({
   );
 };
 
+const getOptionName = (option?: HTMLElement) => {
+  if (option) {
+    const { name } = option.dataset;
+    if (name) {
+      return name;
+    }
+  }
+  throw Error("[ItemPicker] list option has no data-name");
+};
+
 /** Generic controlled component that displays items in a 'picker' that are available to search, select, reorder or deselect.
  * As input props, all available items, currently selected items, search text and callback functions for changes in selected items and search text
  * must be supplied by the client.
  */
 export const ItemPicker = forwardRef(function ItemPicker(
   {
+    AvailableListItem = DefaultAvailableListItem,
+    SelectedListItem = DefaultSelectedListItem,
     className,
     header,
-    itemTypeName,
+    itemTypeName = 'Item',
+    searchForm = true,
     allItems,
+    layout = 'v-selected-available',
     selectedItems,
     maxSelections,
     onSelectedItemsChange,
@@ -216,16 +244,6 @@ export const ItemPicker = forwardRef(function ItemPicker(
 
   const listRef = useRef<HTMLDivElement>(null);
 
-  const getOptionName = (option?: HTMLElement) => {
-    if (option) {
-      const { name } = option.dataset;
-      if (name) {
-        return name;
-      }
-    }
-    throw Error("[ItemPicker] list option has no data-name");
-  };
-
   const handleDragEnd = useCallback(() => {
     setTimeout(() => {
       const listItems =
@@ -235,12 +253,69 @@ export const ItemPicker = forwardRef(function ItemPicker(
         onReorderSelectedItems(orderedItemNames);
       }
     }, 300);
-  }, [availableItemsFiltered, selectedItemsFiltered]);
+  }, [onReorderSelectedItems]);
 
   const searchPlaceholderText = `Find ${singularForm(itemTypeName)}`;
   const maxSelectionsSubHeading = maxSelections ? `(${maxSelections} max)` : "";
   const selectedItemsHeading = `${selectedItemsCount} ${selectedItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)} in view ${maxSelectionsSubHeading}`;
   const availableItemsHeading = `${availableItemsCount} available ${availableItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)}`;
+
+
+  const selectedList = (
+    <>
+      <div className={`${classBase}-sectionHeader`}>
+        {selectedItemsHeading}
+      </div>
+      <DragDropProvider onDragEnd={handleDragEnd}>
+        <ListBox
+          className={`${classBase}-selectedList`}
+          onSelectionChange={onSelectionChange}
+          ref={listRef}
+          selected={selected}
+        >
+          {selectedItemsFiltered.map((item, index) => (
+            <SelectedListItem
+              item={item}
+              index={index}
+              key={item.name}
+              onRemove={onRemoveItemFromSelectedList}
+              searchPattern={searchText.toLowerCase() as Lowercase<string>}
+              value={item}
+            />
+          ))}
+        </ListBox>
+      </DragDropProvider>
+    </>
+  )
+
+  const availableList = (
+    <>
+      <div
+        className={cx(
+          `${classBase}-sectionHeader`,
+          `${classBase}-availableHeader`,
+        )}
+      >
+        {availableItemsHeading}
+      </div>
+      <ListBox
+        className={`${classBase}-availableList`}
+        selected={NO_SELECTION}
+      >
+        {availableItemsFiltered.map((item, index) => (
+          <AvailableListItem
+            item={item}
+            index={index}
+            key={item.name}
+            onAdd={onAddItemToSelectedList}
+            searchPattern={searchText.toLowerCase() as Lowercase<string>}
+            value={item}
+            disabled={selectedItemsCount === maxSelections}
+          />
+        ))}
+      </ListBox>
+    </>
+  )
 
   return (
     <div
@@ -249,64 +324,40 @@ export const ItemPicker = forwardRef(function ItemPicker(
       ref={forwardedRef}
     >
       {header}
-      <form className={`${classBase}-search`} role="search">
-        <Input
-          startAdornment={searchIcon}
-          placeholder={searchPlaceholderText}
-          ref={searchCallbackRef}
-          value={searchText}
-          onChange={onChangeSearchInput}
-        />
-      </form>
+      {searchForm ? (
+        <form className={`${classBase}-search`} role="search">
+          <Input
+            startAdornment={searchIcon}
+            placeholder={searchPlaceholderText}
+            ref={searchCallbackRef}
+            value={searchText}
+            onChange={onChangeSearchInput}
+          />
+        </form>
+      ) : (
+        <div className={`${classBase}-search`} role="search">
+          <Input
+            startAdornment={searchIcon}
+            placeholder={searchPlaceholderText}
+            ref={searchCallbackRef}
+            value={searchText}
+            onChange={onChangeSearchInput}
+          />
+        </div>
+      )}
 
       <div className={`${classBase}-scrollContainer vuuScrollable`}>
-        <div className={`${classBase}-sectionHeader`}>
-          {selectedItemsHeading}
-        </div>
-        <DragDropProvider onDragEnd={handleDragEnd}>
-          <ListBox
-            className={`${classBase}-selectedList`}
-            onSelectionChange={onSelectionChange}
-            ref={listRef}
-            selected={selected}
-          >
-            {selectedItemsFiltered.map((item, index) => (
-              <SelectedListItem
-                item={item}
-                index={index}
-                key={item.name}
-                onRemove={onRemoveItemFromSelectedList}
-                searchPattern={searchText.toLowerCase() as Lowercase<string>}
-                value={item}
-              />
-            ))}
-          </ListBox>
-        </DragDropProvider>
-
-        <div
-          className={cx(
-            `${classBase}-sectionHeader`,
-            `${classBase}-availableHeader`,
-          )}
-        >
-          {availableItemsHeading}
-        </div>
-        <ListBox
-          className={`${classBase}-availableList`}
-          selected={NO_SELECTION}
-        >
-          {availableItemsFiltered.map((item, index) => (
-            <AvailableListItem
-              item={item}
-              index={index}
-              key={item.name}
-              onAdd={onAddItemToSelectedList}
-              searchPattern={searchText.toLowerCase() as Lowercase<string>}
-              value={item}
-              disabled={selectedItemsCount === maxSelections}
-            />
-          ))}
-        </ListBox>
+        {layout === 'v-selected-available' ? (
+          <>
+            {selectedList}
+            {availableList}
+          </>
+        ) : (
+          <>
+            {availableList}
+            {selectedList}
+          </>
+        )}
       </div>
     </div>
   );

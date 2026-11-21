@@ -1,0 +1,347 @@
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
+import type {
+  DataSourceRowWithBigint,
+  DataSourceSubscribeCallback,
+  RpcResponseHandler,
+} from "@vuu-ui/vuu-data-types";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
+import type {
+  DataRow,
+  TableConfig,
+  TableConfigChangeHandler,
+} from "@vuu-ui/vuu-table-types";
+import type { DragDropState } from "@vuu-ui/vuu-ui-controls";
+import { type ColumnMap, metadataKeys, Range } from "@vuu-ui/vuu-utils";
+import {
+  type ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import type { BasketSelectorProps } from "./basket-selector";
+import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
+import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns";
+import type { BasketChangeHandler } from "./basket-toolbar";
+import { NewBasketDialog } from "./new-basket-dialog/NewBasketDialog";
+import type { BasketCreatedHandler } from "./new-basket-dialog/useNewBasketDialog";
+import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
+import { useDataSourceSubscription } from "./useDataSourceSubscription";
+
+const { KEY } = metadataKeys;
+
+const BASKET_TRADING_CONTROL_SUBSCRIPTION = { range: Range(0, 1) };
+
+export class Basket {
+  basketId: string;
+  basketName: string;
+  dataSourceRow: DataSourceRowWithBigint;
+  pctFilled: number;
+  fxRateToUsd: number;
+  instanceId: string;
+  side: string;
+  status: string;
+  totalNotional: number;
+  totalNotionalUsd: number;
+  units: number;
+
+  constructor(data: DataSourceRowWithBigint, columnMap: ColumnMap) {
+    this.dataSourceRow = data;
+    this.basketId = data[columnMap.basketId] as string;
+    this.basketName = data[columnMap.basketName] as string;
+    this.pctFilled = data[columnMap.filledPct] as number;
+    this.fxRateToUsd = data[columnMap.fxRateToUsd] as number;
+    this.instanceId = data[columnMap.instanceId] as string;
+    this.side = data[columnMap.side] as string;
+    this.status = data[columnMap.status] as string;
+    this.totalNotional = data[columnMap.totalNotional] as number;
+    this.totalNotionalUsd = data[columnMap.totalNotionalUsd] as number;
+    this.units = data[columnMap.units] as number;
+  }
+}
+
+type BasketState = {
+  basketInstanceId?: string;
+  dialog?: ReactElement;
+};
+
+const NO_STATE = { basketInstanceId: undefined } as {
+  basketInstanceId: undefined;
+};
+
+export const useBasketTrading = () => {
+  const { load, save } = useViewContext();
+  const { showNotification } = useNotifications();
+
+  const editConfig = useMemo<TableConfig>(() => {
+    const config = load?.("basket-edit-table-config") as TableConfig;
+    return (
+      config ?? {
+        columns: defaultEditColumns,
+        rowSeparators: true,
+      }
+    );
+  }, [load]);
+
+  const liveConfig = useMemo<TableConfig>(() => {
+    const config = load?.("basket-live-table-config") as TableConfig;
+    return (
+      config ?? {
+        columns: defaultLiveColumns,
+        rowSeparators: true,
+      }
+    );
+  }, [load]);
+
+  const basketInstanceId = useMemo<string | undefined>(() => {
+    const { basketInstanceId } =
+      load<{ basketInstanceId: string }>?.("basket-state") ?? NO_STATE;
+    return basketInstanceId;
+  }, [load]);
+
+  const {
+    basketSchema,
+    basketTradingMap,
+    dataSourceBasketConstituents,
+    dataSourceBasketTradingControl,
+    dataSourceBasketTradingSearch,
+    dataSourceBasketTradingConstituentJoin,
+    onSendToMarket,
+    onTakeOffMarket,
+  } = useBasketTradingDataSources({ basketInstanceId });
+
+  const [basket, setBasket] = useState<Basket | undefined>();
+
+  const [basketCount, setBasketCount] = useState(-1);
+
+  const [basketState, setBasketState] = useState<BasketState>({
+    basketInstanceId,
+    dialog: undefined,
+  });
+
+  const handleMessageFromBasketTradingControl =
+    useCallback<DataSourceSubscribeCallback>(
+      (message) => {
+        if (message.type === "viewport-update") {
+          if (message.size) {
+            setBasketCount(message.size);
+          }
+          if (message.rows && message.rows.length > 0 && basketTradingMap) {
+            setBasket(new Basket(message.rows[0], basketTradingMap));
+          }
+        }
+      },
+      [basketTradingMap],
+    );
+
+  useDataSourceSubscription(
+    dataSourceBasketTradingControl,
+    BASKET_TRADING_CONTROL_SUBSCRIPTION,
+    handleMessageFromBasketTradingControl,
+  );
+
+  useEffect(() => {
+    if (dataSourceBasketTradingControl === undefined) {
+      return;
+    }
+    // TEMP server is not sending TABLE_ROWS if size is zero
+    const timer = setTimeout(() => {
+      setBasketCount((count) => (count === -1 ? 0 : count));
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [dataSourceBasketTradingControl]);
+
+  const handleCloseNewBasketPanel = useCallback(() => {
+    setBasketState((state) => ({
+      ...state,
+      dialog: undefined,
+    }));
+  }, []);
+
+  const handleSelectBasket = useCallback(
+    (basketInstanceId: string) => {
+      if (
+        dataSourceBasketTradingConstituentJoin &&
+        dataSourceBasketTradingControl
+      ) {
+        save?.({ basketInstanceId }, "basket-state");
+        const filter = { filter: `instanceId = "${basketInstanceId}"` };
+        dataSourceBasketTradingConstituentJoin.filter = filter;
+        dataSourceBasketTradingControl.filter = filter;
+      }
+    },
+    [
+      dataSourceBasketTradingConstituentJoin,
+      dataSourceBasketTradingControl,
+      save,
+    ],
+  );
+
+  const handleBasketCreated = useCallback<BasketCreatedHandler>(
+    (basketName, basketId, instanceId) => {
+      handleSelectBasket(instanceId);
+      setBasketState((state) => ({
+        ...state,
+        dialog: undefined,
+      }));
+    },
+    [handleSelectBasket],
+  );
+
+  const handleAddBasket = useCallback(() => {
+    if (basketSchema) {
+      setBasketState((state) => ({
+        ...state,
+        dialog: (
+          <NewBasketDialog
+            basketSchema={basketSchema}
+            onClose={handleCloseNewBasketPanel}
+            onBasketCreated={handleBasketCreated}
+          />
+        ),
+      }));
+    }
+  }, [basketSchema, handleBasketCreated, handleCloseNewBasketPanel]);
+
+  const basketSelectorProps = useMemo<
+    Omit<BasketSelectorProps, "basket"> | undefined
+  >(
+    () =>
+      dataSourceBasketTradingSearch
+        ? {
+            basketInstanceId,
+            dataSourceBasketTradingSearch,
+            onClickAddBasket: handleAddBasket,
+            onSelectBasket: handleSelectBasket,
+          }
+        : undefined,
+    [
+      basketInstanceId,
+      dataSourceBasketTradingSearch,
+      handleAddBasket,
+      handleSelectBasket,
+    ],
+  );
+
+  const handleCommitBasketChange = useCallback<BasketChangeHandler>(
+    async (column, data) => {
+      if (basket && dataSourceBasketTradingControl) {
+        const key = basket.dataSourceRow[KEY];
+        const response = await dataSourceBasketTradingControl.rpcRequest?.({
+          params: {
+            key,
+            column,
+            data,
+          },
+          rpcName: "editCell",
+          type: "RPC_REQUEST",
+        });
+        if (response?.type === "SUCCESS_RESULT") {
+          return true;
+        } else if (response?.type === "ERROR_RESULT") {
+          return response.errorMessage;
+        }
+      }
+      return "basket or dataSourceBasketTradingControl undefined";
+    },
+    [basket, dataSourceBasketTradingControl],
+  );
+
+  const handleRpcResponse = useCallback<RpcResponseHandler>((response) => {
+    console.log("handleRpcResponse", {
+      response,
+    });
+    return true;
+  }, []);
+
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
+    dataSource: dataSourceBasketTradingConstituentJoin,
+    menuActionConfig: undefined,
+    onRpcResponse: handleRpcResponse,
+  });
+
+  const basketDesignContextMenuConfig = {
+    menuActionHandler,
+    menuBuilder,
+  };
+
+  const handleDropInstrument = useCallback(
+    async (dragDropState: DragDropState) => {
+      const constituentRow = dragDropState.payload as Partial<DataRow> | null;
+      try {
+        if (
+          !constituentRow ||
+          typeof constituentRow !== "object" ||
+          typeof constituentRow.ric !== "string" ||
+          !basket ||
+          !dataSourceBasketTradingConstituentJoin?.rpcRequest
+        ) {
+          throw Error("Drop a constituent onto an active basket");
+        }
+        const { ric } = constituentRow;
+        const response =
+          await dataSourceBasketTradingConstituentJoin.rpcRequest({
+            params: { ric, basketInstanceId: basket.instanceId },
+            rpcName: "addConstituent",
+            type: "RPC_REQUEST",
+          });
+        if (response?.type !== "SUCCESS_RESULT") {
+          throw Error(
+            response?.type === "ERROR_RESULT"
+              ? response.errorMessage
+              : `Failed to add ${ric} to basket`,
+          );
+        }
+        showNotification({
+          content: `${ric} added to basket`,
+          showCloseButton: true,
+          header: "Add Constituent to Basket",
+          status: "success",
+          type: NotificationType.Toast,
+        });
+      } catch (error: unknown) {
+        showNotification({
+          content: error instanceof Error ? error.message : String(error),
+          header: "Add Constituent to Basket",
+          status: "error",
+          type: NotificationType.Toast,
+        });
+      }
+    },
+    [basket, dataSourceBasketTradingConstituentJoin, showNotification],
+  );
+
+  const handleConfigChangeEdit = useCallback<TableConfigChangeHandler>(
+    (config) => {
+      save?.(config, "basket-edit-table-config");
+    },
+    [save],
+  );
+
+  const handleConfigChangeLive = useCallback<TableConfigChangeHandler>(
+    (config) => {
+      save?.(config, "basket-live-table-config");
+    },
+    [save],
+  );
+
+  return {
+    ...basketState,
+    basket,
+    basketCount,
+    basketDesignContextMenuConfig,
+    basketSelectorProps,
+    dataSourceBasketConstituents,
+    dataSourceBasketTradingConstituentJoin,
+    editConfig,
+    liveConfig,
+    onClickAddBasket: handleAddBasket,
+    onCommitBasketChange: handleCommitBasketChange,
+    onConfigChangeEdit: handleConfigChangeEdit,
+    onConfigChangeLive: handleConfigChangeLive,
+    onDropInstrument: handleDropInstrument,
+    onSendToMarket,
+    onTakeOffMarket,
+  };
+};

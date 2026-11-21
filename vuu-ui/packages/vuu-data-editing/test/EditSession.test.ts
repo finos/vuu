@@ -32,7 +32,7 @@ export class MockDataSource {
     private createSession: CreateSession,
     private endEdit: EndEdit,
     private edit: EditCell,
-  ) {}
+  ) { }
 
   createSessionDataSource(...args: Parameters<CreateSession>) {
     return this.createSession(...args);

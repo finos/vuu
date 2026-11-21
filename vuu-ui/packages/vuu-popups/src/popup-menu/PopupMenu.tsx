@@ -1,12 +1,12 @@
-import { Button, ButtonProps } from "@salt-ds/core";
+import { Button, type ButtonProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
+import type { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { HTMLAttributes, KeyboardEvent, RefObject } from "react";
-import { PopupPlacement } from "../popup/Popup";
+import type { HTMLAttributes, KeyboardEvent, RefObject } from "react";
+import type { PopupPlacement } from "../popup/Popup";
 import { usePopupMenu } from "./usePopupMenu";
 
 import popupMenuCss from "./PopupMenu.css";
@@ -48,7 +48,7 @@ export type MenuCloseHandler = (reason?: PopupCloseReason) => void;
 
 export interface PopupMenuProps
   extends Pick<ButtonProps, "appearance" | "sentiment">,
-    HTMLAttributes<HTMLButtonElement> {
+  HTMLAttributes<HTMLButtonElement> {
   anchorElement?: RefObject<HTMLElement | null>;
   disabled?: boolean;
   icon?: string;

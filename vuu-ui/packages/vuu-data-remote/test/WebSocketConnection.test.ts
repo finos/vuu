@@ -6,15 +6,17 @@ import {
   MockWebSocketLoginSucceeds,
   MockWebSocketLoginSucceedsThenConnectionLost,
   MockWebSocketInvalidToken,
+  MockWebSocketLoginSucceedsThenEvicted,
+  MockWebSocketSessionLimitReached,
 } from "./mock-websockets";
 
 import {
-  ConnectionStatus,
-  LoginRejectedMessage,
-  VuuServerMessageCallback,
+  type ConnectionStatus,
+  type LoginRejectedMessage,
+  type VuuServerMessageCallback,
   WebSocketConnection,
 } from "../src/WebSocketConnection";
-import { VuuServerMessage } from "@vuu-ui/vuu-protocol-types";
+import type { VuuServerMessage } from "@vuu-ui/vuu-protocol-types";
 
 describe("WebSocketConnection", () => {
   beforeEach(() => {
@@ -261,5 +263,50 @@ describe("WebSocketConnection", () => {
     expect(connectionStatusValues).toEqual(["websocket-open", "closed"]);
     expect(websocketConnection.connectionPhase).toEqual("initial-connection");
     expect(websocketConnection.confirmedOpen).toEqual(false);
+  });
+
+  describe("sessions ended by the server", () => {
+    const connect = async () => {
+      const messages: (VuuServerMessage | LoginRejectedMessage)[] = [];
+      const statuses: ConnectionStatus[] = [];
+      const connection = new WebSocketConnection({
+        callback: (message) => messages.push(message),
+        protocols: "",
+        url: "wss://test",
+      });
+      connection.on("connection-status", (status) => statuses.push(status));
+      await connection.openWebSocket();
+      connection.send({
+        requestId: "",
+        module: "CORE",
+        sessionId: "",
+        body: { type: "LOGIN", token: "token-1" },
+      });
+      return { connection, messages, statuses };
+    };
+
+    it("reports an evicted session as session-evicted, not disconnected, so it is not reconnected", async () => {
+      vi.stubGlobal("WebSocket", MockWebSocketLoginSucceedsThenEvicted);
+      const { connection, statuses } = await connect();
+      vi.advanceTimersToNextTimer();
+
+      expect(statuses).toEqual([
+        "websocket-open",
+        "connected",
+        "session-evicted",
+        "closed",
+      ]);
+      expect(connection.connectionStatus).toEqual("closed");
+    });
+
+    it("rejects a login refused by the session limit", async () => {
+      vi.stubGlobal("WebSocket", MockWebSocketSessionLimitReached);
+      const { messages, statuses } = await connect();
+
+      expect(messages).toEqual([
+        { type: "LOGIN_REJECTED", reason: "User session limit exceeded" },
+      ]);
+      expect(statuses).not.toContain("disconnected");
+    });
   });
 });

@@ -1,4 +1,5 @@
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
+import { useData } from "@vuu-ui/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import type {
@@ -25,7 +26,6 @@ import {
   DataSourceProvider,
   filterAsQuery,
   getColumnsByName,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import {

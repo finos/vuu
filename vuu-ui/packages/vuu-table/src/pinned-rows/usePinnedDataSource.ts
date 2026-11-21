@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import type {
   DataSource,
   DataSourceConfigChangeHandler,
@@ -5,7 +6,7 @@ import type {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import type { TablePinnedRows } from "@vuu-ui/vuu-table-types";
-import { isTextColumnInSchema, useData } from "@vuu-ui/vuu-utils";
+import { isTextColumnInSchema } from "@vuu-ui/vuu-utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export const DEFAULT_MAX_PINNED_ROWS = 5;

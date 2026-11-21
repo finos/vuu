@@ -1,6 +1,6 @@
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { registerComponent } from "@vuu-ui/vuu-utils";
-import React, {
+import {
   ChangeEventHandler,
   HTMLAttributes,
   useCallback,

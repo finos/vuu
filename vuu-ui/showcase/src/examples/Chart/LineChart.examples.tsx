@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import {
   Chart,
   ChartConfig,
@@ -30,7 +31,6 @@ import {
   metadataKeys,
   registerComponent,
   toColumnName,
-  useData,
 } from "@vuu-ui/vuu-utils";
 import {
   DataEditingProvider,

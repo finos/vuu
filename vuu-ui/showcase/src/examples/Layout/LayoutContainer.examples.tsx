@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { CSSProperties, HTMLAttributes, SyntheticEvent } from "react";
+import type { CSSProperties, HTMLAttributes, SyntheticEvent } from "react";
 
 import {
   Component,
@@ -35,21 +35,21 @@ export interface DraggableBoxProps extends HTMLAttributes<HTMLDivElement> {
   size?: string;
 }
 
+const DraggableBoxBase = () => {
+  const { dispatch, title } = useViewContext();
+  const handleMouseDown = (e: SyntheticEvent) => {
+    // TODO should be able to just dispatch the event
+    dispatch?.({ type: "mousedown" }, e);
+  };
+  return <Box onMouseDown={handleMouseDown}>{title}</Box>;
+};
+
 const DraggableBox = ({
   className,
   flexFill,
   size = "small",
   ...props
 }: DraggableBoxProps) => {
-  const DraggableBoxBase = () => {
-    const { dispatch, title } = useViewContext();
-    const handleMouseDown = (e: SyntheticEvent) => {
-      // TODO should be able to just dispatch the event
-      dispatch?.({ type: "mousedown" }, e);
-    };
-    return <Box onMouseDown={handleMouseDown}>{title}</Box>;
-  };
-
   return (
     <View
       className={cx("DraggableBox", className, size, {
@@ -72,7 +72,7 @@ export const EmptyDraggable = () => {
 
 export const SimpleNesting = () => {
   const handleLayoutChange = () => {
-    console.log(`handleLayoutChange`);
+    console.log("handleLayoutChange");
   };
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
@@ -193,7 +193,7 @@ export const ImplicitSizing = () => (
 
 export const SimpleNestingWithOffset = () => {
   const handleLayoutChange = () => {
-    console.log(`handleLayoutChange`);
+    console.log("handleLayoutChange");
   };
 
   return (
@@ -395,7 +395,7 @@ export const CustomDrag = () => (
 
 export const ComplexNestedLayout = () => {
   const handleLayoutChange = () => {
-    console.log(`handleLayoutChange`);
+    console.log("handleLayoutChange");
   };
 
   const viewProps = {
@@ -437,7 +437,7 @@ export const ComplexNestedLayout = () => {
                   }
                   value="Blue Monday"
                   ViewProps={viewProps}
-                ></PaletteItem>
+                />
                 <PaletteItem
                   component={
                     <Component
@@ -446,7 +446,7 @@ export const ComplexNestedLayout = () => {
                   }
                   value="Brown Sugar"
                   ViewProps={viewProps}
-                ></PaletteItem>
+                />
                 <PaletteItem
                   component={
                     <Component
@@ -455,7 +455,7 @@ export const ComplexNestedLayout = () => {
                   }
                   value="Green Day"
                   ViewProps={viewProps}
-                ></PaletteItem>
+                />
                 <PaletteItem
                   component={
                     <Component
@@ -464,7 +464,7 @@ export const ComplexNestedLayout = () => {
                   }
                   value="Lemonheads"
                   ViewProps={viewProps}
-                ></PaletteItem>
+                />
               </Palette>
             </View>
             <LayoutContainer

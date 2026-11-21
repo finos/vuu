@@ -1,0 +1,476 @@
+import {
+  ConnectionManager,
+  type ConnectionStatus,
+  type VuuConnectionResult,
+} from "@vuu-ui/vuu-data-remote";
+import type { AuthHandler } from "../auth/AuthHandler";
+import { SESSION_LIMIT_EXCEEDED } from "@vuu-ui/vuu-utils";
+import {
+  exchangeVuuToken,
+  VuuTokenExchangeError,
+  type VuuAuthTarget,
+  type VuuSession,
+} from "../auth/VuuTokenExchange";
+import { isCredentialsFailure } from "../auth/VuuServerLogin";
+import {
+  IdentityTokenSessionResolver,
+  type VuuSessionResolver,
+} from "./VuuSessionResolver";
+
+export type VuuServerConnectionState =
+  | "idle"
+  | "authenticating"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "failed"
+  | "unauthorized";
+
+export type VuuConnectionStateListener = (
+  connectionId: string,
+  state: VuuServerConnectionState,
+  error?: Error,
+) => void;
+
+type SessionListener = (session: VuuSession) => void;
+type ErrorListener = (error: Error) => void;
+
+type ConnectionRegistryEntry = {
+  authHandler: AuthHandler;
+  disconnectTimer?: ReturnType<typeof setTimeout>;
+  intentionalDisconnect: boolean;
+  errorListeners: Set<ErrorListener>;
+  listeners: Set<SessionListener>;
+  promise?: Promise<VuuSession>;
+  reconnectPromise?: Promise<void>;
+  /** Notified when the current reconnect attempt settles. */
+  reconnectAttemptListeners?: Set<() => void>;
+  /** Set while waiting between reconnect attempts; skips the wait. */
+  reconnectWake?: () => void;
+  refCount: number;
+  session?: VuuSession;
+  state: VuuServerConnectionState;
+  target: VuuAuthTarget;
+  unsubscribeStatus?: () => void;
+};
+
+export interface VuuConnectionClient {
+  connectWithLoginResponseTo(
+    connectionId: string,
+    options: { token: string; url: string },
+    throwOnRejected?: boolean,
+  ): Promise<VuuConnectionResult>;
+  connectedFor(connectionId: string): boolean;
+  destroyConnection(connectionId: string): Promise<void>;
+  onConnectionStatus(
+    connectionId: string,
+    listener: (status: ConnectionStatus) => void,
+  ): () => void;
+}
+
+export interface VuuConnectionRegistryOptions {
+  connectionClient?: VuuConnectionClient;
+  exchangeToken?: typeof exchangeVuuToken;
+  retryIntervals?: number[];
+  sessionResolver?: VuuSessionResolver;
+}
+
+const isAuthorizationDenied = (error: unknown) =>
+  error instanceof VuuTokenExchangeError &&
+  error.failure === "authorization-denied";
+
+const toError = (error: unknown, connectionId: string) =>
+  error instanceof Error
+    ? error
+    : new Error(
+        typeof error === "string"
+          ? error
+          : `VUU connection ${connectionId} failed`,
+        { cause: error },
+      );
+
+export const isSessionLimitExceeded = (error: unknown) =>
+  (error instanceof Error ? error.message : error) === SESSION_LIMIT_EXCEEDED;
+
+/** The error of a session the server ended for a newer login. */
+export const SESSION_EVICTED =
+  "Session ended: you signed in again elsewhere. Retry to use it here.";
+
+export const isSessionEvicted = (error: unknown) =>
+  (error instanceof Error ? error.message : error) === SESSION_EVICTED;
+
+/**
+ * True when the server refused or ended the user's session. Retrying
+ * automatically would take a session from another browser or tab.
+ */
+export const isSessionEnded = (error: unknown) =>
+  isSessionLimitExceeded(error) || isSessionEvicted(error);
+
+const connectionFailed = (status: ConnectionStatus) =>
+  status === "connection-failed" ||
+  status === "disconnected" ||
+  status === "failed";
+
+export class VuuConnectionRegistry {
+  readonly #connectionClient: VuuConnectionClient;
+  readonly #entries = new Map<string, ConnectionRegistryEntry>();
+  readonly #retryIntervals: number[];
+  readonly #sessionResolver: VuuSessionResolver;
+  readonly #stateListeners = new Set<VuuConnectionStateListener>();
+
+  constructor({
+    connectionClient = ConnectionManager,
+    exchangeToken = exchangeVuuToken,
+    retryIntervals = [1, 2, 3, 5, 10, 30, 60, 120],
+    sessionResolver = new IdentityTokenSessionResolver(exchangeToken),
+  }: VuuConnectionRegistryOptions = {}) {
+    this.#connectionClient = connectionClient;
+    this.#retryIntervals = retryIntervals;
+    this.#sessionResolver = sessionResolver;
+  }
+
+  acquire(authHandler: AuthHandler, target: VuuAuthTarget) {
+    const entry = this.#getOrCreateEntry(authHandler, target);
+    if (entry.disconnectTimer) {
+      clearTimeout(entry.disconnectTimer);
+      entry.disconnectTimer = undefined;
+    }
+    entry.intentionalDisconnect = false;
+    entry.refCount += 1;
+
+    if (
+      entry.session &&
+      this.#connectionClient.connectedFor(target.connectionId)
+    ) {
+      return Promise.resolve(entry.session);
+    }
+    if (entry.promise) {
+      return entry.promise;
+    }
+    if (entry.reconnectPromise) {
+      return entry.reconnectPromise.then(() => {
+        if (!entry.session || entry.state !== "connected") {
+          throw Error(
+            `VUU connection ${target.connectionId} failed to reconnect`,
+          );
+        }
+        return entry.session;
+      });
+    }
+
+    entry.promise = this.#authenticateAndConnect(entry)
+      .catch((error: unknown) => {
+        const err = toError(error, target.connectionId);
+        this.#setState(
+          entry,
+          isAuthorizationDenied(error) ? "unauthorized" : "failed",
+          err,
+        );
+        throw error;
+      })
+      .finally(() => {
+        entry.promise = undefined;
+      });
+    return entry.promise;
+  }
+
+  /**
+   * Skips the wait before the next reconnect attempt of a lost connection.
+   * Resolves when that attempt settles, or returns undefined if the
+   * connection is not reconnecting.
+   */
+  reconnectNow(connectionId: string): Promise<void> | undefined {
+    const entry = this.#entries.get(connectionId);
+    if (!entry?.reconnectPromise) {
+      return undefined;
+    }
+    return new Promise<void>((resolve) => {
+      entry.reconnectAttemptListeners ??= new Set();
+      entry.reconnectAttemptListeners.add(resolve);
+      entry.reconnectWake?.();
+    });
+  }
+
+  release(connectionId: string) {
+    const entry = this.#entries.get(connectionId);
+    if (!entry) {
+      return;
+    }
+    entry.refCount = Math.max(0, entry.refCount - 1);
+    if (entry.refCount > 0 || entry.disconnectTimer) {
+      return;
+    }
+
+    entry.disconnectTimer = setTimeout(() => {
+      entry.disconnectTimer = undefined;
+      if (entry.refCount === 0) {
+        void this.#disconnectEntry(entry);
+      }
+    }, 0);
+  }
+
+  subscribe(
+    connectionId: string,
+    listener: SessionListener,
+    errorListener?: ErrorListener,
+  ) {
+    const entry = this.#entries.get(connectionId);
+    if (!entry) {
+      throw Error(`VUU connection ${connectionId} has not been acquired`);
+    }
+    entry.listeners.add(listener);
+    if (errorListener) {
+      entry.errorListeners.add(errorListener);
+    }
+    return () => {
+      entry.listeners.delete(listener);
+      if (errorListener) {
+        entry.errorListeners.delete(errorListener);
+      }
+    };
+  }
+
+  async disconnectAll() {
+    await Promise.all(
+      [...this.#entries.values()].map((entry) => this.#disconnectEntry(entry)),
+    );
+  }
+
+  getRefCount(connectionId: string) {
+    return this.#entries.get(connectionId)?.refCount ?? 0;
+  }
+
+  /** State of an acquired connection, `undefined` if it has no entry. */
+  getState(connectionId: string): VuuServerConnectionState | undefined {
+    return this.#entries.get(connectionId)?.state;
+  }
+
+  /**
+   * Observe state changes of every entry, including entries acquired by
+   * others. An entry that is removed reports `idle`.
+   */
+  onStateChange(listener: VuuConnectionStateListener) {
+    this.#stateListeners.add(listener);
+    return () => {
+      this.#stateListeners.delete(listener);
+    };
+  }
+
+  /** Ids of entries that are currently connected. */
+  connectedIds() {
+    return [...this.#entries.values()]
+      .filter(({ state }) => state === "connected")
+      .map(({ target }) => target.connectionId);
+  }
+
+  #setState(
+    entry: ConnectionRegistryEntry,
+    state: VuuServerConnectionState,
+    error?: Error,
+  ) {
+    if (entry.state === state) {
+      return;
+    }
+    entry.state = state;
+    this.#stateListeners.forEach((listener) => {
+      try {
+        listener(entry.target.connectionId, state, error);
+      } catch (err) {
+        console.error("[VuuConnectionRegistry] state listener failed", err);
+      }
+    });
+  }
+
+  #getOrCreateEntry(authHandler: AuthHandler, target: VuuAuthTarget) {
+    const existing = this.#entries.get(target.connectionId);
+    if (existing) {
+      if (
+        existing.target.restUrl !== target.restUrl ||
+        existing.target.websocketUrl !== target.websocketUrl ||
+        (existing.target.auth ?? "token-exchange") !==
+          (target.auth ?? "token-exchange")
+      ) {
+        throw Error(
+          `Connection ${target.connectionId} has conflicting VUU endpoints`,
+        );
+      }
+      if (existing.authHandler !== authHandler) {
+        throw Error(
+          `Connection ${target.connectionId} cannot use multiple auth handlers`,
+        );
+      }
+      return existing;
+    }
+
+    const entry: ConnectionRegistryEntry = {
+      authHandler,
+      errorListeners: new Set(),
+      intentionalDisconnect: false,
+      listeners: new Set(),
+      refCount: 0,
+      state: "idle",
+      target,
+    };
+    this.#entries.set(target.connectionId, entry);
+    return entry;
+  }
+
+  async #authenticateAndConnect(
+    entry: ConnectionRegistryEntry,
+    reconnecting = false,
+  ) {
+    if (!reconnecting) {
+      this.#setState(entry, "authenticating");
+    }
+    const session = await this.#sessionResolver.resolve(
+      entry.authHandler,
+      entry.target,
+    );
+    if (!reconnecting) {
+      this.#setState(entry, "connecting");
+    }
+    const connectionResult =
+      await this.#connectionClient.connectWithLoginResponseTo(
+        entry.target.connectionId,
+        {
+          token: session.token,
+          url: entry.target.websocketUrl,
+        },
+        true,
+      );
+    const { status } = connectionResult;
+    if (status !== "connected" && status !== "reconnected") {
+      throw Error(
+        `VUU websocket connection ${entry.target.connectionId} failed with ${status}`,
+      );
+    }
+
+    const connectedSession = {
+      ...session,
+      moduleRegistry: connectionResult.loginResponse.moduleRegistry,
+    };
+    entry.session = connectedSession;
+    this.#setState(entry, "connected");
+    entry.unsubscribeStatus ??= this.#connectionClient.onConnectionStatus(
+      entry.target.connectionId,
+      (nextStatus) => {
+        if (nextStatus === "session-evicted") {
+          this.#endEvictedSession(entry);
+          return;
+        }
+        if (
+          !entry.intentionalDisconnect &&
+          entry.refCount > 0 &&
+          entry.state !== "failed" &&
+          entry.state !== "unauthorized" &&
+          connectionFailed(nextStatus)
+        ) {
+          this.#reconnect(entry);
+        }
+      },
+    );
+    entry.listeners.forEach((listener) => {
+      listener(connectedSession);
+    });
+    return connectedSession;
+  }
+
+  /**
+   * The server ended the session because the user logged in again
+   * elsewhere. Not reconnected: that would evict the newer session, which
+   * would reconnect and evict this one, and so on.
+   */
+  #endEvictedSession(entry: ConnectionRegistryEntry) {
+    if (entry.intentionalDisconnect || entry.state === "failed") {
+      return;
+    }
+    const error = new Error(SESSION_EVICTED);
+    this.#setState(entry, "failed", error);
+    entry.errorListeners.forEach((listener) => {
+      listener(error);
+    });
+  }
+
+  #reconnect(entry: ConnectionRegistryEntry) {
+    if (entry.reconnectPromise) {
+      return entry.reconnectPromise;
+    }
+    this.#setState(entry, "reconnecting");
+    entry.reconnectPromise = (async () => {
+      let lastError: Error | undefined;
+      for (const interval of this.#retryIntervals) {
+        await new Promise<void>((resolve) => {
+          const timer = setTimeout(resolve, interval * 1000);
+          entry.reconnectWake = () => {
+            clearTimeout(timer);
+            resolve();
+          };
+        });
+        entry.reconnectWake = undefined;
+        if (entry.refCount === 0 || entry.intentionalDisconnect) {
+          return;
+        }
+        try {
+          await this.#authenticateAndConnect(entry, true);
+          return;
+        } catch (error) {
+          this.#settleReconnectAttempt(entry);
+          lastError = toError(error, entry.target.connectionId);
+          if (
+            isAuthorizationDenied(error) ||
+            isCredentialsFailure(error) ||
+            isSessionLimitExceeded(error)
+          ) {
+            break;
+          }
+        }
+      }
+      const error =
+        lastError ??
+        Error(
+          `VUU connection ${entry.target.connectionId} failed to reconnect`,
+        );
+      this.#setState(
+        entry,
+        isAuthorizationDenied(lastError) ? "unauthorized" : "failed",
+        error,
+      );
+      entry.errorListeners.forEach((listener) => {
+        listener(error);
+      });
+    })().finally(() => {
+      entry.reconnectPromise = undefined;
+      entry.reconnectWake = undefined;
+      this.#settleReconnectAttempt(entry);
+    });
+    return entry.reconnectPromise;
+  }
+
+  #settleReconnectAttempt(entry: ConnectionRegistryEntry) {
+    const listeners = entry.reconnectAttemptListeners;
+    entry.reconnectAttemptListeners = undefined;
+    listeners?.forEach((listener) => {
+      listener();
+    });
+  }
+
+  async #disconnectEntry(entry: ConnectionRegistryEntry) {
+    entry.intentionalDisconnect = true;
+    if (entry.disconnectTimer) {
+      clearTimeout(entry.disconnectTimer);
+    }
+    entry.unsubscribeStatus?.();
+    if (entry.promise) {
+      await entry.promise.catch(() => undefined);
+    }
+    entry.errorListeners.clear();
+    entry.listeners.clear();
+    if (this.#entries.get(entry.target.connectionId) === entry) {
+      this.#entries.delete(entry.target.connectionId);
+      this.#setState(entry, "idle");
+    }
+    await this.#connectionClient.destroyConnection(entry.target.connectionId);
+  }
+}
+
+export const vuuConnectionRegistry = new VuuConnectionRegistry();

@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "scenario": {
+    "id": "tick-100-20",
+    "description": "100 updates/s over the visible rows, flashing cells",
+    "dataset": {
+      "rows": 10000,
+      "cols": 20,
+      "cellType": "flash",
+      "seed": 20261020
+    },
+    "run": {
+      "kind": "tick",
+      "updatesPerSecond": 100,
+      "tickingRows": 30,
+      "columnsPerUpdate": 3,
+      "durationMs": 5000
+    }
+  },
+  "env": {
+    "gitSha": "49f6f39f2b6490f4e42bedbba46b2a6c0ee73786-dirty",
+    "target": "current",
+    "buildMode": "production",
+    "browser": "chromium",
+    "browserVersion": "151.0.7922.34",
+    "headless": true,
+    "gpu": "on",
+    "cpuThrottle": 4,
+    "viewport": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 8,
+    "platform": "darwin arm64"
+  },
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "scenarioId": "tick-100-20",
+      "pass": "timing",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:39:00.034Z",
+      "mount": {
+        "dataGenMs": 13,
+        "dataSourceMs": 15,
+        "firstRowsMs": 209,
+        "firstPaintMs": 270
+      },
+      "result": {
+        "updatesEmitted": 494,
+        "updateBatches": 122,
+        "updateToCommitMs": {
+          "count": 122,
+          "mean": 25.65,
+          "p50": 29.2,
+          "p95": 35.8,
+          "p99": 38.2,
+          "max": 39.1
+        },
+        "updateToPaintMs": {
+          "count": 122,
+          "mean": 56.55,
+          "p50": 60.6,
+          "p95": 74,
+          "p99": 79.5,
+          "max": 82.3
+        },
+        "durationMs": 5100,
+        "frames": {
+          "count": 166,
+          "mean": 30.52,
+          "p50": 33,
+          "p95": 50.1,
+          "p99": 51,
+          "max": 51,
+          "jankyFrames": 116,
+          "jankyPct": 69.88
+        },
+        "longFrames": {
+          "count": 0,
+          "blockingMs": 0
+        }
+      },
+      "cdp": {
+        "layoutCount": 122,
+        "layoutMs": 99,
+        "recalcStyleCount": 170,
+        "recalcStyleMs": 1370,
+        "scriptMs": 1458,
+        "taskMs": 5142,
+        "jsHeapUsedMB": 15.9,
+        "domNodes": 3314,
+        "jsEventListeners": 430
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "scenarioId": "tick-100-20",
+      "pass": "instrumented",
+      "iteration": 0,
+      "startedAt": "2026-10-20T07:39:11.089Z",
+      "mount": {
+        "dataGenMs": 12,
+        "dataSourceMs": 16,
+        "firstRowsMs": 217,
+        "firstPaintMs": 280
+      },
+      "result": {
+        "updatesEmitted": 499,
+        "updateBatches": 132,
+        "updateToCommitMs": {
+          "count": 132,
+          "mean": 27.23,
+          "p50": 30.2,
+          "p95": 35.1,
+          "p99": 38.1,
+          "max": 39.1
+        },
+        "updateToPaintMs": {
+          "count": 132,
+          "mean": 58.33,
+          "p50": 62.9,
+          "p95": 73,
+          "p99": 76.2,
+          "max": 78.1
+        },
+        "durationMs": 5116,
+        "frames": {
+          "count": 166,
+          "mean": 30.62,
+          "p50": 33.2,
+          "p95": 49.1,
+          "p99": 50.9,
+          "max": 50.9,
+          "jankyFrames": 129,
+          "jankyPct": 77.71
+        },
+        "longFrames": {
+          "count": 0,
+          "blockingMs": 0
+        },
+        "dom": {
+          "rowMounts": 0,
+          "rowMoves": 0,
+          "elementsInserted": 0,
+          "elementsRemoved": 0,
+          "textChanges": 1559,
+          "attributeChanges": 1084,
+          "rowUnmounts": 0,
+          "tableNodes": 2532
+        }
+      },
+      "cdp": {
+        "layoutCount": 132,
+        "layoutMs": 103,
+        "recalcStyleCount": 171,
+        "recalcStyleMs": 1321,
+        "scriptMs": 1510,
+        "taskMs": 5154,
+        "jsHeapUsedMB": 15.9,
+        "domNodes": 3314,
+        "jsEventListeners": 435
+      }
+    }
+  ],
+  "summary": {
+    "mount.dataGenMs": 13,
+    "mount.dataSourceMs": 15,
+    "mount.firstRowsMs": 209,
+    "mount.firstPaintMs": 270,
+    "cdp.layoutCount": 122,
+    "cdp.layoutMs": 99,
+    "cdp.recalcStyleCount": 170,
+    "cdp.recalcStyleMs": 1370,
+    "cdp.scriptMs": 1458,
+    "cdp.taskMs": 5142,
+    "cdp.jsHeapUsedMB": 15.9,
+    "cdp.domNodes": 3314,
+    "cdp.jsEventListeners": 430,
+    "frames.count": 166,
+    "frames.mean": 30.52,
+    "frames.p50": 33,
+    "frames.p95": 50.1,
+    "frames.p99": 51,
+    "frames.max": 51,
+    "frames.jankyFrames": 116,
+    "frames.jankyPct": 69.88,
+    "longFrames.count": 0,
+    "longFrames.blockingMs": 0,
+    "updateToPaintMs.count": 122,
+    "updateToPaintMs.mean": 56.55,
+    "updateToPaintMs.p50": 60.6,
+    "updateToPaintMs.p95": 74,
+    "updateToPaintMs.p99": 79.5,
+    "updateToPaintMs.max": 82.3,
+    "updateToCommitMs.count": 122,
+    "updateToCommitMs.mean": 25.65,
+    "updateToCommitMs.p50": 29.2,
+    "updateToCommitMs.p95": 35.8,
+    "updateToCommitMs.p99": 38.2,
+    "updateToCommitMs.max": 39.1,
+    "updates.emitted": 494,
+    "updates.batches": 122,
+    "durationMs": 5100,
+    "dom.rowMounts": 0,
+    "dom.rowMoves": 0,
+    "dom.elementsInserted": 0,
+    "dom.elementsRemoved": 0,
+    "dom.textChanges": 1559,
+    "dom.attributeChanges": 1084,
+    "dom.rowUnmounts": 0,
+    "dom.tableNodes": 2532,
+    "perUnit.mutationsPerUpdate": 5.297,
+    "perUnit.layoutsPerFrame": 0.795
+  }
+}

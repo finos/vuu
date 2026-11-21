@@ -18,4 +18,6 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: cd ./vuu-ui && npm install
+      run: |
+        cd ./vuu-ui
+        npm install

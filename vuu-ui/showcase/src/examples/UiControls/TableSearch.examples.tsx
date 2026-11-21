@@ -1,3 +1,4 @@
+import { useData } from "@vuu-ui/core";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { Flexbox } from "@vuu-ui/vuu-layout";
 import {
@@ -14,7 +15,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useData } from "@vuu-ui/vuu-utils";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {

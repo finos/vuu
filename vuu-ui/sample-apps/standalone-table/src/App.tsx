@@ -1,7 +1,8 @@
+import { useData } from "@vuu-ui/core";
 import { Flexbox, View } from "@vuu-ui/vuu-layout";
 import { Table } from "@vuu-ui/vuu-table";
 import { Accent, SaltProviderNext } from "@salt-ds/core";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 
