@@ -7,7 +7,7 @@ import {
 } from "react";
 import { PopupMenuProps } from "./PopupMenu";
 import { getPositionRelativeToAnchor } from "../popup/getPositionRelativeToAnchor";
-import { PopupPlacement } from "../popup/Popup";
+import { PopupPlacement } from "../popup/PopupPlacement";
 import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 
 export interface PopupMenuHookProps
