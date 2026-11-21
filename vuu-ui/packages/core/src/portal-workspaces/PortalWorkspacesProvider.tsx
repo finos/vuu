@@ -46,6 +46,13 @@ export interface PortalWorkspacesOptions {
    */
   headerCenter?: ReactNode;
   /**
+   * Whether panel headers offer Maximize / Restore: a maximized panel fills
+   * the workspace until restored, or until panels are added or removed.
+   * A panel can refuse with `useGridLayoutItemMaximizable(false)`.
+   * Default: false.
+   */
+  maximizable?: boolean;
+  /**
    * Options of the Panels palette that `<AddPanelButton />` opens, e.g.
    * `{ tabs: ["modules", "tables", "recent"] }` to offer the Tables tab,
    * which is not shown by default.

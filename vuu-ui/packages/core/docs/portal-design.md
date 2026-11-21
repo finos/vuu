@@ -269,6 +269,7 @@ Turn workspaces on with the `workspaces` option of `PortalShell`:
 | `dockable` | `false` | Lets panels dock against the workspace's outer edges, see [Edge docking](#edge-docking). |
 | `headerActions` | | Content for the actions slot of the workspace header, e.g. `<AddPanelButton />`, which opens the [Panels palette](#panels-palette). |
 | `headerCenter` | | Content centred in the workspace header, between the name and the actions, e.g. a channel picker. It stays centred when the two sides differ in width and shrinks (`min-width: 0`) rather than overlap them, so it should size itself to the space it gets. |
+| `maximizable` | `false` | Panel headers offer Maximize / Restore, see [Maximize](#maximize). |
 | `persistenceService` | local storage | Where workspaces are saved. The default `LocalWorkspacePersistenceService` is scoped to the portal id and the signed-in user (namespace `PORTAL_WORKSPACE_NAMESPACE`). Pass a stable instance. |
 
 Without the option the shell renders no `WorkspaceProvider` and no
@@ -357,6 +358,28 @@ const workspaces: PortalWorkspacesOptions = {
   headerActions: <AddPanelButton />,
 };
 ```
+
+#### Maximize
+
+With `workspaces.maximizable: true`, `PortalWorkspace` (`maximizable`)
+passes `maximizable` to the workspace grid's `GridLayout`, so each panel
+header, and each stack header, has a Maximize button. A maximized panel
+fills the workspace and its button becomes Restore; double-clicking the
+header toggles it too. Maximize is view state: it isn't saved, makes no
+personal copy of a system workspace, and adding or removing a panel restores
+the grid. Content that shouldn't fill the workspace can refuse with
+`useGridLayoutItemMaximizable(false)` from `@vuu-ui/grid-layout`. It is off
+by default.
+
+```tsx
+const workspaces: PortalWorkspacesOptions = {
+  headerActions: <AddPanelButton />,
+  maximizable: true,
+};
+```
+
+`WorkspaceHost` takes the same option as a prop:
+`<WorkspaceHost maximizable />`.
 
 `PortalWorkspaceHeader` shows a **Workspaces /** crumb and the name. A named
 workspace's name is a button that edits it in place, and its status is
