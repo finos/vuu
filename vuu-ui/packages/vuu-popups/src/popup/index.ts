@@ -1,2 +1,1 @@
-export * from "./Popup";
-export * from "./useAnchoredPosition";
+export type { PopupPlacement } from "./PopupPlacement";

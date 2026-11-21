@@ -1,4 +1,4 @@
-import { PopupPlacement } from "./Popup";
+import { PopupPlacement } from "./PopupPlacement";
 
 export type Visibility = "hidden" | "visible";
 

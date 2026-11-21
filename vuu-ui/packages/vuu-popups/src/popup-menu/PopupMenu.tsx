@@ -6,7 +6,7 @@ import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, KeyboardEvent, RefObject } from "react";
-import { PopupPlacement } from "../popup/Popup";
+import { PopupPlacement } from "../popup/PopupPlacement";
 import { usePopupMenu } from "./usePopupMenu";
 
 import popupMenuCss from "./PopupMenu.css";

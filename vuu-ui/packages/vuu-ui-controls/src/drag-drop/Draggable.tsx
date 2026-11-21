@@ -10,9 +10,9 @@ import {
   RefCallback,
   TransitionEventHandler,
   useCallback,
-  useMemo,
 } from "react";
-import { PopupComponent as Popup, Portal } from "@vuu-ui/vuu-popups";
+import { createPortal } from "react-dom";
+import { useThemeAttributes } from "@vuu-ui/vuu-utils";
 
 import draggableCss from "./Draggable.css";
 
@@ -59,30 +59,22 @@ export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
     );
     const forkedRef = useForkRef<HTMLDivElement>(forwardedRef, callbackRef);
 
-    const position = useMemo(
-      () => ({
-        left: 0,
-        top: 0,
-      }),
-      [],
-    );
+    const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
-    return (
-      <Portal>
-        <Popup
-          anchorElement={{ current: document.body }}
-          className="vuuPopup"
-          placement="absolute"
-          position={position}
-        >
-          <div
-            className={cx("vuuDraggable", ...makeClassNames(wrapperClassName))}
-            ref={forkedRef}
-            onTransitionEnd={onTransitionEnd}
-            style={style}
-          />
-        </Popup>
-      </Portal>
+    // Rendered outside the app tree, so the theme classes are applied here
+    return createPortal(
+      <div
+        className={cx("vuuDraggable-portal", themeClass, densityClass)}
+        data-mode={dataMode}
+      >
+        <div
+          className={cx("vuuDraggable", ...makeClassNames(wrapperClassName))}
+          ref={forkedRef}
+          onTransitionEnd={onTransitionEnd}
+          style={style}
+        />
+      </div>,
+      document.body,
     );
   },
 );

@@ -1,3 +1,10 @@
+.vuuDraggable-portal {
+  left: 0;
+  position: absolute;
+  top: 0;
+  z-index: 1000;
+}
+
 .vuuDraggable {
   background: transparent;
   box-shadow: var(--salt-overlayable-shadow-drag);

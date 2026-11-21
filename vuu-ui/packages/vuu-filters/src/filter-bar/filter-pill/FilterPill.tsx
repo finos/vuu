@@ -1,4 +1,4 @@
-import { ButtonProps } from "@salt-ds/core";
+import { Tooltip } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
@@ -6,12 +6,7 @@ import {
   MenuActionHandler,
 } from "@vuu-ui/vuu-context-menu";
 import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
-import {
-  MenuCloseHandler,
-  PopupMenuProps,
-  Tooltip,
-  useTooltip,
-} from "@vuu-ui/vuu-popups";
+import { MenuCloseHandler, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import {
   EditableLabel,
   EditableLabelProps,
@@ -19,15 +14,9 @@ import {
   SplitStateButton,
   SplitStateButtonProps,
 } from "@vuu-ui/vuu-ui-controls";
-import { dispatchMouseEvent, useId } from "@vuu-ui/vuu-utils";
+import { dispatchMouseEvent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import {
-  FocusEventHandler,
-  MouseEventHandler,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
+import { MouseEventHandler, useCallback, useMemo, useRef } from "react";
 import {
   closeCommand,
   deleteCommand,
@@ -73,7 +62,6 @@ export const FilterPill = ({
   editing = false,
   editLabelApiRef,
   filter,
-  id: idProp,
   onBeginEdit,
   onExitEditMode,
   onMenuAction,
@@ -99,8 +87,6 @@ export const FilterPill = ({
   );
 
   const getTooltipText = getFilterAsFormattedText(columnsByName);
-
-  const id = useId(idProp);
 
   const handleMenuClose = useCallback<MenuCloseHandler>((reason) => {
     if (reason?.type === "escape") {
@@ -187,46 +173,33 @@ export const FilterPill = ({
     [onExitEditMode],
   );
 
-  const { anchorProps, hideTooltip, showTooltip, tooltipProps } = useTooltip({
-    anchorQuery: ".vuuFilterPill",
-    id,
-    placement: ["above", "below"],
-    tooltipContent: filterAsReactNode(filter, getTooltipText),
-  });
-
-  const buttonProps: Partial<ButtonProps> = {
-    onBlur: () => hideTooltip(),
-    onFocus: useCallback<FocusEventHandler>(() => {
-      showTooltip(rootRef);
-    }, [showTooltip]),
-  };
-
   return (
-    <SplitStateButton
-      {...anchorProps}
-      {...htmlAttributes}
-      ButtonProps={buttonProps}
-      PopupMenuProps={popupMenuProps}
-      className={cx(classBase, classNameProp)}
-      data-text={label}
-      onContextMenu={handleContextMenu}
-      ref={rootRef}
+    <Tooltip
+      className={`${classBase}-tooltip`}
+      content={filterAsReactNode(filter, getTooltipText)}
+      placement="top"
     >
-      {editable && onExitEditMode ? (
-        <EditableLabel
-          defaultValue={label}
-          editing={editing}
-          editLabelApiRef={editLabelApiRef}
-          key={label}
-          onEnterEditMode={handleEnterEditMode}
-          onExitEditMode={handleExitEditMode}
-        />
-      ) : (
-        label
-      )}
-      {tooltipProps && (
-        <Tooltip className={`${classBase}-tooltip`} {...tooltipProps} />
-      )}
-    </SplitStateButton>
+      <SplitStateButton
+        {...htmlAttributes}
+        PopupMenuProps={popupMenuProps}
+        className={cx(classBase, classNameProp)}
+        data-text={label}
+        onContextMenu={handleContextMenu}
+        ref={rootRef}
+      >
+        {editable && onExitEditMode ? (
+          <EditableLabel
+            defaultValue={label}
+            editing={editing}
+            editLabelApiRef={editLabelApiRef}
+            key={label}
+            onEnterEditMode={handleEnterEditMode}
+            onExitEditMode={handleExitEditMode}
+          />
+        ) : (
+          label
+        )}
+      </SplitStateButton>
+    </Tooltip>
   );
 };
