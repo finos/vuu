@@ -266,6 +266,7 @@ Turn workspaces on with the `workspaces` option of `PortalShell`:
 | --- | --- | --- |
 | `systemWorkspaces` | | Workspaces shipped with the portal (`NamedWorkspaceDefinitionV1`). |
 | `componentRenderers`, `settingsCodecs` | | The panels a workspace can contain, as for `GridLayout`. |
+| `dockable` | `false` | Lets panels dock against the workspace's outer edges, see [Edge docking](#edge-docking). |
 | `headerActions` | | Content for the actions slot of the workspace header, e.g. `<AddPanelButton />`, which opens the [Panels palette](#panels-palette). |
 | `headerCenter` | | Content centred in the workspace header, between the name and the actions, e.g. a channel picker. It stays centred when the two sides differ in width and shrinks (`min-width: 0`) rather than overlap them, so it should size itself to the space it gets. |
 | `persistenceService` | local storage | Where workspaces are saved. The default `LocalWorkspacePersistenceService` is scoped to the portal id and the signed-in user (namespace `PORTAL_WORKSPACE_NAMESPACE`). Pass a stable instance. |
@@ -336,6 +337,24 @@ const workspaces: PortalWorkspacesOptions = {
       <Button onClick={openPalette}>browse panels</Button>.
     </WorkspaceDropZone>
   ),
+};
+```
+
+#### Edge docking
+
+With `workspaces.dockable: true`, `PortalWorkspace` (`dockable`) renders the
+workspace grid as a dockable `GridLayout`. Thin drop zones line its outer
+edges. A panel of the workspace, or a Panels palette row, dragged onto one
+takes a new column or row along the whole of that edge: a panel keeps its
+size, a palette row takes a quarter of the workspace
+(`DEFAULT_GRID_DOCK_FRACTION`). The targeted edge shows where it will go,
+Escape cancels the drag, and the docked layout is saved like any other
+edit. It is off by default, so a drag can only split, replace or stack.
+
+```tsx
+const workspaces: PortalWorkspacesOptions = {
+  dockable: true,
+  headerActions: <AddPanelButton />,
 };
 ```
 

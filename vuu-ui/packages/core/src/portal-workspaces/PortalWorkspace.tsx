@@ -50,6 +50,11 @@ const layoutOptions = { newChildItem: { header: true } };
 export interface PortalWorkspaceGridProps {
   controller: WorkspaceController;
   /**
+   * Whether panels can be docked against the grid's outer edges, see
+   * GridLayout `dockable`. Default: false.
+   */
+  dockable?: boolean;
+  /**
    * Placeholder content of an empty workspace when the Panels palette is
    * available: a node, or a function that receives `{ openPalette }` and
    * returns one. Defaults to a `WorkspaceDropZone`.
@@ -66,6 +71,7 @@ export interface PortalWorkspaceGridProps {
  */
 export const PortalWorkspaceGrid = ({
   controller,
+  dockable = false,
   emptyContent = <WorkspaceDropZone />,
   paletteProps,
 }: PortalWorkspaceGridProps) => {
@@ -108,6 +114,7 @@ export const PortalWorkspaceGrid = ({
         <OpenPanelProvider gridId={controller.snapshot.layout.layout.id}>
           <div className={`${classBase}-grid`}>
             <GridLayout
+              dockable={dockable}
               id={controller.snapshot.layout.layout.id}
               placeholderContent={
                 isEmpty ? (
@@ -153,6 +160,11 @@ const WorkspaceState = ({
 
 export interface PortalWorkspaceProps {
   /**
+   * Whether panels can be docked against the workspace's outer edges.
+   * `PortalShell` passes `workspaces.dockable`. Default: false.
+   */
+  dockable?: boolean;
+  /**
    * Placeholder content of an empty workspace when the Panels palette is
    * available, see `PortalWorkspaceGridProps.emptyContent`. `PortalShell`
    * passes `workspaces.emptyContent`.
@@ -195,6 +207,7 @@ const OpenPaletteForNewWorkspace = ({ open }: { open: boolean }) => {
  * shows a not-found state.
  */
 export const PortalWorkspace = ({
+  dockable,
   emptyContent,
   headerActions,
   headerCenter,
@@ -317,6 +330,7 @@ export const PortalWorkspace = ({
           {controller ? (
             <PortalWorkspaceGrid
               controller={controller}
+              dockable={dockable}
               emptyContent={emptyContent}
               key={controller.instanceId}
               paletteProps={paletteProps}

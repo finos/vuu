@@ -22,6 +22,12 @@ export interface PortalWorkspacesOptions {
   /** Components that can be placed in a workspace. */
   componentRenderers?: GridComponentRendererRegistry;
   /**
+   * Whether panels can be docked against the workspace's outer edges: a
+   * panel, or a Panels palette row, dragged close to an edge takes a new
+   * column or row along the whole of that edge. Default: false.
+   */
+  dockable?: boolean;
+  /**
    * Content of an empty workspace when the Panels palette is available,
    * e.g. after "+ New workspace": a node, or a function that receives
    * `{ openPalette }` and returns one. Default: a `WorkspaceDropZone`.

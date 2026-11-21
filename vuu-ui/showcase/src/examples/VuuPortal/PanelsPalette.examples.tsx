@@ -182,6 +182,12 @@ const customEmptyContentWorkspaces: PortalWorkspacesOptions = {
   ),
 };
 
+/** Panels and palette rows dock against the workspace's outer edges. */
+const dockableWorkspaces: PortalWorkspacesOptions = {
+  ...workspaces,
+  dockable: true,
+};
+
 const PanelsPaletteDemo = ({
   workspaces,
 }: {
@@ -241,4 +247,13 @@ export const WorkspacesWithDefaultPanelsPalette = () => (
  */
 export const WorkspacesWithCustomEmptyContent = () => (
   <PanelsPaletteDemo workspaces={customEmptyContentWorkspaces} />
+);
+
+/**
+ * Workspaces with edge docking (`workspaces.dockable`). Open Markets, press
+ * Add panel, and drag a palette row, or a panel by its header, close to an
+ * outer edge of the workspace: it docks along the whole of that edge.
+ */
+export const WorkspacesWithEdgeDocking = () => (
+  <PanelsPaletteDemo workspaces={dockableWorkspaces} />
 );
