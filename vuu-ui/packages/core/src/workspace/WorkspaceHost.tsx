@@ -21,11 +21,13 @@ import { WORKSPACE_SNAPSHOT_VERSION } from "./workspace-schemas";
 const WorkspaceGrid = ({
   active,
   controller,
+  maximizable,
 }: {
   readonly active: boolean;
   readonly controller: NonNullable<
     ReturnType<typeof useWorkspace>["activeWorkspace"]
   >;
+  readonly maximizable: boolean;
 }) => {
   const [isEmpty, setIsEmpty] = useState(
     controller.snapshot.layout.components.length === 0,
@@ -66,6 +68,7 @@ const WorkspaceGrid = ({
         >
           <GridLayout
             id={controller.snapshot.layout.layout.id}
+            maximizable={maximizable}
             placeholderContent={isEmpty ? <WorkspaceStartPanel /> : undefined}
           />
         </GridLayoutProvider>
@@ -152,7 +155,17 @@ const EmptyWorkspaceDropTarget = () => {
   );
 };
 
-export const WorkspaceHost = () => {
+export interface WorkspaceHostProps {
+  /**
+   * Whether panel headers in each workspace offer Maximize / Restore, see
+   * GridLayout `maximizable`. Default: false.
+   */
+  readonly maximizable?: boolean;
+}
+
+export const WorkspaceHost = ({
+  maximizable = false,
+}: WorkspaceHostProps = {}) => {
   const {
     activeWorkspaceInstanceId,
     closeWorkspace,
@@ -258,6 +271,7 @@ export const WorkspaceHost = () => {
               active={controller.instanceId === activeWorkspaceInstanceId}
               controller={controller}
               key={controller.instanceId}
+              maximizable={maximizable}
             />
           ))
         )}

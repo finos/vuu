@@ -307,6 +307,7 @@ const PortalLayout = () => {
                               emptyContent={workspaces.emptyContent}
                               headerActions={workspaces.headerActions}
                               headerCenter={workspaces.headerCenter}
+                              maximizable={workspaces.maximizable}
                               paletteProps={workspaces.palette}
                             />
                           }

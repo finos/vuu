@@ -188,6 +188,12 @@ const dockableWorkspaces: PortalWorkspacesOptions = {
   dockable: true,
 };
 
+/** Panel headers offer Maximize / Restore. */
+const maximizableWorkspaces: PortalWorkspacesOptions = {
+  ...workspaces,
+  maximizable: true,
+};
+
 const PanelsPaletteDemo = ({
   workspaces,
 }: {
@@ -256,4 +262,13 @@ export const WorkspacesWithCustomEmptyContent = () => (
  */
 export const WorkspacesWithEdgeDocking = () => (
   <PanelsPaletteDemo workspaces={dockableWorkspaces} />
+);
+
+/**
+ * Workspaces with maximizable panels (`workspaces.maximizable`). Open
+ * Markets and press Maximize in a panel header: the panel fills the
+ * workspace until Restore is pressed.
+ */
+export const WorkspacesWithMaximizablePanels = () => (
+  <PanelsPaletteDemo workspaces={maximizableWorkspaces} />
 );
