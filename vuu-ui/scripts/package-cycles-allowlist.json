@@ -1,0 +1,15 @@
+{
+  "runtimeEdges": [
+    "vuu-utils -> vuu-filter-parser",
+    "vuu-ui-controls -> vuu-layout",
+    "vuu-ui-controls -> vuu-table",
+    "vuu-table -> vuu-data-react",
+    "vuu-table -> vuu-table-extras",
+    "vuu-layout -> vuu-data-react",
+    "vuu-layout -> vuu-datatable"
+  ],
+  "deepImports": [
+    "vuu-utils -> @vuu-ui/vuu-filters/src/filter-container/ExtendedSingleValueFilterClause",
+    "vuu-utils -> @vuu-ui/vuu-data-local/src/tree-data-source/IconProvider"
+  ]
+}
