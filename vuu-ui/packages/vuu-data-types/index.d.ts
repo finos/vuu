@@ -687,10 +687,26 @@ export declare type EditSessionMode =
  * Describes an edit (session) table whose schema differs from the source (view) table.
  * When supplied, the session datasource is built from these values instead of inheriting
  * the source datasource config, which would otherwise reference view-only columns.
+ *
+ * `sessionTableName` and `columnsToCopy` are sent to the server with the
+ * `createSessionTable` RPC; `beginEditSession` does not use them.
  */
 export declare type SessionDataSourceOverrides = {
   /** Columns to subscribe to on the session table. */
   columns?: VuuColumns;
+  /**
+   * Source columns the server copies into the session table, or `"*"` for all
+   * columns. Sent to the server as a comma-separated string. When omitted, the
+   * server copies all source columns except vuuCreatedTimestamp,
+   * vuuUpdatedTimestamp and vuuMsg.
+   */
+  columnsToCopy?: string[] | "*";
+  /**
+   * Name of the session table blueprint, registered by the server module,
+   * that the server creates the session table from. When omitted, the server
+   * uses `<sessionType>-<sourceTable>`, e.g. `edit-instruments`.
+   */
+  sessionTableName?: string;
   /** Expected session table. Used to validate the table returned by the server. */
   table?: VuuTable;
 };
@@ -712,6 +728,11 @@ export interface DataSourceBase<
   /**
    * Create a session datasource by requesting the server to create a session table
    * via the `createSessionTable` RPC and wrapping the returned table.
+   *
+   * `overrides` (or, when not supplied, the datasource's `session` config) may
+   * name the server-side session table blueprint (`sessionTableName`) and the
+   * source columns to copy (`columnsToCopy`); each is sent to the server only
+   * when present.
    */
   createSessionDataSource?: (
     copyOption: CopyOption,

@@ -705,6 +705,10 @@ export abstract class VuuModule<T extends string = string>
    * Creates a standalone session table.
    * The `copyOption` determines which rows are copied into the session table.
    * Returns the session table reference so the caller can subscribe to it.
+   *
+   * The optional `sessionTableName` (blueprint) and `columnsToCopy` params are
+   * accepted but not acted on: this test module has no session table
+   * blueprint registry, so the session table always mirrors the source table.
    */
   private createSessionTableService: ServiceHandler = async (rpcRequest) => {
     if (isCreateSessionTableRpcRequest(rpcRequest)) {
