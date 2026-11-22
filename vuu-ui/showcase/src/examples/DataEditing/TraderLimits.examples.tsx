@@ -1,4 +1,3 @@
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { TraderLimitsHeaderTogglePage } from "./trader-limits/TraderLimitsHeaderTogglePage";
 import { TraderLimitsPage } from "./trader-limits/TraderLimitsPage";
 
@@ -8,13 +7,12 @@ import { TraderLimitsPage } from "./trader-limits/TraderLimitsPage";
  * downloadable template. New and amended limits are Pending until the next
  * business day; the Next business day button simulates it. Edit, import and
  * export each use their own session table blueprint, defined by the LIMITS
- * module.
+ * module. Runs on local or remote data, as chosen in the showcase; remote
+ * data needs a Vuu server with the LIMITS module.
  * @title Trader limits
  */
 export const TraderLimits = () => (
-  <LocalDataSourceProvider>
-    <TraderLimitsPage showNextBusinessDay />
-  </LocalDataSourceProvider>
+  <TraderLimitsPage showNextBusinessDay />
 );
 
 /**
@@ -25,7 +23,5 @@ export const TraderLimits = () => (
  * @title Trader limits, toggle in page header
  */
 export const TraderLimitsHeaderToggle = () => (
-  <LocalDataSourceProvider>
-    <TraderLimitsHeaderTogglePage showNextBusinessDay />
-  </LocalDataSourceProvider>
+  <TraderLimitsHeaderTogglePage showNextBusinessDay />
 );

@@ -29,18 +29,24 @@ const date = {
 
 const timestamp = { type: { name: "date/time" } } as const;
 
+const readOnly = { editable: false } as const;
+const insertOnly = { editable: { insert: true, update: false } } as const;
+
 /**
- * Which columns can be edited, on insert or update, comes from the session
- * table blueprint the server creates the edit session from.
+ * Which columns can be edited comes from the session table blueprint the
+ * edit session is created from. A Vuu server reports a column as editable
+ * or not, so the columns that can only be set when a limit is added, and
+ * the server generated limit_id, say so here.
  */
 export const limitColumns: ColumnDescriptor[] = [
   { name: "status", label: "Status", width: 90 },
   { name: "change", label: "Change", width: 240 },
-  { name: "limit_id", label: "Limit ID", width: 100 },
+  { name: "limit_id", label: "Limit ID", width: 100, ...readOnly },
   {
     name: "entity_id",
     label: "Entity",
     width: 130,
+    ...insertOnly,
     ...dropdown(LIMIT_ENTITIES.map(({ entity_id }) => entity_id)),
   },
   { name: "entity_type", label: "Entity type", width: 110 },
@@ -48,15 +54,17 @@ export const limitColumns: ColumnDescriptor[] = [
     name: "metric",
     label: "Metric",
     width: 170,
+    ...insertOnly,
     ...dropdown(LIMIT_METRIC_NAMES),
   },
   { name: "metric_family", label: "Family", width: 120 },
-  { name: "scope", label: "Scope", width: 160 },
+  { name: "scope", label: "Scope", width: 160, ...insertOnly },
   // the periods offered depend on the metric
   {
     name: "period",
     label: "Period",
     width: 100,
+    ...insertOnly,
     editor: { name: "period-cell" },
   },
   { name: "warning", label: "Warning", width: 110 },

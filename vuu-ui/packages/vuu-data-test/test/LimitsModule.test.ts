@@ -133,6 +133,18 @@ describe("LimitsModule", () => {
     expect(row("LIM-0001")).toMatchObject({ change: "", status: "Active" });
   });
 
+  it("the activatePendingLimits RPC activates Pending limits", async () => {
+    const { addLimits, dataSource, row } = setup();
+    await addLimits(vega);
+    const result = await dataSource.rpcRequest?.({
+      params: {},
+      rpcName: "activatePendingLimits",
+      type: "RPC_REQUEST",
+    });
+    expect(result).toMatchObject({ type: "SUCCESS_RESULT" });
+    expect(row("LIM-0001")).toMatchObject({ status: "Active" });
+  });
+
   it("a change to an Active limit is held until the next business day", async () => {
     const { addLimits, editSession, module, row } = setup();
     await addLimits(vega);

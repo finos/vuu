@@ -2,6 +2,7 @@ import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   type RpcMenuService,
+  type RpcService,
   type ServiceHandler,
   type SessionTableDef,
   VuuModule,
@@ -531,8 +532,22 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
   get menus() {
     return undefined;
   }
-  get services() {
-    return undefined;
+  /**
+   * activatePendingLimits, on a limitDefinitions viewport, activates
+   * Pending limits at once, as at the start of the next business day.
+   */
+  get services(): Record<LimitsTableName, RpcService[]> {
+    return {
+      limitDefinitions: [
+        {
+          rpcName: "activatePendingLimits",
+          service: async () => {
+            this.activatePendingLimits();
+            return { type: "SUCCESS_RESULT", data: undefined };
+          },
+        },
+      ],
+    };
   }
   get menuServices():
     | Record<LimitsTableName, RpcMenuService[] | undefined>

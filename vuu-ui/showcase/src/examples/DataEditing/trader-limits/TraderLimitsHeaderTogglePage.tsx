@@ -1,5 +1,4 @@
 import { Button, Text } from "@salt-ds/core";
-import { limitsModule } from "@vuu-ui/vuu-data-test";
 import {
   DataEditingModeProvider,
   EditModeToggle,
@@ -96,6 +95,13 @@ const TraderLimitsHeaderToggleContent = ({
       }),
     [VuuDataSource],
   );
+  const activatePendingLimits = useCallback(() => {
+    dataSource.rpcRequest?.({
+      params: {},
+      rpcName: "activatePendingLimits",
+      type: "RPC_REQUEST",
+    });
+  }, [dataSource]);
   const { mode } = useDataEditing("TraderLimitsHeaderTogglePage");
   const { chooseFile, importElements } = useLimitsImport(dataSource);
   const saveError = useSaveError();
@@ -178,7 +184,7 @@ const TraderLimitsHeaderToggleContent = ({
                 <Button
                   data-testid="next-business-day"
                   disabled={!isViewMode}
-                  onClick={() => limitsModule.activatePendingLimits()}
+                  onClick={activatePendingLimits}
                 >
                   Next business day
                 </Button>
