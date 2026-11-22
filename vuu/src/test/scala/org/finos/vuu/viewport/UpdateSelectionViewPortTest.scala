@@ -626,8 +626,44 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       Then("Check selection is updated for view port range")
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
-      Then("Validate all rows are selected in view port")
+      Then("Validate all rows are deselected in view port")
       vp.getSelection.size shouldBe 0
+    }
+
+    Scenario("Delete a row should remove it from selection in view port") {
+      Given("A view port of 6 orders is created")
+      val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
+      createNOrderRows(ordersProvider, 6)(clock)
+
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
+      viewPortContainer.runOnce()
+
+      assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
+
+      And("Select all rows")
+      var vp = viewPortContainer.selectAll(session, viewPort.id)
+
+      Then("Check selection is updated for view port range")
+      assertVpEqWithMeta(combineQs(viewPort)) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "quantity"),
+          (1, "NYC-0000", "chris", "VOD.L", 100),
+          (1, "NYC-0001", "chris", "VOD.L", 101),
+          (1, "NYC-0002", "chris", "VOD.L", 102),
+          (1, "NYC-0003", "chris", "VOD.L", 103),
+          (1, "NYC-0004", "chris", "VOD.L", 104),
+          (1, "NYC-0005", "chris", "VOD.L", 105),
+        )
+      }
+      Then("Validate all rows are selected in view port")
+      vp.getSelection.size shouldBe 6
+
+      And("Delete a row from table")
+      orders.processDelete("NYC-0001")
+
+      Then("Check selection is updated")
+      vp.getSelection.size shouldBe 5
     }
   }
 }
