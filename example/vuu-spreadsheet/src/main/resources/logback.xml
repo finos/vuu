@@ -1,0 +1,78 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- uncomment this whole section if you want socket level logging -->
+    <!--appender name="server-inout" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>target/vuu-server-inout.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>target/vuu/roll-by-time/inout.%d{yyyy-MM-dd-HH}.log
+            </fileNamePattern>
+            <maxHistory>20</maxHistory>
+            <totalSizeCap>20MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
+        <appender-ref ref="server-inout"/>
+    </logger>
+
+    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
+        <appender-ref ref="server-inout"/>
+        <totalSizeCap>20MB</totalSizeCap>
+    </logger-->
+    <!--
+    TO HERE
+    -->
+
+    <!-- required for debugging messages off the wire -->
+    <!--appender name="roll-by-time" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>target/vuu.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>target/vuu/roll-by-time/app.%d{yyyy-MM-dd-HH}.log.zip
+            </fileNamePattern>
+            <maxHistory>20</maxHistory>
+            <totalSizeCap>1MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender-->
+
+    <!-- required for debugging messages off the wire -->
+    <!--logger name="io.venuu.vuu.client.swing.client.Worker" level="WARN" >
+        <appender-ref ref="roll-by-time" />
+    </logger-->
+
+    <!--logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
+
+    </logger-->
+
+    <logger name="io.netty" level="DEBUG">
+    </logger>
+
+    <!--logger name="io.venuu.vuu.viewport.GroupByTreeBuilderImpl" level="DEBUG" >
+        <appender-ref ref="STDOUT"/>
+    </logger-->
+
+    <!--logger name="io.venuu.vuu.core.groupby.WrappedUpdateHandlingKeyObserver" level="DEBUG">
+    </logger-->
+
+    <!--logger name="io.venuu.vuu.core.groupby.GroupBySessionTableImpl" level="DEBUG">
+    </logger-->
+
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
