@@ -9,6 +9,7 @@ import { TraderLimitsPage } from "./trader-limits/TraderLimitsPage";
  * export each use their own session table blueprint, defined by the LIMITS
  * module. Runs on local or remote data, as chosen in the showcase; remote
  * data needs a Vuu server with the LIMITS module.
+ * @tags data-consumer
  * @title Trader limits
  */
 export const TraderLimits = () => (
@@ -20,6 +21,7 @@ export const TraderLimits = () => (
  * the EditableTable. A DataEditingModeProvider around the page holds the
  * mode, so the toggle and the table share it, and the page reads it with
  * `useDataEditing` to disable its buttons while editing.
+ * @tags data-consumer
  * @title Trader limits, toggle in page header
  */
 export const TraderLimitsHeaderToggle = () => (
