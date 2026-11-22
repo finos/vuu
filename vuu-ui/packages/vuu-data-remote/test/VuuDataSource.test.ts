@@ -342,6 +342,44 @@ describe("VuuDataSource", () => {
     });
   });
 
+  describe("rpcRequest before subscribed", () => {
+    it.each(["before subscribe", "while subscribing"])(
+      "made %s, is sent once subscribed",
+      async (when) => {
+        const dataSource = new VuuDataSource({ table, viewport: "vp-1" });
+        const response = { type: "SUCCESS_RESULT", data: undefined };
+        const serverAPI = await ConnectionManager.serverAPI;
+        vi.mocked(serverAPI.rpcCall).mockResolvedValue(response);
+
+        const subscribe = () => dataSource.subscribe({}, vi.fn());
+        const subscribing =
+          when === "while subscribing" ? subscribe() : undefined;
+        const request = dataSource.rpcRequest({
+          params: {},
+          rpcName: "createSessionTable",
+          type: "RPC_REQUEST",
+        });
+        await (subscribing ?? subscribe());
+        expect(serverAPI.rpcCall).not.toHaveBeenCalled();
+
+        dataSource.handleMessageFromServer({
+          type: "subscribed",
+          tableSchema: { columns: [], key: "id", table },
+        } as unknown as Parameters<
+          VuuDataSource["handleMessageFromServer"]
+        >[0]);
+
+        expect(await request).toEqual(response);
+        expect(serverAPI.rpcCall).toHaveBeenCalledWith({
+          context: { type: "VIEWPORT_CONTEXT", viewPortId: "vp-1" },
+          params: {},
+          rpcName: "createSessionTable",
+          type: "RPC_REQUEST",
+        });
+      },
+    );
+  });
+
   describe("prop setters", () => {
     const callback = () => undefined;
     it("calls server when range set", async () => {
@@ -981,6 +1019,10 @@ describe("VuuDataSource createSessionDataSource session config", () => {
   ) => {
     const dataSource = new VuuDataSource(props);
     await dataSource.subscribe({}, () => undefined);
+    dataSource.handleMessageFromServer({
+      type: "subscribed",
+      tableSchema: { columns: [], key: "id", table: props.table },
+    } as unknown as Parameters<VuuDataSource["handleMessageFromServer"]>[0]);
     return dataSource;
   };
 

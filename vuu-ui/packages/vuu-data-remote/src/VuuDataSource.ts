@@ -845,7 +845,17 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     }
   }
 
+  /**
+   * The server only knows the viewport once it has acknowledged the
+   * subscription, so a request made before then, e.g. before the Table has
+   * subscribed, waits until the DataSource is subscribed.
+   */
   async rpcRequest(rpcRequest: Omit<VuuRpcServiceRequest, "context">) {
+    if (this.#status === "initialising" || this.#status === "subscribing") {
+      await new Promise<void>((resolve) =>
+        this.once("subscribed", () => resolve()),
+      );
+    }
     if (this.viewport && this.server) {
       return this.server?.rpcCall<RpcResultSuccess | RpcResultError>({
         ...rpcRequest,
