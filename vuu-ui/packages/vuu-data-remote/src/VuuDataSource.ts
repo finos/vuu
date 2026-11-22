@@ -40,6 +40,7 @@ import {
   BaseDataSource,
   combineFilters,
   constrainRange,
+  createSessionTableParams,
   debounce,
   getDataSourceFilterColumnNames,
   isConfigChanged,
@@ -736,16 +737,20 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     sessionType: SessionType = "edit",
     overrides?: SessionDataSourceOverrides,
   ): Promise<VuuDataSource | undefined> {
+    // A call-time override always wins; otherwise fall back to the session
+    // config this datasource was constructed with.
+    const effectiveOverrides = overrides ?? this.#session;
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "createSessionTable",
-      params: { copyOption, sessionType },
+      params: createSessionTableParams(
+        copyOption,
+        sessionType,
+        effectiveOverrides,
+      ),
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      // A call-time override always wins; otherwise fall back to the session
-      // config this datasource was constructed with.
-      const effectiveOverrides = overrides ?? this.#session;
       assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       const sessionDataSource = new VuuDataSource({
         ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
