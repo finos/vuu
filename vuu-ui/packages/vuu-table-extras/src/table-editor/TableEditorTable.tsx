@@ -4,27 +4,32 @@ import {
 } from "@vuu-ui/vuu-data-editing";
 import { Table, type TableProps } from "@vuu-ui/vuu-table";
 import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
+import { subscribedOnly } from "@vuu-ui/vuu-utils";
 import { useCallback, useLayoutEffect, useMemo } from "react";
 import { InlineAddRow } from "../inline-add-row";
 import { useTableEditorContext } from "./TableEditorContext";
 
 export interface TableEditorTableProps
-  extends Omit<
-      TableProps,
-      "customHeader" | "dataSource" | "isRowSelectable" | "selectionModel"
-    >,
+  extends Omit<TableProps, "customHeader" | "dataSource" | "isRowSelectable">,
     Partial<Pick<EditableColumnsHookProps, "undoColumn">> {
   /**
    * Session table editing: show a row, above the column headers, for adding
    * rows.
    */
   showInlineAddRow?: boolean;
+  /**
+   * Session table editing: selection in view mode, e.g. for actions on the
+   * selected rows. While editing, rows are checked for deletion when
+   * `allowDelete` is set on the provider, otherwise they cannot be selected.
+   */
+  selectionModel?: TableProps["selectionModel"];
 }
 
 const NO_ROWS_SELECTABLE = () => false;
 
 const TableCellEditorTable = ({
   config,
+  selectionModel = "none",
   showInlineAddRow = false,
   undoColumn = false,
   ...tableProps
@@ -38,11 +43,23 @@ const TableCellEditorTable = ({
     isEditSessionReady,
     isRowSelectable,
     rowClassNameGenerators,
+    sourceDataSource,
   } = editableTable as NonNullable<typeof editableTable>;
+
+  // A session data source may subscribe fewer columns than the view, when
+  // the session table has its own schema. Until it is ready, show only the
+  // columns it subscribes; once it is, columns come from the session schema.
+  const configColumns = useMemo(
+    () =>
+      dataSource !== sourceDataSource && !isEditSessionReady
+        ? config.columns.filter(subscribedOnly(dataSource.columns))
+        : config.columns,
+    [config.columns, dataSource, isEditSessionReady, sourceDataSource],
+  );
 
   const columns = useEditableColumns({
     actionColumn: allowDelete ? "hidden" : false,
-    columns: config.columns,
+    columns: configColumns,
     columnsDiverge,
     editSchema,
     isEditing: isEditSessionReady,
@@ -75,7 +92,9 @@ const TableCellEditorTable = ({
       }
       dataSource={dataSource}
       isRowSelectable={canDelete ? isRowSelectable : undefined}
-      selectionModel={canDelete ? "checkbox" : "none"}
+      selectionModel={
+        canDelete ? "checkbox" : isEditSessionReady ? "none" : selectionModel
+      }
     />
   );
 };
@@ -112,6 +131,7 @@ const DirectCellEditorTable = ({
 const FormEditorTable = ({
   config,
   onSelect,
+  selectionModel: _selectionModel,
   showInlineAddRow: _showInlineAddRow,
   undoColumn: _undoColumn,
   ...tableProps

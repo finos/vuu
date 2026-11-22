@@ -351,6 +351,13 @@ class TestModule extends VuuModule<TestTableName> {
   protected sessionTableDefs = {
     ...sessionTableDefsFor(this.#schemas.ChartTable, ["edit"]),
     ...sessionTableDefsFor(this.#schemas.TestEdit, ["edit"]),
+    // Only the prices of a TestEdit row are edited.
+    "edit-TestEdit-prices": {
+      columns: testEditColumns.filter(({ name }) =>
+        ["id", "quantity", "price"].includes(name),
+      ),
+      key: "id",
+    },
     ...sessionTableDefsFor(this.#schemas.TestEditEmpty, ["edit", "import"]),
     ...sessionTableDefsFor(this.#schemas.TestEditValidation, ["edit"]),
   };

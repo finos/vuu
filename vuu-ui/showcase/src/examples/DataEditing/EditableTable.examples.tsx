@@ -381,3 +381,56 @@ export const DirectFormEditing = () => (
     <FormEditingTemplate editModel="direct" />
   </LocalDataSourceProvider>
 );
+
+const TEST_EDIT = { module: "TEST", table: "TestEdit" } as const;
+
+const testEditConfig: TableConfig = {
+  columns: [
+    { name: "id", serverDataType: "string", width: 100 },
+    { name: "description", serverDataType: "string", width: 160 },
+    { name: "quantity", serverDataType: "int", width: 100 },
+    { name: "price", serverDataType: "double", width: 100 },
+    { name: "enabled", serverDataType: "boolean", width: 100 },
+  ],
+  rowSeparators: true,
+  zebraStripes: true,
+};
+
+const SessionBlueprintTemplate = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: testEditConfig.columns.map(({ name }) => name),
+        session: {
+          columns: ["id", "quantity", "price"],
+          sessionTableName: "edit-TestEdit-prices",
+        },
+        table: TEST_EDIT,
+      }),
+    [VuuDataSource],
+  );
+  return (
+    <div style={{ height: 400, width: 900 }}>
+      <EditableTable dataSource={dataSource}>
+        <TableEditorToolbar>
+          <TableEditorModeToggle />
+        </TableEditorToolbar>
+        <TableEditorTable config={testEditConfig} selectionModel="checkbox" />
+        <EditableTableFooter />
+      </EditableTable>
+    </div>
+  );
+};
+
+/**
+ * Pattern 11. The edit session table has its own columns, from the server's
+ * edit-TestEdit-prices blueprint, chosen by the DataSource `session` config.
+ * View shows every column, Edit only the prices. In View, rows can be checked,
+ * e.g. for an action on the selected rows.
+ */
+export const SessionBlueprint = () => (
+  <LocalDataSourceProvider>
+    <SessionBlueprintTemplate />
+  </LocalDataSourceProvider>
+);
