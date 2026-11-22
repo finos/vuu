@@ -8,6 +8,7 @@ import {
   RpcMenuService,
   RpcService,
   ServiceHandler,
+  sessionTableDefsFor,
   VuuModule,
 } from "../core/module/VuuModule";
 import { Table } from "../Table";
@@ -45,6 +46,8 @@ export class SimulModule extends VuuModule<SimulTableName> {
   }
 
   #schemas = schemas;
+  protected editableTables: readonly SimulTableName[] = ["instruments"];
+  protected sessionTableDefs = sessionTableDefsFor(schemas.instruments);
   #tables: Record<SimulTableName, Table> = {
     childOrders: childOrdersTable,
     instruments: instrumentsTable,

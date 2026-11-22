@@ -38,6 +38,8 @@ import {
   uuid,
 } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
+
+type TableRow = Array<bigint | VuuRowDataItemType>;
 import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
@@ -93,6 +95,89 @@ export type VuuModuleOptions = {
   sessionTableMessageColumn?: string;
 };
 
+/**
+ * A session table blueprint, the equivalent of Scala Vuu's
+ * `ModuleFactory.addSessionTable(tableDef, viewPortDef)`. createSessionTable
+ * creates per-session instances of a blueprint, selected by name.
+ */
+export type SessionTableDef = {
+  /**
+   * Columns of the session table. The session message column (vuuMsg) and
+   * vuuAction are added if not defined. An import blueprint defines
+   * vuuRowNum, the CSV row number of each imported row.
+   */
+  columns: TableSchema["columns"];
+  key: string;
+  /**
+   * Services for viewports on instances of this session table. They replace
+   * built-in services with the same rpcName. The source table's services do
+   * not apply to its session tables.
+   */
+  services?: RpcService[];
+  menuServices?: RpcMenuService[];
+  menu?: VuuMenu;
+};
+
+/**
+ * The default blueprints of a table, `<sessionType>-<table>`, with the
+ * table's columns and key. The import blueprint adds vuuRowNum.
+ */
+export const sessionTableDefsFor = (
+  { columns, key, table }: TableSchema,
+  sessionTypes: readonly SessionType[] = ["edit", "import", "export"],
+): Record<string, SessionTableDef> =>
+  Object.fromEntries(
+    sessionTypes.map((sessionType) => [
+      `${sessionType}-${table.table}`,
+      {
+        columns:
+          sessionType === "import"
+            ? columns.concat({ name: "vuuRowNum", serverDataType: "int" })
+            : columns,
+        key,
+      },
+    ]),
+  );
+
+/** Named params of the createSessionTable RPC, as in Scala Vuu. */
+type CreateSessionTableParams = {
+  /**
+   * Comma separated names of the source columns to copy, or "*". Default:
+   * the source columns, excluding vuuCreatedTimestamp, vuuUpdatedTimestamp
+   * and vuuMsg.
+   */
+  columnsToCopy?: string;
+  /** Required for "edit" and "export". "import" always uses "Empty". */
+  copyOption?: CopyOption;
+  /** Name of the blueprint. Default `<sessionType>-<sourceTable>`. */
+  sessionTableName?: string;
+  sessionType?: SessionType;
+};
+
+type SessionInfo = {
+  /** The blueprint the session table was created from. */
+  sessionTableDef: SessionTableDef;
+  /** Source columns copied into the session table. */
+  copiedColumns: ReadonlySet<string>;
+};
+
+const SESSION_TYPES: readonly SessionType[] = ["edit", "import", "export"];
+const COPY_OPTIONS: readonly CopyOption[] = ["All", "Selected", "Empty"];
+const DEFAULT_COLUMN_NAMES: ReadonlySet<string> = new Set([
+  "vuuCreatedTimestamp",
+  "vuuUpdatedTimestamp",
+  "vuuMsg",
+]);
+const isSessionType = (value: unknown): value is SessionType =>
+  SESSION_TYPES.includes(value as SessionType);
+const isCopyOption = (value: unknown): value is CopyOption =>
+  COPY_OPTIONS.includes(value as CopyOption);
+
+const errorResult = (errorMessage: string): RpcResultError => ({
+  type: "ERROR_RESULT",
+  errorMessage,
+});
+
 type Subscription = {
   viewportId: string;
   dataSource: DataSourceBase<DataSourceRowWithBigint>;
@@ -104,6 +189,8 @@ export abstract class VuuModule<T extends string = string>
   #name: string;
   #sessionTableMessageColumn: string;
   #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
+  /** Session tables created from a blueprint, by session table name. */
+  #sessionInfo = new Map<string, SessionInfo>();
   #sessionSourceTableMap: Record<string, T> = {};
   #sessionTableMap: SessionTableMap = {};
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
@@ -126,6 +213,20 @@ export abstract class VuuModule<T extends string = string>
     | undefined;
   protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
+
+  /**
+   * Session table blueprints, keyed by name. createSessionTable fails if no
+   * blueprint is defined under the requested name (default
+   * `<sessionType>-<sourceTable>`), as in Scala Vuu.
+   */
+  protected sessionTableDefs?: Record<string, SessionTableDef>;
+  /**
+   * Tables that may be edited through a session table (sessionType "edit"
+   * or "import"). Default none, as in Scala Vuu.
+   */
+  protected editableTables?: readonly T[];
+  /** Maximum number of rows copied into a session table. */
+  protected maxSessionTableSize = 10_000;
 
   /**
    * Server-side validation applied to every value submitted by editCell and
@@ -368,7 +469,9 @@ export abstract class VuuModule<T extends string = string>
             ? this.#sessionTableMap[tableName].schema.key
             : this.schemas[tableName].key,
         table: table || sessionTable,
-        menu: this.menus?.[tableName],
+        menu: this.#sessionInfo.has(tableName)
+          ? this.#sessionInfo.get(tableName)?.sessionTableDef.menu
+          : this.menus?.[tableName],
         rpcServices: this.getServices(tableName),
         rpcMenuServices: this.getMenuServices(tableName),
         viewport,
@@ -395,7 +498,20 @@ export abstract class VuuModule<T extends string = string>
     return dataSource;
   };
 
+  /**
+   * For a session table created from a blueprint, the blueprint's services,
+   * which replace built-in services with the same rpcName.
+   */
   getServices(tableName: T) {
+    const sessionInfo = this.#sessionInfo.get(tableName);
+    if (sessionInfo) {
+      const { services = [] } = sessionInfo.sessionTableDef;
+      return services.concat(
+        this.#moduleServices.filter(
+          ({ rpcName }) => !services.some((s) => s.rpcName === rpcName),
+        ),
+      );
+    }
     const tableServices = this.services?.[tableName];
     if (Array.isArray(tableServices)) {
       return this.#moduleServices.concat(tableServices);
@@ -405,7 +521,9 @@ export abstract class VuuModule<T extends string = string>
   }
 
   getMenuServices(tableName: T) {
-    const tableServices = this.menuServices?.[tableName];
+    const tableServices = this.#sessionInfo.has(tableName)
+      ? this.#sessionInfo.get(tableName)?.sessionTableDef.menuServices
+      : this.menuServices?.[tableName];
     if (Array.isArray(tableServices)) {
       return this.#moduleMenuServices.concat(tableServices);
     } else {
@@ -562,9 +680,13 @@ export abstract class VuuModule<T extends string = string>
             };
           }
           const restoredRow = sessionRow.slice();
-          for (const column of sourceTable.schema.columns) {
-            restoredRow[sessionTable.map[column.name]] =
-              sourceRow[sourceTable.map[column.name]];
+          for (const name of this.#copiedColumns(
+            viewPortId,
+            sessionTable,
+            sourceTable,
+          )) {
+            restoredRow[sessionTable.map[name]] =
+              sourceRow[sourceTable.map[name]];
           }
           sessionTable.updateRow(restoredRow);
           sessionTable.update(key, "vuuAction", "");
@@ -702,56 +824,166 @@ export abstract class VuuModule<T extends string = string>
   };
 
   /**
-   * Creates a standalone session table.
-   * The `copyOption` determines which rows are copied into the session table.
-   * Returns the session table reference so the caller can subscribe to it.
-   *
-   * The optional `sessionTableName` (blueprint) and `columnsToCopy` params are
-   * accepted but not acted on: this test module has no session table
-   * blueprint registry, so the session table always mirrors the source table.
+   * createSessionTable, as in Scala Vuu: creates an instance of the session
+   * table blueprint named by `sessionTableName` (default
+   * `<sessionType>-<sourceTable>`, see {@link sessionTableDefs}). There is
+   * no fallback, the RPC fails if no blueprint has that name. Rows are
+   * copied by column name. Returns the session table so the caller can
+   * subscribe to it.
    */
   private createSessionTableService: ServiceHandler = async (rpcRequest) => {
     if (isCreateSessionTableRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
-      const { copyOption, sessionType } = rpcRequest.params;
-      const subscription = this.getSubscriptionByViewport(viewPortId);
-      const { dataSource } = subscription;
-      const { table: vuuTable } = dataSource;
-      if (vuuTable) {
-        const sourceTable = this.tables[vuuTable.table as T];
-        if (sourceTable) {
-          const sessionTableName = `session-${uuid()}`;
-          try {
-            const sessionTable = this.createSessionTable(
-              sourceTable,
-              sessionTableName,
-              copyOption,
-              dataSource as TickingArrayDataSource,
-              sessionType,
-            );
-            this.#sessionTableMap[sessionTableName] = sessionTable;
-            this.#sessionSourceTableMap[sessionTableName] = vuuTable.table as T;
-            subscription.sessionTableName = sessionTableName;
-            return {
-              data: {
-                table: { module: vuuTable.module, table: sessionTableName },
-              },
-              type: "SUCCESS_RESULT",
-            };
-          } catch (e) {
-            return {
-              type: "ERROR_RESULT",
-              errorMessage: (e as Error).message,
-            };
-          }
-        }
+      const { sessionType, ...params } =
+        rpcRequest.params as CreateSessionTableParams;
+      if (!isSessionType(sessionType)) {
+        return errorResult("Session type undefined");
+      }
+      try {
+        const table = this.#createSession(viewPortId, sessionType, params);
+        return { data: { table }, type: "SUCCESS_RESULT" };
+      } catch (e) {
+        return errorResult((e as Error).message);
       }
     }
-    return {
-      type: "ERROR_RESULT",
-      errorMessage: "createSessionTable: invalid rpc request",
-    };
+    return errorResult("createSessionTable: invalid rpc request");
   };
+
+  #createSession(
+    viewPortId: string,
+    sessionType: SessionType,
+    {
+      columnsToCopy,
+      copyOption,
+      sessionTableName,
+    }: Omit<CreateSessionTableParams, "sessionType">,
+  ): VuuTable {
+    const subscription = this.getSubscriptionByViewport(viewPortId);
+    const dataSource = subscription.dataSource as TickingArrayDataSource;
+    const sourceTableName = dataSource.table?.table as T | undefined;
+    const sourceTable =
+      sourceTableName === undefined ? undefined : this.tables[sourceTableName];
+    if (sourceTableName === undefined || sourceTable === undefined) {
+      throw Error("createSessionTable: invalid rpc request");
+    }
+    if (
+      sessionType !== "export" &&
+      !this.editableTables?.includes(sourceTableName)
+    ) {
+      throw Error("Table not editable");
+    }
+
+    const defName =
+      typeof sessionTableName === "string" && sessionTableName !== ""
+        ? sessionTableName
+        : `${sessionType}-${sourceTableName}`;
+    const sessionTableDef = this.sessionTableDefs?.[defName];
+    if (sessionTableDef === undefined) {
+      throw Error(`session table ${defName} is not defined`);
+    }
+
+    const effectiveCopyOption = sessionType === "import" ? "Empty" : copyOption;
+    if (!isCopyOption(effectiveCopyOption)) {
+      throw Error("Missing or invalid copy option.");
+    }
+    const copiedColumns = this.#getColumnsToCopy(sourceTable, columnsToCopy);
+
+    const name = `session-${uuid()}`;
+    const schema = this.#sessionTableSchema(name, sessionTableDef);
+    const sessionTable = new Table(
+      schema,
+      [],
+      buildDataColumnMapFromSchema(schema),
+    );
+
+    const sourceRows: TableRow[] = [];
+    if (effectiveCopyOption === "All") {
+      sourceRows.push(...sourceTable.data.slice(0, this.maxSessionTableSize));
+    } else if (effectiveCopyOption === "Selected") {
+      for (const key of dataSource.getSelectedRowIds()) {
+        if (sourceRows.length >= this.maxSessionTableSize) break;
+        const row = sourceTable.findByKey(String(key));
+        if (row) sourceRows.push(row);
+      }
+    }
+    const { map } = sessionTable;
+    const sourceKeyIndex = sourceTable.map[sourceTable.schema.key];
+    for (const sourceRow of sourceRows) {
+      const row: TableRow = new Array(schema.columns.length).fill("");
+      for (const column of copiedColumns) {
+        const index = map[column];
+        if (index !== undefined) {
+          row[index] = sourceRow[sourceTable.map[column]];
+        }
+      }
+      // the session key column may have a different name to the source key
+      row[map[schema.key]] = String(sourceRow[sourceKeyIndex]);
+      sessionTable.insert(row);
+    }
+
+    this.#sessionInfo.set(name, {
+      copiedColumns: new Set(copiedColumns),
+      sessionTableDef,
+    });
+    this.#sessionTableMap[name] = sessionTable;
+    this.#sessionSourceTableMap[name] = sourceTableName;
+    subscription.sessionTableName = name;
+    return { module: this.#name, table: name };
+  }
+
+  /**
+   * Schema of a session table instance: the blueprint's columns plus the
+   * session message column and vuuAction, if not defined.
+   */
+  #sessionTableSchema(
+    sessionTableName: string,
+    { columns, key }: SessionTableDef,
+  ): TableSchema {
+    const extraColumns = [this.#sessionTableMessageColumn, "vuuAction"]
+      .filter((name) => !columns.some((column) => column.name === name))
+      .map((name) => ({ name, serverDataType: "string" as const }));
+    return {
+      columns: columns.concat(extraColumns),
+      key,
+      table: { module: this.#name, table: sessionTableName },
+    };
+  }
+
+  #getColumnsToCopy(sourceTable: Table, columnsToCopy?: string): string[] {
+    const columns =
+      typeof columnsToCopy !== "string" ||
+      columnsToCopy.trim() === "" ||
+      columnsToCopy.trim() === "*"
+        ? sourceTable.schema.columns
+            .map(({ name }) => name)
+            .filter((name) => !DEFAULT_COLUMN_NAMES.has(name))
+        : columnsToCopy.split(",").map((name) => name.trim());
+    if (columns.some((name) => sourceTable.map[name] === undefined)) {
+      throw Error("Column(s) not found in source table.");
+    }
+    return columns;
+  }
+
+  /**
+   * Source columns held in a session table: for a session table created from
+   * a blueprint, the copied columns the blueprint defines; for one created by
+   * beginEditSession, every source column.
+   */
+  #copiedColumns(
+    sessionTableName: string,
+    sessionTable: Table,
+    sourceTable: Table,
+  ): string[] {
+    const copiedColumns =
+      this.#sessionInfo.get(sessionTableName)?.copiedColumns;
+    return sourceTable.schema.columns
+      .map(({ name }) => name)
+      .filter(
+        (name) =>
+          sessionTable.map[name] !== undefined &&
+          (copiedColumns === undefined || copiedColumns.has(name)),
+      );
+  }
 
   private beginEditSession: ServiceHandler = async (rpcRequest) => {
     if (isBeginEditSessionRpcRequest(rpcRequest)) {
@@ -871,12 +1103,15 @@ export abstract class VuuModule<T extends string = string>
           const actionIdx = sessionTable.map.vuuAction;
           const sessionTimestampIdx = sessionTable.map.vuuUpdatedTimestamp;
           const sourceTimestampIdx = sourceTable.map.vuuUpdatedTimestamp;
-          const sourceColumns = sourceTable.schema.columns;
+          const copiedColumns = this.#copiedColumns(
+            sessionTableName,
+            sessionTable,
+            sourceTable,
+          );
+          const sessionKeyIdx = sessionTable.map[sessionTable.schema.key];
           for (let i = 0; i < sessionTable.data.length; i++) {
             const sessionRow = sessionTable.data[i];
-            const key = String(
-              sessionRow[sessionTable.map[sourceTable.schema.key]],
-            );
+            const key = String(sessionRow[sessionKeyIdx]);
             const currentRow = sourceTable.findByKey(key);
             const action = sessionRow[actionIdx];
             if (action === "deleteRow") {
@@ -902,17 +1137,20 @@ export abstract class VuuModule<T extends string = string>
             }
             if (sessionRow[vuuMsgIdx]) continue;
             if (action === "editCell" && currentRow) {
-              for (const column of sourceColumns) {
-                const value = sessionRow[sessionTable.map[column.name]];
-                if (currentRow[sourceTable.map[column.name]] !== value) {
-                  sourceTable.update(key, column.name, value);
+              for (const name of copiedColumns) {
+                const value = sessionRow[sessionTable.map[name]];
+                if (currentRow[sourceTable.map[name]] !== value) {
+                  sourceTable.update(key, name, value);
                 }
               }
             } else if (action === "addRow" && !currentRow) {
+              // source columns the session table does not have are blank
               sourceTable.insert(
-                sourceColumns.map(
-                  (column) => sessionRow[sessionTable.map[column.name]],
-                ),
+                sourceTable.schema.columns.map(({ name }) => {
+                  if (name === sourceTable.schema.key) return key;
+                  const index = sessionTable.map[name];
+                  return index === undefined ? "" : sessionRow[index];
+                }),
               );
             }
           }

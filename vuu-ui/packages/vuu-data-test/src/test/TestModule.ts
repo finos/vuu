@@ -1,4 +1,8 @@
-import { type RpcMenuService, VuuModule } from "../core/module/VuuModule";
+import {
+  type RpcMenuService,
+  sessionTableDefsFor,
+  VuuModule,
+} from "../core/module/VuuModule";
 import { buildDataColumnMap, type Table } from "../Table";
 import {
   DefaultColumnGenerator,
@@ -338,6 +342,19 @@ class TestModule extends VuuModule<TestTableName> {
   get menus() {
     return undefined;
   }
+  protected editableTables: readonly TestTableName[] = [
+    "ChartTable",
+    "TestEdit",
+    "TestEditEmpty",
+    "TestEditValidation",
+  ];
+  protected sessionTableDefs = {
+    ...sessionTableDefsFor(this.#schemas.ChartTable, ["edit"]),
+    ...sessionTableDefsFor(this.#schemas.TestEdit, ["edit"]),
+    ...sessionTableDefsFor(this.#schemas.TestEditEmpty, ["edit", "import"]),
+    ...sessionTableDefsFor(this.#schemas.TestEditValidation, ["edit"]),
+  };
+
   get services() {
     return undefined;
   }
