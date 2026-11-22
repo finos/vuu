@@ -712,6 +712,37 @@ test.describe("Inline add row with optional columns", () => {
       await expect(externalId).toHaveValue("");
     });
 
+    test("Tab moves on from a complete row, Enter in the empty final cell inserts it", async ({
+      page,
+    }) => {
+      const { id, description, quantity, price, externalId } =
+        getInlineAddRowEditors(page);
+
+      await commitValue(id, "TEST-006");
+      await commitValue(description, "Foxtrot");
+      await commitValue(quantity, "72");
+      await price.fill("607.5");
+      await price.press("Tab");
+
+      const enabled = page
+        .locator(".vuuInlineAddRow")
+        .locator('[data-field="enabled"] input');
+      await expect(enabled).toBeFocused();
+      await enabled.press("Tab");
+      await expect(externalId).toBeFocused();
+      await expect(getInsertedRows(page)).toHaveCount(0);
+      await expect(price).toHaveValue("607.5");
+
+      await externalId.press("Enter");
+
+      const insertedRows = getInsertedRows(page);
+      await expect(insertedRows).toHaveCount(1);
+      await expect(
+        insertedRows.getByRole("textbox", { name: "price" }),
+      ).toHaveValue("607.5");
+      await expect(id).toHaveValue("");
+    });
+
     test("does not insert a row while the optional final column holds an invalid value", async ({
       page,
     }) => {
@@ -2485,5 +2516,38 @@ test.describe("Session table editing (createSessionTable)", () => {
     await expect(
       table.row(3).getByRole("button", { name: "Undo" }),
     ).toBeVisible();
+  });
+});
+
+test.describe("Insert-only column", () => {
+  test("can be edited on a row added in this edit session", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmptyInsertOnlyId");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const { id, description, quantity, price, externalId } =
+      getInlineAddRowEditors(page);
+    await commitValue(id, "TEST-006");
+    await commitValue(description, "Foxtrot");
+    await commitValue(quantity, "72");
+    await commitValue(price, "607.5");
+    await commitValue(externalId, "1006");
+
+    const insertedRows = getInsertedRows(page);
+    await expect(insertedRows).toHaveCount(1);
+    const insertedId = insertedRows.getByRole("textbox", {
+      name: "id",
+      exact: true,
+    });
+    await expect(insertedId).toHaveValue("TEST-006");
+    await expect(
+      insertedRows.locator('.vuuTableCell[data-field="id"]'),
+    ).toContainClass("vuuTableCell-editable");
+
+    await insertedId.fill("TEST-016");
+    await insertedId.press("Enter");
+    await expect(insertedId).toHaveValue("TEST-016");
   });
 });

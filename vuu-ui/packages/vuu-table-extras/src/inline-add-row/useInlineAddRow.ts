@@ -137,11 +137,7 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       return;
     }
 
-    const handleCommit = (event: Event) => {
-      const target = event.target;
-      if (!(target instanceof Element)) {
-        return;
-      }
+    const moveFocusFrom = (target: Element) => {
       const cell = target.closest<HTMLElement>("[data-field]");
       const cells = container.querySelectorAll<HTMLElement>("[data-field]");
       const currentIndex = Array.from(cells).indexOf(cell ?? container);
@@ -164,8 +160,70 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       }
     };
 
+    // Enter in a cell adds the row once its required columns are filled,
+    // whether or not the cell had a change to commit. Enter in the final
+    // cell always tries to add it, which flags the required values still
+    // missing. Tab, or a value chosen from a list, only moves on to the next
+    // cell.
+    const isFinalCell = (target: Element) => {
+      const field = target.closest<HTMLElement>("[data-field]")?.dataset.field;
+      return field !== undefined && editSession.isNewRowFinalColumn(field);
+    };
+    /** Returns true when the row is added. */
+    const submitNewRow = (target: Element) => {
+      if (editSession.isNewRowComplete()) {
+        editSession.addNewRow();
+        return true;
+      }
+      if (isFinalCell(target)) {
+        editSession.addNewRow();
+      }
+      return false;
+    };
+
+    let enterTarget: EventTarget | null = null;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const { key, target } = event;
+      if (
+        key === "Enter" &&
+        target instanceof Element &&
+        target.closest('[role="combobox"], [role="listbox"]') === null
+      ) {
+        enterTarget = target;
+        // A cell commits its change during the keydown. Wait for it, then
+        // submit the row if the cell had nothing to commit.
+        setTimeout(() => {
+          if (enterTarget === target) {
+            enterTarget = null;
+            if (!submitNewRow(target) && isFinalCell(target)) {
+              moveFocusFrom(target);
+            }
+          }
+        });
+      } else {
+        enterTarget = null;
+      }
+    };
+
+    const handleCommit = (event: Event) => {
+      const target = event.target;
+      const isEnter = target === enterTarget;
+      enterTarget = null;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      if (isEnter && submitNewRow(target)) {
+        return;
+      }
+      moveFocusFrom(target);
+    };
+
+    container.addEventListener("keydown", handleKeyDown, true);
     container.addEventListener("vuu-commit", handleCommit);
-    return () => container.removeEventListener("vuu-commit", handleCommit);
+    return () => {
+      container.removeEventListener("keydown", handleKeyDown, true);
+      container.removeEventListener("vuu-commit", handleCommit);
+    };
   }, [editSession, focusEditor, visibleColumns]);
 
   return {

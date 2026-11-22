@@ -712,6 +712,7 @@ export const InstrumentsAddEditDelete = () => (
 const EditableTestTableTemplate = ({
   allowUpload = false,
   columnTypes,
+  insertOnlyColumns,
   optionalColumns,
   tableName,
 }: {
@@ -721,6 +722,8 @@ const EditableTestTableTemplate = ({
    * client-side validation rules.
    */
   columnTypes?: Readonly<Record<string, DataValueTypeDescriptor>>;
+  /** Columns that can be edited when a row is added, but not after. */
+  insertOnlyColumns?: readonly string[];
   /**
    * Columns that may be left blank when adding a row. All other columns
    * must have a value before the inline add row will insert the row.
@@ -789,7 +792,9 @@ const EditableTestTableTemplate = ({
           :
           tableSchema.columns.map<ColumnDescriptor>((column) => ({
             ...column,
-            editable: true,
+            editable: insertOnlyColumns?.includes(column.name)
+              ? { insert: true, update: false }
+              : true,
             ...(columnTypes?.[column.name]
               ? { type: columnTypes[column.name] }
               : undefined),
@@ -804,6 +809,7 @@ const EditableTestTableTemplate = ({
     }),
     [
       columnTypes,
+      insertOnlyColumns,
       isEditSessionReady,
       optionalColumns,
       rowClassNameGenerators,
@@ -951,6 +957,24 @@ export const TestTableEmptyOptionalFinalColumn = () => (
     <NotificationsProvider>
       <EditableTestTableTemplate
         optionalColumns={OPTIONAL_FINAL_COLUMN}
+        tableName="TestEditEmpty"
+      />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+const INSERT_ONLY_ID = ["id"] as const;
+
+/**
+ * id can be edited when a row is added, and on rows added in this edit
+ * session, but not on saved rows.
+ * @title Test table empty, insert-only id
+ */
+export const TestTableEmptyInsertOnlyId = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate
+        insertOnlyColumns={INSERT_ONLY_ID}
         tableName="TestEditEmpty"
       />
     </NotificationsProvider>

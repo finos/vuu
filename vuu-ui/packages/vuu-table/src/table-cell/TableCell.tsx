@@ -1,11 +1,14 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
+  isEditRowAdded,
   useCellEdited,
   useEditSession,
   useTableEditSession,
 } from "@vuu-ui/vuu-data-editing";
 import type {
+  DataRow,
   TableCellEditHandler,
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
@@ -17,6 +20,12 @@ import { useCell } from "../useCell";
 import tableCellCss from "./TableCell.css";
 
 const classBase = "vuuTableCell";
+
+/** The new row, or a row added in this session, uses the insert rules. */
+const isInsertingRow = (
+  editSession: ReturnType<typeof useEditSession> | undefined,
+  dataRow: DataRow,
+) => (editSession?.isNewRow(dataRow.key) ?? false) || isEditRowAdded(dataRow);
 
 /**
  * A cell with the default renderer depends only on its column, its own
@@ -54,7 +63,7 @@ export const TableCell = memo(function TableCell({
 
   const { className, style } = useCell(column, classBase, false);
   const { ariaColIndex, CellRenderer, name, valueFormatter } = column;
-  const isNewRow = stagedEditSession?.isNewRow(dataRow.key) ?? false;
+  const isInsertRow = isInsertingRow(stagedEditSession, dataRow);
   const isInsertOnly =
     isDataValueEditable(column, "insert") &&
     !isDataValueEditable(column, "update");
@@ -67,7 +76,8 @@ export const TableCell = memo(function TableCell({
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
       const isNewRow = stagedEditSession?.isNewRow(dataRow.key) ?? false;
-      if (!isDataValueEditable(column, isNewRow ? "insert" : "update")) {
+      const isInsertRow = isInsertingRow(stagedEditSession, dataRow);
+      if (!isDataValueEditable(column, isInsertRow ? "insert" : "update")) {
         return;
       }
 
@@ -92,12 +102,6 @@ export const TableCell = memo(function TableCell({
             name,
             isEmptyValue ? undefined : value,
           );
-          if (
-            stagedEditSession.isNewRowFinalColumn(name) ||
-            stagedEditSession.isNewRowComplete()
-          ) {
-            return stagedEditSession.addNewRow();
-          }
           return { data: undefined, type: "SUCCESS_RESULT" };
         }
 
@@ -123,13 +127,15 @@ export const TableCell = memo(function TableCell({
   return (
     <div
       aria-colindex={ariaColIndex}
-      className={className}
+      className={cx(className, {
+        [`${classBase}-editable`]: isInsertOnly && isInsertRow,
+      })}
       data-field={name}
       onClick={onClick ? handleClick : undefined}
       role="cell"
       style={style}
     >
-      {CellRenderer && (!isInsertOnly || isNewRow) ? (
+      {CellRenderer && (!isInsertOnly || isInsertRow) ? (
         <CellRenderer
           column={column}
           dataRow={dataRow}

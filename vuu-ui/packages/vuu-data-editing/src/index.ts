@@ -34,6 +34,7 @@ export type { EditErrorHandler, EditOperation } from "./edit-errors";
 export {
   getVuuEditMessage,
   isInlineEditingSession,
+  isEditRowAdded,
   isEditRowReadOnly,
   withDataRowEditErrors,
 } from "./edit-utils";

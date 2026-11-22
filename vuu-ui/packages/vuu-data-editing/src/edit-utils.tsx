@@ -9,6 +9,13 @@ const dataRowEditErrors = Symbol("vuuDataRowEditErrors");
 export const isEditRowReadOnly = (dataRow: DataRow) =>
   dataRow.hasColumn("vuuAction") && dataRow.vuuAction === "deleteRow";
 
+/**
+ * A row added during the edit session, not yet saved. Like the new row, its
+ * insert-only columns can still be edited.
+ */
+export const isEditRowAdded = (dataRow: DataRow) =>
+  dataRow.hasColumn("vuuAction") && dataRow.vuuAction === "addRow";
+
 type DataRowWithEditErrors = DataRow & {
   [dataRowEditErrors]?: Record<string, string>;
 };
