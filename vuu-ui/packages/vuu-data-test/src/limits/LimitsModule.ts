@@ -1,184 +1,566 @@
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { type RpcMenuService, VuuModule } from "../core/module/VuuModule";
+import {
+  type RpcMenuService,
+  type RpcService,
+  type ServiceHandler,
+  type SessionTableDef,
+  VuuModule,
+} from "../core/module/VuuModule";
 import tableContainer from "../core/table/TableContainer";
 import { VUU_DEFAULT_COLUMNS } from "../default-column-definitions";
+import type { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { buildDataColumnMap, type Table } from "../Table";
 
-export type LimitsTableName = "traderLimits";
+export type LimitsTableName = "limitDefinitions";
 
-export type LimitType = "Volume over time" | "Cumulative %";
-/** The limit types supported for now. */
-export const LIMIT_TYPES: readonly LimitType[] = ["Volume over time"];
-
-export const LIMIT_PRODUCTS = ["PROD1"] as const;
-/** Seconds. Fixed for now. */
-export const LIMIT_TIME_DURATION = 600;
-
-export type LimitStatus = "Pending" | "Active";
-
-export const TRADER_LIMITS_TABLE = {
+export const LIMIT_DEFINITIONS_TABLE = {
   module: "LIMITS",
-  table: "traderLimits",
+  table: "limitDefinitions",
 } as const;
 
+export type LimitEntityType =
+  | "Firm"
+  | "Legal entity"
+  | "Desk"
+  | "Book"
+  | "Trader";
+
+export interface LimitEntity {
+  entity_id: string;
+  entity_type: LimitEntityType;
+  name: string;
+}
+
+/** The entities limits attach to. A hierarchy table will replace this. */
+export const LIMIT_ENTITIES: readonly LimitEntity[] = [
+  { entity_id: "FIRM", entity_type: "Firm", name: "Firm" },
+  { entity_id: "LE-UK", entity_type: "Legal entity", name: "UK Ltd" },
+  { entity_id: "LE-US", entity_type: "Legal entity", name: "US Inc" },
+  { entity_id: "DESK-EQD", entity_type: "Desk", name: "Equity derivatives" },
+  { entity_id: "DESK-CASH", entity_type: "Desk", name: "Cash equities" },
+  { entity_id: "DESK-RATES", entity_type: "Desk", name: "Rates" },
+  { entity_id: "BOOK-EQD-01", entity_type: "Book", name: "Index options" },
+  {
+    entity_id: "BOOK-EQD-02",
+    entity_type: "Book",
+    name: "Single stock options",
+  },
+  { entity_id: "BOOK-CASH-01", entity_type: "Book", name: "UK cash" },
+  { entity_id: "BOOK-RATES-01", entity_type: "Book", name: "Govt bonds" },
+  { entity_id: "TRD-JSMITH", entity_type: "Trader", name: "J Smith" },
+  { entity_id: "TRD-AKHAN", entity_type: "Trader", name: "A Khan" },
+];
+
+export type LimitPeriod =
+  | "Per order"
+  | "Per second"
+  | "Intraday"
+  | "Overnight"
+  | "Daily"
+  | "MTD"
+  | "YTD";
+
+export const LIMIT_PERIODS: readonly LimitPeriod[] = [
+  "Per order",
+  "Per second",
+  "Intraday",
+  "Overnight",
+  "Daily",
+  "MTD",
+  "YTD",
+];
+
+export type LimitMetricFamily =
+  | "Order"
+  | "Throughput"
+  | "Position"
+  | "Sensitivity"
+  | "Portfolio risk"
+  | "P&L stop-loss"
+  | "Credit";
+
+interface LimitMetric {
+  family: LimitMetricFamily;
+  periods: readonly LimitPeriod[];
+}
+
+const metrics = (
+  family: LimitMetricFamily,
+  periods: readonly LimitPeriod[],
+  names: string[],
+): [string, LimitMetric][] => names.map((name) => [name, { family, periods }]);
+
+/** The metrics a limit can be defined on, with the periods each allows. */
+export const LIMIT_METRICS: Readonly<Record<string, LimitMetric>> =
+  Object.fromEntries([
+    ...metrics(
+      "Order",
+      ["Per order"],
+      [
+        "Max order quantity",
+        "Max order notional",
+        "Price collar %",
+        "Max % of ADV",
+      ],
+    ),
+    ...metrics(
+      "Throughput",
+      ["Per second", "Daily"],
+      ["Orders per second", "Messages per second", "Order-to-trade ratio"],
+    ),
+    ...metrics(
+      "Position",
+      ["Intraday", "Overnight"],
+      ["Gross position", "Net position", "Long notional", "Short notional"],
+    ),
+    ...metrics(
+      "Sensitivity",
+      ["Intraday", "Overnight"],
+      ["Delta", "Gamma", "Vega", "DV01"],
+    ),
+    ...metrics("Portfolio risk", ["Daily"], ["VaR", "Stress loss"]),
+    ...metrics("P&L stop-loss", ["Daily", "MTD", "YTD"], ["Drawdown"]),
+    ...metrics("Credit", ["Daily"], ["Counterparty PFE", "Settlement limit"]),
+  ]);
+
+export const LIMIT_METRIC_NAMES = Object.keys(LIMIT_METRICS);
+
+export const LIMIT_CURRENCIES = ["USD", "EUR", "GBP", "JPY"] as const;
+
+export type LimitStatus = "Pending" | "Active" | "Rejected";
+
+/**
+ * The maker of every change. The local module has no user identity, so
+ * changes are made by one user and approved or rejected by another.
+ */
+export const LIMITS_MAKER = "trader";
+export const LIMITS_CHECKER = "supervisor";
+
+const insertOnly = { editable: { insert: true, update: false } } as const;
+const readOnly = { editable: false } as const;
+
+/** Columns of a limit that the user enters. */
+const definitionColumns: SchemaColumn[] = [
+  { name: "entity_id", serverDataType: "string", ...insertOnly },
+  { name: "metric", serverDataType: "string", ...insertOnly },
+  { name: "scope", serverDataType: "string", ...insertOnly },
+  { name: "period", serverDataType: "string", ...insertOnly },
+  { name: "warning", serverDataType: "double" },
+  { name: "soft", serverDataType: "double" },
+  { name: "hard", serverDataType: "double" },
+  { name: "currency", serverDataType: "string" },
+  { name: "effective_from", serverDataType: "epochtimestamp" },
+  { name: "effective_to", serverDataType: "epochtimestamp" },
+  { name: "owner", serverDataType: "string" },
+];
+
+/** Columns of a limit, in CSV template order, that are entered by the user. */
+export const LIMIT_DEFINITION_COLUMNS = definitionColumns.map(
+  ({ name }) => name,
+);
+
+/** Columns a limit must have. The others may be blank. */
+export const LIMIT_REQUIRED_COLUMNS: readonly string[] = [
+  "entity_id",
+  "metric",
+  "period",
+  "hard",
+];
+
+const limitIdColumn: SchemaColumn = {
+  name: "limit_id",
+  serverDataType: "string",
+  ...readOnly,
+};
+
 export const limitsSchemas: Record<LimitsTableName, TableSchema> = {
-  traderLimits: {
+  limitDefinitions: {
     columns: [
+      limitIdColumn,
       { name: "status", serverDataType: "string" },
-      { name: "limit_key", serverDataType: "string" },
-      { name: "trader_id", serverDataType: "string" },
-      { name: "limit_id", serverDataType: "string" },
-      { name: "product_id", serverDataType: "string" },
-      { name: "limit_type", serverDataType: "string" },
-      { name: "limit", serverDataType: "long" },
-      { name: "time_duration", serverDataType: "int" },
+      { name: "entity_type", serverDataType: "string" },
+      { name: "metric_family", serverDataType: "string" },
+      ...definitionColumns,
       { name: "change", serverDataType: "string" },
+      { name: "maker", serverDataType: "string" },
+      { name: "checker", serverDataType: "string" },
       ...VUU_DEFAULT_COLUMNS,
     ],
-    key: "limit_key",
-    table: TRADER_LIMITS_TABLE,
+    key: "limit_id",
+    table: LIMIT_DEFINITIONS_TABLE,
   },
 };
 
+const isBlank = (value: unknown) =>
+  value === undefined || value === null || value === "";
+
+const isNumber = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value);
+
 /**
- * Server-side rules for trader limits, applied to cell edits and added rows.
+ * Rules for a single value, applied to cell edits, added rows and imported
+ * CSV values. A blank value is accepted: required columns, and rules across
+ * columns, are checked when changes are saved, see
+ * {@link validateLimitDefinition}.
  */
-export const validateTraderLimit = (
+export const validateLimitValue = (
   column: string,
   value: VuuRowDataItemType,
 ): string | undefined => {
+  if (isBlank(value)) {
+    return undefined;
+  }
   switch (column) {
-    case "limit_id":
-      return typeof value === "string" && value.trim() !== ""
+    case "entity_id":
+      return LIMIT_ENTITIES.some(({ entity_id }) => entity_id === value)
         ? undefined
-        : "limit_id is required";
-    case "trader_id":
-      return typeof value === "string" && value.trim() !== ""
+        : `entity ${value} is not known`;
+    case "metric":
+      return LIMIT_METRIC_NAMES.includes(String(value))
         ? undefined
-        : "trader_id is required";
-    case "product_id":
-      return (LIMIT_PRODUCTS as readonly string[]).includes(String(value))
+        : `metric ${value} is not known`;
+    case "period":
+      return (LIMIT_PERIODS as readonly unknown[]).includes(value)
         ? undefined
-        : `product_id must be ${LIMIT_PRODUCTS.join(" or ")}`;
-    case "limit_type":
-      return (LIMIT_TYPES as readonly unknown[]).includes(value)
+        : `period must be one of ${LIMIT_PERIODS.join(", ")}`;
+    case "warning":
+    case "soft":
+    case "hard":
+      return isNumber(value) && Number(value) > 0
         ? undefined
-        : `limit_type must be '${LIMIT_TYPES.join("' or '")}'`;
-    case "limit": {
-      const limit = Number(value);
-      return Number.isInteger(limit) && limit > 0
+        : `${column} must be a number greater than zero`;
+    case "currency":
+      return (LIMIT_CURRENCIES as readonly unknown[]).includes(value)
         ? undefined
-        : "limit must be a whole number greater than zero";
-    }
-    case "time_duration":
-      return Number(value) === LIMIT_TIME_DURATION
-        ? undefined
-        : `time_duration must be ${LIMIT_TIME_DURATION}`;
+        : `currency must be one of ${LIMIT_CURRENCIES.join(", ")}`;
     default:
       return undefined;
   }
 };
 
 /**
- * The key of a trader limit. limit_id is unique within a trader.
+ * Rules for a whole limit, applied when changes are saved. Returns the
+ * first error found.
  */
-export const traderLimitKey = (limitId: string, traderId: string) =>
-  `${limitId}:${traderId}`;
+export const validateLimitDefinition = (
+  limit: Record<string, VuuRowDataItemType>,
+): string | undefined => {
+  for (const column of LIMIT_REQUIRED_COLUMNS) {
+    if (isBlank(limit[column])) {
+      return `${column} is required`;
+    }
+  }
+  for (const column of LIMIT_DEFINITION_COLUMNS) {
+    const error = validateLimitValue(column, limit[column]);
+    if (error) return error;
+  }
+  const { effective_from, effective_to, hard, metric, period, soft, warning } =
+    limit;
+  if (!LIMIT_METRICS[String(metric)].periods.includes(period as LimitPeriod)) {
+    return `period of ${metric} must be ${LIMIT_METRICS[String(metric)].periods.join(" or ")}`;
+  }
+  if (!isBlank(soft) && Number(soft) > Number(hard)) {
+    return "soft must not be greater than hard";
+  }
+  if (!isBlank(warning) && Number(warning) > Number(soft || hard)) {
+    return "warning must not be greater than soft or hard";
+  }
+  if (!isBlank(effective_to) && Number(effective_to) < Number(effective_from)) {
+    return "effective_to must not be before effective_from";
+  }
+  return undefined;
+};
 
-export const LIMIT_ADDED = "Added";
-type LimitValue = VuuRowDataItemType | bigint;
+const startOfToday = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today.getTime();
+};
 
-export const limitChangedMessage = (limit: LimitValue) =>
-  `Limit changed to ${limit}`;
+/** A pending change to an Active limit, applied when it is approved. */
+type PendingChange =
+  | { type: "amend"; values: Record<string, VuuRowDataItemType> }
+  | { type: "delete" };
+
+const describeAmendment = (
+  current: Record<string, VuuRowDataItemType>,
+  values: Record<string, VuuRowDataItemType>,
+) =>
+  Object.entries(values)
+    .filter(([column, value]) => current[column] !== value)
+    .map(([column, value]) => `${column} ${current[column]} → ${value}`)
+    .join(", ");
 
 /**
- * Trader limits, keyed by limit_key, which the server builds from limit_id
- * and trader_id. A new limit, or a change to an existing limit, is Pending
- * until the next business day, when it becomes Active. Call
- * `activatePendingLimits` to simulate the start of the next business day.
+ * Limit definitions, one row per limit. Changes are made in a session table,
+ * created from a blueprint, and go through maker-checker:
  *
- * `limit` is the Active limit. A change to the limit of an Active row is
- * held until the next business day and described in `change`. A new row's
- * `change` is "Added"; its limit can be changed until it becomes Active.
+ * - saving a session never changes an Active limit. A new limit is Pending.
+ *   A change to, or deletion of, an Active limit is held, described in
+ *   `change`, and the limit is Pending.
+ * - approveLimits applies the held changes of the selected Pending limits,
+ *   which become Active. rejectLimits discards them; a rejected new limit is
+ *   Rejected.
+ *
+ * Blueprints: `edit-limitDefinitions` holds the columns a user enters, with
+ * their edit rules; `import-limitDefinitions` adds the CSV row number;
+ * `export-limitDefinitions` has every column. The edit and import blueprints
+ * save with maker-checker, through their own endEditSession service.
  */
-class LimitsModule extends VuuModule<LimitsTableName> {
-  /** The limit of each row that has become Active, by key. */
-  #activeLimits = new Map<string, LimitValue>();
-  /** Changed limits of Active rows, applied on the next business day. */
-  #pendingLimits = new Map<string, LimitValue>();
+export class LimitsModule extends VuuModule<LimitsTableName> {
+  /** Keys of the limits that have been Active, so are changed by approval. */
+  #approvedKeys = new Set<string>();
+  #pendingChanges = new Map<string, PendingChange>();
+  #nextLimitId = 1;
 
   #tables: Record<LimitsTableName, Table> = {
-    traderLimits: tableContainer.createTable(
-      limitsSchemas.traderLimits,
+    limitDefinitions: tableContainer.createTable(
+      limitsSchemas.limitDefinitions,
       [],
-      buildDataColumnMap(limitsSchemas, "traderLimits"),
+      buildDataColumnMap(limitsSchemas, "limitDefinitions"),
     ),
+  };
+
+  protected editableTables: readonly LimitsTableName[] = ["limitDefinitions"];
+
+  protected sessionTableDefs: Record<string, SessionTableDef> = {
+    "edit-limitDefinitions": {
+      columns: [limitIdColumn, ...definitionColumns],
+      key: "limit_id",
+      services: [{ rpcName: "endEditSession", service: this.#saveSession() }],
+    },
+    "import-limitDefinitions": {
+      columns: [
+        limitIdColumn,
+        ...definitionColumns,
+        { name: "vuuRowNum", serverDataType: "int" },
+      ],
+      key: "limit_id",
+      services: [{ rpcName: "endEditSession", service: this.#saveSession() }],
+    },
+    "export-limitDefinitions": {
+      columns: limitsSchemas.limitDefinitions.columns,
+      key: "limit_id",
+    },
   };
 
   constructor() {
     super("LIMITS");
-    const table = this.#tables.traderLimits;
-    const { map } = table;
-    // These listeners are registered before any data source subscribes, so
-    // they run first. They set values on the emitted row, which is the row
-    // the table holds, so subscribers receive the row with them already set.
-    table.on("insert", (row) => {
-      const now = Date.now();
-      row[map.status] = "Pending";
-      row[map.change] = LIMIT_ADDED;
-      row[map.vuuCreatedTimestamp] = now;
-      row[map.vuuUpdatedTimestamp] = now;
-    });
-    table.on("update", (row, columnName) => {
-      const key = String(row[map.limit_key]);
-      const activeLimit = this.#activeLimits.get(key);
-      if (columnName !== "limit" || activeLimit === undefined) {
-        return;
-      }
-      const limit = row[map.limit];
-      row[map.limit] = activeLimit;
-      if (Number(limit) === Number(activeLimit)) {
-        this.#pendingLimits.delete(key);
-        row[map.status] = "Active";
-        row[map.change] = "";
-      } else {
-        this.#pendingLimits.set(key, limit);
-        row[map.status] = "Pending";
-        row[map.change] = limitChangedMessage(limit);
-      }
-    });
-    table.on("delete", (key) => {
-      this.#activeLimits.delete(key);
-      this.#pendingLimits.delete(key);
-    });
   }
 
-  /** Simulates the start of the next business day. */
-  activatePendingLimits() {
-    const table = this.#tables.traderLimits;
-    const { map } = table;
-    table.data
-      .filter((row) => row[map.status] === "Pending")
-      .forEach((row) => {
-        const key = String(row[map.limit_key]);
-        const activeRow = row.slice();
-        if (this.#pendingLimits.has(key)) {
-          activeRow[map.limit] = this.#pendingLimits.get(key) ?? row[map.limit];
-          this.#pendingLimits.delete(key);
-        }
-        activeRow[map.status] = "Active";
-        activeRow[map.change] = "";
-        this.#activeLimits.set(key, activeRow[map.limit]);
-        table.updateRow(activeRow);
-      });
+  get #limits() {
+    return this.#tables.limitDefinitions;
   }
+
+  #rowValues(key: string) {
+    const { map } = this.#limits;
+    const row = this.#limits.findByKey(key);
+    if (row === undefined) return undefined;
+    const values: Record<string, VuuRowDataItemType> = {};
+    for (const { name } of this.#limits.schema.columns) {
+      values[name] = row[map[name]] as VuuRowDataItemType;
+    }
+    return values;
+  }
+
+  #update(key: string, values: Record<string, VuuRowDataItemType>) {
+    for (const [column, value] of Object.entries(values)) {
+      this.#limits.update(key, column, value);
+    }
+    this.#limits.update(key, "vuuUpdatedTimestamp", Date.now());
+  }
+
+  #insert(key: string, values: Record<string, VuuRowDataItemType>) {
+    const now = Date.now();
+    const { metric, entity_id } = values;
+    const row: Record<string, VuuRowDataItemType> = {
+      ...values,
+      change: "New limit",
+      checker: "",
+      effective_from: isBlank(values.effective_from)
+        ? startOfToday()
+        : values.effective_from,
+      entity_type:
+        LIMIT_ENTITIES.find((entity) => entity.entity_id === entity_id)
+          ?.entity_type ?? "",
+      limit_id: key,
+      maker: LIMITS_MAKER,
+      metric_family: LIMIT_METRICS[String(metric)].family,
+      status: "Pending",
+      vuuCreatedTimestamp: now,
+      vuuMsg: "",
+      vuuUpdatedTimestamp: now,
+    };
+    this.#limits.insert(
+      this.#limits.schema.columns.map(({ name }) => row[name] ?? ""),
+    );
+  }
+
+  /**
+   * Save the changes in a session table, with maker-checker. Nothing is
+   * saved unless every row is valid. A row that is not has its vuuMsg set,
+   * and is named in the error, by its line for an import.
+   */
+  #saveSession(): ServiceHandler {
+    return async (rpcRequest) => {
+      const { viewPortId } = rpcRequest.context as { viewPortId: string };
+      if ((rpcRequest.params as { save?: boolean }).save !== true) {
+        return { type: "SUCCESS_RESULT", data: undefined };
+      }
+      const sessionTable = this.getSessionTable(viewPortId);
+      const { map } = sessionTable;
+      const columns = sessionTable.schema.columns
+        .map(({ name }) => name)
+        .filter((name) => LIMIT_DEFINITION_COLUMNS.includes(name));
+
+      const changes = sessionTable.data.map((sessionRow) => {
+        const key = String(sessionRow[map.limit_id]);
+        const values: Record<string, VuuRowDataItemType> = {};
+        for (const name of columns) {
+          values[name] = sessionRow[map[name]] as VuuRowDataItemType;
+        }
+        const action = sessionRow[map.vuuAction];
+        const current = this.#rowValues(key);
+        const error =
+          action === "addRow" || action === "editCell"
+            ? validateLimitDefinition({ ...current, ...values })
+            : undefined;
+        // vuuRowNum numbers the data rows of a CSV from 1, after the header
+        const rowName =
+          map.vuuRowNum === undefined
+            ? key
+            : `line ${Number(sessionRow[map.vuuRowNum]) + 1}`;
+        return { action, current, error, key, rowName, values };
+      });
+
+      const errors = changes.filter(({ error }) => error !== undefined);
+      if (errors.length > 0) {
+        for (const { error, key } of errors) {
+          sessionTable.update(key, "vuuMsg", error as string);
+        }
+        const count =
+          errors.length === 1 ? "1 limit" : `${errors.length} limits`;
+        return {
+          type: "ERROR_RESULT",
+          errorMessage: `${count} could not be saved. ${errors
+            .map(({ error, rowName }) => `${rowName}: ${error}`)
+            .join(", ")}`,
+        };
+      }
+
+      for (const { action, current, key, values } of changes) {
+        if (action === "deleteRow") {
+          this.#deleteLimit(key);
+        } else if (action === "addRow" || action === "editCell") {
+          if (current === undefined) {
+            this.#insert(key, values);
+          } else {
+            this.#amendLimit(key, current, values);
+          }
+        }
+      }
+      return { type: "SUCCESS_RESULT", data: undefined };
+    };
+  }
+
+  #amendLimit(
+    key: string,
+    current: Record<string, VuuRowDataItemType>,
+    values: Record<string, VuuRowDataItemType>,
+  ) {
+    if (this.#approvedKeys.has(key)) {
+      const held = this.#pendingChanges.get(key);
+      const amended = {
+        ...(held?.type === "amend" ? held.values : {}),
+        ...values,
+      };
+      const change = describeAmendment(current, amended);
+      if (change === "") {
+        this.#pendingChanges.delete(key);
+        this.#update(key, { change: "", maker: "", status: "Active" });
+      } else {
+        this.#pendingChanges.set(key, { type: "amend", values: amended });
+        this.#update(key, { change, maker: LIMITS_MAKER, status: "Pending" });
+      }
+    } else {
+      // never approved, so the new limit itself is changed
+      this.#update(key, {
+        ...values,
+        change: "New limit",
+        maker: LIMITS_MAKER,
+        status: "Pending",
+      });
+    }
+  }
+
+  #deleteLimit(key: string) {
+    if (this.#approvedKeys.has(key)) {
+      this.#pendingChanges.set(key, { type: "delete" });
+      this.#update(key, {
+        change: "Delete",
+        maker: LIMITS_MAKER,
+        status: "Pending",
+      });
+    } else {
+      this.#limits.delete(key);
+    }
+  }
+
+  #selectedPendingKeys(viewPortId: string) {
+    const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+    const { map } = this.#limits;
+    return (dataSource as TickingArrayDataSource)
+      .getSelectedRowIds()
+      .filter((key) => this.#limits.findByKey(key)?.[map.status] === "Pending");
+  }
+
+  #approveLimits: ServiceHandler = async (rpcRequest) => {
+    const { viewPortId } = rpcRequest.context as { viewPortId: string };
+    const keys = this.#selectedPendingKeys(viewPortId);
+    for (const key of keys) {
+      const pending = this.#pendingChanges.get(key);
+      this.#pendingChanges.delete(key);
+      if (pending?.type === "delete") {
+        this.#approvedKeys.delete(key);
+        this.#limits.delete(key);
+      } else {
+        this.#approvedKeys.add(key);
+        this.#update(key, {
+          ...(pending?.type === "amend" ? pending.values : {}),
+          change: "",
+          checker: LIMITS_CHECKER,
+          status: "Active",
+        });
+      }
+    }
+    return { type: "SUCCESS_RESULT", data: { keys } };
+  };
+
+  #rejectLimits: ServiceHandler = async (rpcRequest) => {
+    const { viewPortId } = rpcRequest.context as { viewPortId: string };
+    const keys = this.#selectedPendingKeys(viewPortId);
+    for (const key of keys) {
+      this.#pendingChanges.delete(key);
+      this.#update(key, {
+        change: "",
+        checker: LIMITS_CHECKER,
+        status: this.#approvedKeys.has(key) ? "Active" : "Rejected",
+      });
+    }
+    return { type: "SUCCESS_RESULT", data: { keys } };
+  };
 
   get menus() {
     return undefined;
   }
-  get services() {
-    return undefined;
+  get services(): Record<LimitsTableName, RpcService[] | undefined> {
+    return {
+      limitDefinitions: [
+        { rpcName: "approveLimits", service: this.#approveLimits },
+        { rpcName: "rejectLimits", service: this.#rejectLimits },
+      ],
+    };
   }
   get menuServices():
     | Record<LimitsTableName, RpcMenuService[] | undefined>
@@ -195,23 +577,9 @@ class LimitsModule extends VuuModule<LimitsTableName> {
     return undefined;
   }
 
-  protected createRowKey(
-    tableName: LimitsTableName | undefined,
-    data: Record<string, VuuRowDataItemType>,
-    key?: string,
-  ) {
-    const { limit_id, trader_id } = data;
-    return typeof limit_id === "string" && typeof trader_id === "string"
-      ? traderLimitKey(limit_id, trader_id)
-      : super.createRowKey(tableName, data, key);
-  }
-
-  protected duplicateKeyMessage(
-    _tableName: LimitsTableName | undefined,
-    _key: string,
-    { limit_id, trader_id }: Record<string, VuuRowDataItemType>,
-  ) {
-    return `Trader ${trader_id} already has a limit with limit_id ${limit_id}`;
+  /** limit_id is generated by the server. */
+  protected createRowKey() {
+    return `LIM-${String(this.#nextLimitId++).padStart(4, "0")}`;
   }
 
   protected validateEdit(
@@ -219,7 +587,7 @@ class LimitsModule extends VuuModule<LimitsTableName> {
     column: string,
     value: VuuRowDataItemType,
   ) {
-    return validateTraderLimit(column, value);
+    return validateLimitValue(column, value);
   }
 }
 

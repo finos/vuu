@@ -1,158 +1,177 @@
-import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  SchemaColumn,
+  SessionDataSourceOverrides,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import {
-  LIMIT_PRODUCTS,
-  LIMIT_TIME_DURATION,
-  LIMIT_TYPES,
+  LIMIT_CURRENCIES,
+  LIMIT_DEFINITION_COLUMNS,
+  LIMIT_DEFINITIONS_TABLE,
+  LIMIT_ENTITIES,
+  LIMIT_METRIC_NAMES,
+  LIMIT_PERIODS,
+  LIMIT_REQUIRED_COLUMNS,
   limitsSchemas,
-  TRADER_LIMITS_TABLE,
-  validateTraderLimit,
+  validateLimitValue,
 } from "@vuu-ui/vuu-data-test";
 import type { CsvColumnValidator } from "@vuu-ui/vuu-table-extras";
 import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 
-export { TRADER_LIMITS_TABLE };
+export { LIMIT_DEFINITIONS_TABLE };
 
-const readOnly = { editable: false } as const;
-const insertOnly = { editable: { insert: true, update: false } } as const;
+const dropdown = (values: readonly string[]) => ({
+  editor: { name: "dropdown-cell", values: values.slice() },
+});
 
-export const traderLimitsColumns: ColumnDescriptor[] = [
-  { name: "status", label: "Status", width: 90, ...readOnly },
-  { name: "limit_key", hidden: true, ...readOnly },
-  { name: "trader_id", label: "Trader", width: 120, ...insertOnly },
-  { name: "limit_id", label: "Limit ID", width: 110, ...insertOnly },
-  { name: "product_id", label: "Product", width: 90, ...readOnly },
-  { name: "limit_type", label: "Limit type", width: 150, ...readOnly },
+const date = {
+  type: { name: "date/time", formatting: { pattern: { date: "dd.mm.yyyy" } } },
+} as const;
+
+const timestamp = { type: { name: "date/time" } } as const;
+
+/**
+ * Which columns can be edited, on insert or update, comes from the session
+ * table blueprint the server creates the edit session from.
+ */
+export const limitColumns: ColumnDescriptor[] = [
+  { name: "limit_id", label: "Limit ID", width: 100 },
+  { name: "status", label: "Status", width: 90 },
   {
-    name: "limit",
-    label: "Limit",
-    width: 120,
-    editable: true,
-    type: { name: "number", formatting: { decimals: 0 } },
+    name: "entity_id",
+    label: "Entity",
+    width: 130,
+    ...dropdown(LIMIT_ENTITIES.map(({ entity_id }) => entity_id)),
   },
-  { name: "time_duration", label: "Duration (s)", width: 100, ...readOnly },
-  { name: "change", label: "Change", width: 200, ...readOnly },
+  { name: "entity_type", label: "Entity type", width: 110 },
+  {
+    name: "metric",
+    label: "Metric",
+    width: 170,
+    ...dropdown(LIMIT_METRIC_NAMES),
+  },
+  { name: "metric_family", label: "Family", width: 120 },
+  { name: "scope", label: "Scope", width: 160 },
+  { name: "period", label: "Period", width: 100, ...dropdown(LIMIT_PERIODS) },
+  { name: "warning", label: "Warning", width: 110 },
+  { name: "soft", label: "Soft", width: 110 },
+  { name: "hard", label: "Hard", width: 110 },
+  {
+    name: "currency",
+    label: "Ccy",
+    width: 70,
+    ...dropdown(LIMIT_CURRENCIES),
+  },
+  { name: "effective_from", label: "From", width: 110, ...date },
+  { name: "effective_to", label: "To", width: 110, ...date },
+  { name: "owner", label: "Owner", width: 100 },
+  { name: "change", label: "Change", width: 240 },
+  { name: "maker", label: "Maker", width: 90 },
+  { name: "checker", label: "Checker", width: 90 },
   {
     name: "vuuCreatedTimestamp",
     label: "Created",
     width: 170,
-    ...readOnly,
-    type: { name: "date/time" },
+    ...timestamp,
   },
   {
     name: "vuuUpdatedTimestamp",
     label: "Updated",
     width: 170,
-    ...readOnly,
-    type: { name: "date/time" },
+    ...timestamp,
   },
-  { name: "vuuMsg", label: "Message", width: 200, ...readOnly },
+  { name: "vuuMsg", label: "Message", width: 200 },
 ].map((column) => ({
   ...column,
-  serverDataType: limitsSchemas.traderLimits.columns.find(
+  // A blank effective_from is today, a blank effective_to is open ended.
+  required: LIMIT_REQUIRED_COLUMNS.includes(column.name),
+  serverDataType: limitsSchemas.limitDefinitions.columns.find(
     ({ name }) => name === column.name,
   )?.serverDataType,
 })) as ColumnDescriptor[];
 
-export const traderLimitsColumnNames = traderLimitsColumns.map(
-  ({ name }) => name,
-);
-
-/** Columns the user can show or hide with the column picker. */
-export const pickerColumns = traderLimitsColumns.filter(
-  ({ name }) => name !== "limit_key",
-);
+export const limitColumnNames = limitColumns.map(({ name }) => name);
 
 /** Available in the column picker, but not shown at first. */
 const INITIALLY_HIDDEN = new Set([
+  "metric_family",
+  "checker",
   "vuuCreatedTimestamp",
   "vuuUpdatedTimestamp",
   "vuuMsg",
 ]);
 
-export const initialSelectedColumns = pickerColumns.filter(
+export const initialSelectedColumns = limitColumns.filter(
   ({ name }) => !INITIALLY_HIDDEN.has(name),
 );
-
-/** Not shown in Edit mode, whatever the column picker selection. */
-const HIDDEN_IN_EDIT_MODE = new Set(["status", "change"]);
 
 /**
  * Columns stay in the config and are hidden, rather than removed. In Edit
  * mode the table builds its columns from the session schema, so a column
  * missing from the config would be shown with default settings.
  */
-export const getTraderLimitsTableConfig = (
+export const getLimitsTableConfig = (
   selectedColumnNames: ReadonlySet<string>,
-  isEditMode: boolean,
 ): TableConfig => ({
-  columns: traderLimitsColumns.map((column) =>
-    column.name === "limit_key"
-      ? column
-      : {
-          ...column,
-          hidden:
-            !selectedColumnNames.has(column.name) ||
-            (isEditMode && HIDDEN_IN_EDIT_MODE.has(column.name)),
-        },
-  ),
+  columns: limitColumns.map((column) => ({
+    ...column,
+    hidden: !selectedColumnNames.has(column.name),
+  })),
   rowSeparators: true,
   zebraStripes: true,
 });
 
-/** Values the user does not enter, for new rows. */
-export const traderLimitRowDefaults = {
-  limit_type: LIMIT_TYPES[0],
-  product_id: LIMIT_PRODUCTS[0],
-  time_duration: LIMIT_TIME_DURATION,
+/**
+ * The edit session holds only the columns a user enters, as defined by the
+ * edit-limitDefinitions blueprint, and vuuMsg, which reports a limit that
+ * could not be saved.
+ */
+export const limitsSessionConfig: SessionDataSourceOverrides = {
+  columns: ["limit_id", ...LIMIT_DEFINITION_COLUMNS, "vuuMsg"],
 };
 
-/** The columns in the CSV template, in order. */
-export const TEMPLATE_COLUMNS = [
-  "trader_id",
-  "limit_id",
-  "product_id",
-  "limit_type",
-  "limit",
-  "time_duration",
-];
-
-const schemaColumn = (name: string) => {
-  const column = limitsSchemas.traderLimits.columns.find(
-    (col) => col.name === name,
-  );
-  if (column === undefined) {
-    throw Error(`traderLimits has no column ${name}`);
-  }
-  return column;
+/**
+ * The CSV template has the columns of the import-limitDefinitions
+ * blueprint, other than the server generated limit_id.
+ */
+export const limitsTemplateOverrides: SessionDataSourceOverrides = {
+  columns: LIMIT_DEFINITION_COLUMNS,
+  sessionTableName: "import-limitDefinitions",
 };
 
 /** CsvUpload reports an empty cell in a `required` column. */
 type ImportSchemaColumn = SchemaColumn & { required?: boolean };
 
-/**
- * What an imported CSV is validated against. The key, limit_key, is built
- * by the server from limit_id and trader_id, so the CSV does not include it;
- * rows are keyed by their line in the file instead.
- */
-const importColumns: ImportSchemaColumn[] = [
-  ...TEMPLATE_COLUMNS.map((name) => ({ ...schemaColumn(name), required: true })),
-  { name: "vuuRowNum", serverDataType: "int" },
-];
+const schemaColumn = (name: string): ImportSchemaColumn => {
+  const column = limitsSchemas.limitDefinitions.columns.find(
+    (col) => col.name === name,
+  );
+  if (column === undefined) {
+    throw Error(`limitDefinitions has no column ${name}`);
+  }
+  return { ...column, required: LIMIT_REQUIRED_COLUMNS.includes(name) };
+};
 
-export const traderLimitsImportSchema: TableSchema = {
-  ...limitsSchemas.traderLimits,
-  columns: importColumns,
+/**
+ * What an imported CSV is validated against. limit_id is generated by the
+ * server, so rows are keyed by their line in the file.
+ */
+export const limitsImportSchema: TableSchema = {
+  ...limitsSchemas.limitDefinitions,
+  columns: [
+    ...LIMIT_DEFINITION_COLUMNS.map(schemaColumn),
+    { name: "vuuRowNum", serverDataType: "int" },
+  ],
   key: "vuuRowNum",
 };
 
 const validator: CsvColumnValidator = (value, columnName) =>
-  validateTraderLimit(
+  validateLimitValue(
     columnName,
-    columnName === "limit" || columnName === "time_duration"
+    value !== "" && ["warning", "soft", "hard"].includes(columnName)
       ? Number(value)
       : value,
   ) ?? true;
 
-export const traderLimitsCsvValidators = Object.fromEntries(
-  TEMPLATE_COLUMNS.map((name) => [name, validator]),
+export const limitsCsvValidators = Object.fromEntries(
+  LIMIT_DEFINITION_COLUMNS.map((name) => [name, validator]),
 );

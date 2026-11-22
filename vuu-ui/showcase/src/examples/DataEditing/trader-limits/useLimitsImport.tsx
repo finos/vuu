@@ -32,8 +32,8 @@ import {
   useState,
 } from "react";
 import {
-  traderLimitsCsvValidators,
-  traderLimitsImportSchema,
+  limitsCsvValidators,
+  limitsImportSchema,
 } from "./trader-limits-config";
 
 /** The CSV header is line 1, so data row n is line n + 1. */
@@ -66,12 +66,25 @@ const toRowErrors = (errors: CsvValidationError[]) => {
   });
 };
 
+/** An error that is not against a data row: the file, or the import. */
 const generalErrorMessage = (error: CsvUploadErrorResult | undefined) => {
   const { importError, schemaError, validationError } = error?.errors ?? {};
-  return (importError ?? schemaError ?? validationError)?.message.replace(
+  if (importError) {
+    return {
+      message: importError.message.replace(
+        /^RPC import failed:\s*(Error:\s*)?/,
+        "",
+      ),
+      title: "The limits were not imported.",
+    };
+  }
+  const message = (schemaError ?? validationError)?.message.replace(
     /^(CSV validation|Validation) failed:\s*/,
     "",
   );
+  return message === undefined
+    ? undefined
+    : { message, title: "The file could not be read." };
 };
 
 export interface LimitsImportHookResult {
@@ -103,8 +116,8 @@ export const useLimitsImport = (
     validation,
   } = useCsvUpload({
     dataSource,
-    importSchema: traderLimitsImportSchema,
-    validators: traderLimitsCsvValidators,
+    importSchema: limitsImportSchema,
+    validators: limitsCsvValidators,
   });
 
   const chooseFile = useCallback(() => inputRef.current?.click(), []);
@@ -151,7 +164,7 @@ export const useLimitsImport = (
     <Banner status="error" data-testid="import-general-error">
       <BannerContent>
         <Text>
-          <strong>The file could not be read.</strong> {generalError}
+          <strong>{generalError.title}</strong> {generalError.message}
         </Text>
         <Text>Fix the file and import it again.</Text>
       </BannerContent>
@@ -208,7 +221,11 @@ export const useLimitsImport = (
         ref={inputRef}
         type="file"
       />
-      <Dialog open={open} size="medium" status={hasErrors ? "error" : undefined}>
+      <Dialog
+        open={open}
+        size="medium"
+        status={hasErrors ? "error" : undefined}
+      >
         <DialogHeader header="Import limits" />
         <DialogContent>{content}</DialogContent>
         <DialogActions>

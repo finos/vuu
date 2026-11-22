@@ -1,5 +1,4 @@
 import { Button, Text } from "@salt-ds/core";
-import { limitsModule } from "@vuu-ui/vuu-data-test";
 import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
   type ColumnsChangeHandler,
@@ -29,56 +28,51 @@ import {
 } from "react";
 import { EmptyStatus } from "./EmptyStatus";
 import {
-  getTraderLimitsTableConfig,
+  getLimitsTableConfig,
   initialSelectedColumns,
-  pickerColumns,
-  TEMPLATE_COLUMNS,
-  TRADER_LIMITS_TABLE,
-  traderLimitRowDefaults,
-  traderLimitsColumnNames,
+  LIMIT_DEFINITIONS_TABLE,
+  limitColumnNames,
+  limitColumns,
+  limitsSessionConfig,
+  limitsTemplateOverrides,
 } from "./trader-limits-config";
 import { useLimitsImport } from "./useLimitsImport";
+import { useSaveError } from "./useSaveError";
 
 import "./TraderLimits.css";
-
-export interface TraderLimitsPageProps {
-  /**
-   * Show a button that simulates the start of the next business day, when
-   * Pending limits become Active. Only works with local data.
-   */
-  showNextBusinessDay?: boolean;
-}
 
 const toColumnNames = (columns: readonly { name: string }[]) =>
   new Set(columns.map(({ name }) => name));
 
 /**
- * Trader limits, created and amended during the day. New and amended limits
- * are Pending until the next business day, when they become Active.
+ * Limit definitions, one row per limit. Changes go through maker-checker:
+ * a new limit, or a change to an Active limit, is Pending until it is
+ * approved.
  *
- * - Edit mode: add limits with the inline add row, amend the limit of an
- *   existing row, delete rows. Changes are applied on Save.
+ * - Edit mode: add limits with the inline add row, change the thresholds,
+ *   currency, dates and owner of a limit, delete limits. Changes are sent
+ *   for approval on Save.
+ * - Approve or Reject the selected Pending limits.
  * - Download a CSV template, fill it in and Import it.
  * - The column picker, from the footer, opens in the context panel.
  *
  * The View/Edit toggle is in the table's toolbar. The page holds the mode and
- * passes it to the EditableTable, so it can change the columns and disable
- * buttons while editing.
+ * passes it to the EditableTable, so it can disable buttons while editing.
  */
-export const TraderLimitsPage = ({
-  showNextBusinessDay = false,
-}: TraderLimitsPageProps) => {
+export const TraderLimitsPage = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
-        columns: traderLimitsColumnNames,
-        table: TRADER_LIMITS_TABLE,
+        columns: limitColumnNames,
+        session: limitsSessionConfig,
+        table: LIMIT_DEFINITIONS_TABLE,
       }),
     [VuuDataSource],
   );
   const [mode, setMode] = useState<EditableTableMode>("view");
   const { chooseFile, importElements } = useLimitsImport(dataSource);
+  const saveError = useSaveError();
 
   const [contextPanelProps, setContextPanelProps] = useState<
     ContextPanelProps | undefined
@@ -93,7 +87,7 @@ export const TraderLimitsPage = ({
   }, []);
 
   const columnModel = useMemo(
-    () => new ColumnModel(pickerColumns, initialSelectedColumns),
+    () => new ColumnModel(limitColumns, initialSelectedColumns),
     [],
   );
   const [selectedColumnNames, setSelectedColumnNames] = useState(() =>
@@ -110,17 +104,23 @@ export const TraderLimitsPage = ({
 
   const isViewMode = mode === "view";
   const tableConfig = useMemo(
-    () => getTraderLimitsTableConfig(selectedColumnNames, !isViewMode),
-    [isViewMode, selectedColumnNames],
+    () => getLimitsTableConfig(selectedColumnNames),
+    [selectedColumnNames],
   );
 
   const downloadTemplate = useCallback(() => {
     exportCsvTemplate(dataSource, {
-      columns: TEMPLATE_COLUMNS,
-      filename: "trader-limits-template.csv",
+      filename: "limits-template.csv",
+      overrides: limitsTemplateOverrides,
       onError: (err) => console.error(err.message),
     });
   }, [dataSource]);
+
+  const approveOrReject = useCallback(
+    (rpcName: "approveLimits" | "rejectLimits") =>
+      dataSource.rpcRequest?.({ params: {}, rpcName, type: "RPC_REQUEST" }),
+    [dataSource],
+  );
 
   const EmptyDisplay = useMemo(
     () =>
@@ -143,27 +143,33 @@ export const TraderLimitsPage = ({
       <div className="TraderLimits">
         <div className="TraderLimits-main">
           <div className="TraderLimits-header">
-            <Text styleAs="h2">Trader limits</Text>
+            <Text styleAs="h2">Limits</Text>
           </div>
+          {saveError.banner}
           <EditableTable
             allowDelete
             dataSource={dataSource}
+            {...saveError.handlers}
             mode={mode}
             onModeChange={setMode}
-            rowDefaults={traderLimitRowDefaults}
           >
             <TableEditorToolbar>
               <TableEditorModeToggle />
               <div className="TraderLimits-toolbarSpacer" />
-              {showNextBusinessDay ? (
-                <Button
-                  data-testid="next-business-day"
-                  disabled={!isViewMode}
-                  onClick={() => limitsModule.activatePendingLimits()}
-                >
-                  Next business day
-                </Button>
-              ) : null}
+              <Button
+                data-testid="approve-limits"
+                disabled={!isViewMode}
+                onClick={() => approveOrReject("approveLimits")}
+              >
+                Approve
+              </Button>
+              <Button
+                data-testid="reject-limits"
+                disabled={!isViewMode}
+                onClick={() => approveOrReject("rejectLimits")}
+              >
+                Reject
+              </Button>
               <Button disabled={!isViewMode} onClick={downloadTemplate}>
                 Download
               </Button>
@@ -174,6 +180,7 @@ export const TraderLimitsPage = ({
             <TableEditorTable
               EmptyDisplay={isViewMode ? EmptyDisplay : undefined}
               config={tableConfig}
+              selectionModel="checkbox"
               showColumnHeadersWhenEmpty
               showInlineAddRow
             />
