@@ -1,5 +1,8 @@
 import type {
   ConnectionQualityMetrics,
+  CopyOption,
+  SessionDataSourceOverrides,
+  SessionType,
   DataSourceCallbackMessage,
   DataSourceConfig,
   DataSourceDataMessage,
@@ -17,6 +20,7 @@ import type {
   WithSort,
 } from "@vuu-ui/vuu-data-types";
 import type {
+  CreateSessionTableParams,
   LinkDescriptorWithLabel,
   VuuColumns,
   VuuCreateVisualLink,
@@ -70,6 +74,29 @@ export const assertExpectedSessionTable = (
       `[datasource-utils] session table ${sessionTable.module}/${sessionTable.table} does not match expected edit table module ${expectedTable.module}`,
     );
   }
+};
+
+/**
+ * Build the params for a `createSessionTable` RPC. `sessionTableName` and
+ * `columnsToCopy` are only included when the overrides supply them, so a
+ * request without them is unchanged. An array of columns is sent as a
+ * comma-separated string.
+ */
+export const createSessionTableParams = (
+  copyOption: CopyOption,
+  sessionType: SessionType,
+  overrides?: SessionDataSourceOverrides,
+): CreateSessionTableParams => {
+  const params: CreateSessionTableParams = { copyOption, sessionType };
+  if (overrides?.sessionTableName !== undefined) {
+    params.sessionTableName = overrides.sessionTableName;
+  }
+  const columnsToCopy = overrides?.columnsToCopy;
+  if (columnsToCopy !== undefined) {
+    params.columnsToCopy =
+      columnsToCopy === "*" ? "*" : columnsToCopy.join(",");
+  }
+  return params;
 };
 
 export const stripVisualLink = (

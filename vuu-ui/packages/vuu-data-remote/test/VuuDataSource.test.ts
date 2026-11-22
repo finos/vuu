@@ -1028,6 +1028,80 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     expect(session?.columns).toEqual(["bbg", "currency", "description", "ric"]);
   });
 
+  describe("createSessionTable rpc params", () => {
+    const lastRpcParams = async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      return (vi.mocked(rpcCall).mock.lastCall?.[0] as any)?.params;
+    };
+
+    it("sends only copyOption and sessionType when no blueprint params are set", async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({
+        table,
+        session: { columns: ["ric"] },
+      });
+
+      await dataSource.createSessionDataSource("All", "export");
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "All",
+        sessionType: "export",
+      });
+    });
+
+    it("sends sessionTableName and columnsToCopy (joined) from a call-time override", async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({ table });
+
+      await dataSource.createSessionDataSource("Empty", "import", {
+        sessionTableName: "import-instruments-basic",
+        columnsToCopy: ["ric", "isin", "currency"],
+      });
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "Empty",
+        sessionType: "import",
+        sessionTableName: "import-instruments-basic",
+        columnsToCopy: "ric,isin,currency",
+      });
+    });
+
+    it('sends columnsToCopy "*" unchanged', async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({ table });
+
+      await dataSource.createSessionDataSource("All", "edit", {
+        columnsToCopy: "*",
+      });
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "All",
+        sessionType: "edit",
+        columnsToCopy: "*",
+      });
+    });
+
+    it("falls back to the datasource's session config for blueprint params", async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({
+        table,
+        session: { sessionTableName: "edit-instruments-lite" },
+      });
+
+      await dataSource.createSessionDataSource("Selected");
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "Selected",
+        sessionType: "edit",
+        sessionTableName: "edit-instruments-lite",
+      });
+    });
+  });
+
   it("stores the source datasource on created session datasources", async () => {
     const { rpcCall } = await ConnectionManager.serverAPI;
     vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
