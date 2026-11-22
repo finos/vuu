@@ -16,6 +16,7 @@
   "scripts": {
     "lint": "biome lint",
     "lint:error": "biome lint --diagnostic-level=error",
+    "check:cycles": "node ./scripts/check-package-cycles.ts",
     "format:check": "biome check --skip=lint --skip=assist",
     "format": "biome format --write .",
     "build": "node ./scripts/build-all-rslib.ts",
@@ -70,6 +71,8 @@
     "semver": "^7.5.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/plugin-transform-typescript": "^7.29.7",
     "@biomejs/biome": "2.6.8",
     "@lezer/generator": "^1.2.2",
     "@playwright/test": "1.64.1",
