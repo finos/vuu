@@ -54,25 +54,7 @@ const setup = () => {
     await session.endEditSession(true);
   };
 
-  const checkerAction = (
-    rpcName: "approveLimits" | "rejectLimits",
-    ...keys: string[]
-  ) => {
-    keys.forEach((rowKey, i) => {
-      dataSource.select({
-        preserveExistingSelection: i > 0,
-        rowKey,
-        type: "SELECT_ROW",
-      } as Parameters<typeof dataSource.select>[0]);
-    });
-    return dataSource.rpcRequest({
-      params: {},
-      rpcName,
-      type: "RPC_REQUEST",
-    } as never);
-  };
-
-  return { addLimits, checkerAction, dataSource, editSession, module, row };
+  return { addLimits, dataSource, editSession, module, row };
 };
 
 describe("validateLimitValue", () => {
@@ -125,7 +107,7 @@ describe("LimitsModule", () => {
       ...vega,
       change: "New limit",
       entity_type: "Desk",
-      maker: "trader",
+      changed_by: "trader",
       metric_family: "Sensitivity",
       status: "Pending",
     });
@@ -144,26 +126,29 @@ describe("LimitsModule", () => {
     expect(row("LIM-0001")).toBeUndefined();
   });
 
-  it("approve makes a limit Active, a change to it is held until approved", async () => {
-    const { addLimits, checkerAction, editSession, row } = setup();
+  it("on the next business day, a new limit becomes Active", async () => {
+    const { addLimits, module, row } = setup();
     await addLimits(vega);
-    await checkerAction("approveLimits", "LIM-0001");
-    expect(row("LIM-0001")).toMatchObject({
-      change: "",
-      checker: "supervisor",
-      status: "Active",
-    });
+    module.activatePendingLimits();
+    expect(row("LIM-0001")).toMatchObject({ change: "", status: "Active" });
+  });
+
+  it("a change to an Active limit is held until the next business day", async () => {
+    const { addLimits, editSession, module, row } = setup();
+    await addLimits(vega);
+    module.activatePendingLimits();
 
     const session = await editSession();
     await session.editCell("LIM-0001", "hard", 150);
     await session.endEditSession(true);
     expect(row("LIM-0001")).toMatchObject({
       change: "hard 100 → 150",
+      changed_by: "trader",
       hard: 100,
       status: "Pending",
     });
 
-    await checkerAction("approveLimits", "LIM-0001");
+    module.activatePendingLimits();
     expect(row("LIM-0001")).toMatchObject({
       change: "",
       hard: 150,
@@ -171,36 +156,24 @@ describe("LimitsModule", () => {
     });
   });
 
-  it("reject discards a held change, or rejects a new limit", async () => {
-    const { addLimits, checkerAction, editSession, row } = setup();
-    await addLimits(vega, { ...vega, entity_id: "DESK-CASH" });
-    await checkerAction("approveLimits", "LIM-0001");
-
+  it("a Pending new limit is changed directly", async () => {
+    const { addLimits, editSession, row } = setup();
+    await addLimits(vega);
     const session = await editSession();
     await session.editCell("LIM-0001", "hard", 150);
     await session.endEditSession(true);
-
-    await checkerAction("rejectLimits", "LIM-0001", "LIM-0002");
     expect(row("LIM-0001")).toMatchObject({
-      change: "",
-      hard: 100,
-      status: "Active",
+      change: "New limit",
+      hard: 150,
+      status: "Pending",
     });
-    expect(row("LIM-0002")).toMatchObject({ status: "Rejected" });
   });
 
-  it("approve and reject ignore limits that are not Pending", async () => {
-    const { addLimits, checkerAction, row } = setup();
+  it("deleting an Active limit waits for the next business day, a new one is removed", async () => {
+    const { addLimits, editSession, module, row } = setup();
     await addLimits(vega);
-    await checkerAction("approveLimits", "LIM-0001");
-    await checkerAction("rejectLimits", "LIM-0001");
-    expect(row("LIM-0001")).toMatchObject({ status: "Active" });
-  });
-
-  it("deleting an Active limit needs approval, a new one is removed", async () => {
-    const { addLimits, checkerAction, editSession, row } = setup();
-    await addLimits(vega, { ...vega, entity_id: "DESK-CASH" });
-    await checkerAction("approveLimits", "LIM-0001");
+    module.activatePendingLimits();
+    await addLimits({ ...vega, entity_id: "DESK-CASH" });
 
     const session = await editSession();
     await session.deleteRow("LIM-0001", "soft");
@@ -212,7 +185,7 @@ describe("LimitsModule", () => {
       status: "Pending",
     });
 
-    await checkerAction("approveLimits", "LIM-0001");
+    module.activatePendingLimits();
     expect(row("LIM-0001")).toBeUndefined();
   });
 

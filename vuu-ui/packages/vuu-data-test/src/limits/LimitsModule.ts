@@ -2,14 +2,12 @@ import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   type RpcMenuService,
-  type RpcService,
   type ServiceHandler,
   type SessionTableDef,
   VuuModule,
 } from "../core/module/VuuModule";
 import tableContainer from "../core/table/TableContainer";
 import { VUU_DEFAULT_COLUMNS } from "../default-column-definitions";
-import type { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { buildDataColumnMap, type Table } from "../Table";
 
 export type LimitsTableName = "limitDefinitions";
@@ -128,14 +126,10 @@ export const LIMIT_METRIC_NAMES = Object.keys(LIMIT_METRICS);
 
 export const LIMIT_CURRENCIES = ["USD", "EUR", "GBP", "JPY"] as const;
 
-export type LimitStatus = "Pending" | "Active" | "Rejected";
+export type LimitStatus = "Pending" | "Active";
 
-/**
- * The maker of every change. The local module has no user identity, so
- * changes are made by one user and approved or rejected by another.
- */
-export const LIMITS_MAKER = "trader";
-export const LIMITS_CHECKER = "supervisor";
+/** The user who makes every change. The local module has no user identity. */
+export const LIMITS_USER = "trader";
 
 const insertOnly = { editable: { insert: true, update: false } } as const;
 const readOnly = { editable: false } as const;
@@ -183,8 +177,7 @@ export const limitsSchemas: Record<LimitsTableName, TableSchema> = {
       { name: "metric_family", serverDataType: "string" },
       ...definitionColumns,
       { name: "change", serverDataType: "string" },
-      { name: "maker", serverDataType: "string" },
-      { name: "checker", serverDataType: "string" },
+      { name: "changed_by", serverDataType: "string" },
       ...VUU_DEFAULT_COLUMNS,
     ],
     key: "limit_id",
@@ -278,7 +271,7 @@ const startOfToday = () => {
   return today.getTime();
 };
 
-/** A pending change to an Active limit, applied when it is approved. */
+/** A pending change to an Active limit, applied on the next business day. */
 type PendingChange =
   | { type: "amend"; values: Record<string, VuuRowDataItemType> }
   | { type: "delete" };
@@ -294,23 +287,22 @@ const describeAmendment = (
 
 /**
  * Limit definitions, one row per limit. Changes are made in a session table,
- * created from a blueprint, and go through maker-checker:
+ * created from a blueprint, and take effect on the next business day:
  *
  * - saving a session never changes an Active limit. A new limit is Pending.
  *   A change to, or deletion of, an Active limit is held, described in
  *   `change`, and the limit is Pending.
- * - approveLimits applies the held changes of the selected Pending limits,
- *   which become Active. rejectLimits discards them; a rejected new limit is
- *   Rejected.
+ * - at the start of the next business day, Pending limits become Active,
+ *   with their held changes applied, see {@link activatePendingLimits}.
  *
  * Blueprints: `edit-limitDefinitions` holds the columns a user enters, with
  * their edit rules; `import-limitDefinitions` adds the CSV row number;
  * `export-limitDefinitions` has every column. The edit and import blueprints
- * save with maker-checker, through their own endEditSession service.
+ * save through their own endEditSession service.
  */
 export class LimitsModule extends VuuModule<LimitsTableName> {
-  /** Keys of the limits that have been Active, so are changed by approval. */
-  #approvedKeys = new Set<string>();
+  /** Keys of the limits that have been Active, whose changes are held. */
+  #activeKeys = new Set<string>();
   #pendingChanges = new Map<string, PendingChange>();
   #nextLimitId = 1;
 
@@ -377,7 +369,6 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
     const row: Record<string, VuuRowDataItemType> = {
       ...values,
       change: "New limit",
-      checker: "",
       effective_from: isBlank(values.effective_from)
         ? startOfToday()
         : values.effective_from,
@@ -385,7 +376,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
         LIMIT_ENTITIES.find((entity) => entity.entity_id === entity_id)
           ?.entity_type ?? "",
       limit_id: key,
-      maker: LIMITS_MAKER,
+      changed_by: LIMITS_USER,
       metric_family: LIMIT_METRICS[String(metric)].family,
       status: "Pending",
       vuuCreatedTimestamp: now,
@@ -398,7 +389,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
   }
 
   /**
-   * Save the changes in a session table, with maker-checker. Nothing is
+   * Save the changes in a session table, as Pending changes. Nothing is
    * saved unless every row is valid. A row that is not has its vuuMsg set,
    * and is named in the error, by its line for an import.
    */
@@ -469,7 +460,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
     current: Record<string, VuuRowDataItemType>,
     values: Record<string, VuuRowDataItemType>,
   ) {
-    if (this.#approvedKeys.has(key)) {
+    if (this.#activeKeys.has(key)) {
       const held = this.#pendingChanges.get(key);
       const amended = {
         ...(held?.type === "amend" ? held.values : {}),
@@ -478,28 +469,32 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
       const change = describeAmendment(current, amended);
       if (change === "") {
         this.#pendingChanges.delete(key);
-        this.#update(key, { change: "", maker: "", status: "Active" });
+        this.#update(key, { change: "", changed_by: "", status: "Active" });
       } else {
         this.#pendingChanges.set(key, { type: "amend", values: amended });
-        this.#update(key, { change, maker: LIMITS_MAKER, status: "Pending" });
+        this.#update(key, {
+          change,
+          changed_by: LIMITS_USER,
+          status: "Pending",
+        });
       }
     } else {
-      // never approved, so the new limit itself is changed
+      // never Active, so the new limit itself is changed
       this.#update(key, {
         ...values,
         change: "New limit",
-        maker: LIMITS_MAKER,
+        changed_by: LIMITS_USER,
         status: "Pending",
       });
     }
   }
 
   #deleteLimit(key: string) {
-    if (this.#approvedKeys.has(key)) {
+    if (this.#activeKeys.has(key)) {
       this.#pendingChanges.set(key, { type: "delete" });
       this.#update(key, {
         change: "Delete",
-        maker: LIMITS_MAKER,
+        changed_by: LIMITS_USER,
         status: "Pending",
       });
     } else {
@@ -507,60 +502,37 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
     }
   }
 
-  #selectedPendingKeys(viewPortId: string) {
-    const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+  /**
+   * Simulates the start of the next business day: Pending limits become
+   * Active, with their held changes applied, and pending deletes take effect.
+   */
+  activatePendingLimits() {
     const { map } = this.#limits;
-    return (dataSource as TickingArrayDataSource)
-      .getSelectedRowIds()
-      .filter((key) => this.#limits.findByKey(key)?.[map.status] === "Pending");
-  }
-
-  #approveLimits: ServiceHandler = async (rpcRequest) => {
-    const { viewPortId } = rpcRequest.context as { viewPortId: string };
-    const keys = this.#selectedPendingKeys(viewPortId);
-    for (const key of keys) {
+    const pendingKeys = this.#limits.data
+      .filter((row) => row[map.status] === "Pending")
+      .map((row) => String(row[map.limit_id]));
+    for (const key of pendingKeys) {
       const pending = this.#pendingChanges.get(key);
       this.#pendingChanges.delete(key);
       if (pending?.type === "delete") {
-        this.#approvedKeys.delete(key);
+        this.#activeKeys.delete(key);
         this.#limits.delete(key);
       } else {
-        this.#approvedKeys.add(key);
+        this.#activeKeys.add(key);
         this.#update(key, {
           ...(pending?.type === "amend" ? pending.values : {}),
           change: "",
-          checker: LIMITS_CHECKER,
           status: "Active",
         });
       }
     }
-    return { type: "SUCCESS_RESULT", data: { keys } };
-  };
-
-  #rejectLimits: ServiceHandler = async (rpcRequest) => {
-    const { viewPortId } = rpcRequest.context as { viewPortId: string };
-    const keys = this.#selectedPendingKeys(viewPortId);
-    for (const key of keys) {
-      this.#pendingChanges.delete(key);
-      this.#update(key, {
-        change: "",
-        checker: LIMITS_CHECKER,
-        status: this.#approvedKeys.has(key) ? "Active" : "Rejected",
-      });
-    }
-    return { type: "SUCCESS_RESULT", data: { keys } };
-  };
+  }
 
   get menus() {
     return undefined;
   }
-  get services(): Record<LimitsTableName, RpcService[] | undefined> {
-    return {
-      limitDefinitions: [
-        { rpcName: "approveLimits", service: this.#approveLimits },
-        { rpcName: "rejectLimits", service: this.#rejectLimits },
-      ],
-    };
+  get services() {
+    return undefined;
   }
   get menuServices():
     | Record<LimitsTableName, RpcMenuService[] | undefined>

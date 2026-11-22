@@ -9,13 +9,13 @@ import {
   LIMIT_DEFINITIONS_TABLE,
   LIMIT_ENTITIES,
   LIMIT_METRIC_NAMES,
-  LIMIT_PERIODS,
   LIMIT_REQUIRED_COLUMNS,
   limitsSchemas,
   validateLimitValue,
 } from "@vuu-ui/vuu-data-test";
 import type { CsvColumnValidator } from "@vuu-ui/vuu-table-extras";
 import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
+import "./PeriodCell";
 
 export { LIMIT_DEFINITIONS_TABLE };
 
@@ -34,8 +34,9 @@ const timestamp = { type: { name: "date/time" } } as const;
  * table blueprint the server creates the edit session from.
  */
 export const limitColumns: ColumnDescriptor[] = [
-  { name: "limit_id", label: "Limit ID", width: 100 },
   { name: "status", label: "Status", width: 90 },
+  { name: "change", label: "Change", width: 240 },
+  { name: "limit_id", label: "Limit ID", width: 100 },
   {
     name: "entity_id",
     label: "Entity",
@@ -51,7 +52,13 @@ export const limitColumns: ColumnDescriptor[] = [
   },
   { name: "metric_family", label: "Family", width: 120 },
   { name: "scope", label: "Scope", width: 160 },
-  { name: "period", label: "Period", width: 100, ...dropdown(LIMIT_PERIODS) },
+  // the periods offered depend on the metric
+  {
+    name: "period",
+    label: "Period",
+    width: 100,
+    editor: { name: "period-cell" },
+  },
   { name: "warning", label: "Warning", width: 110 },
   { name: "soft", label: "Soft", width: 110 },
   { name: "hard", label: "Hard", width: 110 },
@@ -64,9 +71,7 @@ export const limitColumns: ColumnDescriptor[] = [
   { name: "effective_from", label: "From", width: 110, ...date },
   { name: "effective_to", label: "To", width: 110, ...date },
   { name: "owner", label: "Owner", width: 100 },
-  { name: "change", label: "Change", width: 240 },
-  { name: "maker", label: "Maker", width: 90 },
-  { name: "checker", label: "Checker", width: 90 },
+  { name: "changed_by", label: "Changed by", width: 100 },
   {
     name: "vuuCreatedTimestamp",
     label: "Created",
@@ -94,7 +99,6 @@ export const limitColumnNames = limitColumns.map(({ name }) => name);
 /** Available in the column picker, but not shown at first. */
 const INITIALLY_HIDDEN = new Set([
   "metric_family",
-  "checker",
   "vuuCreatedTimestamp",
   "vuuUpdatedTimestamp",
   "vuuMsg",

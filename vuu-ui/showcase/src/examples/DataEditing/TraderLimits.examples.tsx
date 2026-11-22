@@ -5,14 +5,15 @@ import { TraderLimitsPage } from "./trader-limits/TraderLimitsPage";
 /**
  * Full page EditableTable for defining limits. Limits are entered in Edit
  * mode with the inline add row, or imported from a CSV file built from the
- * downloadable template. Changes go through maker-checker: new and amended
- * limits are Pending until they are approved. Edit, import and export each
- * use their own session table blueprint, defined by the LIMITS module.
+ * downloadable template. New and amended limits are Pending until the next
+ * business day; the Next business day button simulates it. Edit, import and
+ * export each use their own session table blueprint, defined by the LIMITS
+ * module.
  * @title Trader limits
  */
 export const TraderLimits = () => (
   <LocalDataSourceProvider>
-    <TraderLimitsPage />
+    <TraderLimitsPage showNextBusinessDay />
   </LocalDataSourceProvider>
 );
 
@@ -25,6 +26,6 @@ export const TraderLimits = () => (
  */
 export const TraderLimitsHeaderToggle = () => (
   <LocalDataSourceProvider>
-    <TraderLimitsHeaderTogglePage />
+    <TraderLimitsHeaderTogglePage showNextBusinessDay />
   </LocalDataSourceProvider>
 );

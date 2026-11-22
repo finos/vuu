@@ -1,4 +1,5 @@
 import { Button, Text } from "@salt-ds/core";
+import { limitsModule } from "@vuu-ui/vuu-data-test";
 import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
   type ColumnsChangeHandler,
@@ -44,22 +45,31 @@ import "./TraderLimits.css";
 const toColumnNames = (columns: readonly { name: string }[]) =>
   new Set(columns.map(({ name }) => name));
 
+export interface TraderLimitsPageProps {
+  /**
+   * Show a button that simulates the start of the next business day, when
+   * Pending limits become Active.
+   */
+  showNextBusinessDay?: boolean;
+}
+
 /**
- * Limit definitions, one row per limit. Changes go through maker-checker:
- * a new limit, or a change to an Active limit, is Pending until it is
- * approved.
+ * Limit definitions, one row per limit. A new limit, or a change to an
+ * Active limit, is Pending until the next business day, when it becomes
+ * Active.
  *
  * - Edit mode: add limits with the inline add row, change the thresholds,
- *   currency, dates and owner of a limit, delete limits. Changes are sent
- *   for approval on Save.
- * - Approve or Reject the selected Pending limits.
+ *   currency, dates and owner of a limit, delete limits. Changes are saved
+ *   as Pending on Save.
  * - Download a CSV template, fill it in and Import it.
  * - The column picker, from the footer, opens in the context panel.
  *
  * The View/Edit toggle is in the table's toolbar. The page holds the mode and
  * passes it to the EditableTable, so it can disable buttons while editing.
  */
-export const TraderLimitsPage = () => {
+export const TraderLimitsPage = ({
+  showNextBusinessDay = false,
+}: TraderLimitsPageProps) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(
     () =>
@@ -116,12 +126,6 @@ export const TraderLimitsPage = () => {
     });
   }, [dataSource]);
 
-  const approveOrReject = useCallback(
-    (rpcName: "approveLimits" | "rejectLimits") =>
-      dataSource.rpcRequest?.({ params: {}, rpcName, type: "RPC_REQUEST" }),
-    [dataSource],
-  );
-
   const EmptyDisplay = useMemo(
     () =>
       function TraderLimitsEmptyStatus() {
@@ -156,20 +160,15 @@ export const TraderLimitsPage = () => {
             <TableEditorToolbar>
               <TableEditorModeToggle />
               <div className="TraderLimits-toolbarSpacer" />
-              <Button
-                data-testid="approve-limits"
-                disabled={!isViewMode}
-                onClick={() => approveOrReject("approveLimits")}
-              >
-                Approve
-              </Button>
-              <Button
-                data-testid="reject-limits"
-                disabled={!isViewMode}
-                onClick={() => approveOrReject("rejectLimits")}
-              >
-                Reject
-              </Button>
+              {showNextBusinessDay ? (
+                <Button
+                  data-testid="next-business-day"
+                  disabled={!isViewMode}
+                  onClick={() => limitsModule.activatePendingLimits()}
+                >
+                  Next business day
+                </Button>
+              ) : null}
               <Button disabled={!isViewMode} onClick={downloadTemplate}>
                 Download
               </Button>
@@ -179,8 +178,8 @@ export const TraderLimitsPage = () => {
             </TableEditorToolbar>
             <TableEditorTable
               EmptyDisplay={isViewMode ? EmptyDisplay : undefined}
+              className="TraderLimits-table"
               config={tableConfig}
-              selectionModel="checkbox"
               showColumnHeadersWhenEmpty
               showInlineAddRow
             />

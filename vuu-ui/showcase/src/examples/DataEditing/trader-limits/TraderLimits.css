@@ -10,7 +10,11 @@
   flex-direction: column;
   gap: var(--salt-spacing-100);
   min-width: 0;
-  padding: var(--salt-spacing-200);
+  padding: var(--salt-spacing-300);
+}
+
+.TraderLimits-table {
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
 }
 
 .TraderLimits-header {
