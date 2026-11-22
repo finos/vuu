@@ -279,7 +279,7 @@ export const useKeyboardNavigation = ({
     const el = getElementByDataIndex(containerRef.current, highlightedIdx);
     const menuEl = el?.querySelector(".vuuPopupMenu") as HTMLElement;
     if (menuEl) {
-      dispatchMouseEvent(menuEl, "click");
+      dispatchMouseEvent(menuEl, "mousedown");
     }
     return false;
   }, [containerRef, highlightedIdx]);

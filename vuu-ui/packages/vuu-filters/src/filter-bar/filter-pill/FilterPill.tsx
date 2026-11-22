@@ -6,11 +6,11 @@ import {
   MenuActionHandler,
 } from "@vuu-ui/vuu-context-menu";
 import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
-import { MenuCloseHandler, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import {
   EditableLabel,
   EditableLabelProps,
   ExitEditModeHandler,
+  PopupMenuProps,
   SplitStateButton,
   SplitStateButtonProps,
 } from "@vuu-ui/vuu-ui-controls";
@@ -88,16 +88,6 @@ export const FilterPill = ({
 
   const getTooltipText = getFilterAsFormattedText(columnsByName);
 
-  const handleMenuClose = useCallback<MenuCloseHandler>((reason) => {
-    if (reason?.type === "escape") {
-      requestAnimationFrame(() => {
-        if (rootRef.current) {
-          rootRef.current.focus();
-        }
-      });
-    }
-  }, []);
-
   const popupMenuProps = useMemo<
     Pick<
       PopupMenuProps,
@@ -133,18 +123,8 @@ export const FilterPill = ({
       menuOptions: {
         filter,
       },
-
-      onMenuClose: handleMenuClose,
     }),
-    [
-      allowClose,
-      allowDelete,
-      allowEdit,
-      allowRename,
-      filter,
-      handleMenuClose,
-      onMenuAction,
-    ],
+    [allowClose, allowDelete, allowEdit, allowRename, filter, onMenuAction],
   );
 
   // The menu trigger is only visible on hover or focus, right-click is
@@ -157,7 +137,7 @@ export const FilterPill = ({
       if (trigger) {
         evt.preventDefault();
         evt.stopPropagation();
-        dispatchMouseEvent(trigger, "click");
+        dispatchMouseEvent(trigger, "mousedown");
       }
     },
     [],

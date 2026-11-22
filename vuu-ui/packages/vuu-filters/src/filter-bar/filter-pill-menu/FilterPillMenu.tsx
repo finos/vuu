@@ -1,4 +1,4 @@
-import { PopupMenu } from "@vuu-ui/vuu-popups";
+import { PopupMenu } from "@vuu-ui/vuu-ui-controls";
 import { useMemo } from "react";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";

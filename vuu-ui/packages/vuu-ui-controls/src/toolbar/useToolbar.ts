@@ -118,7 +118,6 @@ export const useToolbar = ({
     containerProps: {
       PopupMenuProps: {
         onKeyDown: handleKeyDown,
-        onMenuClose: keyboardHook.onOverflowMenuClose,
       },
       ...keyboardHook.containerProps,
       onSwitchWrappedItemIntoView,

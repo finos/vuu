@@ -18,7 +18,6 @@
     "@vuu-ui/vuu-context-menu": "4.2.12",
     "@vuu-ui/vuu-data-react": "4.2.12",
     "@vuu-ui/vuu-layout": "4.2.12",
-    "@vuu-ui/vuu-popups": "4.2.12",
     "@vuu-ui/vuu-table": "4.2.12",
     "@vuu-ui/vuu-utils": "4.2.12",
     "@salt-ds/core": "1.74.0",

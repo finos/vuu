@@ -23,6 +23,7 @@ export { type ItemDescriptor } from "./item-picker/useItemPicker";
 export * from "./measured-container";
 export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
 export * from "./overflow-container";
+export * from "./popup-menu";
 export * from "./price-ticker";
 export { Prompt, type PromptProps } from "./prompt/Prompt";
 export { SortableList, SortableOption } from "./sortable-list/SortableList";

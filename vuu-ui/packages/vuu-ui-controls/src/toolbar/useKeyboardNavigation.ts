@@ -27,7 +27,6 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { getIndexOfEditedItem } from "./toolbar-dom-utils";
 import { NavigationOutOfBoundsHandler } from "./Toolbar";
-import { MenuCloseHandler } from "@vuu-ui/vuu-popups";
 
 type directionType = "bwd" | "fwd" | "start" | "end";
 type directionMap = { [key: string]: directionType };
@@ -107,16 +106,6 @@ const isNonWrappedElement = (element: HTMLElement | null) =>
 const getToolbarItems = (container: HTMLElement) =>
   Array.from(container.querySelectorAll("[data-index]")) as HTMLElement[];
 
-const getIndexOfOverflowItem = (container: HTMLElement | null) => {
-  if (container === null) {
-    return -1;
-  } else {
-    const targets = getToolbarItems(container);
-    const indexValues = targets.map((el) => el.dataset.index);
-    return indexValues.indexOf("overflow");
-  }
-};
-
 // Get an OverflowItem based on data-index
 const getElementByPosition = (
   container: HTMLElement | null,
@@ -165,7 +154,6 @@ interface ToolbarNavigationHookResult {
   onClick: (evt: ReactMouseEvent, tabIndex: number) => void;
   onFocus: (evt: FocusEvent<HTMLElement>) => void;
   onKeyDown: (evt: KeyboardEvent) => void;
-  onOverflowMenuClose?: MenuCloseHandler;
   setHighlightedIdx: (highlightedIndex: number) => void;
 }
 
@@ -346,7 +334,7 @@ export const useKeyboardNavigation = ({
     const el = getElementByPosition(containerRef.current, highlightedIdx);
     const menuEl = el?.querySelector(".vuuPopupMenu") as HTMLElement;
     if (menuEl) {
-      dispatchMouseEvent(menuEl, "click");
+      dispatchMouseEvent(menuEl, "mousedown");
     }
     return false;
   }, [containerRef, highlightedIdx]);
@@ -403,18 +391,6 @@ export const useKeyboardNavigation = ({
     keyboardNavigation.current = false;
   }, [hasFocus]);
 
-  const handleOverflowMenuClose = useCallback<MenuCloseHandler>(
-    (closeReason) => {
-      if (closeReason?.type === "escape") {
-        const index = getIndexOfOverflowItem(containerRef.current);
-        if (index !== -1) {
-          focusItem(index);
-        }
-      }
-    },
-    [containerRef, focusItem],
-  );
-
   const containerProps = {
     onBlur: (e: FocusEvent) => {
       const sourceTarget = (e.target as HTMLElement).closest(".vuuToolbar");
@@ -443,7 +419,6 @@ export const useKeyboardNavigation = ({
     onClick: handleItemClick,
     onFocus,
     onKeyDown: handleKeyDown,
-    onOverflowMenuClose: handleOverflowMenuClose,
     setHighlightedIdx,
   };
 };

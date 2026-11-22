@@ -1,5 +1,4 @@
 import cx from "clsx";
-import { MenuCloseHandler, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { dispatchMouseEvent } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
@@ -7,6 +6,7 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { PopupMenuProps } from "../popup-menu";
 import { SplitButtonProps } from "./SplitButton";
 
 export interface SplitButtonHookProps
@@ -34,13 +34,11 @@ SplitButtonHookProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const onMenuClose = useCallback<MenuCloseHandler>((reason) => {
-    if (reason?.type !== "tab-away") {
-      const buttonMain = rootRef.current?.querySelector(
-        ".vuuSplitButton-main",
-      ) as HTMLElement;
-      buttonMain?.focus();
-    }
+  const onMenuClose = useCallback(() => {
+    const buttonMain = rootRef.current?.querySelector(
+      ".vuuSplitButton-main",
+    ) as HTMLElement;
+    buttonMain?.focus();
   }, []);
 
   const menuProps: PopupMenuProps = {
@@ -48,7 +46,6 @@ SplitButtonHookProps) => {
     anchorElement: rootRef,
     menuClassName: cx(`${classBase}-menu`, PopupMenuProps?.menuClassName),
     onMenuClose,
-    popupPlacement: "below-full-width",
   };
 
   const handleRootFocus = useCallback<FocusEventHandler>((evt) => {
@@ -94,7 +91,7 @@ SplitButtonHookProps) => {
           `.${classBase}-trigger`,
         ) as HTMLElement;
         if (popupTrigger) {
-          dispatchMouseEvent(popupTrigger, "click");
+          dispatchMouseEvent(popupTrigger, "mousedown");
         }
       }
     },

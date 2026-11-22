@@ -5,7 +5,7 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "./ContextMenuProvider";
-import { ContextMenuItemDescriptor } from "./menu-utils";
+import { useContextMenuItems } from "./useContextMenuItems";
 
 export type EventLike = {
   clientX: number;
@@ -29,18 +29,7 @@ export const useContextMenu = (
   menuActionHandler?: MenuActionHandler,
 ): ShowContextMenu => {
   const ctx = useContext(ContextMenuContext);
-
-  const buildMenuOptions = useCallback(
-    (menuBuilders: MenuBuilder[], location: string, options: unknown) => {
-      let results: ContextMenuItemDescriptor[] = [];
-      for (const menuBuilder of menuBuilders) {
-        // Maybe we should leave the concatenation to the menuBuilder, then it can control menuItem order
-        results = results.concat(menuBuilder(location, options));
-      }
-      return results;
-    },
-    [],
-  );
+  const buildMenuItems = useContextMenuItems(menuBuilder, menuActionHandler);
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -64,60 +53,40 @@ export const useContextMenu = (
       evt.stopPropagation?.();
       evt.preventDefault?.();
 
-      const menuBuilders: MenuBuilder[] = [];
-      if (menuBuilder) {
-        menuBuilders.push(menuBuilder);
-      }
-      if (
-        ctx &&
-        Array.isArray(ctx?.menuBuilders) &&
-        ctx.menuBuilders.length > 0
-      ) {
-        menuBuilders.push(...ctx.menuBuilders);
-      }
-
-      if (menuBuilders.length > 0) {
-        const menuItemDescriptors = buildMenuOptions(
-          menuBuilders,
-          location,
-          options,
-        );
-
-        const menuHandler: MenuActionHandler = (menuItemId, options) => {
-          if (menuActionHandler?.(menuItemId, options) === true) {
-            return true;
-          } else {
-            return ctx?.menuActionHandler(menuItemId, options);
-          }
-        };
-
-        const localOpenChange = (isOpen: boolean) => {
-          onOpenChange?.(isOpen);
-          handleOpenChange(isOpen);
-        };
-
-        if (menuItemDescriptors.length) {
-          ctx?.showContextMenu(
-            <ContextMenu
-              className={className}
-              menuHandler={menuHandler}
-              menuItemDescriptors={menuItemDescriptors}
-              onOpenChange={localOpenChange}
-              open={true}
-              x={x}
-              y={y}
-            />,
-          );
-          return true;
-        }
-      } else {
+      if (!menuBuilder && !ctx?.menuBuilders?.length) {
         console.warn(
           "useContextMenu, no menuBuilders configured. These should be supplied via the ContextMenuProvider(s)",
         );
+        return false;
+      }
+
+      const { menuHandler, menuItemDescriptors } = buildMenuItems(
+        location,
+        options,
+      );
+
+      const localOpenChange = (isOpen: boolean) => {
+        onOpenChange?.(isOpen);
+        handleOpenChange(isOpen);
+      };
+
+      if (menuItemDescriptors.length) {
+        ctx?.showContextMenu(
+          <ContextMenu
+            className={className}
+            menuHandler={menuHandler}
+            menuItemDescriptors={menuItemDescriptors}
+            onOpenChange={localOpenChange}
+            open={true}
+            x={x}
+            y={y}
+          />,
+        );
+        return true;
       }
       return false;
     },
-    [buildMenuOptions, ctx, handleOpenChange, menuActionHandler, menuBuilder],
+    [buildMenuItems, ctx, handleOpenChange, menuBuilder],
   );
 
   return showContextMenu;

@@ -271,7 +271,7 @@ export function getMaxScrollHeight(
   return DEFAULT_MAX_SCROLL_HEIGHT;
 }
 
-export type MouseEventTypes = "dblclick" | "click";
+export type MouseEventTypes = "dblclick" | "click" | "mousedown";
 export type KeyboardEventTypes = "keydown" | "keypress" | "keyup";
 
 export const dispatchMouseEvent = (el: HTMLElement, type: MouseEventTypes) => {

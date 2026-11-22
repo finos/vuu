@@ -1,4 +1,4 @@
-import { expect, test } from "../../../../../playwright/fixtures";
+import { expect, test } from "../../../../../../playwright/fixtures";
 
 test.describe("Given a PopupMenu", () => {
   test("should apply correct aria attribues", async ({ mount }) => {
@@ -97,7 +97,10 @@ test.describe("Given a PopupMenu", () => {
     });
 
     test.describe("OR if user tabs away", () => {
-      test("THEN Menu is hidden", async ({ mount, page }) => {
+      test("THEN Menu is hidden and focus returns to the button", async ({
+        mount,
+        page,
+      }) => {
         await mount("Popups/PopupMenu/DefaultPopupMenu");
         const input = page.getByTestId("input");
         await input.click();
@@ -113,7 +116,7 @@ test.describe("Given a PopupMenu", () => {
 
         await expect(button).toHaveAttribute("aria-expanded", "false");
         await expect(page.getByRole("menu")).not.toBeAttached();
-        await expect(button).not.toBeFocused();
+        await expect(button).toBeFocused();
       });
     });
   });
@@ -127,7 +130,7 @@ test.describe("Given a PopupMenu", () => {
         "Popups/PopupMenu/PopupMenuWithActionRecorder",
       );
 
-      await component.getByRole("button").click();
+      await component.getByRole("button").press("Enter");
 
       const menuItem1 = page.getByRole("menuitem", {
         name: "Menu Item 1",

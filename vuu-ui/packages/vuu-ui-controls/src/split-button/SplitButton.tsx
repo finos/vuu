@@ -1,10 +1,9 @@
 import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import cx from "clsx";
 import { forwardRef, HTMLAttributes } from "react";
+import { PopupMenu, PopupMenuProps } from "../popup-menu";
 import { useSplitButton } from "./useSplitButton";
 
 import splitButtonCss from "./SplitButton.css";
@@ -53,39 +52,37 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
       });
 
     return (
-      <ContextMenuProvider>
-        <div
-          {...htmlAttributes}
-          {...rootProps}
-          className={cx(classBase, `${classBase}-${variant}`, className, {
-            [`${classBase}-disabled`]: disabled,
-            [`${classBase}-segmented`]: segmented,
-          })}
-          ref={useForkRef(forwardedRef, rootRef)}
-          data-showcase-center
-          tabIndex={-1}
+      <div
+        {...htmlAttributes}
+        {...rootProps}
+        className={cx(classBase, `${classBase}-${variant}`, className, {
+          [`${classBase}-disabled`]: disabled,
+          [`${classBase}-segmented`]: segmented,
+        })}
+        ref={useForkRef(forwardedRef, rootRef)}
+        data-showcase-center
+        tabIndex={-1}
+      >
+        <Button
+          {...ButtonProps}
+          appearance="solid"
+          className={`${classBase}-main`}
+          disabled={disabled}
+          ref={buttonRef}
+          sentiment="neutral"
         >
-          <Button
-            {...ButtonProps}
-            appearance="solid"
-            className={`${classBase}-main`}
-            disabled={disabled}
-            ref={buttonRef}
-            sentiment="neutral"
-          >
-            {children}
-          </Button>
-          <PopupMenu
-            {...PopupMenuProps}
-            appearance="solid"
-            className={`${classBase}-trigger`}
-            disabled={disabled}
-            icon={PopupMenuProps?.icon ?? "chevron-down"}
-            tabIndex={segmented ? 0 : -1}
-            sentiment="neutral"
-          />
-        </div>
-      </ContextMenuProvider>
+          {children}
+        </Button>
+        <PopupMenu
+          {...PopupMenuProps}
+          appearance="solid"
+          className={`${classBase}-trigger`}
+          disabled={disabled}
+          icon={PopupMenuProps?.icon ?? "chevron-down"}
+          tabIndex={segmented ? 0 : -1}
+          sentiment="neutral"
+        />
+      </div>
     );
   },
 );

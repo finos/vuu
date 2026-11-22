@@ -3,7 +3,7 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
+import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useMemo, useState } from "react";
 
 const menuBuilder: MenuBuilder = () => [
