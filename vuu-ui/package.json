@@ -87,7 +87,7 @@
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-report": "^3.0.1",
     "istanbul-reports": "^3.2.0",
-    "serve": "^14.2.6",
+    "serve": "^14.2.8",
     "serve-handler": "^6.1.6",
     "tsx": "^4.19.1",
     "typescript": "7.0.2",
