@@ -33,12 +33,7 @@ test.describe("EditableTable with a session table blueprint", () => {
     await expect(
       page.getByRole("textbox", { name: "price" }).first(),
     ).toBeVisible();
-    await expect(columnHeaders(page)).toHaveText([
-      "id",
-      "quantity",
-      "price",
-      "vuuMsg",
-    ]);
+    await expect(columnHeaders(page)).toHaveText(["id", "quantity", "price"]);
 
     const price = page.getByRole("textbox", { name: "price" }).first();
     await price.fill("111.5");

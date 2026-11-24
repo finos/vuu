@@ -713,6 +713,7 @@ test.describe("Inline add row with optional columns", () => {
     });
 
     test("Tab moves on from a complete row, Enter in the empty final cell inserts it", async ({
+      browserName,
       page,
     }) => {
       const { id, description, quantity, price, externalId } =
@@ -724,11 +725,14 @@ test.describe("Inline add row with optional columns", () => {
       await price.fill("607.5");
       await price.press("Tab");
 
-      const enabled = page
-        .locator(".vuuInlineAddRow")
-        .locator('[data-field="enabled"] input');
-      await expect(enabled).toBeFocused();
-      await enabled.press("Tab");
+      // WebKit's Tab key skips checkboxes by default
+      if (browserName !== "webkit") {
+        const enabled = page
+          .locator(".vuuInlineAddRow")
+          .locator('[data-field="enabled"] input');
+        await expect(enabled).toBeFocused();
+        await enabled.press("Tab");
+      }
       await expect(externalId).toBeFocused();
       await expect(getInsertedRows(page)).toHaveCount(0);
       await expect(price).toHaveValue("607.5");

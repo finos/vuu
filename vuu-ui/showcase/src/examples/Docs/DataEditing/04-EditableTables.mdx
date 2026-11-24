@@ -702,7 +702,6 @@ const MyEditableTable = ({ config, dataSource }) => {
   const {
     canCancel,
     canSave,
-    columnsDiverge,
     dataSource: activeDataSource,
     editSchema,
     editSession,
@@ -719,7 +718,6 @@ const MyEditableTable = ({ config, dataSource }) => {
 
   const columns = useEditableColumns({
     columns: config.columns,
-    columnsDiverge,
     editSchema,
     isEditing: isEditSessionReady,
     undoColumn: true,

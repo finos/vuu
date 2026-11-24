@@ -867,6 +867,11 @@ export interface DataSourceBase<
   range: Range;
   readonly selectedRowsCount: number;
   sendBroadcastMessage?: (message: DataSourceBroadcastMessage) => void;
+  /**
+   * The session table, when it differs from `table`, as passed to the
+   * constructor. Edit sessions are created from it.
+   */
+  readonly session?: SessionDataSourceOverrides;
   readonly size: number;
   sort: VuuSort;
   subscribe: (

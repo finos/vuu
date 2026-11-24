@@ -7,7 +7,7 @@ import type {
   ColumnDescriptor,
   DataValueTypeDescriptor,
 } from "@vuu-ui/vuu-table-types";
-import { isDataValueEditable } from "@vuu-ui/vuu-utils";
+import { isCalculatedColumn, isDataValueEditable } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { UNDO_CELL_RENDERER } from "./UndoCellRenderer";
 
@@ -33,9 +33,10 @@ export const UNDO_COLUMN: ColumnDescriptor = {
 
 export interface EditableColumnsHookProps {
   /**
-   * Column descriptors used in view mode and as the base for edit mode. A
-   * column's `editable` narrows what the server schema allows, its `editor`
-   * is used as the cell editor in edit mode.
+   * Column descriptors used in view mode and in edit mode. Each mode shows
+   * those its data has: `schema` in view mode, `editSchema` in edit mode.
+   * A column's `editable` narrows what the server schema allows, its
+   * `editor` is used as the cell editor in edit mode.
    */
   columns: readonly ColumnDescriptor[];
   /**
@@ -45,9 +46,10 @@ export interface EditableColumnsHookProps {
    */
   isEditing: boolean;
   /**
-   * The schema of the table being edited. A column the schema marks as not
-   * editable can never be edited, whatever the column descriptor says.
-   * Columns with no `editable` flag in the schema are editable.
+   * The schema of the table shown. In view mode, a column in `columns` but
+   * not in the schema is not shown. In edit mode, a column the schema marks
+   * as not editable can never be edited, whatever the column descriptor
+   * says; columns with no `editable` flag in the schema are editable.
    */
   schema?: TableSchema;
   /**
@@ -61,12 +63,14 @@ export interface EditableColumnsHookProps {
    */
   actionColumn?: "hidden" | "visible" | false;
   /**
-   * When true, edit-mode columns are built from `editSchema` rather than
-   * `columns`. Pass `columnsDiverge` and `editSchema` from `useEditableTable`.
-   * Descriptors in `columns` with a matching name are used as a base so that
-   * labels, widths and formatting are preserved.
+   * @deprecated edit-mode columns always come from `columns`, limited to
+   * those in `editSchema`.
    */
   columnsDiverge?: boolean;
+  /**
+   * The columns of the edit session, `editSchema` from `useEditableTable`.
+   * In edit mode, a column in `columns` but not in `editSchema` is not shown.
+   */
   editSchema?: TableSchema;
 }
 
@@ -132,6 +136,18 @@ const toViewColumn = (column: ColumnDescriptor) =>
     : { ...column, editable: false };
 
 /**
+ * Keeps the columns the schema has. Client and calculated columns are never
+ * in a schema, so they are kept. Without a schema, every column is kept.
+ */
+const inSchema =
+  (schema?: TableSchema) =>
+  ({ name, source }: ColumnDescriptor) =>
+    schema === undefined ||
+    source === "client" ||
+    isCalculatedColumn(name) ||
+    schema.columns.some((column) => column.name === name);
+
+/**
  * Builds edit-mode column descriptors. Exposed for use outside React, e.g. in
  * tests or when composing a TableConfig by hand. Most code should use
  * `useEditableColumns`.
@@ -139,30 +155,24 @@ const toViewColumn = (column: ColumnDescriptor) =>
 export const getEditableColumns = ({
   actionColumn = false,
   columns,
-  columnsDiverge = false,
   editSchema,
   isEditing,
-  schema = editSchema,
+  schema: schemaProp,
   undoColumn = false,
 }: EditableColumnsHookProps): readonly ColumnDescriptor[] => {
   if (!isEditing) {
-    return columns.some((c) => c.editable !== undefined && c.editable !== false)
-      ? columns.map(toViewColumn)
+    const viewColumns = schemaProp
+      ? columns.filter(inSchema(schemaProp))
       : columns;
+    return viewColumns.some(
+      (c) => c.editable !== undefined && c.editable !== false,
+    )
+      ? viewColumns.map(toViewColumn)
+      : viewColumns;
   }
 
-  const baseColumns: readonly ColumnDescriptor[] =
-    columnsDiverge && editSchema
-      ? editSchema.columns
-          .filter(({ name }) => name !== "vuuAction")
-          .map(
-            (schemaColumn) =>
-              columns.find(({ name }) => name === schemaColumn.name) ?? {
-                name: schemaColumn.name,
-                serverDataType: schemaColumn.serverDataType,
-              },
-          )
-      : columns;
+  const schema = schemaProp ?? editSchema;
+  const baseColumns = columns.filter(inSchema(editSchema));
 
   const editColumns = baseColumns.map<ColumnDescriptor>((column) => {
     if (column.source === "client") {
@@ -221,7 +231,6 @@ export const getEditableColumns = ({
 export const useEditableColumns = ({
   actionColumn,
   columns,
-  columnsDiverge,
   editSchema,
   isEditing,
   schema,
@@ -232,19 +241,10 @@ export const useEditableColumns = ({
       getEditableColumns({
         actionColumn,
         columns,
-        columnsDiverge,
         editSchema,
         isEditing,
         schema,
         undoColumn,
       }),
-    [
-      actionColumn,
-      columns,
-      columnsDiverge,
-      editSchema,
-      isEditing,
-      schema,
-      undoColumn,
-    ],
+    [actionColumn, columns, editSchema, isEditing, schema, undoColumn],
   );

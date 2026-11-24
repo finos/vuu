@@ -339,6 +339,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return super.columns;
   }
 
+  get session() {
+    return this.#session;
+  }
+
   async endEditSession(saveChanges = false, force = false) {
     if (this.status === "unsubscribed" || !this.viewport) {
       if (!saveChanges) {

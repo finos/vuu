@@ -32,27 +32,33 @@ The data source switches column sets when you enter edit mode, so column
 descriptors built for the view don't fit the edit table. `EditableTable`
 handles this for you.
 
-If you build your own table, `useEditableTable` returns `editSchema` and
-`columnsDiverge`. Pass both to `useEditableColumns`, which then builds the
-edit-mode columns from the edit table's schema:
+In edit mode the table shows the columns of its config that the edit table
+has, in config order with their labels, widths and editors. A column the
+edit table doesn't have, or that `session.columns` leaves out, is not shown,
+and no column outside the config is added. View mode works the same way with
+the view table. So one config serves both modes: a column such as a server
+generated key can be shown in the view but not in edit mode, by leaving it
+out of `session.columns`, and a column only the edit table has is shown only
+in edit mode.
+
+If you build your own table, pass `editSchema` from `useEditableTable` to
+`useEditableColumns`:
 
 ```tsx
-const { columnsDiverge, dataSource, editSchema, ...rest } = useEditableTable({
+const { dataSource, editSchema, ...rest } = useEditableTable({
   dataSource: viewDataSource,
   isEditMode,
 });
 
 const columns = useEditableColumns({
   columns: viewColumns,
-  columnsDiverge,
-  editable,
   editSchema,
-  isEditMode,
+  isEditing: rest.isEditSessionReady,
 });
 ```
 
 Cell edits send the column name to the session table, so edit-mode columns
-must come from the edit schema.
+must be in the edit schema.
 
 ## Things to know
 

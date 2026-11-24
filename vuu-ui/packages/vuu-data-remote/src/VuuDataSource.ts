@@ -560,6 +560,10 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     return this.#selectedRowsCount;
   }
 
+  get session() {
+    return this.#session;
+  }
+
   private rawRangeRequest: RangeRequest = (range) => {
     if (this.viewport && this.server) {
       this.server.send({

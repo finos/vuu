@@ -36,6 +36,7 @@ export {
   isInlineEditingSession,
   isEditRowAdded,
   isEditRowReadOnly,
+  withColumns,
   withDataRowEditErrors,
 } from "./edit-utils";
 export { EditButtons, type EditButtonProps } from "./EditButtons";

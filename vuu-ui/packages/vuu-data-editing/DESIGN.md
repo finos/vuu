@@ -171,11 +171,18 @@ keyed by row key and cannot cross a key-column change. The hook invokes it on
 `subscribed`, since a remote session table has no schema at the point `begin()`
 resolves.
 
-The hook returns `editSchema` and `columnsDiverge` for consumers rendering a
-single `Table` across both modes: the returned `dataSource` swaps column sets on
-entering edit mode, so column descriptors must be rebuilt rather than reused.
-This matters for cell editing in particular: `editCell` sends a column name to
-the session table, so it must come from the edit schema. `rowDefaults` naming
+The hook returns `editSchema` for consumers rendering a single `Table` across
+both modes: the returned `dataSource` swaps column sets on entering edit mode,
+so column descriptors must be rebuilt rather than reused. `editSchema` is the
+session table's schema, limited to the columns the source DataSource's
+`session.columns` asks for, if any. `useEditableColumns` shows the table
+config's columns that the data shown has, with their config settings, and adds
+no others: those in `schema` in view mode, in `editSchema` in edit mode. Client
+and calculated columns are always shown. The session blueprint decides which
+columns can be edited, the table config decides which are shown, so one config
+serves both modes. This matters for cell editing in
+particular: `editCell` sends a column name to the session table, so it must be
+in the edit schema. `rowDefaults` naming
 view-only columns are dropped by `reconcileWithSessionSchema` rather than sent.
 
 ## Row operations lifecycle (add, delete, undo)

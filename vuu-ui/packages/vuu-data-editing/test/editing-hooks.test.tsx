@@ -9,6 +9,7 @@ import {
   UNDO_COLUMN,
   useCustomEditField,
   useEditForm,
+  withColumns,
   type EditFormHookProps,
 } from "../src";
 
@@ -139,25 +140,90 @@ describe("getEditableColumns", () => {
     expect(result[2]).toEqual({ ...UNDO_COLUMN, width: 60 });
   });
 
-  it("builds columns from the edit schema when columns diverge", () => {
+  it("shows the config columns that are in the edit schema, and no others", () => {
     const result = getEditableColumns({
-      columns: [{ label: "RIC", name: "ric", serverDataType: "string" }],
-      columnsDiverge: true,
+      columns: [
+        { label: "Status", name: "status", serverDataType: "string" },
+        { label: "RIC", name: "ric", serverDataType: "string" },
+        { hidden: true, label: "Message", name: "vuuMsg" },
+      ],
       editSchema: {
         columns: [
-          { name: "ric", serverDataType: "string" },
           { name: "qty", serverDataType: "int" },
+          { name: "ric", serverDataType: "string" },
           { name: "vuuAction", serverDataType: "string" },
+          { name: "vuuMsg", serverDataType: "string" },
         ],
         key: "ric",
         table: { module: "TEST", table: "session" },
       },
       isEditing: true,
     });
-    expect(result.map((c) => [c.name, c.label])).toEqual([
-      ["ric", "RIC"],
-      ["qty", undefined],
+    expect(result.map((c) => [c.name, c.label, c.hidden])).toEqual([
+      ["ric", "RIC", undefined],
+      ["vuuMsg", "Message", true],
     ]);
+  });
+});
+
+describe("getEditableColumns, columns the data has", () => {
+  const columns: ColumnDescriptor[] = [
+    { name: "ric", serverDataType: "string" },
+    { name: "editChange", serverDataType: "string" },
+    { name: "total:double:=price*qty", serverDataType: "double" },
+  ];
+  const schemaWith = (...names: string[]) => ({
+    columns: names.map((name) => ({ name, serverDataType: "string" as const })),
+    key: "ric",
+    table: { module: "TEST", table: "instruments" },
+  });
+
+  it("in view mode, shows the columns in the view schema, and calculated columns", () => {
+    const result = getEditableColumns({
+      columns,
+      isEditing: false,
+      schema: schemaWith("ric", "price", "qty"),
+    });
+    expect(result.map(({ name }) => name)).toEqual([
+      "ric",
+      "total:double:=price*qty",
+    ]);
+  });
+
+  it("in edit mode, shows the columns in the edit schema", () => {
+    const result = getEditableColumns({
+      columns,
+      editSchema: schemaWith("ric", "editChange"),
+      isEditing: true,
+    });
+    expect(result.map(({ name }) => name)).toEqual([
+      "ric",
+      "editChange",
+      "total:double:=price*qty",
+    ]);
+  });
+});
+
+describe("withColumns", () => {
+  const schema = {
+    columns: [
+      { name: "id", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
+      { name: "vuuMsg", serverDataType: "string" },
+    ],
+    key: "id",
+    table: { module: "TEST", table: "session" },
+  } as const;
+
+  it("limits the schema to the named columns, in schema order", () => {
+    expect(
+      withColumns(schema, ["vuuMsg", "name"])?.columns.map(({ name }) => name),
+    ).toEqual(["name", "vuuMsg"]);
+  });
+
+  it("is the schema when no column names are given, or all are", () => {
+    expect(withColumns(schema)).toBe(schema);
+    expect(withColumns(schema, ["id", "name", "vuuMsg"])).toBe(schema);
   });
 });
 

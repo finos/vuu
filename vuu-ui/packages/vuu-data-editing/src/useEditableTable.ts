@@ -16,7 +16,7 @@ import {
   type RowDefaultDataItemValues,
 } from "./EditSession";
 import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
-import { isEditRowReadOnly } from "./edit-utils";
+import { isEditRowReadOnly, withColumns } from "./edit-utils";
 import { useEditMode } from "./EditModeProvider";
 import { type EditErrorHandler, reportEditError } from "./edit-errors";
 
@@ -263,7 +263,12 @@ export const useEditableTable = ({
     sessionDataSource.status === "subscribed" &&
     sessionDataSource.tableSchema !== undefined;
 
-  const editSchema = subscribedSessionDataSource?.tableSchema;
+  const sessionTableSchema = subscribedSessionDataSource?.tableSchema;
+  const sessionColumns = sourceDataSource.session?.columns;
+  const editSchema = useMemo(
+    () => withColumns(sessionTableSchema, sessionColumns),
+    [sessionColumns, sessionTableSchema],
+  );
   const viewSchema = sourceDataSource.tableSchema;
   // Consumers rendering a single Table must rebuild column descriptors when this is true.
   const columnsDiverge =

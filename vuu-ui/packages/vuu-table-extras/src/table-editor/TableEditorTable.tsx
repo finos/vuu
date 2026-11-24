@@ -37,7 +37,6 @@ const TableCellEditorTable = ({
   const { allowDelete, editableTable } =
     useTableEditorContext("TableEditorTable");
   const {
-    columnsDiverge,
     dataSource,
     editSchema,
     isEditSessionReady,
@@ -48,7 +47,7 @@ const TableCellEditorTable = ({
 
   // A session data source may subscribe fewer columns than the view, when
   // the session table has its own schema. Until it is ready, show only the
-  // columns it subscribes; once it is, columns come from the session schema.
+  // columns it subscribes; once it is, only those in the session schema.
   const configColumns = useMemo(
     () =>
       dataSource !== sourceDataSource && !isEditSessionReady
@@ -60,7 +59,6 @@ const TableCellEditorTable = ({
   const columns = useEditableColumns({
     actionColumn: allowDelete ? "hidden" : false,
     columns: configColumns,
-    columnsDiverge,
     editSchema,
     isEditing: isEditSessionReady,
     schema: dataSource.tableSchema ?? editSchema,
