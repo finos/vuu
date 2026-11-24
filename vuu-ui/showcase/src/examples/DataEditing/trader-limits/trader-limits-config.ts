@@ -164,6 +164,20 @@ export const limitColumnsByMode: Record<
   view: limitColumns.filter(({ name }) => limitColumnNames.includes(name)),
 };
 
+/**
+ * For a release that supports one metric: the Metric column stays, showing
+ * the metric every new limit is given, but it cannot be entered.
+ */
+export const withFixedMetric = (
+  columns: readonly ColumnDescriptor[],
+  fixedMetric?: string,
+) =>
+  fixedMetric === undefined
+    ? columns
+    : columns.map((column) =>
+        column.name === "metric" ? { ...column, editable: false } : column,
+      );
+
 /** Available in the column picker, but not shown at first. */
 const INITIALLY_HIDDEN = new Set([
   "entity_type",

@@ -8,23 +8,28 @@ import {
   getLimitsTableConfig,
   initiallySelected,
   limitColumnsByMode,
+  withFixedMetric,
 } from "./trader-limits-config";
 
-const createColumnModel = (mode: EditableTableMode) => {
-  const columns = limitColumnsByMode[mode];
+const createColumnModel = (mode: EditableTableMode, fixedMetric?: string) => {
+  const columns = withFixedMetric(limitColumnsByMode[mode], fixedMetric);
   return new ColumnModel(columns, initiallySelected(columns));
 };
 
 /**
  * A column model for each mode, so the column picker offers only the columns
- * of the table shown, and the table config of the current mode.
+ * of the table shown, and the table config of the current mode. With a
+ * `fixedMetric`, the Metric column cannot be entered.
  */
-export const useLimitsColumns = (mode: EditableTableMode) => {
+export const useLimitsColumns = (
+  mode: EditableTableMode,
+  fixedMetric?: string,
+) => {
   const columnModels = useMemo((): Record<EditableTableMode, ColumnModel> => {
     // Create and Edit mode show the same edit session
-    const edit = createColumnModel("edit");
-    return { create: edit, edit, view: createColumnModel("view") };
-  }, []);
+    const edit = createColumnModel("edit", fixedMetric);
+    return { create: edit, edit, view: createColumnModel("view", fixedMetric) };
+  }, [fixedMetric]);
   const columnModel = columnModels[mode];
 
   const subscribe = useCallback(

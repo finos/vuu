@@ -33,6 +33,11 @@ import "./TraderLimits.css";
 
 export interface TraderLimitsPageProps {
   /**
+   * The metric of every new limit, for a release that supports one metric.
+   * The Metric column shows it, but it cannot be entered.
+   */
+  fixedMetric?: string;
+  /**
    * Show a button that simulates the start of the next business day, when
    * Pending limits become Active.
    */
@@ -55,6 +60,7 @@ export interface TraderLimitsPageProps {
  * editing.
  */
 export const TraderLimitsPage = ({
+  fixedMetric,
   showNextBusinessDay = false,
 }: TraderLimitsPageProps) => {
   const { VuuDataSource } = useData();
@@ -91,7 +97,11 @@ export const TraderLimitsPage = ({
   }, []);
 
   const isViewMode = mode === "view";
-  const { columnModel, tableConfig } = useLimitsColumns(mode);
+  const { columnModel, tableConfig } = useLimitsColumns(mode, fixedMetric);
+  const rowDefaults = useMemo(
+    () => (fixedMetric === undefined ? undefined : { metric: fixedMetric }),
+    [fixedMetric],
+  );
 
   const downloadTemplate = useCallback(() => {
     exportCsvTemplate(dataSource, {
@@ -131,6 +141,7 @@ export const TraderLimitsPage = ({
             {...saveError.handlers}
             mode={mode}
             onModeChange={setMode}
+            rowDefaults={rowDefaults}
           >
             <TableEditorToolbar>
               <TableEditorModeToggle />
