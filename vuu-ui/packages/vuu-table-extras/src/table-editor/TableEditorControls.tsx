@@ -16,12 +16,12 @@ export interface TableEditorButtonsProps {
 }
 
 /**
- * Save and Cancel (and, for inline editing with `allowDelete`, Delete)
- * buttons for the enclosing `EditableTable`. Disabled outside edit mode.
- * Within a form, they are the form's buttons: render them within the
- * `children` of `TableEditorForm` (which then omits its own buttons), or
- * within `TableEditorCreateForm` with `showButtons={false}`. Renders nothing
- * for inline direct editing, which has nothing to save.
+ * Save and Cancel (and, for inline editing with `allowDelete`, Delete) buttons
+ * for the enclosing `EditableTableContainer`. Disabled outside edit mode.
+ * Within a form, they are the form's buttons: render them within the `children`
+ * of `TableEditorForm` (which then omits its own buttons), or within
+ * `TableEditorCreateForm` with `showButtons={false}`. Renders nothing for
+ * inline direct editing, which has nothing to save.
  */
 export const TableEditorButtons = ({
   hideCancel,
@@ -69,10 +69,10 @@ export const TableEditorButtons = ({
 export type TableEditorModeToggleProps = EditModeToggleProps;
 
 /**
- * View/Edit toggle for the enclosing `EditableTable`: an `EditModeToggle`.
- * Switching to View discards changes, asking `confirmCancel` first. It is
- * disabled while a row is being created and, when editing in a form, until
- * a row is selected.
+ * View/Edit toggle for the enclosing `EditableTableContainer`: an
+ * `EditModeToggle`. Switching to View discards changes, asking `confirmCancel`
+ * first. It is disabled while a row is being created and, when editing in a
+ * form, until a row is selected.
  */
 export const TableEditorModeToggle = EditModeToggle;
 

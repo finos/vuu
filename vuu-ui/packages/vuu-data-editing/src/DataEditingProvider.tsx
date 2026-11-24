@@ -26,7 +26,7 @@ export type DataEditingMode = "view" | "edit" | "create";
 
 /**
  * The editing state shared by everything inside a `DataEditingModeProvider`,
- * e.g. an `EditModeToggle` in a page header and the `EditableTable` it
+ * e.g. an `EditModeToggle` in a page header and the `EditableTableContainer` it
  * controls.
  */
 export interface DataEditingState {
@@ -103,7 +103,7 @@ let warnedSecondEditor = false;
 
 /**
  * Owns the editing mode (view, edit or create) of an editable component,
- * e.g. an `EditableTable`, and shares it with controls placed anywhere
+ * e.g. an `EditableTableContainer`, and shares it with controls placed anywhere
  * inside, e.g. an `EditModeToggle` in a page header. The editable component
  * registers how it enters and leaves edit mode, and its edit session, which
  * `useEditSession` then returns. Read the state with `useDataEditing`.

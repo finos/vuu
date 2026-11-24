@@ -37,7 +37,7 @@ flowchart LR
 - **`DataEditingProvider`** makes an edit session available to the cells,
   fields and buttons below it.
 - **`DataEditingModeProvider`** holds the mode (view, edit or create) of the
-  editable component inside it, such as an `EditableTable`, so an
+  editable component inside it, such as an `EditableTableContainer`, so an
   `EditModeToggle` elsewhere on the page can control it. The editable
   component's edit session is available below it too.
 - **`EditModeProvider`** holds whether the UI is in view or edit mode, for
@@ -99,7 +99,7 @@ is added to the session table. The draft is addressed with the reserved key
 fields and sends `addRow`. If the server rejects the row, the draft is kept and
 the error is shown, so the user can fix it and try again.
 
-`rowDefaults` (on `useEditableTable`, `EditableTable` and `EditForm`) supplies
+`rowDefaults` (on `useEditableTable`, `EditableTableContainer` and `EditForm`) supplies
 values for columns the user doesn't fill in, such as a parent id. Pass a stable
 reference: a new object recreates the edit session.
 

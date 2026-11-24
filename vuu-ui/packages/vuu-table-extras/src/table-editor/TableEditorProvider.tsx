@@ -56,7 +56,7 @@ export interface TableEditorProviderProps
   panelVisibility?: TableEditorPanelVisibility;
 }
 
-const COMPONENT_NAME = "EditableTable";
+const COMPONENT_NAME = "EditableTableContainer";
 
 /** State shared by every variant: the table's columns and the mounted form. */
 const useFormState = () => {
@@ -580,20 +580,20 @@ const FormProvider = ({
 };
 
 /**
- * Internal: the provider behind `EditableTable`. Owns the editing state
- * shared by the `TableEditor` components: the edit session and, with a side
- * panel, the selected row and the panel. The mode (view, edit or create) is
- * owned by the enclosing `DataEditingModeProvider`, with which this registers
- * how the table enters and leaves edit mode.
- * Lay out `TableEditorTable`, `TableEditorForm`, `TableEditorButtons` etc
- * anywhere inside it; read its state with `useTableEditor`.
+ * Internal: the provider behind `EditableTableContainer`. Owns the editing
+ * state shared by the `TableEditor` components: the edit session and, with a
+ * side panel, the selected row and the panel. The mode (view, edit or create)
+ * is owned by the enclosing `DataEditingModeProvider`, with which this
+ * registers how the table enters and leaves edit mode. Lay out `EditableTable`,
+ * `TableEditorForm`, `TableEditorButtons` etc anywhere inside it; read its
+ * state with `useTableEditor`.
  *
- * - `editStrategy="inline"`: cells are edited in `TableEditorTable`. With
+ * - `editStrategy="inline"`: cells are edited in `EditableTable`. With
  *   `editModel="session"` edits are staged in a session table and applied
  *   on Save; with `editModel="direct"` each edit is sent straight to
  *   `dataSource`. With `createStrategy="form"`, new rows are added in
  *   `TableEditorCreateForm`.
- * - `editStrategy="form"`: selecting a row in `TableEditorTable` shows it in
+ * - `editStrategy="form"`: selecting a row in `EditableTable` shows it in
  *   `TableEditorForm`. Row selection is locked, and the panel cannot be
  *   closed, while the form is being edited.
  *

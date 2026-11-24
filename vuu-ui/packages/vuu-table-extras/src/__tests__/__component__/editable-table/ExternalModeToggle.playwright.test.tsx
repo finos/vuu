@@ -19,21 +19,27 @@ const editFirstDescription = async (page: Page, value: string) => {
   await description.press("Enter");
 };
 
-test.describe("EditModeToggle outside an EditableTable", () => {
+test.describe("EditModeToggle outside an EditableTableContainer", () => {
   test("enters edit mode and returns to view mode", async ({ mount, page }) => {
     await mount(EXAMPLE);
     const toggle = pageToggle(page);
 
-    await expect(editableTable(page)).toHaveClass(/vuuEditableTable-view/);
+    await expect(editableTable(page)).toHaveClass(
+      /vuuEditableTableContainer-view/,
+    );
     await toggle.edit.click();
-    await expect(editableTable(page)).toHaveClass(/vuuEditableTable-edit/);
+    await expect(editableTable(page)).toHaveClass(
+      /vuuEditableTableContainer-edit/,
+    );
     await expect(
       page.getByRole("textbox", { name: "description" }).first(),
     ).toBeVisible();
 
     // nothing has changed, so there is nothing to confirm
     await toggle.view.click();
-    await expect(editableTable(page)).toHaveClass(/vuuEditableTable-view/);
+    await expect(editableTable(page)).toHaveClass(
+      /vuuEditableTableContainer-view/,
+    );
     await expect(page.getByRole("dialog")).toHaveCount(0);
   });
 
@@ -53,7 +59,9 @@ test.describe("EditModeToggle outside an EditableTable", () => {
 
     await dialog.getByRole("button", { name: "Keep editing" }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(editableTable(page)).toHaveClass(/vuuEditableTable-edit/);
+    await expect(editableTable(page)).toHaveClass(
+      /vuuEditableTableContainer-edit/,
+    );
     await expect(toggle.edit).toHaveAttribute("aria-checked", "true");
 
     await toggle.view.click();
@@ -61,7 +69,9 @@ test.describe("EditModeToggle outside an EditableTable", () => {
       .getByRole("dialog")
       .getByRole("button", { name: "Discard" })
       .click();
-    await expect(editableTable(page)).toHaveClass(/vuuEditableTable-view/);
+    await expect(editableTable(page)).toHaveClass(
+      /vuuEditableTableContainer-view/,
+    );
     await expect(toggle.view).toHaveAttribute("aria-checked", "true");
   });
 
@@ -73,7 +83,9 @@ test.describe("EditModeToggle outside an EditableTable", () => {
     await editFirstDescription(page, "Saved description");
     await page.getByRole("button", { exact: true, name: "Save" }).click();
 
-    await expect(editableTable(page)).toHaveClass(/vuuEditableTable-view/);
+    await expect(editableTable(page)).toHaveClass(
+      /vuuEditableTableContainer-view/,
+    );
     await expect(toggle.view).toHaveAttribute("aria-checked", "true");
   });
 
@@ -89,6 +101,8 @@ test.describe("EditModeToggle outside an EditableTable", () => {
     await expect(toggle.edit).toBeEnabled();
 
     await toggle.edit.click();
-    await expect(editableTable(page)).toHaveClass(/vuuEditableTable-edit/);
+    await expect(editableTable(page)).toHaveClass(
+      /vuuEditableTableContainer-edit/,
+    );
   });
 });

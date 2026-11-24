@@ -18,7 +18,7 @@ available for editing (the rows are copied from the source table). Exactly which
 
 ## I am an application author, I use vuu-ui components, how do I implement data editing in my app ?
 
-The quickest route is a pattern component from `@vuu-ui/vuu-table-extras`: `EditableTable` (a table edited inline, or
+The quickest route is a pattern component from `@vuu-ui/vuu-table-extras`: `EditableTableContainer` (a table edited inline, or
 with a form beside it, staged in a session or committed directly) or `useBulkEditDialog`.
 See the _DataEditing_ examples in this showcase and the
 [Data Editing guides](../Docs/DataEditing/01-GettingStarted.mdx). The rest of this page describes the lower-level pieces those components are built from.
@@ -30,7 +30,7 @@ as statistics, filters, and external workflows.
 
 Table cells can be rendered with editable content for one or more table columns. Editing is enabled on a column, not on individual cells. Editing is enabled by setting the _editable_
 attribute to true on one or more of the ColumnDescriptors included in TableConfig. Rather than setting this by hand,
-you can pass an `editable` spec to `useEditableColumns` or `EditableTable`, naming the editable columns and,
+you can pass an `editable` spec to `useEditableColumns` or `EditableTableContainer`, naming the editable columns and,
 optionally, the edit control for each. The actual edit control used to render the editable content will be an InputCell by default. This is
 an embedded TextInput control and allows free input of text, with all the usual expected behaviour of the TextInput. Alternative edit controls can be employed and may be more suitable,
 depending on the data.

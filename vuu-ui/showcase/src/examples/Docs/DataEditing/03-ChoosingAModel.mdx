@@ -10,7 +10,7 @@ Not every edit needs a session table. There are two models.
 | Delete | yes | no |
 | Other users see changes | on Save | on each edit |
 | Server needs | session-table and edit RPC handlers | `editCell` on the source table |
-| Use | `EditableTable` (any `editStrategy`), `EditForm`, `useEditableTable` | `EditableTable editModel="direct"` (any `editStrategy`), `DirectEditSession` |
+| Use | `EditableTableContainer` (any `editStrategy`), `EditForm`, `useEditableTable` | `EditableTableContainer editModel="direct"` (any `editStrategy`), `DirectEditSession` |
 
 ## Staged session
 
@@ -25,7 +25,7 @@ away, like a spreadsheet: a status flag or a note. There is no session table,
 no Save step and nothing to undo.
 
 ```tsx
-<EditableTable
+<EditableTableContainer
   config={config}
   dataSource={dataSource}
   editModel="direct"

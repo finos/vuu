@@ -4,7 +4,7 @@ There are three ways to edit a row in a form, from most to least complete:
 
 | Component | Use it to |
 | --------- | --------- |
-| `EditableTable editStrategy="form"` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New. The form is generated from the schema and columns, or composed from your own content. See [Form editing](./04-EditableTables.mdx#form-editing) |
+| `EditableTableContainer editStrategy="form"` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New. The form is generated from the schema and columns, or composed from your own content. See [Form editing](./04-EditableTables.mdx#form-editing) |
 | `CreateRowForm` | add a row from a list of fields |
 | `EditForm` | lay out your own form for editing or adding a row |
 
@@ -13,7 +13,7 @@ All of them own an edit session, so you don't need `useEditableTable` or a
 edited (copy option `Selected`); in create mode it starts empty (`Empty`). Save
 applies the change to the source table.
 
-`EditableTable` builds its forms from the components on this page:
+`EditableTableContainer` builds its forms from the components on this page:
 `TableEditorForm` is an `EditForm` for the selected row and
 `TableEditorCreateForm` is a `CreateRowForm`. Both take the props described
 here.
@@ -55,7 +55,7 @@ const fields: DataValueDescriptor[] = [
 - `serverDataType` converts the typed text before it is sent (default
   `"string"`); `"boolean"` gives a checkbox.
 - `editable: false` makes a field read-only; `{ insert: true, update: false }`
-  lets it be set on a new row only. In `EditableTable`, the server schema
+  lets it be set on a new row only. In `EditableTableContainer`, the server schema
   still has the last word.
 - `required` defaults to `true` in a create form. Set it to `false` for
   optional fields.

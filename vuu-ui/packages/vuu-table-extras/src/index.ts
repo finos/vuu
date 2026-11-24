@@ -63,22 +63,26 @@ export {
 } from "./bulk-edit-dialog/useBulkEditDialog";
 export {
   EditableTable,
-  type EditableTableBaseProps,
-  type EditableTableComposedProps,
-  type EditableTableCreateLayoutProps,
+  type EditableTableProps,
+} from "./editable-table/EditableTable";
+export {
+  EditableTableContainer,
+  type EditableTableContainerBaseProps,
+  type EditableTableContainerComposedProps,
+  type EditableTableContainerCreateLayoutProps,
+  type EditableTableContainerDefaultLayoutProps,
+  type EditableTableContainerFormLayoutProps,
+  type EditableTableContainerInlineLayoutProps,
+  type EditableTableContainerProps,
+  type EditableTableContainerSessionLayoutProps,
+  type EditableTableContainerSessionOnlyProps,
   type EditableTableCreateStrategy,
-  type EditableTableDefaultLayoutProps,
   type EditableTableEditModel,
   type EditableTableEditStrategy,
   type EditableTableField,
-  type EditableTableFormLayoutProps,
-  type EditableTableInlineLayoutProps,
   type EditableTableMode,
   type EditableTablePanelVisibility,
-  type EditableTableProps,
-  type EditableTableSessionLayoutProps,
-  type EditableTableSessionOnlyProps,
-} from "./editable-table/EditableTable";
+} from "./editable-table/EditableTableContainer";
 export {
   EditableTableFooter,
   type EditableTableFooterProps,

@@ -31,7 +31,3 @@ export {
   TableEditorToolbar,
   type TableEditorToolbarProps,
 } from "./TableEditorLayout";
-export {
-  TableEditorTable,
-  type TableEditorTableProps,
-} from "./TableEditorTable";

@@ -10,7 +10,7 @@ The package is organised in layers. Applications should start at the highest
 layer that fits and drop down only when they need more control:
 
 1. **Pattern components** – `EditForm`, `CreateRowForm` (this package) and
-   `EditableTable`, `BulkEditDialog`
+   `EditableTableContainer`, `BulkEditDialog`
    (`@vuu-ui/vuu-table-extras`).
 2. **Composable hooks** – `useEditableTable`, `useEditForm`,
    `useEditableColumns`, `useEditSessionState`, `useLookupOptions`,
@@ -239,7 +239,7 @@ This decouples the client from requiring the remote server to return an extra re
 | `src/index.ts`                | Defines the package's public API.                                                                                                  |
 
 The pattern components built on this package live in `@vuu-ui/vuu-table-extras`:
-`EditableTable` (`src/editable-table/`, inline or form editing, built from the
+`EditableTableContainer` (`src/editable-table/`, inline or form editing, built from the
 `src/table-editor/` pieces) and `useBulkEditDialog` (`src/bulk-edit-dialog/`).
 
 ## Dependencies

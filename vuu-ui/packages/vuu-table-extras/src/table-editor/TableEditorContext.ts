@@ -43,7 +43,7 @@ export type TableEditorMode = DataEditingMode;
  */
 export type TableEditorPanelVisibility = "on-select" | "always";
 
-/** State and actions of the enclosing `EditableTable`. */
+/** State and actions of the enclosing `EditableTableContainer`. */
 export interface TableEditorState {
   /**
    * Whether the side panel can be closed. False while editing and when
@@ -91,7 +91,7 @@ export interface TableEditorFormHandle {
 export interface TableEditorContextValue extends TableEditorState {
   allowDelete: boolean;
   /**
-   * The columns of the `TableEditorTable`, registered by it. Generated forms
+   * The columns of the `EditableTable`, registered by it. Generated forms
    * take labels, editors etc from them.
    */
   columns?: readonly DataValueDescriptor[];
@@ -120,11 +120,13 @@ export const TableEditorContext = createContext<
 export const useTableEditorContext = (componentName: string) => {
   const context = useContext(TableEditorContext);
   if (context === undefined) {
-    throw Error(`${componentName} must be used within an EditableTable`);
+    throw Error(
+      `${componentName} must be used within an EditableTableContainer`,
+    );
   }
   return context;
 };
 
-/** State and actions of the enclosing `EditableTable`. */
+/** State and actions of the enclosing `EditableTableContainer`. */
 export const useTableEditor = (): TableEditorState =>
   useTableEditorContext("useTableEditor");

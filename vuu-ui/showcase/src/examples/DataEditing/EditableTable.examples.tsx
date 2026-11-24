@@ -7,12 +7,12 @@ import {
 } from "@vuu-ui/vuu-data-editing";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
-  EditableTable,
+  EditableTableContainer,
   type EditableTableEditStrategy,
   EditableTableFooter,
   type EditableTableMode,
   TableEditorModeToggle,
-  TableEditorTable,
+  EditableTable,
   TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
@@ -91,7 +91,10 @@ const ViewEditToggleTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 900 }}>
-      <EditableTable config={readOnlyRicConfig} dataSource={dataSource} />
+      <EditableTableContainer
+        config={readOnlyRicConfig}
+        dataSource={dataSource}
+      />
     </div>
   );
 };
@@ -121,17 +124,20 @@ const ExternalModeToggleTemplate = ({
           <EditModeToggle testId="-page" />
         </StackLayout>
         {editStrategy === "form" ? (
-          <EditableTable
+          <EditableTableContainer
             config={readOnlyRicConfig}
             confirmCancel={confirmDiscard}
             dataSource={dataSource}
             editStrategy="form"
           />
         ) : (
-          <EditableTable confirmCancel={confirmDiscard} dataSource={dataSource}>
-            <TableEditorTable config={readOnlyRicConfig} />
+          <EditableTableContainer
+            confirmCancel={confirmDiscard}
+            dataSource={dataSource}
+          >
+            <EditableTable config={readOnlyRicConfig} />
             <EditableTableFooter />
-          </EditableTable>
+          </EditableTableContainer>
         )}
       </StackLayout>
     </DataEditingModeProvider>
@@ -139,11 +145,11 @@ const ExternalModeToggleTemplate = ({
 };
 
 /**
- * Pattern 1b. The View/Edit toggle is in the page header, outside the
- * table. `DataEditingModeProvider` holds the editing mode, so an
- * `EditModeToggle` anywhere inside it controls the `EditableTable`, with the
- * same behaviour as the table's own toggle: switching to View asks before
- * discarding unsaved changes.
+ * Pattern 1b. The View/Edit toggle is in the page header, outside the table.
+ * `DataEditingModeProvider` holds the editing mode, so an `EditModeToggle`
+ * anywhere inside it controls the `EditableTableContainer`, with the same
+ * behaviour as the table's own toggle: switching to View asks before discarding
+ * unsaved changes.
  */
 export const ExternalModeToggle = ({
   editStrategy,
@@ -161,7 +167,7 @@ const InsertUpdateDeleteTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 1000 }}>
-      <EditableTable
+      <EditableTableContainer
         allowDelete
         config={keyColumnConfig}
         copyOption="All"
@@ -186,7 +192,10 @@ const CustomEditorsTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 900 }}>
-      <EditableTable config={customEditorsConfig} dataSource={dataSource} />
+      <EditableTableContainer
+        config={customEditorsConfig}
+        dataSource={dataSource}
+      />
     </div>
   );
 };
@@ -205,7 +214,7 @@ const DirectEditTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 900 }}>
-      <EditableTable
+      <EditableTableContainer
         config={directEditConfig}
         dataSource={dataSource}
         editModel="direct"
@@ -229,7 +238,7 @@ const DirectEditWithModesTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 900 }}>
-      <EditableTable
+      <EditableTableContainer
         config={directEditConfig}
         dataSource={dataSource}
         defaultMode="view"
@@ -257,7 +266,7 @@ const UnsavedChangesTemplate = () => {
   const confirmDiscard = useConfirmDiscard();
   return (
     <div style={{ height: 400, width: 900 }}>
-      <EditableTable
+      <EditableTableContainer
         confirmCancel={confirmDiscard}
         dataSource={dataSource}
         mode={mode}
@@ -267,9 +276,9 @@ const UnsavedChangesTemplate = () => {
           <TableEditorModeToggle />
           <span>Mode: {mode}</span>
         </TableEditorToolbar>
-        <TableEditorTable config={readOnlyRicConfig} />
+        <EditableTable config={readOnlyRicConfig} />
         <EditableTableFooter />
-      </EditableTable>
+      </EditableTableContainer>
     </div>
   );
 };
@@ -291,7 +300,7 @@ const SessionCreateFormTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 1100 }}>
-      <EditableTable
+      <EditableTableContainer
         config={keyColumnConfig}
         createStrategy="form"
         createTitle="New instrument"
@@ -318,7 +327,7 @@ const DirectCreateFormTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 1100 }}>
-      <EditableTable
+      <EditableTableContainer
         config={keyColumnConfig}
         createStrategy="form"
         createTitle="New instrument"
@@ -348,7 +357,7 @@ const FormEditingTemplate = ({
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 400, width: 1100 }}>
-      <EditableTable
+      <EditableTableContainer
         config={keyColumnConfig}
         createTitle="New instrument"
         dataSource={dataSource}
@@ -412,13 +421,13 @@ const SessionBlueprintTemplate = () => {
   );
   return (
     <div style={{ height: 400, width: 900 }}>
-      <EditableTable dataSource={dataSource}>
+      <EditableTableContainer dataSource={dataSource}>
         <TableEditorToolbar>
           <TableEditorModeToggle />
         </TableEditorToolbar>
-        <TableEditorTable config={testEditConfig} selectionModel="checkbox" />
+        <EditableTable config={testEditConfig} selectionModel="checkbox" />
         <EditableTableFooter />
-      </EditableTable>
+      </EditableTableContainer>
     </div>
   );
 };

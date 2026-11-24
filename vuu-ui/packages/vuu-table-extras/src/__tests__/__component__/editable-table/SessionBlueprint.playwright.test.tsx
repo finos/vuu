@@ -12,7 +12,7 @@ const firstRow = (page: Page) =>
 const selectionCheckbox = (page: Page) =>
   firstRow(page).getByLabel("Press space to select row");
 
-test.describe("EditableTable with a session table blueprint", () => {
+test.describe("EditableTableContainer with a session table blueprint", () => {
   test("Edit shows the blueprint's columns, View shows them all", async ({
     mount,
     page,

@@ -20,10 +20,10 @@ import {
   TableEditorModeToggle,
   TableEditorNewButton,
   TableEditorPlaceholder,
-  TableEditorTable,
+  EditableTable,
   TableEditorToolbar,
   EditableTableMain,
-  EditableTable,
+  EditableTableContainer,
   type EditableTablePanelVisibility,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
@@ -97,7 +97,7 @@ const FormTemplate = ({
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 500, width: 1100 }}>
-      <EditableTable
+      <EditableTableContainer
         config={instrumentsTableConfig}
         createFields={createFields}
         createTitle="New instrument"
@@ -196,7 +196,7 @@ const InstrumentFormContent = () => {
 const TableWithCustomFormTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
-    <EditableTable
+    <EditableTableContainer
       dataSource={dataSource}
       editStrategy="form"
       style={{ height: 500, width: 1100 }}
@@ -208,7 +208,7 @@ const TableWithCustomFormTemplate = () => {
           </Text>
           <TableEditorNewButton>New instrument</TableEditorNewButton>
         </TableEditorToolbar>
-        <TableEditorTable config={instrumentsTableConfig} />
+        <EditableTable config={instrumentsTableConfig} />
       </EditableTableMain>
       <EditableTablePanel
         style={{ "--saltSidePanel-width": "360px" } as CSSProperties}
@@ -225,7 +225,7 @@ const TableWithCustomFormTemplate = () => {
           />
         </SidePanelContent>
       </EditableTablePanel>
-    </EditableTable>
+    </EditableTableContainer>
   );
 };
 

@@ -1,4 +1,4 @@
-.vuuEditableTable {
+.vuuEditableTableContainer {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -10,11 +10,11 @@
 }
 
 /* The table, in an EditableTableMain, beside a side panel. */
-.vuuEditableTable-withPanel {
+.vuuEditableTableContainer-withPanel {
   flex-direction: row;
 }
 
-.vuuEditableTable-main {
+.vuuEditableTableContainer-main {
   --vuuMeasuredContainer-flex: 1 1 1px;
   display: flex;
   flex: 1 1 auto;
@@ -23,16 +23,16 @@
   min-width: 0;
 }
 
-.vuuEditableTable-panel {
+.vuuEditableTableContainer-panel {
   --saltSidePanel-width: 320px;
 }
 
-.vuuEditableTable-panelHeader > :first-child {
+.vuuEditableTableContainer-panelHeader > :first-child {
   flex: 1;
   min-width: 0;
 }
 
-.vuuEditableTable-detail {
+.vuuEditableTableContainer-detail {
   min-height: 0;
   overflow: auto;
 }

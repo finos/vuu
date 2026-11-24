@@ -22,7 +22,7 @@ export interface EditableTableFooterProps
 }
 
 /**
- * The footer of an `EditableTable`. Shows Save and Cancel (and Delete)
+ * The footer of an `EditableTableContainer`. Shows Save and Cancel (and Delete)
  * while a session is being edited, and `children` otherwise. `children`
  * default to the row count. With direct editing there is nothing to save,
  * so it always shows `children`.
@@ -48,14 +48,14 @@ export const EditableTableFooter = ({
   );
 };
 
-const classBase = "vuuEditableTable";
+const classBase = "vuuEditableTableContainer";
 
 export type EditableTableMainProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * With a side panel (`editStrategy="form"` or `createStrategy="form"`): a
  * flex column that fills the space beside the `EditableTablePanel`. Holds a
- * `TableEditorTable` and whatever headers, toolbars or footers belong with
+ * `EditableTable` and whatever headers, toolbars or footers belong with
  * it.
  */
 export const EditableTableMain = forwardRef<
@@ -98,9 +98,9 @@ const measureAnimationWidth = (el: HTMLDivElement | null) => {
 };
 
 /**
- * The Salt `SidePanel`, on the right, that holds the form. `EditableTable`
- * opens and closes it. Use with `editStrategy="form"` or
- * `createStrategy="form"`. Compose `SidePanelHeader` and `SidePanelContent`.
+ * The Salt `SidePanel`, on the right, that holds the form.
+ * `EditableTableContainer` opens and closes it. Use with `editStrategy="form"`
+ * or `createStrategy="form"`. Compose `SidePanelHeader` and `SidePanelContent`.
  */
 export const EditableTablePanel = forwardRef<
   HTMLDivElement,

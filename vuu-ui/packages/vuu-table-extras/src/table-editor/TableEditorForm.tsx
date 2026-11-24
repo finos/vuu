@@ -111,9 +111,9 @@ const FormRegistration = () => {
 };
 
 /**
- * Form editing: the selected row of the enclosing `EditableTable`, read-only
- * in view mode and editable in edit mode. Renders nothing in create mode
- * (see `TableEditorCreateForm`) and when no row is selected (see
+ * Form editing: the selected row of the enclosing `EditableTableContainer`,
+ * read-only in view mode and editable in edit mode. Renders nothing in create
+ * mode (see `TableEditorCreateForm`) and when no row is selected (see
  * `TableEditorPlaceholder`).
  *
  * Without `children` or `fields`, the form is generated: a field per schema

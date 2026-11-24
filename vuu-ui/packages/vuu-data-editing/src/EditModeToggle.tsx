@@ -14,7 +14,7 @@ export interface EditModeToggleProps
 
 /**
  * View/Edit toggle for the editable component inside the enclosing
- * `DataEditingModeProvider`, e.g. an `EditableTable`. It can be placed
+ * `DataEditingModeProvider`, e.g. an `EditableTableContainer`. It can be placed
  * anywhere inside the provider. Switching to View discards changes, in whatever way
  * the editable component does, e.g. asking for confirmation first. Disabled
  * while the editable component does not allow the mode to change.

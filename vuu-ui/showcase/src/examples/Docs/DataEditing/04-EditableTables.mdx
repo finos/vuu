@@ -1,6 +1,6 @@
 # Editable Tables
 
-`EditableTable` (`@vuu-ui/vuu-table-extras`) is a `Table` whose rows can be
+`EditableTableContainer` (`@vuu-ui/vuu-table-extras`) is a `Table` whose rows can be
 edited. One component covers every way of editing a table. Three props choose
 how:
 
@@ -18,16 +18,16 @@ Every strategy works with both models.
 The simplest editable table needs nothing but a `config` and a `dataSource`:
 
 ```tsx
-import { EditableTable } from "@vuu-ui/vuu-table-extras";
+import { EditableTableContainer } from "@vuu-ui/vuu-table-extras";
 
-<EditableTable config={config} dataSource={dataSource} />;
+<EditableTableContainer config={config} dataSource={dataSource} />;
 ```
 
 The simplest master–detail form needs one more prop. The form is generated
 from the columns:
 
 ```tsx
-<EditableTable config={config} dataSource={dataSource} editStrategy="form" />
+<EditableTableContainer config={config} dataSource={dataSource} editStrategy="form" />
 ```
 
 ## Which columns can be edited
@@ -63,7 +63,7 @@ A column is editable when:
    `vuuCreatedTimestamp`, `vuuUpdatedTimestamp` and `vuuMsg` never are;
 2. **the column doesn't opt out**: `editable` on the `ColumnDescriptor`
    narrows it, for example `false`, or `{ insert: true, update: false }`;
-3. **and the table is editing**: in view mode `EditableTable` gives `Table`
+3. **and the table is editing**: in view mode `EditableTableContainer` gives `Table`
    columns with editing turned off, so the same `config` works in both modes.
 
 ```tsx
@@ -83,7 +83,7 @@ const config: TableConfig = {
   ],
 };
 
-<EditableTable config={config} dataSource={dataSource} />;
+<EditableTableContainer config={config} dataSource={dataSource} />;
 ```
 
 - `ric` can be set on a new row and is read-only afterwards.
@@ -127,7 +127,7 @@ together from the footer. Saving or cancelling returns to View.
 
 ```tsx
 // Add, change and delete rows, with an undo button per changed row
-<EditableTable
+<EditableTableContainer
   allowDelete
   config={config}
   dataSource={dataSource}
@@ -152,7 +152,7 @@ const confirmDiscard = useConfirmDiscard({
   message: "You have unsaved changes. Discard them?",
 });
 
-<EditableTable
+<EditableTableContainer
   confirmCancel={confirmDiscard}
   config={config}
   dataSource={dataSource}
@@ -168,12 +168,12 @@ always editable unless you ask for View/Edit modes.
 
 ```tsx
 // Always editable, like a spreadsheet
-<EditableTable config={config} dataSource={dataSource} editModel="direct" />
+<EditableTableContainer config={config} dataSource={dataSource} editModel="direct" />
 ```
 
 ```tsx
 // Users switch to Edit first, to avoid accidental edits
-<EditableTable
+<EditableTableContainer
   config={config}
   dataSource={dataSource}
   defaultMode="view"
@@ -196,7 +196,7 @@ the same generated (or composed) create form the form strategy uses.
 
 ```tsx
 // Spreadsheet-style edits, committed as they are made; a form for new rows
-<EditableTable
+<EditableTableContainer
   config={config}
   createStrategy="form"
   createTitle="New instrument"
@@ -208,7 +208,7 @@ the same generated (or composed) create form the form strategy uses.
 
 ```tsx
 // View/Edit session for existing rows; a form for new rows
-<EditableTable config={config} createStrategy="form" dataSource={dataSource} />
+<EditableTableContainer config={config} createStrategy="form" dataSource={dataSource} />
 ```
 
 - The default layout adds a New button to the toolbar and a side panel holding
@@ -236,7 +236,7 @@ selection is locked and the panel can't be closed. With `editModel="session"`
 
 ### Generated forms
 
-With no form of your own, `EditableTable` builds one from the table's schema.
+With no form of your own, `EditableTableContainer` builds one from the table's schema.
 Each field's control comes from `getDataItemEditControl`
 (`@vuu-ui/vuu-data-editing`), the one place that decides how a
 `DataValueDescriptor` is edited. Filters, the bulk edit insert row, `EditField`
@@ -311,7 +311,7 @@ const fields: DataValueDescriptor[] = [
   },
 ];
 
-<EditableTable
+<EditableTableContainer
   config={config}
   createTitle="New instrument"
   dataSource={dataSource}
@@ -334,7 +334,7 @@ an invalid value is shown with its error and not sent. There is no Save or
 Cancel; Done returns the form to read-only.
 
 ```tsx
-<EditableTable
+<EditableTableContainer
   config={config}
   dataSource={dataSource}
   editModel="direct"
@@ -347,7 +347,7 @@ Cancel; Done returns the form to read-only.
 
 ```tsx
 // The panel is always shown, with a placeholder when no row is selected
-<EditableTable
+<EditableTableContainer
   config={config}
   dataSource={dataSource}
   editStrategy="form"
@@ -359,7 +359,7 @@ Cancel; Done returns the form to read-only.
 
 ```tsx
 // Edit existing rows only: no New button, no create form
-<EditableTable
+<EditableTableContainer
   allowCreate={false}
   config={config}
   dataSource={dataSource}
@@ -427,21 +427,21 @@ Other `Table` props are passed through.
 
 ## Composing your own layout
 
-Give `EditableTable` `children` to lay out the pieces yourself. It still
+Give `EditableTableContainer` `children` to lay out the pieces yourself. It still
 renders its container and owns all the editing state: mode, selected row, side
 panel and edit session; you decide where things go. With `children`,
-`EditableTable` takes only the editing props (`editStrategy`,
+`EditableTableContainer` takes only the editing props (`editStrategy`,
 `createStrategy`, `editModel`, `mode`, `allowDelete`, `confirmCancel`,
 `panelVisibility`, `rowDefaults`, `onSaved`, ...) and `className`/`style`.
 Table props, plus `undoColumn` and `showInlineAddRow`, go on
-`TableEditorTable`; per-column edit options stay in its `config`. All the
+`EditableTable`; per-column edit options stay in its `config`. All the
 pieces are in `@vuu-ui/vuu-table-extras`.
 
 ### Pieces
 
 | Component | Strategy | Role |
 | --------- | -------- | ---- |
-| `TableEditorTable` | all | The table. Fills the space left in its flex column. In session edit mode it shows the session table, with editable cells and row styling for changes. With a form, selecting a row selects it for the form. |
+| `EditableTable` | all | The table. Fills the space left in its flex column. In session edit mode it shows the session table, with editable cells and row styling for changes. With a form, selecting a row selects it for the form. |
 | `TableEditorToolbar` | all | A row for controls. |
 | `TableEditorModeToggle` | all | View/Edit toggle. The same component as `EditModeToggle`, which can also go outside the table. |
 | `TableEditorButtons` | all | Save and Cancel (Done with direct form editing). Nothing with inline direct editing. Render inside a composed `TableEditorForm`, or a `TableEditorCreateForm` with `showButtons={false}`. |
@@ -456,8 +456,8 @@ pieces are in `@vuu-ui/vuu-table-extras`.
 | `TableEditorNewButton` | form, or create form | Start a new row. |
 | `TableEditorPanelCloseButton` | form, or create form | Closes the panel; not rendered while it can't be closed. |
 
-`EditableTable` provides the Salt `SidePanelProvider`, so `EditableTablePanel`
-opens and closes with the selection. Any component inside `EditableTable` can
+`EditableTableContainer` provides the Salt `SidePanelProvider`, so `EditableTablePanel`
+opens and closes with the selection. Any component inside `EditableTableContainer` can
 call `useTableEditor()` for the state and actions: `mode`, `editStrategy`,
 `createStrategy`, `editModel`, `isEditing`, `selectedRow`, `panelOpen`,
 `canClosePanel`, `startEdit()`, `startCreate()`, `cancel()` and
@@ -467,45 +467,45 @@ call `useTableEditor()` for the state and actions: `mode`, `editStrategy`,
 
 ```tsx
 import {
-  EditableTable,
+  EditableTableContainer,
   EditableTableFooter,
   TableEditorModeToggle,
-  TableEditorTable,
+  EditableTable,
   TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
 
-<EditableTable allowDelete dataSource={dataSource}>
+<EditableTableContainer allowDelete dataSource={dataSource}>
   <TableEditorToolbar>
     <H2>Instruments</H2>
     <TableEditorModeToggle />
   </TableEditorToolbar>
-  <TableEditorTable config={config} showInlineAddRow />
+  <EditableTable config={config} showInlineAddRow />
   <EditableTableFooter saveLabel="Apply" />
-</EditableTable>;
+</EditableTableContainer>;
 ```
 
 ### Inline with a create form
 
 ```tsx
-<EditableTable createStrategy="form" dataSource={dataSource}>
+<EditableTableContainer createStrategy="form" dataSource={dataSource}>
   <EditableTableMain>
     <TableEditorToolbar>
       <TableEditorModeToggle />
       <TableEditorNewButton>New instrument</TableEditorNewButton>
     </TableEditorToolbar>
-    <TableEditorTable config={config} />
+    <EditableTable config={config} />
     <EditableTableFooter />
   </EditableTableMain>
   <EditableTablePanel>
     <EditableTablePanelHeader canClose={false}>New instrument</EditableTablePanelHeader>
     <TableEditorCreateForm />
   </EditableTablePanel>
-</EditableTable>
+</EditableTableContainer>
 ```
 
 ### Form: your own page, generated forms
 
-Lay out the page; leave the forms to `EditableTable`. A `TableEditorForm` or
+Lay out the page; leave the forms to `EditableTableContainer`. A `TableEditorForm` or
 `TableEditorCreateForm` with no `children` and no `fields` is generated, as
 with the default layout.
 
@@ -519,12 +519,12 @@ const InstrumentTitle = () => {
   );
 };
 
-<EditableTable dataSource={dataSource} editStrategy="form">
+<EditableTableContainer dataSource={dataSource} editStrategy="form">
   <EditableTableMain>
     <PageHeader title="Instruments">
       <TableEditorNewButton>New instrument</TableEditorNewButton>
     </PageHeader>
-    <TableEditorTable config={config} />
+    <EditableTable config={config} />
   </EditableTableMain>
   <EditableTablePanel>
     <EditableTablePanelHeader>
@@ -535,7 +535,7 @@ const InstrumentTitle = () => {
       <TableEditorCreateForm validate={validateInstrument} />
     </SidePanelContent>
   </EditableTablePanel>
-</EditableTable>;
+</EditableTableContainer>;
 ```
 
 ### Form: your own form content
@@ -543,9 +543,9 @@ const InstrumentTitle = () => {
 Give `TableEditorForm` `children` for tabs, custom editors or anything else.
 
 ```tsx
-<EditableTable dataSource={dataSource} editStrategy="form">
+<EditableTableContainer dataSource={dataSource} editStrategy="form">
   <EditableTableMain>
-    <TableEditorTable config={config} />
+    <EditableTable config={config} />
   </EditableTableMain>
   <EditableTablePanel>
     <EditableTablePanelHeader>
@@ -571,7 +571,7 @@ Give `TableEditorForm` `children` for tabs, custom editors or anything else.
       <TableEditorCreateForm validate={validateInstrument} />
     </SidePanelContent>
   </EditableTablePanel>
-</EditableTable>
+</EditableTableContainer>
 ```
 
 - `EditField`s inside `TableEditorForm` edit the selected row; they don't need
@@ -636,14 +636,14 @@ const CreateGroupForm = () => {
 ```tsx
 const [mode, setMode] = useState<EditableTableMode>("view");
 
-<EditableTable
+<EditableTableContainer
   dataSource={dataSource}
   editStrategy="form"
   mode={mode}
   onModeChange={setMode}
 >
   {/* ... */}
-</EditableTable>;
+</EditableTableContainer>;
 ```
 
 ### The View/Edit toggle outside the table
@@ -651,7 +651,7 @@ const [mode, setMode] = useState<EditableTableMode>("view");
 To put the View/Edit toggle somewhere else on the page, such as a page
 header, wrap the page in a `DataEditingModeProvider` and place an
 `EditModeToggle` anywhere inside it. The provider holds the mode; the
-`EditableTable` inside it uses that, rather than a mode of its own.
+`EditableTableContainer` inside it uses that, rather than a mode of its own.
 
 ```tsx
 import {
@@ -663,10 +663,10 @@ import {
   <PageHeader>
     <EditModeToggle />
   </PageHeader>
-  <EditableTable confirmCancel={confirmDiscard} dataSource={dataSource}>
-    <TableEditorTable config={config} />
+  <EditableTableContainer confirmCancel={confirmDiscard} dataSource={dataSource}>
+    <EditableTable config={config} />
     <EditableTableFooter />
-  </EditableTable>
+  </EditableTableContainer>
 </DataEditingModeProvider>;
 ```
 
@@ -680,7 +680,7 @@ Set `mode`, `defaultMode` and `onModeChange` on the provider, not the table.
 inside it: `mode`, `isEditing`, `canChangeMode`, `startEdit()` and
 `cancel()`. `useEditSession()` returns the table's edit session.
 
-See `EditableTable / ExternalModeToggle` in the showcase.
+See `EditableTableContainer / ExternalModeToggle` in the showcase.
 
 ## Building your own editable table
 
@@ -764,12 +764,12 @@ Things to know:
 
 ## Migrating
 
-`TableWithEditForm` has been folded into `EditableTable`, and the separate
+`TableWithEditForm` has been folded into `EditableTableContainer`, and the separate
 `editable`/`readOnly` props have moved onto the column descriptors.
 
 | Before | After |
 | ------ | ----- |
-| `<TableWithEditForm ...>` | `<EditableTable editStrategy="form" ...>` |
+| `<TableWithEditForm ...>` | `<EditableTableContainer editStrategy="form" ...>` |
 | `TableWithEditFormTablePanel` | `EditableTableMain` |
 | `TableWithEditFormPanel` | `EditableTablePanel` |
 | `TableWithEditFormPanelHeader` | `EditableTablePanelHeader` |
@@ -784,21 +784,21 @@ Things to know:
 // Before
 <TableWithEditForm dataSource={dataSource}>
   <TableWithEditFormTablePanel className="page">
-    <TableEditorTable config={config} />
+    <EditableTable config={config} />
   </TableWithEditFormTablePanel>
   <TableWithEditFormPanel>...</TableWithEditFormPanel>
 </TableWithEditForm>
 
 // After
-<EditableTable dataSource={dataSource} editStrategy="form">
+<EditableTableContainer dataSource={dataSource} editStrategy="form">
   <EditableTableMain className="page">
-    <TableEditorTable config={config} />
+    <EditableTable config={config} />
   </EditableTableMain>
   <EditableTablePanel>...</EditableTablePanel>
-</EditableTable>
+</EditableTableContainer>
 ```
 
-See the showcase examples under `DataEditing / EditableTable` (one per
+See the showcase examples under `DataEditing / EditableTableContainer` (one per
 pattern, including `SessionCreateForm`, `DirectCreateForm`, `FormEditing` and
 `DirectFormEditing`) and `DataEditing / EditForms`, and the user-admin
 `UsersPage`, `GroupsPage` and `RolesPage`.

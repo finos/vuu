@@ -5,11 +5,11 @@ rejected, or when a save conflicts with someone else's changes.
 
 ## Session operations: onError
 
-`EditableTable`, `useBulkEditDialog`, `useEditableTable`,
+`EditableTableContainer`, `useBulkEditDialog`, `useEditableTable`,
 `useEditForm` and `EditForm` accept an `onError` handler:
 
 ```tsx
-<EditableTable
+<EditableTableContainer
   dataSource={dataSource}
   onError={(error, operation) =>
     showNotification({ status: "error", content: `${operation} failed: ${error.message}` })
@@ -37,7 +37,7 @@ fixes or undoes it. Client-side validation (column `rules` or
 If the server rejects `addNewRow`, the row stays in the form so the user can
 correct it and try again:
 
-- In `CreateRowForm`, `EditForm` and the forms of `EditableTable`, the message appears
+- In `CreateRowForm`, `EditForm` and the forms of `EditableTableContainer`, the message appears
   in the banner at the top of the form. `useEditForm` exposes it as `error`.
 - In `InlineAddRow`, it appears on the final column.
 

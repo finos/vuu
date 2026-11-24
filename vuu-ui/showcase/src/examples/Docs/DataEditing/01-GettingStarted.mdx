@@ -22,11 +22,11 @@ this in the browser. See [Testing](./10-Testing.mdx).
 
 ## Step 1: an editable table
 
-`EditableTable` is a `Table` with a View/Edit toggle. Switching to Edit starts
+`EditableTableContainer` is a `Table` with a View/Edit toggle. Switching to Edit starts
 an edit session. Save applies the edits; Cancel throws them away.
 
 ```tsx
-import { EditableTable } from "@vuu-ui/vuu-table-extras";
+import { EditableTableContainer } from "@vuu-ui/vuu-table-extras";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { useData } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
@@ -52,7 +52,7 @@ export const Instruments = () => {
   );
 
   return (
-    <EditableTable config={config} dataSource={dataSource} />
+    <EditableTableContainer config={config} dataSource={dataSource} />
   );
 };
 ```
@@ -94,7 +94,7 @@ const config: TableConfig = {
   ],
 };
 
-<EditableTable
+<EditableTableContainer
   allowDelete
   config={config}
   dataSource={dataSource}
@@ -114,7 +114,7 @@ in a side panel instead, while still editing existing rows in the table, use
 `createStrategy="form"`:
 
 ```tsx
-<EditableTable
+<EditableTableContainer
   config={config}
   createStrategy="form"
   createTitle="New instrument"
@@ -128,12 +128,12 @@ the edit session and is saved with everything else.
 ## Step 3: a table with an edit form
 
 Some data is easier to edit in a form. With `editStrategy="form"`,
-`EditableTable` shows the selected row in a form, in a side panel beside the
+`EditableTableContainer` shows the selected row in a form, in a side panel beside the
 table. The user clicks Edit to change it, or New to add a row. The form is
 generated from the columns, using the same `editable` and `editor` metadata:
 
 ```tsx
-<EditableTable
+<EditableTableContainer
   config={config}
   createTitle="New instrument"
   dataSource={dataSource}
@@ -155,7 +155,7 @@ it open. Row selection is locked while the form is being edited, so the user
 can't lose their changes by clicking another row. Pass `allowCreate={false}`
 to hide New. To choose the fields, pass `fields` (a list of
 `DataValueDescriptor`). To use your own page layout or form content, for
-example tabs, pass `children` that compose the pieces `EditableTable` is built
+example tabs, pass `children` that compose the pieces `EditableTableContainer` is built
 from (see
 [Composing your own layout](./04-EditableTables.mdx#composing-your-own-layout)).
 
@@ -167,10 +167,10 @@ where each change should go to the server straight away, use
 
 ```tsx
 // Spreadsheet-style: each cell is saved as it is committed
-<EditableTable config={config} dataSource={dataSource} editModel="direct" />
+<EditableTableContainer config={config} dataSource={dataSource} editModel="direct" />
 
 // Form: each field is saved as it is committed; Done ends editing
-<EditableTable
+<EditableTableContainer
   config={config}
   dataSource={dataSource}
   editModel="direct"

@@ -8,11 +8,9 @@ import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { act, type ReactElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { EditableTableContainer } from "../../src/editable-table/EditableTableContainer";
 import { EditableTable } from "../../src/editable-table/EditableTable";
-import {
-  TableEditorModeToggle,
-  TableEditorTable,
-} from "../../src/table-editor";
+import { TableEditorModeToggle } from "../../src/table-editor";
 
 const rendered = vi.hoisted(() => ({
   editSession: undefined as unknown,
@@ -46,7 +44,7 @@ const editableColumns = () =>
     .filter((column) => column.editable)
     .map((column) => column.name);
 
-describe("EditableTable, direct editing", () => {
+describe("EditableTableContainer, direct editing", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -80,7 +78,7 @@ describe("EditableTable, direct editing", () => {
 
   it("is always editable, against the source dataSource, by default", async () => {
     await render(
-      <EditableTable
+      <EditableTableContainer
         config={config}
         dataSource={dataSource}
         editModel="direct"
@@ -99,7 +97,7 @@ describe("EditableTable, direct editing", () => {
 
   it("supports View/Edit modes, with no Save or Cancel", async () => {
     await render(
-      <EditableTable
+      <EditableTableContainer
         config={{
           columns: config.columns.map((column) =>
             column.name === "lotSize" ? { ...column, editable: false } : column,
@@ -121,18 +119,18 @@ describe("EditableTable, direct editing", () => {
     expect(editableColumns()).toEqual([]);
   });
 
-  it("composes TableEditorTable, with a controlled mode", async () => {
+  it("composes EditableTable, with a controlled mode", async () => {
     const onModeChange = vi.fn();
     await render(
-      <EditableTable
+      <EditableTableContainer
         dataSource={dataSource}
         editModel="direct"
         mode="view"
         onModeChange={onModeChange}
       >
         <TableEditorModeToggle />
-        <TableEditorTable config={config} />
-      </EditableTable>,
+        <EditableTable config={config} />
+      </EditableTableContainer>,
     );
     expect(editableColumns()).toEqual([]);
 
@@ -142,9 +140,13 @@ describe("EditableTable, direct editing", () => {
     expect(editableColumns()).toEqual([]);
 
     await render(
-      <EditableTable dataSource={dataSource} editModel="direct" mode="edit">
-        <TableEditorTable config={config} />
-      </EditableTable>,
+      <EditableTableContainer
+        dataSource={dataSource}
+        editModel="direct"
+        mode="edit"
+      >
+        <EditableTable config={config} />
+      </EditableTableContainer>,
     );
     expect(editableColumns()).toEqual(["description", "lotSize"]);
   });
