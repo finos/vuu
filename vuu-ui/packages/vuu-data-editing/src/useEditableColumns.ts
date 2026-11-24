@@ -112,13 +112,19 @@ export const narrowEditable = (
 
 /**
  * The cell renderer used to edit a value. Typeahead has no cell editor, so
- * it is left to the default input-cell.
+ * it is left to the default input-cell. A column that can be neither
+ * inserted nor updated shows its value, not an editor.
  */
 const withEditor = (
   column: ColumnDescriptor,
   editor?: DataValueEditor,
 ): ColumnDescriptor => {
-  if (editor === undefined || editor.name === "typeahead") {
+  if (
+    editor === undefined ||
+    editor.name === "typeahead" ||
+    (!isDataValueEditable(column, "insert") &&
+      !isDataValueEditable(column, "update"))
+  ) {
     return column;
   }
   return {

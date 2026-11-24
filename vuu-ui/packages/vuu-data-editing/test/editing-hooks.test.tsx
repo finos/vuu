@@ -120,6 +120,26 @@ describe("getEditableColumns", () => {
     expect(result[1].type).toBeUndefined();
   });
 
+  it("shows the value, not the editor, of a column that cannot be edited", () => {
+    const editor = { name: "dropdown-cell", values: ["1", "2"] };
+    const result = getEditableColumns({
+      columns: [
+        { editable: false, editor, name: "price", serverDataType: "double" },
+        {
+          editable: { insert: true, update: false },
+          editor,
+          name: "ccy",
+          serverDataType: "string",
+        },
+      ],
+      isEditing: true,
+    });
+    expect(result[0]).toMatchObject({ editable: false });
+    expect(result[0].type).toBeUndefined();
+    // insert only: the editor is used in a row being added
+    expect(result[1].type).toMatchObject({ renderer: editor });
+  });
+
   it("switches editing off in view mode", () => {
     const result = getEditableColumns({
       columns: [{ editable: true, name: "ric" }, { name: "price" }],

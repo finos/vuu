@@ -3,6 +3,7 @@ import {
   useEditSession,
   withDataRowEditErrors,
   type NewRowState,
+  type RowDefaultDataItemValues,
 } from "@vuu-ui/vuu-data-editing";
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
@@ -18,12 +19,18 @@ import {
   useSyncExternalStore,
 } from "react";
 
+/**
+ * The row being added: the values entered, over the row defaults it will be
+ * added with, so a column that is not entered shows its default.
+ */
 const createSyntheticDataRow = (
   newRowState: NewRowState,
+  rowDefaults: Readonly<RowDefaultDataItemValues>,
   columns: RuntimeColumnDescriptor[],
 ): DataRow =>
   withDataRowEditErrors(
     {
+      ...rowDefaults,
       ...newRowState.values,
       childCount: 0,
       depth: 1,
@@ -80,8 +87,13 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
     () => editSession.newRowState,
   );
   const dataRow = useMemo(
-    () => createSyntheticDataRow(newRowState, inlineAddColumns),
-    [inlineAddColumns, newRowState],
+    () =>
+      createSyntheticDataRow(
+        newRowState,
+        editSession.rowDefaults,
+        inlineAddColumns,
+      ),
+    [editSession, inlineAddColumns, newRowState],
   );
   const previousValuesRef = useRef(newRowState.values);
 

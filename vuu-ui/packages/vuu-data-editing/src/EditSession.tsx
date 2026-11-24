@@ -159,6 +159,11 @@ export class EditSession
     return this.#editCount;
   }
 
+  /** The column values every added row is given, unless the row sets them. */
+  get rowDefaults(): Readonly<RowDefaultDataItemValues> {
+    return this.#rowDefaults;
+  }
+
   get invalidCount() {
     return this.#invalidCount;
   }
