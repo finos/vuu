@@ -20,6 +20,7 @@ import { useData, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { isValidElement, useCallback, useMemo, useState } from "react";
 import { EmptyStatus } from "./EmptyStatus";
 import {
+  getFixedLimitValues,
   LIMIT_DEFINITIONS_TABLE,
   limitColumnNames,
   limitsSessionConfig,
@@ -34,7 +35,8 @@ import "./TraderLimits.css";
 export interface TraderLimitsPageProps {
   /**
    * The metric of every new limit, for a release that supports one metric.
-   * The Metric column shows it, but it cannot be entered.
+   * The Metric column shows it, but it cannot be entered. When the metric
+   * allows only one period, Period is fixed too.
    */
   fixedMetric?: string;
   /**
@@ -97,11 +99,11 @@ export const TraderLimitsPage = ({
   }, []);
 
   const isViewMode = mode === "view";
-  const { columnModel, tableConfig } = useLimitsColumns(mode, fixedMetric);
-  const rowDefaults = useMemo(
-    () => (fixedMetric === undefined ? undefined : { metric: fixedMetric }),
+  const fixedValues = useMemo(
+    () => getFixedLimitValues(fixedMetric),
     [fixedMetric],
   );
+  const { columnModel, tableConfig } = useLimitsColumns(mode, fixedValues);
 
   const downloadTemplate = useCallback(() => {
     exportCsvTemplate(dataSource, {
@@ -141,7 +143,7 @@ export const TraderLimitsPage = ({
             {...saveError.handlers}
             mode={mode}
             onModeChange={setMode}
-            rowDefaults={rowDefaults}
+            rowDefaults={fixedValues}
           >
             <TableEditorToolbar>
               <TableEditorModeToggle />

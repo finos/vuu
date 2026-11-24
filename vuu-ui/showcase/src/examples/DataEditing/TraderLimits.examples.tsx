@@ -28,9 +28,10 @@ export const TraderLimitsHeaderToggle = () => (
 
 /**
  * As Trader limits, for a first release that supports one metric: every new
- * limit is for Max order quantity. The Metric column stays, in the inline add
- * row and the table, showing the metric, but it cannot be entered and Tab
- * passes over it. Without `fixedMetric`, any metric can be entered.
+ * limit is for Max order quantity, Per order, the only period it allows. The
+ * Metric and Period columns stay, in the inline add row and the table,
+ * showing those values, but they cannot be entered and Tab passes over them.
+ * Without `fixedMetric`, any metric and period can be entered.
  * @tags data-consumer @title Trader limits, one metric
  */
 export const TraderLimitsOneMetric = () => (

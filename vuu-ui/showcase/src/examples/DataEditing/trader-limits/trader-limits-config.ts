@@ -8,6 +8,7 @@ import {
   LIMIT_DEFINITION_COLUMNS,
   LIMIT_DEFINITIONS_TABLE,
   LIMIT_ENTITIES,
+  LIMIT_METRICS,
   LIMIT_METRIC_NAMES,
   LIMIT_REQUIRED_COLUMNS,
   limitsSchemas,
@@ -165,17 +166,33 @@ export const limitColumnsByMode: Record<
 };
 
 /**
- * For a release that supports one metric: the Metric column stays, showing
- * the metric every new limit is given, but it cannot be entered.
+ * For a release that supports one metric, the values every new limit is
+ * given: the metric, and its period when the metric allows only one.
  */
-export const withFixedMetric = (
-  columns: readonly ColumnDescriptor[],
+export const getFixedLimitValues = (
   fixedMetric?: string,
+): Record<string, string> | undefined => {
+  if (fixedMetric === undefined) {
+    return undefined;
+  }
+  const periods = LIMIT_METRICS[fixedMetric]?.periods ?? [];
+  return periods.length === 1
+    ? { metric: fixedMetric, period: periods[0] }
+    : { metric: fixedMetric };
+};
+
+/**
+ * The columns with a fixed value stay, showing the value every new limit is
+ * given, but cannot be entered.
+ */
+export const withFixedValues = (
+  columns: readonly ColumnDescriptor[],
+  fixedValues?: Record<string, string>,
 ) =>
-  fixedMetric === undefined
+  fixedValues === undefined
     ? columns
     : columns.map((column) =>
-        column.name === "metric" ? { ...column, editable: false } : column,
+        column.name in fixedValues ? { ...column, editable: false } : column,
       );
 
 /** Available in the column picker, but not shown at first. */
