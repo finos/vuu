@@ -111,7 +111,12 @@ export const limitColumns: ColumnDescriptor[] = [
     )?.serverDataType ?? (column as ColumnDescriptor).serverDataType,
 })) as ColumnDescriptor[];
 
-export const limitColumnNames = limitColumns.map(({ name }) => name);
+/** The limitDefinitions columns the page subscribes to. */
+export const limitColumnNames = limitColumns
+  .map(({ name }) => name)
+  .filter((name) =>
+    limitsSchemas.limitDefinitions.columns.some((col) => col.name === name),
+  );
 
 /** Available in the column picker, but not shown at first. */
 const INITIALLY_HIDDEN = new Set([
