@@ -48,12 +48,22 @@ const TableCellEditorTable = ({
   // A session data source may subscribe fewer columns than the view, when
   // the session table has its own schema. Until it is ready, show only the
   // columns it subscribes; once it is, only those in the session schema.
+  // A remote data source has no schema until subscribed, so until then view
+  // mode also shows only the columns it subscribes.
+  const { tableSchema } = dataSource;
   const configColumns = useMemo(
     () =>
-      dataSource !== sourceDataSource && !isEditSessionReady
+      !isEditSessionReady &&
+      (dataSource !== sourceDataSource || tableSchema === undefined)
         ? config.columns.filter(subscribedOnly(dataSource.columns))
         : config.columns,
-    [config.columns, dataSource, isEditSessionReady, sourceDataSource],
+    [
+      config.columns,
+      dataSource,
+      isEditSessionReady,
+      sourceDataSource,
+      tableSchema,
+    ],
   );
 
   const columns = useEditableColumns({
