@@ -28,6 +28,6 @@ export {
 export {
   TableEditorPlaceholder,
   type TableEditorPlaceholderProps,
-  TableEditorToolbar,
-  type TableEditorToolbarProps,
+  EditableTableToolbar,
+  type EditableTableToolbarProps,
 } from "./TableEditorLayout";

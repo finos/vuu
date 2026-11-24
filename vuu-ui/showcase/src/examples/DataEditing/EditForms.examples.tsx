@@ -21,7 +21,7 @@ import {
   TableEditorNewButton,
   TableEditorPlaceholder,
   EditableTable,
-  TableEditorToolbar,
+  EditableTableToolbar,
   EditableTableMain,
   EditableTableContainer,
   type EditableTablePanelVisibility,
@@ -202,12 +202,12 @@ const TableWithCustomFormTemplate = () => {
       style={{ height: 500, width: 1100 }}
     >
       <EditableTableMain>
-        <TableEditorToolbar>
+        <EditableTableToolbar>
           <Text styleAs="h3" style={{ flex: 1 }}>
             Instruments
           </Text>
           <TableEditorNewButton>New instrument</TableEditorNewButton>
-        </TableEditorToolbar>
+        </EditableTableToolbar>
         <EditableTable config={instrumentsTableConfig} />
       </EditableTableMain>
       <EditableTablePanel

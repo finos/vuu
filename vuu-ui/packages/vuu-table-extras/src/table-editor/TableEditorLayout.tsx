@@ -15,18 +15,18 @@ const useLayoutCss = () => {
   });
 };
 
-export type TableEditorToolbarProps = HTMLAttributes<HTMLDivElement>;
+export type EditableTableToolbarProps = HTMLAttributes<HTMLDivElement>;
 
 /** A row of controls, e.g. `TableEditorModeToggle` or `TableEditorNewButton`. */
-export const TableEditorToolbar = ({
+export const EditableTableToolbar = ({
   className,
   ...htmlAttributes
-}: TableEditorToolbarProps) => {
+}: EditableTableToolbarProps) => {
   useLayoutCss();
   return (
     <div
       {...htmlAttributes}
-      className={cx("vuuTableEditorToolbar", className)}
+      className={cx("vuuEditableTableToolbar", className)}
     />
   );
 };

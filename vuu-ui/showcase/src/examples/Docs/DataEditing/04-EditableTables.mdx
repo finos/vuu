@@ -442,7 +442,7 @@ pieces are in `@vuu-ui/vuu-table-extras`.
 | Component | Strategy | Role |
 | --------- | -------- | ---- |
 | `EditableTable` | all | The table. Fills the space left in its flex column. In session edit mode it shows the session table, with editable cells and row styling for changes. With a form, selecting a row selects it for the form. |
-| `TableEditorToolbar` | all | A row for controls. |
+| `EditableTableToolbar` | all | A row for controls. |
 | `TableEditorModeToggle` | all | View/Edit toggle. The same component as `EditModeToggle`, which can also go outside the table. |
 | `TableEditorButtons` | all | Save and Cancel (Done with direct form editing). Nothing with inline direct editing. Render inside a composed `TableEditorForm`, or a `TableEditorCreateForm` with `showButtons={false}`. |
 | `EditableTableFooter` | inline | Save/Cancel/Delete while a session is being edited; otherwise `children`, by default the row count. Styled with `--vuuTableFooter-height`, `--vuuTableFooter-background` and `--vuuTableFooter-borderTop`; scope them to `.vuuEditableTableContainer-view` or `.vuuEditableTableContainer-edit` for a different style per mode. |
@@ -471,14 +471,14 @@ import {
   EditableTableFooter,
   TableEditorModeToggle,
   EditableTable,
-  TableEditorToolbar,
+  EditableTableToolbar,
 } from "@vuu-ui/vuu-table-extras";
 
 <EditableTableContainer allowDelete dataSource={dataSource}>
-  <TableEditorToolbar>
+  <EditableTableToolbar>
     <H2>Instruments</H2>
     <TableEditorModeToggle />
-  </TableEditorToolbar>
+  </EditableTableToolbar>
   <EditableTable config={config} showInlineAddRow />
   <EditableTableFooter saveLabel="Apply" />
 </EditableTableContainer>;
@@ -489,10 +489,10 @@ import {
 ```tsx
 <EditableTableContainer createStrategy="form" dataSource={dataSource}>
   <EditableTableMain>
-    <TableEditorToolbar>
+    <EditableTableToolbar>
       <TableEditorModeToggle />
       <TableEditorNewButton>New instrument</TableEditorNewButton>
-    </TableEditorToolbar>
+    </EditableTableToolbar>
     <EditableTable config={config} />
     <EditableTableFooter />
   </EditableTableMain>

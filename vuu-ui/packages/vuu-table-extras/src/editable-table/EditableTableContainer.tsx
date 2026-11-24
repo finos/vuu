@@ -24,7 +24,7 @@ import {
   TableEditorNewButton,
   type TableEditorPanelVisibility,
   TableEditorPlaceholder,
-  TableEditorToolbar,
+  EditableTableToolbar,
   useTableEditor,
 } from "../table-editor";
 import { TableEditorProvider } from "../table-editor/TableEditorProvider";
@@ -183,7 +183,7 @@ export interface EditableTableContainerDefaultLayoutProps extends Omit<
 
 /**
  * Your own layout: compose `EditableTable`, `EditableTableFooter`,
- * `TableEditorToolbar`, `EditableTableMain`, `EditableTablePanel`,
+ * `EditableTableToolbar`, `EditableTableMain`, `EditableTablePanel`,
  * `TableEditorForm`, `TableEditorCreateForm` etc.
  */
 export interface EditableTableContainerComposedProps {
@@ -283,12 +283,12 @@ const InlineContent = ({
   const table = (
     <>
       {showToggle || hasCreateForm ? (
-        <TableEditorToolbar>
+        <EditableTableToolbar>
           {showToggle ? <TableEditorModeToggle testId={testId} /> : null}
           {hasCreateForm ? (
             <TableEditorNewButton data-testid={`new-button${testId}`} />
           ) : null}
-        </TableEditorToolbar>
+        </EditableTableToolbar>
       ) : null}
       <EditableTable data-testid={`table${testId}`} {...tableProps} />
       <EditableTableFooter saveLabel={saveLabel} />
@@ -333,12 +333,12 @@ const FormContent = ({
 }: ContentProps) => (
   <>
     <EditableTableMain>
-      <TableEditorToolbar>
+      <EditableTableToolbar>
         <TableEditorEditButton data-testid={`edit-button${testId}`} />
         {allowCreate ? (
           <TableEditorNewButton data-testid={`new-button${testId}`} />
         ) : null}
-      </TableEditorToolbar>
+      </EditableTableToolbar>
       <EditableTable data-testid={`table${testId}`} {...tableProps} />
     </EditableTableMain>
     <EditableTablePanel

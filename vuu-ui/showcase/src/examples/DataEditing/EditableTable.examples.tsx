@@ -13,7 +13,7 @@ import {
   type EditableTableMode,
   TableEditorModeToggle,
   EditableTable,
-  TableEditorToolbar,
+  EditableTableToolbar,
 } from "@vuu-ui/vuu-table-extras";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
@@ -272,10 +272,10 @@ const UnsavedChangesTemplate = () => {
         mode={mode}
         onModeChange={setMode}
       >
-        <TableEditorToolbar>
+        <EditableTableToolbar>
           <TableEditorModeToggle />
           <span>Mode: {mode}</span>
-        </TableEditorToolbar>
+        </EditableTableToolbar>
         <EditableTable config={readOnlyRicConfig} />
         <EditableTableFooter />
       </EditableTableContainer>
@@ -422,9 +422,9 @@ const SessionBlueprintTemplate = () => {
   return (
     <div style={{ height: 400, width: 900 }}>
       <EditableTableContainer dataSource={dataSource}>
-        <TableEditorToolbar>
+        <EditableTableToolbar>
           <TableEditorModeToggle />
-        </TableEditorToolbar>
+        </EditableTableToolbar>
         <EditableTable config={testEditConfig} selectionModel="checkbox" />
         <EditableTableFooter />
       </EditableTableContainer>
