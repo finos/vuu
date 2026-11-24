@@ -176,7 +176,8 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
     // whether or not the cell had a change to commit. Enter in the final
     // cell always tries to add it, which flags the required values still
     // missing. Tab, or a value chosen from a list, only moves on to the next
-    // cell.
+    // cell, except a value chosen with Enter in the final cell, which is
+    // Enter in the final cell.
     const isFinalCell = (target: Element) => {
       const field = target.closest<HTMLElement>("[data-field]")?.dataset.field;
       return field !== undefined && editSession.isNewRowFinalColumn(field);
@@ -193,10 +194,23 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       return false;
     };
 
+    // Enter that chooses a value from the open list of the final cell
+    const isFinalCellListChoice = (target: Element) =>
+      target.closest('[role="combobox"]')?.getAttribute("aria-expanded") ===
+        "true" && isFinalCell(target);
+
     let enterTarget: EventTarget | null = null;
     const handleKeyDown = (event: KeyboardEvent) => {
       const { key, target } = event;
       if (
+        key === "Enter" &&
+        target instanceof Element &&
+        isFinalCellListChoice(target)
+      ) {
+        // The choice commits the cell. Like Enter in any other final cell,
+        // that adds the row.
+        enterTarget = target;
+      } else if (
         key === "Enter" &&
         target instanceof Element &&
         target.closest('[role="combobox"], [role="listbox"]') === null

@@ -963,6 +963,30 @@ export const TestTableEmptyOptionalFinalColumn = () => (
   </LocalDataSourceProvider>
 );
 
+const FINAL_DROPDOWN_COLUMN_TYPES: Readonly<
+  Record<string, DataValueTypeDescriptor>
+> = {
+  externalId: {
+    name: "number",
+    renderer: { name: "dropdown-cell", values: ["1001", "1002", "1003"] },
+  },
+};
+
+/**
+ * externalId, the final column, is chosen from a list.
+ * @title Test table empty, final dropdown
+ */
+export const TestTableEmptyFinalDropdown = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate
+        columnTypes={FINAL_DROPDOWN_COLUMN_TYPES}
+        tableName="TestEditEmpty"
+      />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
 const INSERT_ONLY_ID = ["id"] as const;
 
 /**

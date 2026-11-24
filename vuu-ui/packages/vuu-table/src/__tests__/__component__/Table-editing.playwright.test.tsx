@@ -514,6 +514,67 @@ const expectErrorMessage = async (
   await expect(page.getByRole("tooltip")).toContainText(message);
 };
 
+test.describe("Inline add row with a dropdown final column", () => {
+  test.beforeEach(async ({ mount, page }) => {
+    await mount("Table/Editing/TestTableEmptyFinalDropdown");
+    await page.getByRole("radio", { name: "Edit" }).click();
+  });
+
+  const finalDropdown = (page: Page) =>
+    page
+      .locator(".vuuInlineAddRow")
+      .locator('[data-field="externalId"]')
+      .getByRole("combobox");
+
+  test("Enter opens the list, Enter again chooses a value and inserts the row", async ({
+    page,
+  }) => {
+    const { id, description, quantity, price } = getInlineAddRowEditors(page);
+    await commitValue(id, "TEST-006");
+    await commitValue(description, "Foxtrot");
+    await commitValue(quantity, "72");
+    await commitValue(price, "607.5");
+
+    const externalId = finalDropdown(page);
+    await externalId.focus();
+    await externalId.press("Enter");
+    await expect(page.getByRole("listbox")).toBeVisible();
+    // Enter chooses the highlighted option
+    await expect(externalId).toHaveAttribute("aria-activedescendant", /.+/);
+    await expect(getInsertedRows(page)).toHaveCount(0);
+
+    await externalId.press("Enter");
+
+    const insertedRows = getInsertedRows(page);
+    await expect(insertedRows).toHaveCount(1);
+    await expect(insertedRows.locator('[data-field="externalId"]')).toHaveText(
+      "1001",
+    );
+    await expect(id).toHaveValue("");
+    await expect(id).toBeFocused();
+  });
+
+  test("Enter choosing a value in an incomplete row flags the missing values", async ({
+    page,
+  }) => {
+    const { id } = getInlineAddRowEditors(page);
+    await commitValue(id, "TEST-006");
+
+    const externalId = finalDropdown(page);
+    await externalId.focus();
+    await externalId.press("Enter");
+    await expect(page.getByRole("listbox")).toBeVisible();
+    // Enter chooses the highlighted option
+    await expect(externalId).toHaveAttribute("aria-activedescendant", /.+/);
+    await externalId.press("Enter");
+
+    await expect(getInsertedRows(page)).toHaveCount(0);
+    const { description } = getInlineAddRowEditors(page);
+    await expect(description).toHaveAttribute("aria-invalid", "true");
+    await expect(description).toBeFocused();
+  });
+});
+
 test.describe("Inline add row with optional columns", () => {
   test.describe("optional columns before the final column", () => {
     test.beforeEach(async ({ mount, page }) => {
