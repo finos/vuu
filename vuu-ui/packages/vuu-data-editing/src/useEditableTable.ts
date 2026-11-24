@@ -296,7 +296,9 @@ export const useEditableTable = ({
     onSave: handleSave,
     onUndoRowChange: handleUndoRowChange,
     isRowSelectable: isEditMode
-      ? (dataRow: DataRow) => !isEditRowReadOnly(dataRow)
+      ? (dataRow: DataRow) =>
+          editSession.getRowAction(dataRow.key) !== "deleteRow" &&
+          !isEditRowReadOnly(dataRow)
       : undefined,
     rowClassNameGenerators: isEditMode
       ? EDIT_ACTION_ROW_CLASS_NAME_GENERATORS

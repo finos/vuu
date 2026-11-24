@@ -5,7 +5,7 @@ import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
   getVuuEditMessage,
-  isEditRowReadOnly,
+  useEditRowReadOnly,
 } from "@vuu-ui/vuu-data-editing";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
@@ -42,7 +42,7 @@ export const InputCell = ({
     window: targetWindow,
   });
   const dataValue = dataRow[column.name] as number | string;
-  const readOnly = isEditRowReadOnly(dataRow);
+  const readOnly = useEditRowReadOnly(dataRow);
 
   const { align = "left" } = column;
 

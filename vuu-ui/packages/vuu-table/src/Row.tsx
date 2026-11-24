@@ -9,6 +9,7 @@ import {
   isNotHidden,
   queryClosest,
 } from "@vuu-ui/vuu-utils";
+import { useEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
 import cx from "clsx";
 import { type MouseEvent, memo, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
@@ -56,6 +57,9 @@ export const Row = memo(
       [dataRow, onClick],
     );
 
+    // e.g. a row deleted in the edit session
+    const readOnly = useEditRowReadOnly(dataRow);
+
     const className = cx(
       classBase,
       classNameProp,
@@ -63,6 +67,7 @@ export const Row = memo(
         [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
         [`${classBase}-highlighted`]: highlighted,
         [`${classBase}-noSelect`]: isSelectable === false,
+        [`${classBase}-readOnly`]: readOnly,
       },
     );
 
