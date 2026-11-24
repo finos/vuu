@@ -188,6 +188,7 @@ export const TraderLimitsPage = ({
               config={tableConfig}
               showColumnHeadersWhenEmpty
               showInlineAddRow
+              undoColumn
             />
             <EditableTableFooter>
               <DataSourceStats dataSource={dataSource} />

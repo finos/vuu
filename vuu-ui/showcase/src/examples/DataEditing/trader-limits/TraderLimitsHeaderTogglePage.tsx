@@ -202,6 +202,7 @@ const TraderLimitsHeaderToggleContent = ({
               config={tableConfig}
               showColumnHeadersWhenEmpty
               showInlineAddRow
+              undoColumn
             />
             <EditableTableFooter>
               <DataSourceStats dataSource={dataSource} />
