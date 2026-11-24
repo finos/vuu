@@ -36,3 +36,22 @@
   max-height: 240px;
   overflow: auto;
 }
+
+.LimitStatusCell {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+
+.LimitStatusCell-active {
+  --vuu-icon-color: var(--salt-status-success-foreground-decorative);
+}
+
+.LimitStatusCell-pending {
+  border: 1.5px dashed var(--salt-status-warning-foreground-decorative);
+  border-radius: 50%;
+  box-sizing: border-box;
+  flex: none;
+  height: 12px;
+  width: 12px;
+}

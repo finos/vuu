@@ -3,9 +3,9 @@ import type { EditErrorHandler } from "@vuu-ui/vuu-data-editing";
 import { useCallback, useMemo, useState } from "react";
 
 /**
- * Why an edit session could not be saved, e.g. limits that failed the
- * server's checks. Spread `handlers` on the EditableTable, render `banner`.
- * The error is cleared once the session is saved or cancelled.
+ * Why an edit session could not be saved, e.g. limits that failed the server's
+ * checks. Spread `handlers` on the EditableTableContainer, render `banner`. The
+ * error is cleared once the session is saved or cancelled.
  */
 export const useSaveError = () => {
   const [message, setMessage] = useState<string | undefined>(undefined);

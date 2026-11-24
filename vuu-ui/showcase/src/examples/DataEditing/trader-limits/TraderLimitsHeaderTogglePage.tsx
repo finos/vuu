@@ -6,14 +6,12 @@ import {
 } from "@vuu-ui/vuu-data-editing";
 import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
-  type ColumnsChangeHandler,
-  ColumnModel,
   ColumnPickerAction,
   DataSourceStats,
-  EditableTable,
+  EditableTableContainer,
   EditableTableFooter,
   exportCsvTemplate,
-  TableEditorTable,
+  EditableTable,
   TableEditorToolbar,
   TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
@@ -22,30 +20,19 @@ import {
   type ShowContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
 import { useData, VuuShellLocation } from "@vuu-ui/vuu-utils";
-import {
-  isValidElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { isValidElement, useCallback, useMemo, useState } from "react";
 import { EmptyStatus } from "./EmptyStatus";
 import {
-  getLimitsTableConfig,
-  initialSelectedColumns,
   LIMIT_DEFINITIONS_TABLE,
   limitColumnNames,
-  limitColumns,
   limitsSessionConfig,
   limitsTemplateOverrides,
 } from "./trader-limits-config";
+import { useLimitsColumns } from "./useLimitsColumns";
 import { useLimitsImport } from "./useLimitsImport";
 import { useSaveError } from "./useSaveError";
 
 import "./TraderLimits.css";
-
-const toColumnNames = (columns: readonly { name: string }[]) =>
-  new Set(columns.map(({ name }) => name));
 
 export interface TraderLimitsHeaderTogglePageProps {
   /**
@@ -66,10 +53,10 @@ export interface TraderLimitsHeaderTogglePageProps {
  * - Download a CSV template, fill it in and Import it.
  * - The column picker, from the footer, opens in the context panel.
  *
- * The View/Edit toggle is in the page header, outside the EditableTable. A
- * DataEditingModeProvider around the page holds the mode. The toggle and the
- * EditableTable both use it, and the page reads it with `useDataEditing` to
- * disable buttons while editing.
+ * The View/Edit toggle is in the page header, outside the
+ * EditableTableContainer. A DataEditingModeProvider around the page holds the
+ * mode. The toggle and the EditableTableContainer both use it, and the page
+ * reads it with `useDataEditing` to disable buttons while editing.
  */
 export const TraderLimitsHeaderTogglePage = ({
   showNextBusinessDay = false,
@@ -118,27 +105,8 @@ const TraderLimitsHeaderToggleContent = ({
     setContextPanelProps(undefined);
   }, []);
 
-  const columnModel = useMemo(
-    () => new ColumnModel(limitColumns, initialSelectedColumns),
-    [],
-  );
-  const [selectedColumnNames, setSelectedColumnNames] = useState(() =>
-    toColumnNames(initialSelectedColumns),
-  );
-  useEffect(() => {
-    const handleChange: ColumnsChangeHandler = (columns) =>
-      setSelectedColumnNames(toColumnNames(columns));
-    columnModel.on("change", handleChange);
-    return () => {
-      columnModel.removeListener("change", handleChange);
-    };
-  }, [columnModel]);
-
   const isViewMode = mode === "view";
-  const tableConfig = useMemo(
-    () => getLimitsTableConfig(selectedColumnNames),
-    [selectedColumnNames],
-  );
+  const { columnModel, tableConfig } = useLimitsColumns(mode);
 
   const downloadTemplate = useCallback(() => {
     exportCsvTemplate(dataSource, {
@@ -173,7 +141,7 @@ const TraderLimitsHeaderToggleContent = ({
             <EditModeToggle />
           </div>
           {saveError.banner}
-          <EditableTable
+          <EditableTableContainer
             allowDelete
             dataSource={dataSource}
             {...saveError.handlers}
@@ -196,7 +164,7 @@ const TraderLimitsHeaderToggleContent = ({
                 Import
               </Button>
             </TableEditorToolbar>
-            <TableEditorTable
+            <EditableTable
               EmptyDisplay={isViewMode ? EmptyDisplay : undefined}
               className="TraderLimits-table"
               config={tableConfig}
@@ -210,7 +178,7 @@ const TraderLimitsHeaderToggleContent = ({
                 <ColumnPickerAction columnModel={columnModel} />
               </TableFooterTray>
             </EditableTableFooter>
-          </EditableTable>
+          </EditableTableContainer>
           {importElements}
         </div>
         <ContextPanel

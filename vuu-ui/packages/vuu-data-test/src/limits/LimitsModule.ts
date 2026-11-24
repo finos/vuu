@@ -127,8 +127,6 @@ export const LIMIT_METRIC_NAMES = Object.keys(LIMIT_METRICS);
 
 export const LIMIT_CURRENCIES = ["USD", "EUR", "GBP", "JPY"] as const;
 
-export type LimitStatus = "Pending" | "Active";
-
 /** The user who makes every change. The local module has no user identity. */
 export const LIMITS_USER = "trader";
 
@@ -173,7 +171,7 @@ export const limitsSchemas: Record<LimitsTableName, TableSchema> = {
   limitDefinitions: {
     columns: [
       limitKeyColumn,
-      { name: "status", serverDataType: "string" },
+      { name: "active", serverDataType: "boolean" },
       { name: "entity_type", serverDataType: "string" },
       { name: "metric_family", serverDataType: "string" },
       ...definitionColumns,
@@ -316,11 +314,12 @@ const describeChanges = (values: LimitValues) =>
  * Limit definitions, one row per limit. Changes are made in a session table,
  * created from a blueprint, and take effect on the next business day:
  *
- * - saving a session never changes an Active limit. A new limit is Pending.
- *   A change to, or deletion of, an Active limit is held, described in
- *   `change`, and the limit is Pending.
- * - at the start of the next business day, Pending limits become Active,
- *   with their held changes applied, see {@link activatePendingLimits}.
+ * - saving a session never changes an Active limit. A new limit is not
+ *   `active`. A change to, or deletion of, an Active limit is held and
+ *   described in `change`, the limit stays `active`.
+ * - at the start of the next business day, limits with a `change` take
+ *   effect: new limits become `active`, held changes are applied and pending
+ *   deletes are removed, see {@link activatePendingLimits}.
  *
  * Blueprints: `edit-limitDefinitions` holds the columns a user enters, with
  * their edit rules; `import-limitDefinitions` adds the CSV row number;
@@ -409,7 +408,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
       limit_key: key,
       changed_by: LIMITS_USER,
       metric_family: LIMIT_METRICS[String(metric)].family,
-      status: "Pending",
+      active: false,
       vuuCreatedTimestamp: now,
       vuuMsg: "",
       vuuUpdatedTimestamp: now,
@@ -501,14 +500,14 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
 
   /**
    * Describes the change a session row will make, with the changes already
-   * held: "New limit", "Delete", or each changed value.
+   * held: "New limit", "Set to delete", or each changed value.
    */
   #describeEdit(key: string, action: VuuRowDataItemType, values: LimitValues) {
     const current = this.#rowValues(key);
     if (action === "addRow" || current === undefined) {
       return "New limit";
     } else if (action === "deleteRow") {
-      return "Delete";
+      return "Set to delete";
     } else if (!this.#activeKeys.has(key)) {
       return "New limit";
     }
@@ -521,7 +520,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
       Object.keys(amended).length === 0 &&
       this.#pendingChanges.get(key)?.type === "delete"
     ) {
-      return "Delete";
+      return "Set to delete";
     }
     return describeChanges(amended);
   }
@@ -560,13 +559,12 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
       const amended = this.#amendedValues(key, current, values);
       if (Object.keys(amended).length === 0) {
         this.#pendingChanges.delete(key);
-        this.#update(key, { change: "", changed_by: "", status: "Active" });
+        this.#update(key, { change: "", changed_by: "" });
       } else {
         this.#pendingChanges.set(key, { type: "amend", values: amended });
         this.#update(key, {
           change: editChange,
           changed_by: LIMITS_USER,
-          status: "Pending",
         });
       }
     } else {
@@ -575,7 +573,6 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
         ...values,
         change: "New limit",
         changed_by: LIMITS_USER,
-        status: "Pending",
       });
     }
   }
@@ -584,9 +581,8 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
     if (this.#activeKeys.has(key)) {
       this.#pendingChanges.set(key, { type: "delete" });
       this.#update(key, {
-        change: "Delete",
+        change: "Set to delete",
         changed_by: LIMITS_USER,
-        status: "Pending",
       });
     } else {
       this.#limits.delete(key);
@@ -594,13 +590,14 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
   }
 
   /**
-   * Simulates the start of the next business day: Pending limits become
-   * Active, with their held changes applied, and pending deletes take effect.
+   * Simulates the start of the next business day: limits with a change take
+   * effect. New limits become active, held changes are applied and pending
+   * deletes remove their limit.
    */
   activatePendingLimits() {
     const { map } = this.#limits;
     const pendingKeys = this.#limits.data
-      .filter((row) => row[map.status] === "Pending")
+      .filter((row) => row[map.change] !== "")
       .map((row) => String(row[map.limit_key]));
     for (const key of pendingKeys) {
       const pending = this.#pendingChanges.get(key);
@@ -612,8 +609,8 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
         this.#activeKeys.add(key);
         this.#update(key, {
           ...(pending?.type === "amend" ? pending.values : {}),
+          active: true,
           change: "",
-          status: "Active",
         });
       }
     }

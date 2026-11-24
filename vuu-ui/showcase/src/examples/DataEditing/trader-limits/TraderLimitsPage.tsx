@@ -1,16 +1,14 @@
 import { Button, Text } from "@salt-ds/core";
 import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
-  type ColumnsChangeHandler,
-  ColumnModel,
   ColumnPickerAction,
   DataSourceStats,
-  EditableTable,
+  EditableTableContainer,
   EditableTableFooter,
   type EditableTableMode,
   exportCsvTemplate,
   TableEditorModeToggle,
-  TableEditorTable,
+  EditableTable,
   TableEditorToolbar,
   TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
@@ -19,30 +17,19 @@ import {
   type ShowContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
 import { useData, VuuShellLocation } from "@vuu-ui/vuu-utils";
-import {
-  isValidElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { isValidElement, useCallback, useMemo, useState } from "react";
 import { EmptyStatus } from "./EmptyStatus";
 import {
-  getLimitsTableConfig,
-  initialSelectedColumns,
   LIMIT_DEFINITIONS_TABLE,
   limitColumnNames,
-  limitColumns,
   limitsSessionConfig,
   limitsTemplateOverrides,
 } from "./trader-limits-config";
+import { useLimitsColumns } from "./useLimitsColumns";
 import { useLimitsImport } from "./useLimitsImport";
 import { useSaveError } from "./useSaveError";
 
 import "./TraderLimits.css";
-
-const toColumnNames = (columns: readonly { name: string }[]) =>
-  new Set(columns.map(({ name }) => name));
 
 export interface TraderLimitsPageProps {
   /**
@@ -64,7 +51,8 @@ export interface TraderLimitsPageProps {
  * - The column picker, from the footer, opens in the context panel.
  *
  * The View/Edit toggle is in the table's toolbar. The page holds the mode and
- * passes it to the EditableTable, so it can disable buttons while editing.
+ * passes it to the EditableTableContainer, so it can disable buttons while
+ * editing.
  */
 export const TraderLimitsPage = ({
   showNextBusinessDay = false,
@@ -102,27 +90,8 @@ export const TraderLimitsPage = ({
     setContextPanelProps(undefined);
   }, []);
 
-  const columnModel = useMemo(
-    () => new ColumnModel(limitColumns, initialSelectedColumns),
-    [],
-  );
-  const [selectedColumnNames, setSelectedColumnNames] = useState(() =>
-    toColumnNames(initialSelectedColumns),
-  );
-  useEffect(() => {
-    const handleChange: ColumnsChangeHandler = (columns) =>
-      setSelectedColumnNames(toColumnNames(columns));
-    columnModel.on("change", handleChange);
-    return () => {
-      columnModel.removeListener("change", handleChange);
-    };
-  }, [columnModel]);
-
   const isViewMode = mode === "view";
-  const tableConfig = useMemo(
-    () => getLimitsTableConfig(selectedColumnNames),
-    [selectedColumnNames],
-  );
+  const { columnModel, tableConfig } = useLimitsColumns(mode);
 
   const downloadTemplate = useCallback(() => {
     exportCsvTemplate(dataSource, {
@@ -156,7 +125,7 @@ export const TraderLimitsPage = ({
             <Text styleAs="h2">Limits</Text>
           </div>
           {saveError.banner}
-          <EditableTable
+          <EditableTableContainer
             allowDelete
             dataSource={dataSource}
             {...saveError.handlers}
@@ -182,7 +151,7 @@ export const TraderLimitsPage = ({
                 Import
               </Button>
             </TableEditorToolbar>
-            <TableEditorTable
+            <EditableTable
               EmptyDisplay={isViewMode ? EmptyDisplay : undefined}
               className="TraderLimits-table"
               config={tableConfig}
@@ -196,7 +165,7 @@ export const TraderLimitsPage = ({
                 <ColumnPickerAction columnModel={columnModel} />
               </TableFooterTray>
             </EditableTableFooter>
-          </EditableTable>
+          </EditableTableContainer>
           {importElements}
         </div>
         <ContextPanel

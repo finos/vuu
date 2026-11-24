@@ -13,8 +13,12 @@ import {
   limitsSchemas,
   validateLimitValue,
 } from "@vuu-ui/vuu-data-test";
-import type { CsvColumnValidator } from "@vuu-ui/vuu-table-extras";
+import type {
+  CsvColumnValidator,
+  EditableTableMode,
+} from "@vuu-ui/vuu-table-extras";
 import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
+import "./LimitStatusCell";
 import "./PeriodCell";
 
 export { LIMIT_DEFINITIONS_TABLE };
@@ -39,7 +43,12 @@ const readOnly = { editable: false } as const;
  * editChange, which the server maintains, say so here.
  */
 export const limitColumns: ColumnDescriptor[] = [
-  { name: "status", label: "Status", width: 90 },
+  {
+    name: "active",
+    label: "Status",
+    width: 100,
+    type: { name: "boolean", renderer: { name: "limit-status-cell" } },
+  },
   { name: "change", label: "Change", width: 240 },
   { name: "limit_key", label: "Limit key", width: 100 },
   {
@@ -119,33 +128,6 @@ export const limitColumnNames = limitColumns
     limitsSchemas.limitDefinitions.columns.some((col) => col.name === name),
   );
 
-/** Available in the column picker, but not shown at first. */
-const INITIALLY_HIDDEN = new Set([
-  "metric_family",
-  "vuuCreatedTimestamp",
-  "vuuUpdatedTimestamp",
-  "vuuMsg",
-]);
-
-export const initialSelectedColumns = limitColumns.filter(
-  ({ name }) => !INITIALLY_HIDDEN.has(name),
-);
-
-/**
- * One config serves View and Edit mode, each shows the columns its data has.
- * Columns not selected in the column picker are hidden.
- */
-export const getLimitsTableConfig = (
-  selectedColumnNames: ReadonlySet<string>,
-): TableConfig => ({
-  columns: limitColumns.map((column) => ({
-    ...column,
-    hidden: !selectedColumnNames.has(column.name),
-  })),
-  rowSeparators: true,
-  zebraStripes: true,
-});
-
 /** Columns of the edit-limitDefinitions blueprint not shown in Edit mode. */
 const NOT_EDITED = new Set(["effective_from", "effective_to", "owner"]);
 
@@ -163,6 +145,53 @@ export const limitsSessionConfig: SessionDataSourceOverrides = {
     "editChange",
   ],
 };
+
+const editLimitColumns = limitColumns.filter(({ name }) =>
+  limitsSessionConfig.columns?.includes(name),
+);
+
+/**
+ * The columns each mode's table has. The column picker offers only these,
+ * so View mode never offers editChange, nor Edit mode a column the edit
+ * session does not have.
+ */
+export const limitColumnsByMode: Record<
+  EditableTableMode,
+  readonly ColumnDescriptor[]
+> = {
+  create: editLimitColumns,
+  edit: editLimitColumns,
+  view: limitColumns.filter(({ name }) => limitColumnNames.includes(name)),
+};
+
+/** Available in the column picker, but not shown at first. */
+const INITIALLY_HIDDEN = new Set([
+  "entity_type",
+  "metric_family",
+  "effective_from",
+  "effective_to",
+  "owner",
+  "changed_by",
+  "vuuCreatedTimestamp",
+  "vuuUpdatedTimestamp",
+  "vuuMsg",
+]);
+
+export const initiallySelected = (columns: readonly ColumnDescriptor[]) =>
+  columns.filter(({ name }) => !INITIALLY_HIDDEN.has(name));
+
+/** The columns of a mode's table, those not selected are hidden. */
+export const getLimitsTableConfig = (
+  columns: readonly ColumnDescriptor[],
+  selectedColumns: readonly ColumnDescriptor[],
+): TableConfig => ({
+  columns: columns.map((column) => ({
+    ...column,
+    hidden: !selectedColumns.some(({ name }) => name === column.name),
+  })),
+  rowSeparators: true,
+  zebraStripes: true,
+});
 
 /**
  * The CSV template has the columns of the import-limitDefinitions

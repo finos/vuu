@@ -112,7 +112,7 @@ describe("validateLimitDefinition", () => {
 });
 
 describe("LimitsModule", () => {
-  it("saves a new limit as Pending, with the columns the server fills", async () => {
+  it("saves a new limit, not yet active, with the columns the server fills", async () => {
     const { addLimits, row } = setup();
     await addLimits(vega);
     expect(row("LIM-0001")).toMatchObject({
@@ -121,7 +121,7 @@ describe("LimitsModule", () => {
       entity_type: "Desk",
       changed_by: "trader",
       metric_family: "Sensitivity",
-      status: "Pending",
+      active: false,
     });
     expect(row("LIM-0001")?.effective_from).toBeGreaterThan(0);
   });
@@ -142,10 +142,10 @@ describe("LimitsModule", () => {
     const { addLimits, module, row } = setup();
     await addLimits(vega);
     module.activatePendingLimits();
-    expect(row("LIM-0001")).toMatchObject({ change: "", status: "Active" });
+    expect(row("LIM-0001")).toMatchObject({ change: "", active: true });
   });
 
-  it("the activatePendingLimits RPC activates Pending limits", async () => {
+  it("the activatePendingLimits RPC applies pending changes", async () => {
     const { addLimits, dataSource, row } = setup();
     await addLimits(vega);
     const result = await dataSource.rpcRequest?.({
@@ -154,7 +154,7 @@ describe("LimitsModule", () => {
       type: "RPC_REQUEST",
     });
     expect(result).toMatchObject({ type: "SUCCESS_RESULT" });
-    expect(row("LIM-0001")).toMatchObject({ status: "Active" });
+    expect(row("LIM-0001")).toMatchObject({ active: true });
   });
 
   it("a change to an Active limit is held until the next business day", async () => {
@@ -169,14 +169,14 @@ describe("LimitsModule", () => {
       change: "hard changes to 150",
       changed_by: "trader",
       hard: 100,
-      status: "Pending",
+      active: true,
     });
 
     module.activatePendingLimits();
     expect(row("LIM-0001")).toMatchObject({
       change: "",
       hard: 150,
-      status: "Active",
+      active: true,
     });
   });
 
@@ -193,7 +193,7 @@ describe("LimitsModule", () => {
     await session.addRow({ ...vega, entity_id: "DESK-RATES" });
     expect(editChanges(session)).toEqual({
       "LIM-0001": "soft changes to 95, hard changes to 150",
-      "LIM-0002": "Delete",
+      "LIM-0002": "Set to delete",
       "LIM-0003": "New limit",
     });
   });
@@ -215,7 +215,7 @@ describe("LimitsModule", () => {
       change: "soft changes to 95, hard changes to 150",
       hard: 100,
       soft: 90,
-      status: "Pending",
+      active: true,
     });
 
     module.activatePendingLimits();
@@ -223,11 +223,11 @@ describe("LimitsModule", () => {
       change: "",
       hard: 150,
       soft: 95,
-      status: "Active",
+      active: true,
     });
   });
 
-  it("a Pending new limit is changed directly", async () => {
+  it("a new limit, not yet active, is changed directly", async () => {
     const { addLimits, editSession, row } = setup();
     await addLimits(vega);
     const session = await editSession();
@@ -236,7 +236,7 @@ describe("LimitsModule", () => {
     expect(row("LIM-0001")).toMatchObject({
       change: "New limit",
       hard: 150,
-      status: "Pending",
+      active: false,
     });
   });
 
@@ -252,8 +252,8 @@ describe("LimitsModule", () => {
     await session.endEditSession(true);
     expect(row("LIM-0002")).toBeUndefined();
     expect(row("LIM-0001")).toMatchObject({
-      change: "Delete",
-      status: "Pending",
+      change: "Set to delete",
+      active: true,
     });
 
     module.activatePendingLimits();
