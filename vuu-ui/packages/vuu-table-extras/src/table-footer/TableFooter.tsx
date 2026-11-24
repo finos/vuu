@@ -31,6 +31,13 @@ export const TableFooterTray = ({
   );
 };
 
+/**
+ * A footer below a Table, with trays at the center and end. Styled with:
+ *
+ * - `--vuuTableFooter-height` (default 32px), including the top border
+ * - `--vuuTableFooter-background`
+ * - `--vuuTableFooter-borderTop` (default none), e.g. `1px solid ...`
+ */
 export const TableFooter = ({
   children,
   className,

@@ -445,7 +445,7 @@ pieces are in `@vuu-ui/vuu-table-extras`.
 | `TableEditorToolbar` | all | A row for controls. |
 | `TableEditorModeToggle` | all | View/Edit toggle. The same component as `EditModeToggle`, which can also go outside the table. |
 | `TableEditorButtons` | all | Save and Cancel (Done with direct form editing). Nothing with inline direct editing. Render inside a composed `TableEditorForm`, or a `TableEditorCreateForm` with `showButtons={false}`. |
-| `EditableTableFooter` | inline | Save/Cancel/Delete while a session is being edited; otherwise `children`, by default the row count. |
+| `EditableTableFooter` | inline | Save/Cancel/Delete while a session is being edited; otherwise `children`, by default the row count. Styled with `--vuuTableFooter-height`, `--vuuTableFooter-background` and `--vuuTableFooter-borderTop`; scope them to `.vuuEditableTableContainer-view` or `.vuuEditableTableContainer-edit` for a different style per mode. |
 | `EditableTableMain` | form, or create form | The column beside the side panel, holding the table and anything above or below it. |
 | `EditableTablePanel` | form, or create form | The Salt `SidePanel` that holds the form, on the right. Takes `SidePanel` props; set its width with `--saltSidePanel-width`. |
 | `EditableTablePanelHeader` | form, or create form | The panel's `SidePanelHeader`. Its first child fills the width and a close button follows; pass `canClose={false}` to leave it out. |

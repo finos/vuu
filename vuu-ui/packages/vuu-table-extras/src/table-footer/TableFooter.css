@@ -1,5 +1,10 @@
 .vuuTableFooter {
-  background-color: var(--salt-container-secondary-background);
+  background: var(
+    --vuuTableFooter-background,
+    var(--salt-container-secondary-background)
+  );
+  border-top: var(--vuuTableFooter-borderTop, none);
+  box-sizing: border-box;
   display: grid;
   --table-footer-height: var(--vuuTableFooter-height, 32px);
   flex: 0 0 var(--table-footer-height);
