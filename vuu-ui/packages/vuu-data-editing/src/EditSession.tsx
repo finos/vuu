@@ -100,6 +100,8 @@ type RowEditDetails = {
 
 type EditSessionEvents = {
   cellEditChanged: (key: string, columnName: string) => void;
+  /** A row has been added, deleted, or had that change undone. */
+  rowActionChanged: (key: string) => void;
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
   newRow: (newRowState: NewRowState) => void;
@@ -115,6 +117,7 @@ export class EditSession
    */
   #rowEdits = new Map<string, RowEditDetails>();
   #addedRowKeys = new Set<string>();
+  #deletedRowKeys = new Set<string>();
   #editCount = 0;
   #deleteCount = 0;
   #addCount = 0;
@@ -484,6 +487,8 @@ export class EditSession
           this.#addedRowKeys.delete(key);
           this.#discardRowEdits(key, deleteRevision);
           addedRowsDeleted++;
+        } else {
+          this.#deletedRowKeys.add(key);
         }
       }
       const sourceRowsDeleted = deletedKeys.length - addedRowsDeleted;
@@ -494,6 +499,9 @@ export class EditSession
         this.#addCount = Math.max(0, this.#addCount - addedRowsDeleted);
       }
       this.#emitEditStateChange(oldState);
+      for (const key of deletedKeys) {
+        this.emit("rowActionChanged", key);
+      }
     } else if (selectedRowsCount > 0) {
       this.#setDeleteCount(this.#deleteCount + selectedRowsCount);
     }
@@ -520,16 +528,39 @@ export class EditSession
     }
     if (!isRpcError(response)) {
       const key = (response.data as AddRowResultData | undefined)?.key;
+      this.#setAddCount(this.#addCount + 1);
       if (key !== undefined && key !== null) {
         this.#addedRowKeys.add(String(key));
+        this.emit("rowActionChanged", String(key));
       }
-      this.#setAddCount(this.#addCount + 1);
     }
     return response;
   }
 
   hasRowChanges(key: string): boolean {
     return this.#rowEdits.has(key);
+  }
+
+  /**
+   * The change made to a row in this edit session, as known by the client,
+   * or undefined if the row is unchanged.
+   */
+  getRowAction(key: string): EditActionType | undefined {
+    if (this.#addedRowKeys.has(key)) {
+      return "addRow";
+    } else if (this.#deletedRowKeys.has(key)) {
+      return "deleteRow";
+    }
+    const cellEdits = this.#rowEdits.get(key)?.cellEdits;
+    if (
+      cellEdits &&
+      [...cellEdits.keys()].some((columnName) =>
+        this.isCellEdited(key, columnName),
+      )
+    ) {
+      return "editCell";
+    }
+    return undefined;
   }
 
   /**
@@ -624,7 +655,8 @@ export class EditSession
 
     this.#discardRowEdits(key, undoRevision, columnsAtRequest);
 
-    if (action === "deleteRow") {
+    if (action === "deleteRow" || this.#deletedRowKeys.has(key)) {
+      this.#deletedRowKeys.delete(key);
       this.#deleteCount = Math.max(0, this.#deleteCount - 1);
     }
 
@@ -643,6 +675,7 @@ export class EditSession
     }
 
     this.#emitEditStateChange(oldState);
+    this.emit("rowActionChanged", key);
 
     return response;
   }
@@ -654,8 +687,10 @@ export class EditSession
         .filter((columnName) => this.isCellEdited(key, columnName))
         .map((columnName) => [key, columnName] as const),
     );
+    const changedRows = [...this.#addedRowKeys, ...this.#deletedRowKeys];
     this.#rowEdits.clear();
     this.#addedRowKeys.clear();
+    this.#deletedRowKeys.clear();
     this.#cellCommitRevisions.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
@@ -671,6 +706,9 @@ export class EditSession
     });
     for (const [key, columnName] of editedCells) {
       this.emit("cellEditChanged", key, columnName);
+    }
+    for (const key of changedRows) {
+      this.emit("rowActionChanged", key);
     }
     this.#emitEditStateChange(oldState);
   }

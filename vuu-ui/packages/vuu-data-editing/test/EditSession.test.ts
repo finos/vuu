@@ -328,6 +328,52 @@ describe("EditSession", () => {
     expect(insertedRowSession.addCount).toBe(0);
   });
 
+  it("tracks the action of each changed row, without vuuAction", async () => {
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: { key: "row-003" },
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      deleteSelectedRows: vi.fn().mockResolvedValue({
+        data: { deletedKeys: ["row-002"] },
+        type: "SUCCESS_RESULT",
+      }),
+      editCell: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
+      endEditSession: vi.fn(),
+      select: vi.fn(),
+      selectedRowsCount: 1,
+      undoRowChange: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+    } as unknown as DataSource;
+
+    const session = new EditSession({ dataSource: editApi });
+    const rowActionChanged = vi.fn();
+    session.on("rowActionChanged", rowActionChanged);
+    await session.begin();
+
+    await session.commit("row-001", "price", 100, 150, true);
+    await session.deleteSelectedRows();
+    await session.addRow({ id: "row-003" });
+    expect(session.getRowAction("row-001")).toBe("editCell");
+    expect(session.getRowAction("row-002")).toBe("deleteRow");
+    expect(session.getRowAction("row-003")).toBe("addRow");
+    expect(session.getRowAction("row-004")).toBeUndefined();
+    expect(rowActionChanged.mock.calls).toEqual([["row-002"], ["row-003"]]);
+
+    await session.undoRowChange("row-002", "deleteRow");
+    expect(session.getRowAction("row-002")).toBeUndefined();
+    expect(session.deleteCount).toBe(0);
+    expect(rowActionChanged).toHaveBeenLastCalledWith("row-002");
+
+    await session.undoRowChange("row-001", "editCell");
+    expect(session.getRowAction("row-001")).toBeUndefined();
+  });
+
   it("decrements addCount when an added row is deleted and then undone", async () => {
     const undoRowChange = vi.fn().mockResolvedValue({
       data: undefined,

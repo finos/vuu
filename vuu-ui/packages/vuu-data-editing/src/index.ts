@@ -25,6 +25,7 @@ export type {
   TableEditSessionEvents,
 } from "./TableEditSession";
 export { useCellEdited } from "./useCellEdited";
+export { useRowAction } from "./useRowAction";
 export { useEditState } from "./useEditState";
 export {
   useEditSessionState,
