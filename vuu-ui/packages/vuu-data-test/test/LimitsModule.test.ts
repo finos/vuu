@@ -7,6 +7,7 @@ import {
   validateLimitDefinition,
   validateLimitValue,
 } from "../src/limits";
+import type { Table } from "../src/Table";
 import type { TickingArrayDataSource } from "../src/TickingArrayDataSource";
 
 const columns = limitsSchemas.limitDefinitions.columns.map(({ name }) => name);
@@ -54,7 +55,18 @@ const setup = () => {
     await session.endEditSession(true);
   };
 
-  return { addLimits, dataSource, editSession, module, row };
+  /** The editChange of each row of an edit session, by key. */
+  const editChanges = (session: TickingArrayDataSource) => {
+    const sessionTable = (
+      module as unknown as { getSessionTable(name: string): Table }
+    ).getSessionTable(session.table?.table as string);
+    const { map } = sessionTable;
+    return Object.fromEntries(
+      sessionTable.data.map((row) => [row[map.limit_key], row[map.editChange]]),
+    );
+  };
+
+  return { addLimits, dataSource, editChanges, editSession, module, row };
 };
 
 describe("validateLimitValue", () => {
@@ -154,7 +166,7 @@ describe("LimitsModule", () => {
     await session.editCell("LIM-0001", "hard", 150);
     await session.endEditSession(true);
     expect(row("LIM-0001")).toMatchObject({
-      change: "hard 100 → 150",
+      change: "hard changes to 150",
       changed_by: "trader",
       hard: 100,
       status: "Pending",
@@ -164,6 +176,53 @@ describe("LimitsModule", () => {
     expect(row("LIM-0001")).toMatchObject({
       change: "",
       hard: 150,
+      status: "Active",
+    });
+  });
+
+  it("editChange describes the change saving each row will make", async () => {
+    const { addLimits, editChanges, editSession, module } = setup();
+    await addLimits(vega, { ...vega, entity_id: "DESK-CASH" });
+    module.activatePendingLimits();
+
+    const session = await editSession();
+    expect(editChanges(session)).toEqual({ "LIM-0001": "", "LIM-0002": "" });
+    await session.editCell("LIM-0001", "hard", 150);
+    await session.editCell("LIM-0001", "soft", 95);
+    await session.deleteRow("LIM-0002", "soft");
+    await session.addRow({ ...vega, entity_id: "DESK-RATES" });
+    expect(editChanges(session)).toEqual({
+      "LIM-0001": "soft changes to 95, hard changes to 150",
+      "LIM-0002": "Delete",
+      "LIM-0003": "New limit",
+    });
+  });
+
+  it("saving sets change to editChange, which includes changes already held", async () => {
+    const { addLimits, editChanges, editSession, module, row } = setup();
+    await addLimits(vega);
+    module.activatePendingLimits();
+
+    const first = await editSession();
+    await first.editCell("LIM-0001", "hard", 150);
+    await first.endEditSession(true);
+
+    const second = await editSession();
+    expect(editChanges(second)).toEqual({ "LIM-0001": "hard changes to 150" });
+    await second.editCell("LIM-0001", "soft", 95);
+    await second.endEditSession(true);
+    expect(row("LIM-0001")).toMatchObject({
+      change: "soft changes to 95, hard changes to 150",
+      hard: 100,
+      soft: 90,
+      status: "Pending",
+    });
+
+    module.activatePendingLimits();
+    expect(row("LIM-0001")).toMatchObject({
+      change: "",
+      hard: 150,
+      soft: 95,
       status: "Active",
     });
   });
