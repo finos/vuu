@@ -12,7 +12,7 @@ import {
   EditableTableFooter,
   exportCsvTemplate,
   EditableTable,
-  TableEditorToolbar,
+  EditableTableToolbar,
   TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
 import {
@@ -146,7 +146,7 @@ const TraderLimitsHeaderToggleContent = ({
             dataSource={dataSource}
             {...saveError.handlers}
           >
-            <TableEditorToolbar>
+            <EditableTableToolbar>
               <div className="TraderLimits-toolbarSpacer" />
               {showNextBusinessDay ? (
                 <Button
@@ -163,7 +163,7 @@ const TraderLimitsHeaderToggleContent = ({
               <Button disabled={!isViewMode} onClick={chooseFile}>
                 Import
               </Button>
-            </TableEditorToolbar>
+            </EditableTableToolbar>
             <EditableTable
               EmptyDisplay={isViewMode ? EmptyDisplay : undefined}
               className="TraderLimits-table"

@@ -9,7 +9,7 @@ import {
   exportCsvTemplate,
   TableEditorModeToggle,
   EditableTable,
-  TableEditorToolbar,
+  EditableTableToolbar,
   TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
 import {
@@ -145,7 +145,7 @@ export const TraderLimitsPage = ({
             onModeChange={setMode}
             rowDefaults={fixedValues}
           >
-            <TableEditorToolbar>
+            <EditableTableToolbar>
               <TableEditorModeToggle />
               <div className="TraderLimits-toolbarSpacer" />
               {showNextBusinessDay ? (
@@ -163,7 +163,7 @@ export const TraderLimitsPage = ({
               <Button disabled={!isViewMode} onClick={chooseFile}>
                 Import
               </Button>
-            </TableEditorToolbar>
+            </EditableTableToolbar>
             <EditableTable
               EmptyDisplay={isViewMode ? EmptyDisplay : undefined}
               className="TraderLimits-table"
