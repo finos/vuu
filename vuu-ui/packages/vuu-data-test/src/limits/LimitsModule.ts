@@ -277,6 +277,18 @@ type PendingChange =
 
 type LimitValues = Record<string, VuuRowDataItemType>;
 
+/** A session row that saving will add, amend or delete. */
+interface SessionChange {
+  action: "addRow" | "editCell" | "deleteRow";
+  current: LimitValues | undefined;
+  editChange: string;
+  error: string | undefined;
+  key: string;
+  /** The key, or for an import the row's line in the file. */
+  rowName: string;
+  values: LimitValues;
+}
+
 /** The values that differ from the current values. */
 const changedValues = (current: LimitValues, values: LimitValues) =>
   Object.fromEntries(
@@ -435,26 +447,45 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
         .map(({ name }) => name)
         .filter((name) => LIMIT_DEFINITION_COLUMNS.includes(name));
 
-      const changes = sessionTable.data.map((sessionRow) => {
-        const key = String(sessionRow[map.limit_key]);
-        const values: Record<string, VuuRowDataItemType> = {};
-        for (const name of columns) {
-          values[name] = sessionRow[map[name]] as VuuRowDataItemType;
-        }
-        const action = sessionRow[map.vuuAction];
-        const editChange = String(sessionRow[map.editChange] ?? "");
-        const current = this.#rowValues(key);
-        const error =
-          action === "addRow" || action === "editCell"
-            ? validateLimitDefinition({ ...current, ...values })
-            : undefined;
-        // vuuRowNum numbers the data rows of a CSV from 1, after the header
-        const rowName =
-          map.vuuRowNum === undefined
-            ? key
-            : `line ${Number(sessionRow[map.vuuRowNum]) + 1}`;
-        return { action, current, editChange, error, key, rowName, values };
-      });
+      const changes = sessionTable.data.reduce<SessionChange[]>(
+        (changes, sessionRow) => {
+          const action = sessionRow[map.vuuAction];
+          if (
+            action !== "addRow" &&
+            action !== "editCell" &&
+            action !== "deleteRow"
+          ) {
+            return changes;
+          }
+          const key = String(sessionRow[map.limit_key]);
+          const values: LimitValues = {};
+          for (const name of columns) {
+            values[name] = sessionRow[map[name]] as VuuRowDataItemType;
+          }
+          const editChange = String(sessionRow[map.editChange] ?? "");
+          const current = this.#rowValues(key);
+          const error =
+            action === "deleteRow"
+              ? undefined
+              : validateLimitDefinition({ ...current, ...values });
+          // vuuRowNum numbers the data rows of a CSV from 1, after the header
+          const rowName =
+            map.vuuRowNum === undefined
+              ? key
+              : `line ${Number(sessionRow[map.vuuRowNum]) + 1}`;
+          changes.push({
+            action,
+            current,
+            editChange,
+            error,
+            key,
+            rowName,
+            values,
+          });
+          return changes;
+        },
+        [],
+      );
 
       const errors = changes.filter(({ error }) => error !== undefined);
       if (errors.length > 0) {
@@ -474,12 +505,10 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
       for (const { action, current, editChange, key, values } of changes) {
         if (action === "deleteRow") {
           this.#deleteLimit(key);
-        } else if (action === "addRow" || action === "editCell") {
-          if (current === undefined) {
-            this.#insert(key, values);
-          } else {
-            this.#amendLimit(key, current, values, editChange);
-          }
+        } else if (current === undefined) {
+          this.#insert(key, values);
+        } else {
+          this.#amendLimit(key, current, values, editChange);
         }
       }
       return { type: "SUCCESS_RESULT", data: undefined };
