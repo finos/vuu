@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quick filter fields</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.r{font-family:'Nunito Sans',system-ui,sans-serif;color:#1F2329;-webkit-font-smoothing:antialiased}
+.st{display:flex;flex-direction:column;gap:8px}
+.hd{display:flex;align-items:center;gap:8px}
+.h2{font-size:15px;font-weight:800;color:#1F2329;margin:0}
+.sub{font-size:12px;color:#4A525D;line-height:1.5;margin:0;max-width:860px}
+.cap{font-size:10px;font-weight:700;color:#5B6470;letter-spacing:.06em;text-transform:uppercase}
+.rule{height:1px;background:#E6E9ED}
+.grid{border:1px solid #D9DDE3;border-radius:4px;background:#fff;position:relative}
+.bar{height:28px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 4px 0 6px;background:#F6F7F9;border-bottom:1px solid #D9DDE3;border-radius:4px 4px 0 0}
+.ico{width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#5B6470;border:0;background:none;padding:0;border-radius:3px;position:relative}
+.ico.on{background:#D5DFEC;color:#1E3A63}
+.badge{position:absolute;top:-3px;right:-5px;min-width:12px;height:12px;box-sizing:border-box;padding:0 3px;border-radius:6px;background:#5A78A6;color:#fff;font:700 8px/12px 'Nunito Sans',system-ui,sans-serif;text-align:center;box-shadow:0 0 0 1.5px #F6F7F9}
+.sp{flex:1 1 auto}
+.more{height:20px;flex:none;display:inline-flex;align-items:center;gap:4px;padding:0 6px;border:1px solid #C3CAD3;border-radius:3px;background:#fff;font:700 11px/1 'Nunito Sans',system-ui,sans-serif;color:#2B3440}
+.mdot{width:5px;height:5px;border-radius:50%;background:#5A78A6}
+
+/* search: a plain white box */
+.box{height:20px;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;padding:0 6px 0 5px;border:1px solid #C3CAD3;border-radius:3px;background:#fff;font-size:11px;width:140px;flex:none}
+.box .ph{color:#9AA2AC;flex:1 1 auto}
+
+/* a quick filter: one outline, label segment shaded, input segment white */
+.seg{height:20px;box-sizing:border-box;flex:none;display:inline-flex;align-items:stretch;border:1px solid #C3CAD3;border-radius:3px;overflow:hidden;font-size:11px;white-space:nowrap}
+.seg .sl{display:inline-flex;align-items:center;gap:6px;padding:0 6px;background:#E4E8ED;color:#4A525D}
+.seg .sop{font-weight:800;color:#3B5B8C;padding:0 2px;border-radius:2px}
+.seg .sop.hov{background:#D3DAE3}
+.seg .si{display:inline-flex;align-items:center;gap:6px;min-width:40px;padding:0 6px;background:#fff}
+.seg .si .v{font-weight:700;flex:1 1 auto}
+.seg .si .ph{color:#9AA2AC;flex:1 1 auto}
+.seg .si .caret{width:1px;height:12px;background:#1F2329}
+.seg.set .si{min-width:72px;padding-right:2px}
+.seg .si .x{display:inline-flex;flex:none;width:12px;height:12px;align-items:center;justify-content:center;border-radius:2px;color:#8A929D;margin-left:auto}
+.seg .si .x.hov{background:#E6EAF0;color:#2B3440}
+.seg.set{border-color:#8FA6C8}
+.seg.set .sl{background:#DCE5F1;color:#3B5B8C;font-weight:700}
+.seg.foc{border-color:#3B5B8C;box-shadow:0 0 0 2px rgba(59,91,140,.15)}
+.seg.wide{display:flex;width:100%}
+.seg.wide .si{flex:1 1 auto}
+
+.thead{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));height:24px;align-items:center;font-size:11px;padding:0 10px;font-weight:700;color:#3A424D;border-bottom:1px solid #E6E9ED}
+.trow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));height:24px;align-items:center;font-size:11px;padding:0 10px;color:#1F2329;border-bottom:1px solid #F0F2F4}
+.pop{position:absolute;z-index:3;background:#fff;border:1px solid #D3D8DF;border-radius:4px;box-shadow:0 6px 16px rgba(20,30,45,.12);font-size:11px}
+.opt{height:20px;padding:0 8px;display:flex;align-items:center;border-radius:3px}
+.opt.cur{background:#EDF0F4}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:11px;color:#3A424D;line-height:1.45;max-width:860px}
+.pc b{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#5B6470;margin-right:4px}
+.states{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.cell{display:flex;flex-direction:column;gap:6px}
+.stage{height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 10px;background:#F6F7F9;border:1px solid #E6E9ED;border-radius:4px}
+.spec{display:grid;grid-template-columns:150px 1fr;gap:4px 16px;font-size:11px;color:#3A424D;line-height:1.45;max-width:860px}
+.spec span:nth-child(odd){font-weight:700;color:#5B6470}
+</style>
+</helmet>
+<div class="r" style="width: 960px; height: 1240px; box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 22px; background: #FFFFFF">
+
+  <div class="st">
+    <div class="hd"><h2 class="h2">Quick filter fields: shaded label, white input</h2></div>
+    <p class="sub">Each quick filter is one outline split into two sections: the column name on a light grey fill and the input on white, so it’s clear exactly where to type. There’s no dropdown icon: the value list opens on click, ArrowDown or typing. A set filter shows a ✕ hard right in its input, with no separator.</p>
+  </div>
+
+  <div class="st">
+    <span class="cap">Quick filter bar</span>
+    <div class="grid">
+      <div class="bar"><span class="ico on"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M12 4h2M2 8h2M7 8h7M2 12h9M14 12h0"/><circle cx="10.5" cy="4" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="12.5" cy="12" r="1.5"/></svg><span class="badge">2</span></span><span class="box" style="margin-left: 4px"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#8A929D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="ph">Search</span></span><span class="seg set"><span class="sl">currency</span><span class="si"><span class="v">EUR</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span></span><span class="seg"><span class="sl">exchange</span><span class="si"></span></span><span class="seg"><span class="sl">lotSize<span class="sop">=</span></span><span class="si"></span></span><span class="sp"></span><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg></span></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span></div>
+      <div class="trow"><span>AAOQ.OQ</span><span>Abercrombie</span><span>EUR</span><span>XNGS/NAS-GSM</span><span>1200</span><span>41.20</span></div>
+      <div class="trow"><span>VOD.L</span><span>Vodafone</span><span>EUR</span><span>XLON/LSE-SETS</span><span>500</span><span>71.45</span></div>
+    </div>
+    <div class="pc">
+      <span><b>Label</b>The grey section holds the column name. It’s the field’s accessible name, and clicking it focuses the input. The edge between grey and white shows where typing starts, with no divider line.</span>
+      <span><b>Input</b>The white section, 40px when empty and growing with its value up to 160px. Search is a plain white box.</span>
+      <span><b>Set</b>The outline turns accent and the label section takes the accent tint; the input stays white. The ✕ sits hard right in the input, 2px from the outline.</span>
+      <span><b>Operator</b>Numeric and date columns show their operator in the label section, as a small text button.</span>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="st">
+    <span class="cap">States</span>
+    <div class="states">
+      <div class="cell"><div class="stage"><span class="seg"><span class="sl">exchange</span><span class="si"></span></span></div><span class="sub" style="font-size: 11px">Empty: a 40px white input.</span></div>
+      <div class="cell"><div class="stage"><span class="seg foc"><span class="sl">exchange</span><span class="si"><span class="caret"></span><span style="width: 30px"></span></span></span></div><span class="sub" style="font-size: 11px">Focused: accent outline and focus ring around the whole field.</span></div>
+      <div class="cell"><div class="stage"><span class="seg set"><span class="sl">exchange</span><span class="si"><span class="v">XAMS/ENA-MAIN</span><span class="x hov"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span></span></div><span class="sub" style="font-size: 11px">Set, hovering ✕: the input has grown to fit the value.</span></div>
+      <div class="cell"><div class="stage"><span class="seg set"><span class="sl">lotSize<span class="sop hov">&gt;</span></span><span class="si"><span class="v">1000</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span></span></div><span class="sub" style="font-size: 11px">Numeric, hovering the operator.</span></div>
+    </div>
+  </div>
+
+  <div class="st">
+    <span class="cap">Value list open (click or ArrowDown in an empty field)</span>
+    <div class="grid" style="height: 236px">
+      <div class="bar"><span class="ico on"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M12 4h2M2 8h2M7 8h7M2 12h9M14 12h0"/><circle cx="10.5" cy="4" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="12.5" cy="12" r="1.5"/></svg><span class="badge">1</span></span><span class="box" style="margin-left: 4px"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#8A929D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="ph">Search</span></span><span class="seg set"><span class="sl">currency</span><span class="si"><span class="v">EUR</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span></span><span class="seg foc"><span class="sl">exchange</span><span class="si"><span class="caret"></span><span style="width: 30px"></span></span></span><span class="seg"><span class="sl">lotSize<span class="sop">=</span></span><span class="si"></span></span><span class="sp"></span><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg></span></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span></div>
+      <div class="pop" style="left: 336px; top: 26px; width: 130px; padding: 3px">
+        <div class="opt cur">AT/EUR_GR</div><div class="opt">FR/EUR_DE</div><div class="opt">MIL/EUR_IT</div><div class="opt">PAR/EUR_FR</div><div class="opt">XAMS/ENA-MAIN</div><div class="opt">XLON/LSE-SETS</div><div class="opt">XNGS/NAS-GSM</div><div class="opt">XNYS/NYS-MAIN</div>
+      </div>
+    </div>
+    <div class="pc" style="grid-template-columns: 1fr"><span>The list lines up with the white input section, not the label.</span></div>
+  </div>
+
+  <div class="st">
+    <span class="cap">Overflowed quick filters</span>
+    <div class="grid" style="height: 130px">
+      <div class="bar"><span class="ico on"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M12 4h2M2 8h2M7 8h7M2 12h9M14 12h0"/><circle cx="10.5" cy="4" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="12.5" cy="12" r="1.5"/></svg><span class="badge">1</span></span><span class="box" style="margin-left: 4px"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#8A929D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="ph">Search</span></span><span class="seg"><span class="sl">currency</span><span class="si"></span></span><span class="seg"><span class="sl">exchange</span><span class="si"></span></span><span class="sp"></span><span class="more"><span class="mdot"></span>+2</span><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg></span></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span></div>
+      <div class="pop" style="right: 22px; top: 27px; width: 200px; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px">
+        <span class="seg set wide"><span class="sl">lotSize<span class="sop">&gt;</span></span><span class="si"><span class="v">1000</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span></span>
+        <span class="seg wide"><span class="sl">price</span><span class="si"></span></span>
+      </div>
+    </div>
+    <div class="pc" style="grid-template-columns: 1fr"><span>In the popover the fields keep the same form and stack, each filling the panel width.</span></div>
+  </div>
+
+  <div class="st">
+    <span class="cap">Spec</span>
+    <div class="spec">
+      <span>Bar</span><span>28px high, quick filters 8px apart</span>
+      <span>Field</span><span>20px high, 1px #C3CAD3 outline, radius 3px; set: #8FA6C8; focus: #3B5B8C + 2px ring</span>
+      <span>Label section</span><span>#E4E8ED fill, padding 0 6px, 11px #4A525D; set: #DCE5F1 fill, #3B5B8C bold</span>
+      <span>Input section</span><span>White, padding 0 6px (0 2px 0 6px when set), 40px minimum, grows with the value to 160px</span>
+      <span>Clear ✕</span><span>12px square, hard right, 2px radius hover, only when set</span>
+      <span>Value list</span><span>No icon; opens on click, ArrowDown or typing</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

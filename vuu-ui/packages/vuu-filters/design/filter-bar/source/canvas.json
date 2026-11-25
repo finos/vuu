@@ -1,0 +1,96 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-14T20:10:00Z"
+  },
+  "title": "Compact filter bar",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 960,
+      "h": 1020,
+      "title": "A \u00b7 Capsule: icon actions inside the outline"
+    },
+    "FieldEditor.dc.html": {
+      "x": 1040,
+      "y": 0,
+      "w": 960,
+      "h": 1020,
+      "title": "B \u00b7 Field: editor fills the row, text actions"
+    },
+    "InPlace.dc.html": {
+      "x": 2080,
+      "y": 0,
+      "w": 960,
+      "h": 1250,
+      "title": "C \u00b7 In place: the pill becomes the editor"
+    },
+    "Overflow.dc.html": {
+      "x": 0,
+      "y": 1800,
+      "w": 960,
+      "h": 1720,
+      "title": "D \u00b7 Overflow: when pills don\u2019t fit on one row"
+    },
+    "QuickFilters.dc.html": {
+      "x": 1040,
+      "y": 1800,
+      "w": 960,
+      "h": 1880,
+      "title": "E \u00b7 Quick filters: labels, mode toggle, search"
+    },
+    "QuickFilterColumns.dc.html": {
+      "x": 2080,
+      "y": 1800,
+      "w": 960,
+      "h": 1500,
+      "title": "F \u00b7 Quick filters: choosing and ordering columns"
+    },
+    "QuickFiltersOpen.dc.html": {
+      "x": 0,
+      "y": 3900,
+      "w": 960,
+      "h": 1240,
+      "title": "G \u00b7 Quick filter fields: shaded label, white input"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "FieldEditor.dc.html",
+    "InPlace.dc.html",
+    "Overflow.dc.html",
+    "QuickFilters.dc.html",
+    "QuickFilterColumns.dc.html",
+    "QuickFiltersOpen.dc.html"
+  ],
+  "notes": {
+    "heading": {
+      "x": 0,
+      "y": -300,
+      "text": "Compact filter bar \u2014 three directions",
+      "kind": "title1",
+      "maxW": 3040
+    },
+    "heading2": {
+      "x": 0,
+      "y": 1500,
+      "text": "Overflow and quick-filter mode",
+      "kind": "title1",
+      "maxW": 3040
+    },
+    "heading3": {
+      "x": 0,
+      "y": 3780,
+      "text": "Quick filter field styles",
+      "kind": "title1",
+      "maxW": 3040
+    }
+  },
+  "designSystems": []
+}
