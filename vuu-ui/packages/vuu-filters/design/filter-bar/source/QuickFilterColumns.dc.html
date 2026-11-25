@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quick filter columns</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.r{font-family:'Nunito Sans',system-ui,sans-serif;color:#1F2329;-webkit-font-smoothing:antialiased}
+.st{display:flex;flex-direction:column;gap:8px}
+.hd{display:flex;align-items:center;gap:8px}
+.h2{font-size:15px;font-weight:800;color:#1F2329;margin:0}
+.tag{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:#E3EAF4;color:#1E3A63}
+.sub{font-size:12px;color:#4A525D;line-height:1.5;margin:0;max-width:860px}
+.cap{font-size:10px;font-weight:700;color:#5B6470;letter-spacing:.06em;text-transform:uppercase}
+.rule{height:1px;background:#E6E9ED}
+.pair{display:flex;gap:40px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:6px}
+.grid{border:1px solid #D9DDE3;border-radius:4px;background:#fff;position:relative}
+.bar{height:28px;box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:0 4px 0 6px;background:#F6F7F9;border-bottom:1px solid #D9DDE3;border-radius:4px 4px 0 0}
+.ico{width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#5B6470;border:0;background:none;padding:0;border-radius:3px;position:relative}
+.ico.on{background:#D5DFEC;color:#1E3A63}
+.badge{position:absolute;top:-3px;right:-5px;min-width:12px;height:12px;box-sizing:border-box;padding:0 3px;border-radius:6px;background:#5A78A6;color:#fff;font:700 8px/12px 'Nunito Sans',system-ui,sans-serif;text-align:center;box-shadow:0 0 0 1.5px #F6F7F9}
+.lead{margin-right:4px}
+.qf{height:22px;box-sizing:border-box;flex:none;display:inline-flex;align-items:center;gap:6px;padding:0 4px 0 8px;border:1px solid #CDD3DB;border-radius:3px;background:#fff;font-size:11px;white-space:nowrap}
+.qf .lb{color:#6B7380}
+.qf .v{font-weight:700}
+.qf .ph{color:#9AA2AC}
+.qf .dd{color:#8A929D;display:inline-flex}
+.qf.set{border-color:#8FA6C8;background:#EEF3FA}
+.qf.set .lb{color:#3B5B8C}
+.qf.search{width:120px;padding-left:6px}
+.qf.new{animation:none;box-shadow:0 0 0 2px rgba(59,91,140,.25);border-color:#3B5B8C}
+.tg{display:inline-flex;height:16px;border-radius:2px;overflow:hidden;border:1px solid #CDD3DB}
+.tg span{padding:0 6px;font-size:10px;font-weight:700;line-height:14px;color:#5B6470;background:#fff}
+.tg span+span{border-left:1px solid #CDD3DB}
+.sp{flex:1 1 auto}
+.thead{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));height:24px;align-items:center;font-size:11px;padding:0 10px;font-weight:700;color:#3A424D}
+.pk{width:240px;background:#fff;border:1px solid #D3D8DF;border-radius:4px;box-shadow:0 6px 16px rgba(20,30,45,.12);font-size:11px;position:relative}
+.pk.abs{position:absolute;z-index:3}
+.pk-h{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 6px 0 10px;font-weight:700;color:#2B3440;border-bottom:1px solid #EBEEF1}
+.pk-f{padding:6px 8px;border-bottom:1px solid #EBEEF1}
+.find{height:22px;box-sizing:border-box;display:flex;align-items:center;gap:6px;padding:0 6px;border:1px solid #CDD3DB;border-radius:3px;color:#9AA2AC}
+.find.foc{border-color:#3B5B8C;box-shadow:0 0 0 2px rgba(59,91,140,.15);color:#1F2329}
+.sec{height:20px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;margin-top:4px;font-size:10px;font-weight:700;color:#8A929D;letter-spacing:.04em;text-transform:uppercase}
+.sec span{text-transform:none;letter-spacing:0;font-weight:400}
+.ls{padding:0 4px 4px;display:flex;flex-direction:column}
+.it{height:24px;display:flex;align-items:center;gap:6px;padding:0 6px 0 2px;border-radius:3px;color:#1F2329;position:relative;background:#fff}
+.it.foc{background:#EDF0F4}
+.it.lift{box-shadow:0 4px 12px rgba(20,30,45,.18);border:1px solid #D3D8DF;margin:0 -2px;z-index:2}
+.it.ghost{opacity:.35}
+.it .ty{margin-left:auto;font-size:10px;color:#8A929D}
+.it .kb{margin-left:auto;font-size:10px;color:#3B5B8C;font-weight:700}
+.grip{width:12px;display:inline-flex;justify-content:center;color:#A3ABB5}
+.grip.none{visibility:hidden}
+.cb{width:12px;height:12px;flex:none;box-sizing:border-box;border:1px solid #A3ABB5;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;background:#fff}
+.cb.on{background:#5A78A6;border-color:#5A78A6;color:#fff}
+.ins{height:2px;background:#3B5B8C;border-radius:1px;margin:0 6px;position:relative}
+.ins:before{content:"";position:absolute;left:-3px;top:-2px;width:6px;height:6px;border-radius:50%;background:#3B5B8C}
+.hl{background:#CFDCEE;border-radius:2px}
+.pk-ft{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;border-top:1px solid #EBEEF1}
+.lnk{border:0;background:none;padding:0;font:600 11px/1 'Nunito Sans',system-ui,sans-serif;color:#3B5B8C;cursor:pointer}
+.btn{height:20px;padding:0 10px;border:1px solid #CDD3DB;border-radius:3px;background:#fff;font:600 11px/1 'Nunito Sans',system-ui,sans-serif;color:#2B3440}
+.live{font-size:10px;color:#5B6470;font-style:italic}
+.pc{font-size:11px;color:#3A424D;line-height:1.45;max-width:240px}
+table{border-collapse:collapse;font-size:11px;width:100%;max-width:896px}
+th{text-align:left;font-size:10px;font-weight:700;color:#5B6470;letter-spacing:.04em;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid #D9DDE3}
+td{padding:7px 10px;border-bottom:1px solid #F0F2F4;vertical-align:top;line-height:1.45;color:#2B3440}
+td code{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;color:#1E3A63;background:#F1F3F6;padding:1px 4px;border-radius:2px;white-space:nowrap}
+</style>
+</helmet>
+<div class="r" style="width: 960px; height: 1500px; box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 22px; background: #FFFFFF">
+
+  <div class="st">
+    <div class="hd"><h2 class="h2">Choosing and ordering quick filters</h2></div>
+    <p class="sub">The columns button at the end of the quick-filter bar opens a ColumnPicker variant. Checked columns are shown in the bar, in the order listed under Shown; drag the grip, or use Alt+↑/↓, to reorder. Unchecked columns are listed alphabetically under Available. Changes apply live and are reported through onChangeQuickFilterColumns, so the app can persist them. Reset restores the configured columns and order.</p>
+    <div class="grid" style="margin-bottom: 330px">
+      <div class="bar"><span class="ico lead on" aria-label="Show saved filters, 1 clause applied" aria-pressed="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M13 4h1M2 8h2M8 8h6M2 12h9M15 12h-1"/><circle cx="11" cy="4" r="1.6"/><circle cx="6" cy="8" r="1.6"/><circle cx="12.5" cy="12" r="1.6"/></svg><span class="badge">1</span></span><span class="qf search"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#6B7380" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="ph">Search</span></span><span class="qf set"><span class="lb">currency</span><span class="v">EUR</span></span><span class="qf"><span class="lb">exchange</span><span class="ph">Any</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="qf"><span class="lb">side</span><span class="tg"><span>BUY</span><span>SELL</span></span></span><span class="qf new"><span class="lb">trader</span><span class="ph">Any</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="sp"></span><button class="ico on" type="button" aria-label="Choose quick filter columns" aria-expanded="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg></button></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>side</span><span>trader</span></div>
+      <div class="pk abs" style="right: 4px; top: 27px">
+        <div class="pk-h">Quick filters<button class="ico" type="button" aria-label="Close"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+        <div class="pk-f"><div class="find"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>Find column</div></div>
+        <div class="sec">Shown <span>drag to reorder</span></div>
+        <div class="ls">
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg></span>currency<span class="ty">string</span></div>
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg></span>exchange<span class="ty">string</span></div>
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg></span>side<span class="ty">toggle</span></div>
+          <div class="it foc"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg></span>trader<span class="ty">string</span></div>
+        </div>
+        <div class="sec">Available</div>
+        <div class="ls">
+          <div class="it"><span class="grip none"></span><span class="cb"></span>bbg<span class="ty">string</span></div>
+          <div class="it"><span class="grip none"></span><span class="cb"></span>lotSize<span class="ty">number</span></div>
+          <div class="it"><span class="grip none"></span><span class="cb"></span>price<span class="ty">number</span></div>
+          <div class="it"><span class="grip none"></span><span class="cb"></span>tradeDate<span class="ty">date</span></div>
+        </div>
+        <div class="pk-ft"><button class="lnk" type="button">Reset to default</button><button class="btn" type="button">Done</button></div>
+      </div>
+    </div>
+    <div class="sub" style="font-size: 11px">Just checked “trader”: it joins the end of the bar, briefly outlined, and moves to the end of Shown.</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="pair">
+    <div class="col">
+      <div class="cap">Dragging to reorder</div>
+      <div class="pk">
+        <div class="sec">Shown <span>drag to reorder</span></div>
+        <div class="ls">
+          <div class="it ghost"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>currency<span class="ty">string</span></div>
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>exchange<span class="ty">string</span></div>
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>side<span class="ty">toggle</span></div>
+          <div class="ins"></div>
+          <div class="it lift" style="margin-top: -6px; margin-left: 10px"><span class="grip" style="color: #5B6470"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>currency<span class="ty">string</span></div>
+          <div class="it" style="margin-top: -6px"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>trader<span class="ty">string</span></div>
+        </div>
+      </div>
+      <div class="pc">The row lifts; a line marks where it will land. The bar reorders on drop.</div>
+    </div>
+
+    <div class="col">
+      <div class="cap">Keyboard</div>
+      <div class="pk">
+        <div class="sec">Shown <span>drag to reorder</span></div>
+        <div class="ls">
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>exchange<span class="ty">string</span></div>
+          <div class="it foc" style="outline: 1px dashed #3B5B8C; outline-offset: -1px"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>currency<span class="kb">Alt+↑ ↓</span></div>
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>side<span class="ty">toggle</span></div>
+          <div class="it"><span class="grip"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span><span class="cb on"></span>trader<span class="ty">string</span></div>
+        </div>
+      </div>
+      <div class="pc">↑/↓ move focus, Space checks or unchecks, Alt+↑/↓ moves the row. A live region announces “currency, position 2 of 4”.</div>
+    </div>
+
+    <div class="col">
+      <div class="cap">Find</div>
+      <div class="pk">
+        <div class="pk-f"><div class="find foc"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#3B5B8C" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>pr</div></div>
+        <div class="sec">Shown</div>
+        <div class="ls"><div class="it" style="color: #8A929D; padding-left: 8px">No matches</div></div>
+        <div class="sec">Available</div>
+        <div class="ls">
+          <div class="it foc"><span class="grip none"></span><span class="cb"></span><span><span class="hl">pr</span>ice</span><span class="ty">number</span></div>
+          <div class="it"><span class="grip none"></span><span class="cb"></span><span><span class="hl">pr</span>iceSource</span><span class="ty">string</span></div>
+        </div>
+      </div>
+      <div class="pc">Filters both lists. Reordering is off while a find is active.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="st">
+    <div class="hd"><h2 class="h2">Configuration</h2><span class="tag">FilterBar / QuickFilterProps</span></div>
+    <table>
+      <thead><tr><th style="width: 200px">Prop</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>variant</code></td><td>Existing. <code>"custom-filters-only"</code>, <code>"quick-filters-only"</code>, or both; when both, the lead button toggles between them.</td></tr>
+        <tr><td><code>filterMode</code> / <code>defaultFilterMode</code></td><td>Existing. Which mode is shown; <code>onChangeFilterMode</code> reports a toggle so the app can persist it.</td></tr>
+        <tr><td><code>quickFilterColumns</code></td><td>Existing. The columns shown and their order. Also what “Reset to default” restores, unless a separate default is supplied.</td></tr>
+        <tr><td><code>onChangeQuickFilterColumns</code></td><td>Existing. Called with the new list after a check, uncheck or reorder.</td></tr>
+        <tr><td><code>allowAddColumn</code></td><td>Existing. Shows the columns button; when false, the configured set is fixed.</td></tr>
+        <tr><td><code>showFind</code></td><td>Existing. <code>true</code> searches every string column; a list of names limits it to those. The control is labelled “Search”.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

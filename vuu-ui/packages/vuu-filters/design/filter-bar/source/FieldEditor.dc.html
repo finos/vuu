@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Filter bar, field editor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.fb-root{font-family:'Nunito Sans',system-ui,sans-serif;color:#1F2329;-webkit-font-smoothing:antialiased}
+.fb-state{display:flex;flex-direction:column;gap:6px}
+.fb-cap{font-size:11px;font-weight:700;color:#5B6470;letter-spacing:.06em;text-transform:uppercase}
+.fb-grid{border:1px solid #D9DDE3;border-radius:4px;background:#fff;position:relative}
+.fb-bar{height:28px;box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:0 4px 0 6px;background:#F6F7F9;border-bottom:1px solid #D9DDE3;border-radius:4px 4px 0 0}
+.fb-ico{width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#5B6470;border:0;background:none;padding:0;border-radius:3px;cursor:pointer}
+.fb-lead{color:#7A838F;cursor:default}
+.fb-pill{height:20px;box-sizing:border-box;flex:none;display:inline-flex;align-items:center;gap:6px;padding:0 8px;font:600 11px/1 'Nunito Sans',system-ui,sans-serif;color:#2B3440;background:#fff;border:1px solid #CDD3DB;border-radius:10px;cursor:pointer}
+.fb-dot{width:6px;height:6px;border-radius:50%;background:#3B7A57}
+.fb-pill.off{color:#6B7380;font-weight:400}
+.fb-pill.off .fb-dot{background:transparent;box-shadow:inset 0 0 0 1px #A3ABB5}
+.fb-pill.sel{border-color:#3B5B8C;box-shadow:0 0 0 2px rgba(59,91,140,.18)}
+.fb-thead,.fb-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));height:24px;align-items:center;font-size:11px;padding:0 10px}
+.fb-thead{font-weight:700;color:#3A424D;border-bottom:1px solid #E6E9ED}
+.fb-row{color:#1F2329;border-bottom:1px solid #F0F2F4}
+.fb-row:last-child{border-bottom:0}
+.fb-menu{position:absolute;z-index:2;width:136px;background:#fff;border:1px solid #D3D8DF;border-radius:6px;box-shadow:0 6px 16px rgba(20,30,45,.12);padding:4px;font-size:11px}
+.fb-mi{height:22px;padding:0 8px;display:flex;align-items:center;border-radius:4px;color:#1F2329}
+.fb-mi.focus{background:#EDF0F4;font-weight:700}
+.fb-sep{height:1px;background:#EBEEF1;margin:3px 2px}
+.fb-mi.danger{color:#A33A2B}
+.fb-field{flex:1 1 auto;min-width:0;height:22px;box-sizing:border-box;display:flex;align-items:stretch;background:#fff;border:1px solid #3B5B8C;border-radius:11px;box-shadow:0 0 0 2px rgba(59,91,140,.12);padding-left:4px}
+.fb-tokens{flex:1 1 auto;display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden}
+.fb-tok{height:16px;display:inline-flex;align-items:center;gap:4px;padding:0 6px;font-size:11px;background:#F1F3F6;border-radius:8px;white-space:nowrap}
+.fb-tok b{font-weight:700}
+.fb-tok i{font-style:normal;color:#5B6470}
+.fb-tok.live{background:transparent;padding:0 4px}
+.fb-caret{width:1px;height:12px;background:#1F2329}
+.fb-ph{font-size:11px;color:#8A929D}
+.fb-comb{font-size:9px;font-weight:800;letter-spacing:.06em;color:#3B5B8C}
+.fb-acts{display:flex;align-items:center;gap:2px;padding:0 4px 0 6px;border-left:1px solid #E6E9ED;margin-left:4px}
+.fb-txt{height:16px;display:inline-flex;align-items:center;gap:3px;padding:0 6px;border:0;border-radius:8px;background:none;font:700 10px/1 'Nunito Sans',system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#5B6470;cursor:pointer}
+.fb-txt.save{color:#1E3A63}
+.fb-txt.save.dis{color:#B0B7C0;cursor:default}
+.fb-txt.ring{background:#E3EAF4}
+.fb-dd{position:absolute;z-index:2;min-width:110px;background:#fff;border:1px solid #D3D8DF;border-radius:6px;box-shadow:0 6px 16px rgba(20,30,45,.12);padding:4px;font-size:11px}
+.fb-opt{height:20px;padding:0 8px;display:flex;align-items:center;border-radius:4px}
+.fb-opt.cur{background:#EDF0F4;font-weight:700}
+.fb-opt small{margin-left:auto;font-size:10px;color:#8A929D}
+.fb-hl{background:#CFDCEE;border-radius:2px;padding:0 2px}
+.fb-act-cl{background:#EEF3FA!important;box-shadow:inset 0 0 0 1px #9FB3D1}
+.fb-dd .fb-hint{height:18px;padding:0 8px;display:flex;align-items:center;font-size:10px;color:#8A929D;border-top:1px solid #EBEEF1;margin-top:3px}
+/* selected (applied) pills are filled; unselected are outlined */
+.fb-pill{background:#5A78A6;border-color:#5A78A6;color:#fff;font-weight:700}
+.fb-pill .fb-dot{background:#fff}
+.fb-pill.off{background:#fff;border-color:#CDD3DB;color:#5B6470;font-weight:400}
+.fb-pill.off .fb-dot{background:transparent;box-shadow:inset 0 0 0 1px #A3ABB5}
+.fb-pill.sel{box-shadow:0 0 0 1px #fff,0 0 0 3px rgba(59,91,140,.45)}
+/* focused Save: solid slate */
+.fb-act.save.ring,.fb-txt.save.ring,.fb-ib.save.ring{background:#3B5B8C;color:#fff;box-shadow:0 0 0 2px rgba(59,91,140,.25)}
+/* vuu corners: no capsule shapes */
+.fb-pill,.fb-ghost{border-radius:3px}
+.fb-field,.fb-inl{border-radius:4px}
+.fb-tok{border-radius:2px}
+.fb-txt,.fb-ib,.fb-split{border-radius:3px}
+.fb-split .fb-ib.save{border-radius:3px 0 0 3px}
+.fb-split .fb-ib.chev{border-radius:0 3px 3px 0}
+/* actions are full-height segments of the editor outline, divided by borders */
+.fb-field,.fb-inl{align-items:stretch;padding-right:0;overflow:hidden}
+.fb-inl>.fb-name,.fb-inl>.fb-tok,.fb-inl>.fb-comb{align-self:center}
+.fb-acts{padding:0;margin-left:4px;border-left:0;gap:0;align-items:stretch}
+.fb-acts .fb-txt{height:auto;border-radius:0;padding:0 10px;border-left:1px solid #D3D8DF}
+.fb-split{height:auto;align-self:stretch;border-radius:0;margin-left:2px;box-shadow:none!important}
+.fb-split .fb-ib,.fb-split .fb-ib.save,.fb-split .fb-ib.chev{height:auto;border-radius:0}
+.fb-split .fb-ib.save{width:22px;border-left:1px solid #D3D8DF}
+.fb-split .fb-ib.chev{width:14px;border-left:1px solid #E6E9ED}
+.fb-inl>.fb-ib{height:auto;align-self:stretch;width:22px;border-radius:0;border-left:1px solid #D3D8DF}
+.fb-split.ring,.fb-txt.save.ring{box-shadow:none!important}
+.fb-split.ring .fb-ib.save{border-left-color:#3B5B8C}
+</style>
+</helmet>
+<div class="fb-root" style="width: 960px; height: 1020px; box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 26px; background: #FFFFFF">
+
+  <div class="fb-state">
+    <div class="fb-cap">Idle — filled pills are applied, outlined pills are inactive</div>
+    <div class="fb-grid">
+      <div class="fb-bar">
+        <span class="fb-ico fb-lead" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor"><path d="M0 10C0 10.3667 0.3 10.6667 0.666667 10.6667H4V9.33333H0.666667C0.3 9.33333 0 9.63333 0 10ZM0 2C0 2.36667 0.3 2.66667 0.666667 2.66667H6.66667V1.33333H0.666667C0.3 1.33333 0 1.63333 0 2ZM6.66667 11.3333V10.6667H11.3333C11.7 10.6667 12 10.3667 12 10C12 9.63333 11.7 9.33333 11.3333 9.33333H6.66667V8.66667C6.66667 8.3 6.36667 8 6 8C5.63333 8 5.33333 8.3 5.33333 8.66667V11.3333C5.33333 11.7 5.63333 12 6 12C6.36667 12 6.66667 11.7 6.66667 11.3333ZM2.66667 4.66667V5.33333H0.666667C0.3 5.33333 0 5.63333 0 6C0 6.36667 0.3 6.66667 0.666667 6.66667H2.66667V7.33333C2.66667 7.7 2.96667 8 3.33333 8C3.7 8 4 7.7 4 7.33333V4.66667C4 4.3 3.7 4 3.33333 4C2.96667 4 2.66667 4.3 2.66667 4.66667ZM12 6C12 5.63333 11.7 5.33333 11.3333 5.33333H5.33333V6.66667H11.3333C11.7 6.66667 12 6.36667 12 6ZM8.66667 4C9.03333 4 9.33333 3.7 9.33333 3.33333V2.66667H11.3333C11.7 2.66667 12 2.36667 12 2C12 1.63333 11.7 1.33333 11.3333 1.33333H9.33333V0.666667C9.33333 0.3 9.03333 0 8.66667 0C8.3 0 8 0.3 8 0.666667V3.33333C8 3.7 8.3 4 8.66667 4Z"/></svg></span>
+        <button class="fb-pill" type="button">Euro trades</button>
+        <button class="fb-pill" type="button">London</button>
+        <button class="fb-pill off" type="button">Large orders</button>
+        <button class="fb-ico" type="button" aria-label="Add filter"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></button>
+      </div>
+      <div class="fb-thead"><span>bbg</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span><span>side</span></div>
+      <div class="fb-row"><span>AAOO.L</span><span>EUR</span><span>XLON</span><span>100</span><span>101.25</span><span>BUY</span></div>
+    </div>
+  </div>
+
+  <div class="fb-state">
+    <div class="fb-cap">Pill menu — opens from right-click or Shift+F10; focus is a soft fill</div>
+    <div class="fb-grid" style="margin-bottom: 84px">
+      <div class="fb-bar">
+        <span class="fb-ico fb-lead" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor"><path d="M0 10C0 10.3667 0.3 10.6667 0.666667 10.6667H4V9.33333H0.666667C0.3 9.33333 0 9.63333 0 10ZM0 2C0 2.36667 0.3 2.66667 0.666667 2.66667H6.66667V1.33333H0.666667C0.3 1.33333 0 1.63333 0 2ZM6.66667 11.3333V10.6667H11.3333C11.7 10.6667 12 10.3667 12 10C12 9.63333 11.7 9.33333 11.3333 9.33333H6.66667V8.66667C6.66667 8.3 6.36667 8 6 8C5.63333 8 5.33333 8.3 5.33333 8.66667V11.3333C5.33333 11.7 5.63333 12 6 12C6.36667 12 6.66667 11.7 6.66667 11.3333ZM2.66667 4.66667V5.33333H0.666667C0.3 5.33333 0 5.63333 0 6C0 6.36667 0.3 6.66667 0.666667 6.66667H2.66667V7.33333C2.66667 7.7 2.96667 8 3.33333 8C3.7 8 4 7.7 4 7.33333V4.66667C4 4.3 3.7 4 3.33333 4C2.96667 4 2.66667 4.3 2.66667 4.66667ZM12 6C12 5.63333 11.7 5.33333 11.3333 5.33333H5.33333V6.66667H11.3333C11.7 6.66667 12 6.36667 12 6ZM8.66667 4C9.03333 4 9.33333 3.7 9.33333 3.33333V2.66667H11.3333C11.7 2.66667 12 2.36667 12 2C12 1.63333 11.7 1.33333 11.3333 1.33333H9.33333V0.666667C9.33333 0.3 9.03333 0 8.66667 0C8.3 0 8 0.3 8 0.666667V3.33333C8 3.7 8.3 4 8.66667 4Z"/></svg></span>
+        <button class="fb-pill sel" type="button">Euro trades</button>
+        <button class="fb-pill" type="button">London</button>
+        <button class="fb-pill off" type="button">Large orders</button>
+        <button class="fb-ico" type="button" aria-label="Add filter"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></button>
+      </div>
+      <div class="fb-thead"><span>bbg</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span><span>side</span></div>
+      <div class="fb-menu" style="left: 30px; top: 26px">
+        <div class="fb-mi focus">Edit</div>
+        <div class="fb-mi">Rename</div>
+        <div class="fb-mi">Deactivate</div>
+        <div class="fb-sep"></div>
+        <div class="fb-mi danger">Delete</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fb-state">
+    <div class="fb-cap">New filter — the editor takes the rest of the row, Save / Cancel sit inside its right end</div>
+    <div class="fb-grid" style="margin-bottom: 56px">
+      <div class="fb-bar">
+        <span class="fb-ico fb-lead" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor"><path d="M0 10C0 10.3667 0.3 10.6667 0.666667 10.6667H4V9.33333H0.666667C0.3 9.33333 0 9.63333 0 10ZM0 2C0 2.36667 0.3 2.66667 0.666667 2.66667H6.66667V1.33333H0.666667C0.3 1.33333 0 1.63333 0 2ZM6.66667 11.3333V10.6667H11.3333C11.7 10.6667 12 10.3667 12 10C12 9.63333 11.7 9.33333 11.3333 9.33333H6.66667V8.66667C6.66667 8.3 6.36667 8 6 8C5.63333 8 5.33333 8.3 5.33333 8.66667V11.3333C5.33333 11.7 5.63333 12 6 12C6.36667 12 6.66667 11.7 6.66667 11.3333ZM2.66667 4.66667V5.33333H0.666667C0.3 5.33333 0 5.63333 0 6C0 6.36667 0.3 6.66667 0.666667 6.66667H2.66667V7.33333C2.66667 7.7 2.96667 8 3.33333 8C3.7 8 4 7.7 4 7.33333V4.66667C4 4.3 3.7 4 3.33333 4C2.96667 4 2.66667 4.3 2.66667 4.66667ZM12 6C12 5.63333 11.7 5.33333 11.3333 5.33333H5.33333V6.66667H11.3333C11.7 6.66667 12 6.36667 12 6ZM8.66667 4C9.03333 4 9.33333 3.7 9.33333 3.33333V2.66667H11.3333C11.7 2.66667 12 2.36667 12 2C12 1.63333 11.7 1.33333 11.3333 1.33333H9.33333V0.666667C9.33333 0.3 9.03333 0 8.66667 0C8.3 0 8 0.3 8 0.666667V3.33333C8 3.7 8.3 4 8.66667 4Z"/></svg></span>
+        <button class="fb-pill" type="button">Euro trades</button>
+        <button class="fb-pill" type="button">London</button>
+        <div class="fb-field">
+          <div class="fb-tokens">
+            <span class="fb-tok live"><b>currency</b><i>=</i><span class="fb-caret"></span></span>
+          </div>
+          <div class="fb-acts">
+            <button class="fb-txt save dis" type="button" disabled>Save ▾</button>
+            <button class="fb-txt" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="fb-thead"><span>bbg</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span><span>side</span></div>
+      <div class="fb-dd" style="left: 218px; top: 26px">
+        <div class="fb-opt cur">CAD</div>
+        <div class="fb-opt">EUR</div>
+        <div class="fb-opt">GBP <small>…</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fb-state">
+    <div class="fb-cap">Editing two clauses — completed clauses collapse to tokens, Save focused</div>
+    <div class="fb-grid">
+      <div class="fb-bar">
+        <span class="fb-ico fb-lead" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor"><path d="M0 10C0 10.3667 0.3 10.6667 0.666667 10.6667H4V9.33333H0.666667C0.3 9.33333 0 9.63333 0 10ZM0 2C0 2.36667 0.3 2.66667 0.666667 2.66667H6.66667V1.33333H0.666667C0.3 1.33333 0 1.63333 0 2ZM6.66667 11.3333V10.6667H11.3333C11.7 10.6667 12 10.3667 12 10C12 9.63333 11.7 9.33333 11.3333 9.33333H6.66667V8.66667C6.66667 8.3 6.36667 8 6 8C5.63333 8 5.33333 8.3 5.33333 8.66667V11.3333C5.33333 11.7 5.63333 12 6 12C6.36667 12 6.66667 11.7 6.66667 11.3333ZM2.66667 4.66667V5.33333H0.666667C0.3 5.33333 0 5.63333 0 6C0 6.36667 0.3 6.66667 0.666667 6.66667H2.66667V7.33333C2.66667 7.7 2.96667 8 3.33333 8C3.7 8 4 7.7 4 7.33333V4.66667C4 4.3 3.7 4 3.33333 4C2.96667 4 2.66667 4.3 2.66667 4.66667ZM12 6C12 5.63333 11.7 5.33333 11.3333 5.33333H5.33333V6.66667H11.3333C11.7 6.66667 12 6.36667 12 6ZM8.66667 4C9.03333 4 9.33333 3.7 9.33333 3.33333V2.66667H11.3333C11.7 2.66667 12 2.36667 12 2C12 1.63333 11.7 1.33333 11.3333 1.33333H9.33333V0.666667C9.33333 0.3 9.03333 0 8.66667 0C8.3 0 8 0.3 8 0.666667V3.33333C8 3.7 8.3 4 8.66667 4Z"/></svg></span>
+        <button class="fb-pill" type="button">London</button>
+        <div class="fb-field">
+          <div class="fb-tokens">
+            <span class="fb-tok"><b>currency</b><i>=</i>EUR</span>
+            <span class="fb-comb">AND</span>
+            <span class="fb-tok"><b>exchange</b><i>=</i>XLON</span>
+          </div>
+          <div class="fb-acts">
+            <button class="fb-txt save ring" type="button">Save ▾</button>
+            <button class="fb-txt" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="fb-thead"><span>bbg</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span><span>side</span></div>
+      <div class="fb-row"><span>AAOO.L</span><span>EUR</span><span>XLON</span><span>100</span><span>101.25</span><span>BUY</span></div>
+    </div>
+  </div>
+
+  <div class="fb-state">
+    <div class="fb-cap">Back to the first clause — Shift+Tab / ← from Save; the other clauses stay as they are</div>
+    <div class="fb-grid" style="margin-bottom: 120px">
+      <div class="fb-bar"><span class="fb-ico fb-lead" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor"><path d="M0 10C0 10.3667 0.3 10.6667 0.666667 10.6667H4V9.33333H0.666667C0.3 9.33333 0 9.63333 0 10ZM0 2C0 2.36667 0.3 2.66667 0.666667 2.66667H6.66667V1.33333H0.666667C0.3 1.33333 0 1.63333 0 2ZM6.66667 11.3333V10.6667H11.3333C11.7 10.6667 12 10.3667 12 10C12 9.63333 11.7 9.33333 11.3333 9.33333H6.66667V8.66667C6.66667 8.3 6.36667 8 6 8C5.63333 8 5.33333 8.3 5.33333 8.66667V11.3333C5.33333 11.7 5.63333 12 6 12C6.36667 12 6.66667 11.7 6.66667 11.3333ZM2.66667 4.66667V5.33333H0.666667C0.3 5.33333 0 5.63333 0 6C0 6.36667 0.3 6.66667 0.666667 6.66667H2.66667V7.33333C2.66667 7.7 2.96667 8 3.33333 8C3.7 8 4 7.7 4 7.33333V4.66667C4 4.3 3.7 4 3.33333 4C2.96667 4 2.66667 4.3 2.66667 4.66667ZM12 6C12 5.63333 11.7 5.33333 11.3333 5.33333H5.33333V6.66667H11.3333C11.7 6.66667 12 6.36667 12 6ZM8.66667 4C9.03333 4 9.33333 3.7 9.33333 3.33333V2.66667H11.3333C11.7 2.66667 12 2.36667 12 2C12 1.63333 11.7 1.33333 11.3333 1.33333H9.33333V0.666667C9.33333 0.3 9.03333 0 8.66667 0C8.3 0 8 0.3 8 0.666667V3.33333C8 3.7 8.3 4 8.66667 4Z"/></svg></span><button class="fb-pill" type="button">London</button><div class="fb-field"><div class="fb-tokens"><span class="fb-tok fb-act-cl"><b>currency</b><i>=</i><span class="fb-hl">EUR</span><span class="fb-caret"></span></span><span class="fb-comb">AND</span><span class="fb-tok"><b>exchange</b><i>=</i>XLON</span><span class="fb-comb">AND</span><span class="fb-tok"><b>side</b><i>=</i>BUY</span></div><div class="fb-acts"><button class="fb-txt save" type="button">Save ▾</button><button class="fb-txt" type="button">Cancel</button></div></div></div>
+      <div class="fb-thead"><span>bbg</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span><span>side</span></div><div class="fb-dd" style="left: 150px; top: 26px"><div class="fb-opt cur">EUR <small>current</small></div><div class="fb-opt">CAD</div><div class="fb-opt">CHF</div><div class="fb-opt">GBP</div><div class="fb-opt">USD</div><div class="fb-hint">Tab keeps EUR · type to filter</div></div>
+    </div>
+  </div>
+
+<div class="fb-state">
+    <div class="fb-cap">Clause 1 committed (EUR → CAD) — the filter is valid, so focus goes straight to Save</div>
+    <div class="fb-grid">
+      <div class="fb-bar"><span class="fb-ico fb-lead" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor"><path d="M0 10C0 10.3667 0.3 10.6667 0.666667 10.6667H4V9.33333H0.666667C0.3 9.33333 0 9.63333 0 10ZM0 2C0 2.36667 0.3 2.66667 0.666667 2.66667H6.66667V1.33333H0.666667C0.3 1.33333 0 1.63333 0 2ZM6.66667 11.3333V10.6667H11.3333C11.7 10.6667 12 10.3667 12 10C12 9.63333 11.7 9.33333 11.3333 9.33333H6.66667V8.66667C6.66667 8.3 6.36667 8 6 8C5.63333 8 5.33333 8.3 5.33333 8.66667V11.3333C5.33333 11.7 5.63333 12 6 12C6.36667 12 6.66667 11.7 6.66667 11.3333ZM2.66667 4.66667V5.33333H0.666667C0.3 5.33333 0 5.63333 0 6C0 6.36667 0.3 6.66667 0.666667 6.66667H2.66667V7.33333C2.66667 7.7 2.96667 8 3.33333 8C3.7 8 4 7.7 4 7.33333V4.66667C4 4.3 3.7 4 3.33333 4C2.96667 4 2.66667 4.3 2.66667 4.66667ZM12 6C12 5.63333 11.7 5.33333 11.3333 5.33333H5.33333V6.66667H11.3333C11.7 6.66667 12 6.36667 12 6ZM8.66667 4C9.03333 4 9.33333 3.7 9.33333 3.33333V2.66667H11.3333C11.7 2.66667 12 2.36667 12 2C12 1.63333 11.7 1.33333 11.3333 1.33333H9.33333V0.666667C9.33333 0.3 9.03333 0 8.66667 0C8.3 0 8 0.3 8 0.666667V3.33333C8 3.7 8.3 4 8.66667 4Z"/></svg></span><button class="fb-pill" type="button">London</button><div class="fb-field"><div class="fb-tokens"><span class="fb-tok"><b>currency</b><i>=</i>CAD</span><span class="fb-comb">AND</span><span class="fb-tok"><b>exchange</b><i>=</i>XLON</span><span class="fb-comb">AND</span><span class="fb-tok"><b>side</b><i>=</i>BUY</span></div><div class="fb-acts"><button class="fb-txt save ring" type="button">Save ▾</button><button class="fb-txt" type="button">Cancel</button></div></div></div>
+      <div class="fb-thead"><span>bbg</span><span>currency</span><span>exchange</span><span>lotSize</span><span>price</span><span>side</span></div><div class="fb-row"><span>BAE.L</span><span>CAD</span><span>XLON</span><span>200</span><span>84.10</span><span>BUY</span></div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

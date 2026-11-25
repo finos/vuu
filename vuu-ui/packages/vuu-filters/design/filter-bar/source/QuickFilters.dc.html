@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quick filter mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.r{font-family:'Nunito Sans',system-ui,sans-serif;color:#1F2329;-webkit-font-smoothing:antialiased}
+.st{display:flex;flex-direction:column;gap:8px}
+.hd{display:flex;align-items:center;gap:8px}
+.h2{font-size:15px;font-weight:800;color:#1F2329;margin:0}
+.tag{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:#E3EAF4;color:#1E3A63}
+.tag.no{background:#F1F3F6;color:#5B6470}
+.sub{font-size:12px;color:#4A525D;line-height:1.5;margin:0;max-width:860px}
+.cap{font-size:10px;font-weight:700;color:#5B6470;letter-spacing:.06em;text-transform:uppercase}
+.rule{height:1px;background:#E6E9ED}
+.grid{border:1px solid #D9DDE3;border-radius:4px;background:#fff;position:relative}
+.bar{height:28px;box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:0 4px 0 6px;background:#F6F7F9;border-bottom:1px solid #D9DDE3;border-radius:4px 4px 0 0}
+.bar.tall{height:40px}
+.ico{width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#5B6470;border:0;background:none;padding:0;border-radius:3px;cursor:pointer;position:relative}
+.ico.on{background:#D5DFEC;color:#1E3A63}
+.ico.hov{background:#E6EAF0;color:#2B3440}
+.badge{position:absolute;top:-3px;right:-5px;min-width:12px;height:12px;box-sizing:border-box;padding:0 3px;border-radius:6px;background:#5A78A6;color:#fff;font:700 8px/12px 'Nunito Sans',system-ui,sans-serif;text-align:center;box-shadow:0 0 0 1.5px #F6F7F9}
+.lead{margin-right:4px}
+.pill{height:20px;box-sizing:border-box;flex:none;display:inline-block;padding:0 8px;font:700 11px/18px 'Nunito Sans',system-ui,sans-serif;color:#fff;background:#5A78A6;border:1px solid #5A78A6;border-radius:3px;white-space:nowrap}
+.pill.off{background:#fff;border-color:#CDD3DB;color:#5B6470;font-weight:400}
+.thead{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));height:24px;align-items:center;font-size:11px;padding:0 10px;font-weight:700;color:#3A424D;border-bottom:1px solid #E6E9ED}
+.trow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));height:24px;align-items:center;font-size:11px;padding:0 10px;color:#1F2329;border-bottom:1px solid #F0F2F4}
+.qf{height:22px;box-sizing:border-box;flex:none;display:inline-flex;align-items:center;gap:6px;padding:0 4px 0 8px;border:1px solid #CDD3DB;border-radius:3px;background:#fff;font-size:11px;white-space:nowrap}
+.qf .lb{color:#6B7380}
+.qf .v{font-weight:700;color:#1F2329}
+.qf .ph{color:#9AA2AC}
+.qf .dd{color:#8A929D;display:inline-flex}
+.qf .x{color:#8A929D;display:inline-flex;width:14px;justify-content:center}
+.qf.set{border-color:#8FA6C8;background:#EEF3FA}
+.qf.set .lb{color:#3B5B8C}
+.qf.foc{border-color:#3B5B8C;box-shadow:0 0 0 2px rgba(59,91,140,.15);background:#fff}
+.qf.search{width:150px;padding-left:6px}
+.qf.search .ph{flex:1 1 auto}
+.qf .op{height:16px;display:inline-flex;align-items:center;gap:2px;padding:0 4px;border-radius:2px;background:#F1F3F6;color:#3A424D;font-weight:700}
+.qf .num{min-width:34px;font-weight:700}
+.tg{display:inline-flex;height:16px;border-radius:2px;overflow:hidden;border:1px solid #CDD3DB}
+.tg span{padding:0 6px;font-size:10px;font-weight:700;line-height:14px;color:#5B6470;background:#fff}
+.tg span.on{background:#5A78A6;color:#fff}
+.tg span+span{border-left:1px solid #CDD3DB}
+.ml{display:inline-flex;flex-direction:column;justify-content:center;gap:1px;height:32px;box-sizing:border-box;padding:0 6px 0 8px;border:1px solid #CDD3DB;border-radius:3px;background:#fff;flex:none;min-width:84px}
+.ml .lb{font-size:9px;color:#6B7380;line-height:1}
+.ml .v{font-size:11px;font-weight:700;line-height:1.2}
+.ml.set{border-color:#8FA6C8;background:#EEF3FA}
+.chip{height:20px;box-sizing:border-box;flex:none;display:inline-flex;align-items:center;gap:4px;padding:0 6px 0 8px;border:1px solid #CDD3DB;border-radius:3px;background:#fff;font-size:11px;white-space:nowrap;color:#6B7380}
+.chip b{color:#1F2329}
+.chip.set{border-color:#8FA6C8;background:#EEF3FA;color:#3B5B8C}
+.sp{flex:1 1 auto}
+.more{height:20px;flex:none;display:inline-flex;align-items:center;gap:4px;padding:0 6px;border:1px solid #CDD3DB;border-radius:3px;background:#fff;font:700 11px/1 'Nunito Sans',system-ui,sans-serif;color:#2B3440}
+.more.open{border-color:#5A78A6;background:#EEF3FA;color:#1E3A63}
+.mdot{width:5px;height:5px;border-radius:50%;background:#5A78A6}
+.pop{position:absolute;z-index:3;background:#fff;border:1px solid #D3D8DF;border-radius:4px;box-shadow:0 6px 16px rgba(20,30,45,.12);font-size:11px}
+.pop-h{height:26px;display:flex;align-items:center;padding:0 10px;font-weight:700;color:#2B3440;border-bottom:1px solid #EBEEF1}
+.ff{display:flex;flex-direction:column;gap:3px;padding:8px 10px 0}
+.ff .lb{font-size:10px;font-weight:700;color:#5B6470}
+.fi{height:22px;box-sizing:border-box;display:flex;align-items:center;gap:6px;padding:0 6px 0 8px;border:1px solid #CDD3DB;border-radius:3px;background:#fff}
+.fi .v{font-weight:700}
+.fi .ph{color:#9AA2AC;flex:1 1 auto}
+.opt{height:20px;padding:0 8px;display:flex;align-items:center;border-radius:3px}
+.opt.cur{background:#EDF0F4}
+.hint{padding:6px 10px;font-size:10px;color:#6B7380;border-top:1px solid #EBEEF1;line-height:1.4}
+.hl{background:#CFDCEE;border-radius:2px}
+.tip{position:absolute;z-index:3;background:#2B3440;color:#fff;font-size:10px;padding:4px 8px;border-radius:3px;white-space:nowrap}
+.ov-g{padding:6px 10px;border-bottom:1px solid #F0F2F4}
+.ov-n{font-weight:700;color:#5A78A6;margin-bottom:3px}
+.ov-c{height:18px;display:flex;align-items:center;gap:4px}
+.ov-c i{font-style:normal;color:#5B6470}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:11px;color:#3A424D;line-height:1.45;max-width:860px}
+.pc b{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#5B6470;margin-right:4px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px}
+</style>
+</helmet>
+<div class="r" style="width: 960px; height: 1880px; box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 22px; background: #FFFFFF">
+
+  <div class="st">
+    <div class="hd"><h2 class="h2">Labels in a 28px bar</h2></div>
+    <p class="sub">There’s no room for a label above each control, so every option keeps the column name on the same line as the value. A and D also keep the column name visible once a value is set.</p>
+  </div>
+
+  <div class="opts">
+    <div class="st">
+      <div class="hd"><span class="cap">A · Label inside the field</span><span class="tag">Recommended</span></div>
+      <div class="grid">
+        <div class="bar"><span class="qf"><span class="lb">currency</span><span class="ph">Any</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="qf set"><span class="lb">exchange</span><span class="v">XLON</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="qf"><span class="lb">side</span><span class="tg"><span class="on">BUY</span><span>SELL</span></span></span></div>
+      </div>
+      <div class="pc" style="grid-template-columns: 1fr"><span>The muted column name works like a FormField label: the field’s accessible name, and the click target that focuses the input. A set field gets the tint and a ✕ to clear it. Fields are as wide as their content, up to a maximum.</span></div>
+    </div>
+
+    <div class="st">
+      <div class="hd"><span class="cap">B · Placeholder as label</span><span class="tag no">Not this</span></div>
+      <div class="grid">
+        <div class="bar"><span class="qf"><span class="ph">currency</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="qf set"><span class="v">XLON</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="qf"><span class="tg"><span class="on">BUY</span><span>SELL</span></span></span></div>
+      </div>
+      <div class="pc" style="grid-template-columns: 1fr"><span>Narrowest, but once a value is set the column name is gone: “XLON” could be exchange or venue, and a toggle has no label at all.</span></div>
+    </div>
+
+    <div class="st">
+      <div class="hd"><span class="cap">C · Micro-label above the value</span><span class="tag no">Option</span></div>
+      <div class="grid">
+        <div class="bar tall"><span class="ml"><span class="lb">currency</span><span class="v" style="color: #9AA2AC; font-weight: 400">Any</span></span><span class="ml set"><span class="lb">exchange</span><span class="v">XLON</span></span><span class="ml"><span class="lb">side</span><span class="v">BUY</span></span></div>
+      </div>
+      <div class="pc" style="grid-template-columns: 1fr"><span>Most like a form, but the bar has to grow to 40px, so the grid moves when switching modes. 9px labels are also at the limit of legibility.</span></div>
+    </div>
+
+    <div class="st">
+      <div class="hd"><span class="cap">D · Chip that opens the filter</span><span class="tag">For range and date</span></div>
+      <div class="grid">
+        <div class="bar"><span class="chip">currency<svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span><span class="chip set">exchange <b>XLON</b></span><span class="chip set">tradeDate <b>1 Nov – 14 Nov</b></span></div>
+      </div>
+      <div class="pc" style="grid-template-columns: 1fr"><span>Smallest footprint; the chip opens a popover with the full ColumnFilter (label on top, operator picker, both ends of a range). One extra click for simple values, so it suits only controls that won’t fit inline.</span></div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="st">
+    <div class="hd"><h2 class="h2">Switching modes with the filter toggle button</h2></div>
+    <p class="sub">The lead button is a toggle (aria-pressed). Clicking it switches between saved-filter pills and quick filters; hovering it still shows the summary overlay. The badge counts every applied clause in both modes. Applied saved filters stay applied while quick filters are shown, and the overlay lists them.</p>
+    <div class="cap">Saved filters (not pressed), hovering the toggle</div>
+    <div class="grid" style="margin-bottom: 4px">
+      <div class="bar"><span class="ico lead hov" aria-label="Show quick filters, 2 clauses applied"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M13 4h1M2 8h2M8 8h6M2 12h9M15 12h-1"/><circle cx="11" cy="4" r="1.6"/><circle cx="6" cy="8" r="1.6"/><circle cx="12.5" cy="12" r="1.6"/></svg><span class="badge">2</span><span class="tip" style="left: 26px; top: 0px">Show quick filters</span></span><span class="pill">Euro trades</span><span class="pill">London</span><span class="pill off">Large orders</span><button class="ico" type="button" aria-label="Add filter"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></button></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>side</span><span>price</span></div>
+    </div>
+    <div class="cap">Quick filters (pressed): optional Search, then the configured columns, then the column chooser</div>
+    <div class="grid" style="margin-bottom: 150px">
+      <div class="bar"><span class="ico lead on" aria-label="Show saved filters, 4 clauses applied" aria-pressed="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M13 4h1M2 8h2M8 8h6M2 12h9M15 12h-1"/><circle cx="11" cy="4" r="1.6"/><circle cx="6" cy="8" r="1.6"/><circle cx="12.5" cy="12" r="1.6"/></svg><span class="badge">4</span></span><span class="qf search"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#6B7380" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="ph">Search</span></span><span class="qf set"><span class="lb">currency</span><span class="v">EUR</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="qf"><span class="lb">exchange</span><span class="ph">Any</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="qf set"><span class="lb">side</span><span class="tg"><span class="on">BUY</span><span>SELL</span></span></span><span class="qf"><span class="lb">price</span><span class="op">&gt;<svg width="6" height="6" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span><span class="ph num">value</span></span><span class="sp"></span><button class="ico" type="button" aria-label="Choose quick filter columns"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg></button></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>side</span><span>price</span></div>
+      <div class="pop" style="left: 4px; top: 27px; width: 230px">
+        <div class="pop-h">Filters (4)</div>
+        <div class="ov-g"><div class="ov-n">Quick filters</div><div class="ov-c"><b>currency</b><i>=</i>EUR</div><div class="ov-c"><b>side</b><i>=</i>BUY</div></div>
+        <div class="ov-g" style="border-bottom: 0"><div class="ov-n">Euro trades</div><div class="ov-c"><b>currency</b><i>=</i>EUR</div><div class="ov-n" style="margin-top: 4px">London</div><div class="ov-c"><b>exchange</b><i>=</i>XLON</div></div>
+      </div>
+    </div>
+    <div class="pc"><span><b>Note</b>The overlay above is the hover summary in quick mode: quick filters are one group, applied saved filters follow.</span><span><b>Keyboard</b>The toggle is one tab stop: Space switches modes. → from it moves into the first control.</span></div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="st">
+    <div class="hd"><h2 class="h2">Search</h2><span class="tag">Optional, by configuration</span></div>
+    <p class="sub">Shown only when configured, and always first. It matches text containing what’s typed across the configured text columns (all string columns by default), committing as you type after a short debounce. The dropdown says which columns are searched.</p>
+    <div class="grid" style="margin-bottom: 50px">
+      <div class="bar"><span class="ico lead on" aria-label="Show saved filters, 1 clause applied" aria-pressed="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M13 4h1M2 8h2M8 8h6M2 12h9M15 12h-1"/><circle cx="11" cy="4" r="1.6"/><circle cx="6" cy="8" r="1.6"/><circle cx="12.5" cy="12" r="1.6"/></svg><span class="badge">1</span></span><span class="qf search foc"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#3B5B8C" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="v" style="flex: 1 1 auto">vod</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="qf"><span class="lb">currency</span><span class="ph">Any</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="qf"><span class="lb">exchange</span><span class="ph">Any</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="qf"><span class="lb">side</span><span class="tg"><span>BUY</span><span>SELL</span></span></span><span class="sp"></span><button class="ico" type="button" aria-label="Choose quick filter columns"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg></button></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>side</span><span>price</span></div>
+      <div class="trow"><span><span class="hl">VOD</span>.L</span><span><span class="hl">Vod</span>afone Group</span><span>GBP</span><span>XLON</span><span>BUY</span><span>72.40</span></div>
+      <div class="pop" style="left: 30px; top: 27px; width: 230px"><div class="hint">Searching bbg, description, currency, exchange</div></div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="st">
+    <div class="hd"><h2 class="h2">When quick filters don’t fit</h2><span class="tag">Same “+N” as pills</span></div>
+    <p class="sub">Controls that don’t fit go behind “+N”, from the end. Its popover has room to stack them as full ColumnFilters with labels above, the same order as in the bar. Search never moves into it.</p>
+    <div class="grid" style="width: 620px; margin-bottom: 140px">
+      <div class="bar"><span class="ico lead on" aria-label="Show saved filters, 3 clauses applied" aria-pressed="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M13 4h1M2 8h2M8 8h6M2 12h9M15 12h-1"/><circle cx="11" cy="4" r="1.6"/><circle cx="6" cy="8" r="1.6"/><circle cx="12.5" cy="12" r="1.6"/></svg><span class="badge">3</span></span><span class="qf search"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#6B7380" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="ph">Search</span></span><span class="qf set"><span class="lb">currency</span><span class="v">EUR</span><span class="x"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="qf"><span class="lb">exchange</span><span class="ph">Any</span><span class="dd"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M1.5 3.5h7L5 7.5z"/></svg></span></span><span class="sp"></span><button class="more open" type="button" aria-label="2 more quick filters, 2 set" aria-expanded="true"><span class="mdot"></span>+2</button><button class="ico" type="button" aria-label="Choose quick filter columns"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg></button></div>
+      <div class="thead"><span>bbg</span><span>description</span><span>currency</span><span>exchange</span><span>side</span><span>price</span></div>
+      <div class="pop" style="right: 22px; top: 27px; width: 200px; padding-bottom: 10px">
+        <div class="ff"><span class="lb">side</span><span class="tg" style="height: 20px; align-self: flex-start"><span class="on" style="line-height: 18px">BUY</span><span style="line-height: 18px">SELL</span></span></div>
+        <div class="ff"><span class="lb">price</span><div class="fi"><span class="v" style="color: #3A424D">&gt;</span><span style="color: #CDD3DB">|</span><span class="v">100</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":1880}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

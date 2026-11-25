@@ -9,6 +9,7 @@
   "files": {
     "includes": [
       "packages/**/*",
+      "!packages/*/design/*/source",
       "sample-apps/**/*",
       "benchmarks/**/*",
       "!benchmarks/results",
