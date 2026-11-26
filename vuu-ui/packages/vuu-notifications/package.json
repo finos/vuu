@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@salt-ds/core": "1.74.0",
-    "@salt-ds/styles": "0.4.2",
+    "@salt-ds/styles": "0.4.3",
     "@salt-ds/window": "0.1.2",
     "@vuu-ui/vuu-ui-controls": "4.2.12",
     "@vuu-ui/vuu-utils": "4.2.12"
