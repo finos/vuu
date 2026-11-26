@@ -348,13 +348,13 @@ export class NextDayChanges {
     return this.#describeChanges(changedValues(current, values));
   }
 
-  /** e.g. "soft changes to 120, hard changes to 150", in column order */
+  /** e.g. "soft changed to 120, hard changed to 150", in column order */
   #describeChanges(values: EntityValues) {
     return this.#columns
       .filter(({ name }) => name in values)
       .map(
         ({ name, serverDataType }) =>
-          `${name} changes to ${formatValue(serverDataType, values[name])}`,
+          `${name} changed to ${formatValue(serverDataType, values[name])}`,
       )
       .join(", ");
   }

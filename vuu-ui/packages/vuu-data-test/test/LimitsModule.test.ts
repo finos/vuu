@@ -166,7 +166,7 @@ describe("LimitsModule", () => {
     await session.editCell("LIM-0001", "hard", 150);
     await session.endEditSession(true);
     expect(row("LIM-0001")).toMatchObject({
-      change: "hard changes to 150",
+      change: "hard changed to 150",
       changed_by: "trader",
       hard: 100,
       active: true,
@@ -192,7 +192,7 @@ describe("LimitsModule", () => {
     await session.deleteRow("LIM-0002", "soft");
     await session.addRow({ ...vega, entity_id: "DESK-RATES" });
     expect(editChanges(session)).toEqual({
-      "LIM-0001": "soft changes to 95, hard changes to 150",
+      "LIM-0001": "soft changed to 95, hard changed to 150",
       "LIM-0002": "Set to delete",
       "LIM-0003": "New limit",
     });
@@ -210,10 +210,10 @@ describe("LimitsModule", () => {
     const second = await editSession();
     expect(editChanges(second)).toEqual({ "LIM-0001": "" });
     await second.editCell("LIM-0001", "soft", 95);
-    expect(editChanges(second)).toEqual({ "LIM-0001": "soft changes to 95" });
+    expect(editChanges(second)).toEqual({ "LIM-0001": "soft changed to 95" });
     await second.endEditSession(true);
     expect(row("LIM-0001")).toMatchObject({
-      change: "soft changes to 95, hard changes to 150",
+      change: "soft changed to 95, hard changed to 150",
       hard: 100,
       soft: 90,
       active: true,

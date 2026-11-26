@@ -101,11 +101,11 @@ describe("NextDayChanges", () => {
 
     const edit = session({ ...add, threshold: 20, vuuAction: "editCell" });
     changes.describeEdits(edit);
-    expect(edit.data[0][edit.map.editChange]).toBe("threshold changes to 20");
+    expect(edit.data[0][edit.map.editChange]).toBe("threshold changed to 20");
     changes.save(edit);
     expect(rule("R1")).toMatchObject({
       active: true,
-      change: "threshold changes to 20",
+      change: "threshold changed to 20",
       threshold: 10,
     });
     changes.activatePending();
@@ -145,11 +145,11 @@ describe("NextDayChanges", () => {
       vuuAction: "editCell",
     });
     changes.describeEdits(edit);
-    expect(edit.data[0][edit.map.editChange]).toBe("threshold changes to 20");
+    expect(edit.data[0][edit.map.editChange]).toBe("threshold changed to 20");
     changes.save(edit);
     expect(rule("R1")).toMatchObject({
       active: true,
-      change: "threshold changes to 20",
+      change: "threshold changed to 20",
       threshold: 10,
     });
   });
