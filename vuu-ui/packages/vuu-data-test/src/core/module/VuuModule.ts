@@ -241,6 +241,38 @@ export abstract class VuuModule<T extends string = string>
     return undefined;
   }
 
+  /**
+   * Called when a session table created from a blueprint is created, and
+   * after each request to it, e.g. editCell or addRow. `tableName` is the
+   * source table. Use it to keep columns of the session table that the
+   * server maintains up to date.
+   */
+  protected sessionTableChanged(_tableName: T, _sessionTable: Table) {
+    // no columns maintained by default
+  }
+
+  /**
+   * Key for a row added without one. `tableName` is the source table,
+   * `data` the values of the new row, `key` the key the client suggested,
+   * if any (an import row suggests its row number).
+   */
+  protected createRowKey(
+    _tableName: T | undefined,
+    _data: Record<string, VuuRowDataItemType>,
+    key?: string,
+  ): string {
+    return key ?? uuid();
+  }
+
+  /** Message when an added row has the key of an existing row. */
+  protected duplicateKeyMessage(
+    _tableName: T | undefined,
+    key: string,
+    _data: Record<string, VuuRowDataItemType>,
+  ): string {
+    return `key ${key} already exists`;
+  }
+
   getTableSchema(tableName: string) {
     return (
       this.schemas[tableName as T] ?? this.#sessionTableMap[tableName]?.schema
@@ -506,11 +538,24 @@ export abstract class VuuModule<T extends string = string>
     const sessionInfo = this.#sessionInfo.get(tableName);
     if (sessionInfo) {
       const { services = [] } = sessionInfo.sessionTableDef;
-      return services.concat(
-        this.#moduleServices.filter(
-          ({ rpcName }) => !services.some((s) => s.rpcName === rpcName),
-        ),
-      );
+      return services
+        .concat(
+          this.#moduleServices.filter(
+            ({ rpcName }) => !services.some((s) => s.rpcName === rpcName),
+          ),
+        )
+        .map(({ rpcName, service }) => ({
+          rpcName,
+          service: async (rpcRequest: Parameters<ServiceHandler>[0]) => {
+            const result = await service(rpcRequest);
+            const sessionTable = this.#sessionTableMap[tableName];
+            const sourceTableName = this.#sessionSourceTableMap[tableName];
+            if (sessionTable && sourceTableName !== undefined) {
+              this.sessionTableChanged(sourceTableName, sessionTable);
+            }
+            return result;
+          },
+        }));
     }
     const tableServices = this.services?.[tableName];
     if (Array.isArray(tableServices)) {
@@ -928,6 +973,7 @@ export abstract class VuuModule<T extends string = string>
     this.#sessionTableMap[name] = sessionTable;
     this.#sessionSourceTableMap[name] = sourceTableName;
     subscription.sessionTableName = name;
+    this.sessionTableChanged(sourceTableName, sessionTable);
     return { module: this.#name, table: name };
   }
 
@@ -1062,8 +1108,39 @@ export abstract class VuuModule<T extends string = string>
         }
       }
       const keyColumn = sessionTable.schema.key;
-      const rowKey = data[keyColumn] ?? key ?? uuid();
-      const rowData = { ...data, [keyColumn]: rowKey };
+      let rowKey =
+        data[keyColumn] ?? this.createRowKey(sourceTableName, data, key);
+      let serverMessage: string | undefined;
+      let rowData: Record<string, VuuRowDataItemType> = {
+        ...data,
+        [keyColumn]: rowKey,
+      };
+
+      const sourceTable =
+        sourceTableName === undefined
+          ? undefined
+          : this.tables[sourceTableName];
+      if (
+        sessionTable.findByKey(String(rowKey)) !== undefined ||
+        sourceTable?.findByKey(String(rowKey)) !== undefined
+      ) {
+        serverMessage = this.duplicateKeyMessage(
+          sourceTableName,
+          String(rowKey),
+          data,
+        );
+        if (sessionTable.map.vuuRowNum === undefined) {
+          return { type: "ERROR_RESULT", errorMessage: serverMessage };
+        }
+        // An import session keeps the row, flagged with vuuMsg, so the
+        // error is reported against its line in the file.
+        rowKey = uuid();
+        rowData = {
+          ...data,
+          [keyColumn]: rowKey,
+          [this.#sessionTableMessageColumn]: serverMessage,
+        };
+      }
 
       const columnMap = sessionTable.map;
       const columnCount = Object.keys(columnMap).length;
@@ -1075,7 +1152,13 @@ export abstract class VuuModule<T extends string = string>
         }
       }
       sessionTable.insert(row);
-      return { type: "SUCCESS_RESULT", data: { key: rowKey } };
+      return {
+        type: "SUCCESS_RESULT",
+        data:
+          serverMessage === undefined
+            ? { key: rowKey }
+            : { key: rowKey, vuuMsg: serverMessage },
+      };
     }
     return {
       type: "ERROR_RESULT",
@@ -1183,23 +1266,47 @@ export abstract class VuuModule<T extends string = string>
     // };
   };
 
-  // Bulk-edit with input in session table
+  /**
+   * Sets one column to one value on every row of a session table, as an
+   * editCell on each row: the value is validated first, and nothing changes
+   * if it is rejected. Rows marked deleteRow, and rows that already have the
+   * value, are left alone. Each row that changes is marked editCell, unless
+   * it was added in the session.
+   */
   private applyBulkEdits: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
       const sessionTable = this.getSessionTable(viewPortId);
-      for (let i = 0; i < sessionTable.data.length; i++) {
-        const newRow = sessionTable.data[i];
-        const { column, value } = rpcRequest.params as {
-          column: NamedCurve;
-          value: VuuRowDataItemType;
-        };
-        const keyIndex = sessionTable.map[sessionTable.schema.key];
-        sessionTable.update(
-          String(newRow[keyIndex]),
-          column as string,
-          value as VuuRowDataItemType,
-        );
+      const { column, value } = rpcRequest.params as {
+        column: string;
+        value: VuuRowDataItemType;
+      };
+      try {
+        assertUpdateIsValid(sessionTable.schema, column, value);
+      } catch (e) {
+        return errorResult((e as Error).message);
+      }
+      const sourceTableName = this.#sessionSourceTableMap[viewPortId];
+      const validationError =
+        sourceTableName === undefined
+          ? undefined
+          : this.validateEdit(sourceTableName, column, value);
+      if (validationError !== undefined) {
+        return errorResult(validationError);
+      }
+      const { map } = sessionTable;
+      const keyIndex = map[sessionTable.schema.key];
+      const changedRows = sessionTable.data.filter(
+        (row) =>
+          row[map.vuuAction] !== "deleteRow" && row[map[column]] !== value,
+      );
+      for (const row of changedRows) {
+        const key = String(row[keyIndex]);
+        const action = row[map.vuuAction];
+        sessionTable.update(key, column, value);
+        if (action !== "addRow") {
+          sessionTable.update(key, "vuuAction", "editCell");
+        }
       }
       return {
         type: "SUCCESS_RESULT",
