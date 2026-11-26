@@ -31,7 +31,6 @@ type PendingChange =
 interface SessionChange {
   action: "addRow" | "editCell" | "deleteRow";
   current: EntityValues | undefined;
-  editChange: string;
   error: string | undefined;
   key: string;
   /** The key, or for an import the row's line in the file. */
@@ -144,7 +143,6 @@ export class NextDayChanges {
         for (const name of columns) {
           values[name] = sessionRow[map[name]] as VuuRowDataItemType;
         }
-        const editChange = String(sessionRow[map.editChange] ?? "");
         const current = this.#rowValues(key);
         const error =
           action === "deleteRow"
@@ -158,7 +156,6 @@ export class NextDayChanges {
         changes.push({
           action,
           current,
-          editChange,
           error,
           key,
           rowName,
@@ -186,19 +183,19 @@ export class NextDayChanges {
       };
     }
 
-    for (const { action, current, editChange, key, values } of changes) {
+    for (const { action, current, key, values } of changes) {
       if (action === "deleteRow") {
         this.#delete(key);
       } else if (current === undefined) {
         this.#insert(key, values);
       } else {
-        this.#amend(key, current, values, editChange);
+        this.#amend(key, current, values);
       }
     }
     return SUCCESS;
   }
 
-  /** Sets editChange on each row to describe the change saving will make. */
+  /** Sets editChange on each row to describe its edits in this session. */
   describeEdits(sessionTable: Table) {
     const { map } = sessionTable;
     if (map.editChange === undefined) return;
@@ -288,12 +285,7 @@ export class NextDayChanges {
     );
   }
 
-  #amend(
-    key: string,
-    current: EntityValues,
-    values: EntityValues,
-    editChange: string,
-  ) {
+  #amend(key: string, current: EntityValues, values: EntityValues) {
     if (this.#isActive(key)) {
       const amended = this.#amendedValues(key, current, values);
       if (Object.keys(amended).length === 0) {
@@ -301,7 +293,10 @@ export class NextDayChanges {
         this.#update(key, { change: "", changed_by: "" });
       } else {
         this.#pendingChanges.set(key, { type: "amend", values: amended });
-        this.#update(key, { change: editChange, changed_by: this.#user });
+        this.#update(key, {
+          change: this.#describeChanges(amended),
+          changed_by: this.#user,
+        });
       }
     } else {
       // never Active, so the new entity itself is changed
@@ -335,8 +330,9 @@ export class NextDayChanges {
   }
 
   /**
-   * Describes the change a session row will make, with the changes already
-   * held: "New <entity>", "Set to delete", or each changed value.
+   * Describes the edits made to a row in this session: "New <entity>",
+   * "Set to delete", or each value changed from the Active value. A row not
+   * edited in this session has none, even if a change is already held.
    */
   #describeEdit(key: string, action: VuuRowDataItemType, values: EntityValues) {
     const current = this.#rowValues(key);
@@ -344,21 +340,12 @@ export class NextDayChanges {
       return this.#newChange;
     } else if (action === "deleteRow") {
       return "Set to delete";
+    } else if (action !== "editCell") {
+      return "";
     } else if (!this.#isActive(key)) {
       return this.#newChange;
     }
-    const amended = this.#amendedValues(
-      key,
-      current,
-      action === "editCell" ? values : {},
-    );
-    if (
-      Object.keys(amended).length === 0 &&
-      this.#pendingChanges.get(key)?.type === "delete"
-    ) {
-      return "Set to delete";
-    }
-    return this.#describeChanges(amended);
+    return this.#describeChanges(changedValues(current, values));
   }
 
   /** e.g. "soft changes to 120, hard changes to 150", in column order */

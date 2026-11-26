@@ -198,7 +198,7 @@ describe("LimitsModule", () => {
     });
   });
 
-  it("saving sets change to editChange, which includes changes already held", async () => {
+  it("editChange describes this session's edits, change includes changes already held", async () => {
     const { addLimits, editChanges, editSession, module, row } = setup();
     await addLimits(vega);
     module.activatePendingLimits();
@@ -208,8 +208,9 @@ describe("LimitsModule", () => {
     await first.endEditSession(true);
 
     const second = await editSession();
-    expect(editChanges(second)).toEqual({ "LIM-0001": "hard changes to 150" });
+    expect(editChanges(second)).toEqual({ "LIM-0001": "" });
     await second.editCell("LIM-0001", "soft", 95);
+    expect(editChanges(second)).toEqual({ "LIM-0001": "soft changes to 95" });
     await second.endEditSession(true);
     expect(row("LIM-0001")).toMatchObject({
       change: "soft changes to 95, hard changes to 150",
