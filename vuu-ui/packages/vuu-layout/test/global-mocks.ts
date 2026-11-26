@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { vi } from "vitest";
 
-const WorkerMock = vi.fn(() => ({}));
-const BlobMock = vi.fn(() => ({}));
-const URLMock = {
-  createObjectURL: () => ({}),
-};
+const WorkerMock = vi.fn(class {});
+const BlobMock = vi.fn(class {});
 vi.stubGlobal("Worker", WorkerMock);
 vi.stubGlobal("Blob", BlobMock);
-vi.stubGlobal("URL", URLMock);
+vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock");
 vi.stubGlobal("loggingSettings", { loggingLevel: "error" });
 
 vi.mock("@vuu-ui/vuu-utils", async () => {

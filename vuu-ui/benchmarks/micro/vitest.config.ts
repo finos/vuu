@@ -9,6 +9,8 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["benchmarks/micro/setup.ts"],
+    // the default reporter does not print benchmark results
+    reporters: ["verbose"],
     benchmark: {
       include: ["benchmarks/micro/**/*.bench.ts"],
     },
