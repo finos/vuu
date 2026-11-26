@@ -9,7 +9,7 @@ import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 // imported from source, the package index starts the simulation modules
 import { Table } from "../../packages/vuu-data-test/src/Table";
-import { bench, describe } from "vitest";
+import { type BenchRegistration, test } from "vitest";
 import { createRandom, datasetColumns, updatedRow } from "../harness/dataset";
 import {
   type BenchDataSource,
@@ -53,44 +53,54 @@ for (const count of ROW_COUNTS) {
   const options = benchOptions(count);
   const n = label(count);
 
-  describe(`ArrayDataSource.updateRow ${n} rows`, () => {
+  test(`ArrayDataSource.updateRow ${n} rows`, async ({ bench }) => {
     rows(count);
+    const benches: BenchRegistration<string>[] = [];
     let dataSource: BenchDataSource;
     const setup = () => {
       dataSource = createDataSource(count);
     };
     for (const [position, rowIndex] of positions(count)) {
       const random = createRandom(rowIndex);
-      bench(
-        `${UPDATES} updates to the ${position} row of ${n}`,
-        () => {
-          const row = rows(count)[rowIndex];
-          for (let i = 0; i < UPDATES; i++) {
-            dataSource.applyUpdate(updatedRow(row, i, random, 3));
-          }
-        },
-        { ...options, setup },
+      benches.push(
+        bench(
+          `${UPDATES} updates to the ${position} row of ${n}`,
+          { beforeAll: setup },
+          () => {
+            const row = rows(count)[rowIndex];
+            for (let i = 0; i < UPDATES; i++) {
+              dataSource.applyUpdate(updatedRow(row, i, random, 3));
+            }
+          },
+        ),
       );
     }
+    await bench.compare(...benches, options);
   });
 
-  describe(`vuu-data-test Table.updateRow ${n} rows`, () => {
+  test(`vuu-data-test Table.updateRow ${n} rows`, async ({ bench }) => {
+    const benches: BenchRegistration<string>[] = [];
     let table: Table;
     const setup = () => {
       table = createTable(count);
     };
     for (const [position, rowIndex] of positions(count)) {
       const random = createRandom(rowIndex);
-      bench(
-        `${UPDATES} updates to the ${position} row of ${n}`,
-        () => {
-          const row = table.data[rowIndex] as Parameters<typeof updatedRow>[0];
-          for (let i = 0; i < UPDATES; i++) {
-            table.updateRow(updatedRow(row, i, random, 3));
-          }
-        },
-        { ...options, setup },
+      benches.push(
+        bench(
+          `${UPDATES} updates to the ${position} row of ${n}`,
+          { beforeAll: setup },
+          () => {
+            const row = table.data[rowIndex] as Parameters<
+              typeof updatedRow
+            >[0];
+            for (let i = 0; i < UPDATES; i++) {
+              table.updateRow(updatedRow(row, i, random, 3));
+            }
+          },
+        ),
       );
     }
+    await bench.compare(...benches, options);
   });
 }

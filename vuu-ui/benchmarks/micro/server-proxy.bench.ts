@@ -9,7 +9,7 @@
  * never discards a row as unchanged.
  */
 import type { VuuRow } from "@vuu-ui/vuu-protocol-types";
-import { bench, describe } from "vitest";
+import { type BenchRegistration, test } from "vitest";
 import {
   ServerProxyDriver,
   serverViewportId,
@@ -53,38 +53,36 @@ const subscribed = async (viewportCount = 1) => {
   return driver;
 };
 
-describe("ServerProxy, rows from the server", () => {
+test("ServerProxy, rows from the server", async ({ bench }) => {
   let driver: ServerProxyDriver;
+  const setup = async () => {
+    driver = await subscribed();
+  };
+  const benches: BenchRegistration<string>[] = [];
 
   for (const rowsPerMessage of [1, 10, VISIBLE_ROWS]) {
     const messages = tickMessages(rowsPerMessage);
-    bench(
-      `${MESSAGES} messages of ${rowsPerMessage} visible row updates`,
-      () => {
-        for (const message of messages) driver.server(message);
-      },
-      {
-        ...options,
-        setup: async () => {
-          driver = await subscribed();
+    benches.push(
+      bench(
+        `${MESSAGES} messages of ${rowsPerMessage} visible row updates`,
+        { beforeAll: setup },
+        () => {
+          for (const message of messages) driver.server(message);
         },
-      },
+      ),
     );
   }
 
   // rows 50..150 are in the buffer: cached, not sent to the client
   const bufferMessages = tickMessages(10, VP1, VISIBLE_ROWS);
-  bench(
-    `${MESSAGES} messages of 10 buffered (not visible) row updates`,
-    () => {
-      for (const message of bufferMessages) driver.server(message);
-    },
-    {
-      ...options,
-      setup: async () => {
-        driver = await subscribed();
+  benches.push(
+    bench(
+      `${MESSAGES} messages of 10 buffered (not visible) row updates`,
+      { beforeAll: setup },
+      () => {
+        for (const message of bufferMessages) driver.server(message);
       },
-    },
+    ),
   );
 
   // two versions of the whole cached range, sent alternately
@@ -94,24 +92,20 @@ describe("ServerProxy, rows from the server", () => {
       return tableRowMessage(order === "in order" ? rows : rows.reverse());
     });
     let i = 0;
-    bench(
+    return bench(
       `one message of 150 rows ${order}`,
+      { beforeAll: setup },
       () => {
         driver.server(versions[i++ % 2]);
       },
-      {
-        ...options,
-        setup: async () => {
-          driver = await subscribed();
-        },
-      },
     );
   };
-  fullRange("in order");
-  fullRange("in reverse order");
+  benches.push(fullRange("in order"), fullRange("in reverse order"));
+
+  await bench.compare(...benches, options);
 });
 
-describe("ServerProxy, rows for 10 viewports", () => {
+test("ServerProxy, rows for 10 viewports", async ({ bench }) => {
   const VIEWPORTS = 10;
   let driver: ServerProxyDriver;
   // each message updates 10 visible rows in every viewport, interleaved
@@ -125,21 +119,20 @@ describe("ServerProxy, rows for 10 viewports", () => {
     }
     return tableRowMessage(rows);
   });
-  bench(
+  await bench(
     `${MESSAGES} messages of 100 rows across ${VIEWPORTS} viewports`,
-    () => {
-      for (const message of messages) driver.server(message);
-    },
     {
-      ...options,
-      setup: async () => {
+      beforeAll: async () => {
         driver = await subscribed(VIEWPORTS);
       },
     },
-  );
+    () => {
+      for (const message of messages) driver.server(message);
+    },
+  ).run(options);
 });
 
-describe("ServerProxy, client range changes", () => {
+test("ServerProxy, client range changes", async ({ bench }) => {
   let driver: ServerProxyDriver;
   const setup = async () => {
     driver = await subscribed();
@@ -147,8 +140,9 @@ describe("ServerProxy, client range changes", () => {
 
   // 1-row steps down to row 200 and back: rows come from the cache until
   // the range nears the edge of the buffer, then the server sends more
-  bench(
+  const scroll = bench(
     "400 one-row scroll steps (down 200 rows, back up 200)",
+    { beforeAll: setup },
     () => {
       for (let from = 1; from <= 200; from++) {
         driver.setRange(1, from, from + VISIBLE_ROWS);
@@ -157,7 +151,6 @@ describe("ServerProxy, client range changes", () => {
         driver.setRange(1, from, from + VISIBLE_ROWS);
       }
     },
-    { ...options, setup },
   );
 
   // jumps far enough that nothing is cached; the server sends the new rows
@@ -165,14 +158,12 @@ describe("ServerProxy, client range changes", () => {
     { length: 20 },
     (_, i) => ((i * 7919) % (TABLE_SIZE / VISIBLE_ROWS)) * VISIBLE_ROWS,
   );
-  bench(
-    "20 jumps to uncached rows",
-    () => {
-      for (const from of jumps) {
-        driver.setRange(1, from, from + VISIBLE_ROWS);
-      }
-      driver.setRange(1, 0, VISIBLE_ROWS);
-    },
-    { ...options, setup },
-  );
+  const jump = bench("20 jumps to uncached rows", { beforeAll: setup }, () => {
+    for (const from of jumps) {
+      driver.setRange(1, from, from + VISIBLE_ROWS);
+    }
+    driver.setRange(1, 0, VISIBLE_ROWS);
+  });
+
+  await bench.compare(scroll, jump, options);
 });

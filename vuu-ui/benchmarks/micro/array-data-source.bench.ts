@@ -10,7 +10,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { VuuGroupBy, VuuSort } from "@vuu-ui/vuu-protocol-types";
 import { Range } from "@vuu-ui/vuu-utils";
-import { bench, describe } from "vitest";
+import { type BenchRegistration, test } from "vitest";
 import { KEY_COLUMN } from "../harness/dataset";
 import {
   type BenchDataSource,
@@ -43,97 +43,95 @@ for (const count of ROW_COUNTS) {
   const options = benchOptions(count);
   const n = label(count);
 
-  describe(`ArrayDataSource ${n} rows`, () => {
-    // generate the dataset while collecting, outside any timed run
+  test(`ArrayDataSource ${n} rows`, async ({ bench }) => {
+    // generate the dataset before any timed run
     rows(count);
+    const benches: BenchRegistration<string>[] = [];
 
-    bench(
-      `construct ${n}`,
-      () => {
+    benches.push(
+      bench(`construct ${n}`, () => {
         new DataSourceClass({
           columnDescriptors,
           data: rows(count),
           keyColumn: KEY_COLUMN,
         });
-      },
-      options,
+      }),
     );
 
     let dataSource: BenchDataSource;
-    const setup = () => {
-      dataSource = subscribed(count);
+    // Benches run synchronously, so the timers the data source schedules
+    // (see setup.ts) only fire between benches. afterAll lets them fire and
+    // unsubscribes, otherwise each 1M row data source stays in memory.
+    const hooks = {
+      beforeAll: () => {
+        dataSource = subscribed(count);
+      },
+      afterAll: async () => {
+        dataSource.unsubscribe();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      },
     };
 
     const nextSort = alternate<VuuSort>(
       { sortDefs: [{ column: "value1", sortType: "A" }] },
       { sortDefs: [{ column: "value1", sortType: "D" }] },
     );
-    bench(
-      `sort numeric column ${n}`,
-      () => {
+    benches.push(
+      bench(`sort numeric column ${n}`, hooks, () => {
         dataSource.sort = nextSort();
-      },
-      { ...options, setup },
+      }),
     );
 
     const nextTextSort = alternate<VuuSort>(
       { sortDefs: [{ column: "ric", sortType: "A" }] },
       { sortDefs: [{ column: "ric", sortType: "D" }] },
     );
-    bench(
-      `sort text column ${n}`,
-      () => {
+    benches.push(
+      bench(`sort text column ${n}`, hooks, () => {
         dataSource.sort = nextTextSort();
-      },
-      { ...options, setup },
+      }),
     );
 
     const nextFilter = alternate<DataSourceFilter>(
       { filter: "value1 > 500" },
       { filter: "value1 > 600" },
     );
-    bench(
-      `filter ${n}`,
-      () => {
+    benches.push(
+      bench(`filter ${n}`, hooks, () => {
         dataSource.filter = nextFilter();
-      },
-      { ...options, setup },
+      }),
     );
 
     const nextGroupBy = alternate<VuuGroupBy>(["ccy"], ["ric", "ccy"]);
-    bench(
-      `groupBy ${n}`,
-      () => {
+    benches.push(
+      bench(`groupBy ${n}`, hooks, () => {
         dataSource.groupBy = nextGroupBy();
-      },
-      { ...options, setup },
+      }),
     );
 
     // 100 small scroll steps of 3 rows, as a smooth vertical scroll
     let from = 0;
-    bench(
-      `range change, 100 x 3 row scroll ${n}`,
-      () => {
+    benches.push(
+      bench(`range change, 100 x 3 row scroll ${n}`, hooks, () => {
         for (let i = 0; i < 100; i++) {
           from = (from + 3) % (count - PAGE);
           dataSource.range = Range(from, from + PAGE, BUFFER);
         }
-      },
-      { ...options, setup },
+      }),
     );
 
     // 100 jumps to pseudo-random positions, as a scrollbar drag
     let seed = 1;
-    bench(
-      `range change, 100 jumps ${n}`,
-      () => {
+    benches.push(
+      bench(`range change, 100 jumps ${n}`, hooks, () => {
         for (let i = 0; i < 100; i++) {
           seed = (seed * 16807) % 2147483647;
           const at = seed % (count - PAGE);
           dataSource.range = Range(at, at + PAGE, BUFFER);
         }
-      },
-      { ...options, setup },
+      }),
     );
+
+    await bench.compare(...benches, options);
   });
 }
