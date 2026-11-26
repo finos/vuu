@@ -3,10 +3,10 @@ import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   type RpcMenuService,
   type RpcService,
-  type ServiceHandler,
   type SessionTableDef,
   VuuModule,
 } from "../core/module/VuuModule";
+import { NextDayChanges } from "../core/module/NextDayChanges";
 import tableContainer from "../core/table/TableContainer";
 import { VUU_DEFAULT_COLUMNS } from "../default-column-definitions";
 import { buildDataColumnMap, type Table } from "../Table";
@@ -270,68 +270,10 @@ const startOfToday = () => {
   return today.getTime();
 };
 
-/** A pending change to an Active limit, applied on the next business day. */
-type PendingChange =
-  | { type: "amend"; values: Record<string, VuuRowDataItemType> }
-  | { type: "delete" };
-
-type LimitValues = Record<string, VuuRowDataItemType>;
-
-/** A session row that saving will add, amend or delete. */
-interface SessionChange {
-  action: "addRow" | "editCell" | "deleteRow";
-  current: LimitValues | undefined;
-  editChange: string;
-  error: string | undefined;
-  key: string;
-  /** The key, or for an import the row's line in the file. */
-  rowName: string;
-  values: LimitValues;
-}
-
-/** The values that differ from the current values. */
-const changedValues = (current: LimitValues, values: LimitValues) =>
-  Object.fromEntries(
-    Object.entries(values).filter(
-      ([column, value]) => current[column] !== value,
-    ),
-  );
-
-const isTimestampColumn = (column: string) =>
-  definitionColumns.find(({ name }) => name === column)?.serverDataType ===
-  "epochtimestamp";
-
-const pad = (n: number) => String(n).padStart(2, "0");
-
-const formatValue = (column: string, value: VuuRowDataItemType) => {
-  if (isTimestampColumn(column) && typeof value === "number") {
-    const date = new Date(value);
-    const month = pad(date.getMonth() + 1);
-    return `${date.getFullYear()}-${month}-${pad(date.getDate())}`;
-  }
-  return String(value);
-};
-
-/** e.g. "soft changes to 120, hard changes to 150", in column order */
-const describeChanges = (values: LimitValues) =>
-  definitionColumns
-    .filter(({ name }) => name in values)
-    .map(({ name }) => [name, values[name]] as const)
-    .map(
-      ([column, value]) => `${column} changes to ${formatValue(column, value)}`,
-    )
-    .join(", ");
-
 /**
  * Limit definitions, one row per limit. Changes are made in a session table,
- * created from a blueprint, and take effect on the next business day:
- *
- * - saving a session never changes an Active limit. A new limit is not
- *   `active`. A change to, or deletion of, an Active limit is held and
- *   described in `change`, the limit stays `active`.
- * - at the start of the next business day, limits with a `change` take
- *   effect: new limits become `active`, held changes are applied and pending
- *   deletes are removed, see {@link activatePendingLimits}.
+ * created from a blueprint, and take effect on the next business day, see
+ * {@link NextDayChanges}.
  *
  * Blueprints: `edit-limitDefinitions` holds the columns a user enters, with
  * their edit rules; `import-limitDefinitions` adds the CSV row number;
@@ -339,9 +281,6 @@ const describeChanges = (values: LimitValues) =>
  * save through their own endEditSession service.
  */
 export class LimitsModule extends VuuModule<LimitsTableName> {
-  /** Keys of the limits that have been Active, whose changes are held. */
-  #activeKeys = new Set<string>();
-  #pendingChanges = new Map<string, PendingChange>();
   #nextLimitKey = 1;
 
   #tables: Record<LimitsTableName, Table> = {
@@ -351,6 +290,25 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
       buildDataColumnMap(limitsSchemas, "limitDefinitions"),
     ),
   };
+
+  #limits = new NextDayChanges({
+    columns: definitionColumns,
+    entityName: "limit",
+    newValues: ({ effective_from, entity_id, metric }) => ({
+      effective_from: isBlank(effective_from) ? startOfToday() : effective_from,
+      entity_type:
+        LIMIT_ENTITIES.find((entity) => entity.entity_id === entity_id)
+          ?.entity_type ?? "",
+      metric_family: LIMIT_METRICS[String(metric)].family,
+    }),
+    table: this.#tables.limitDefinitions,
+    user: LIMITS_USER,
+    validate: validateLimitDefinition,
+  });
+
+  #saveSession = this.#limits.endEditSession((viewPortId) =>
+    this.getSessionTable(viewPortId),
+  );
 
   protected editableTables: readonly LimitsTableName[] = ["limitDefinitions"];
 
@@ -362,7 +320,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
         { name: "editChange", serverDataType: "string", ...readOnly },
       ],
       key: "limit_key",
-      services: [{ rpcName: "endEditSession", service: this.#saveSession() }],
+      services: [{ rpcName: "endEditSession", service: this.#saveSession }],
     },
     "import-limitDefinitions": {
       columns: [
@@ -371,7 +329,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
         { name: "vuuRowNum", serverDataType: "int" },
       ],
       key: "limit_key",
-      services: [{ rpcName: "endEditSession", service: this.#saveSession() }],
+      services: [{ rpcName: "endEditSession", service: this.#saveSession }],
     },
     "export-limitDefinitions": {
       columns: limitsSchemas.limitDefinitions.columns,
@@ -383,239 +341,12 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
     super("LIMITS");
   }
 
-  get #limits() {
-    return this.#tables.limitDefinitions;
-  }
-
-  #rowValues(key: string) {
-    const { map } = this.#limits;
-    const row = this.#limits.findByKey(key);
-    if (row === undefined) return undefined;
-    const values: Record<string, VuuRowDataItemType> = {};
-    for (const { name } of this.#limits.schema.columns) {
-      values[name] = row[map[name]] as VuuRowDataItemType;
-    }
-    return values;
-  }
-
-  #update(key: string, values: Record<string, VuuRowDataItemType>) {
-    for (const [column, value] of Object.entries(values)) {
-      this.#limits.update(key, column, value);
-    }
-    this.#limits.update(key, "vuuUpdatedTimestamp", Date.now());
-  }
-
-  #insert(key: string, values: Record<string, VuuRowDataItemType>) {
-    const now = Date.now();
-    const { metric, entity_id } = values;
-    const row: Record<string, VuuRowDataItemType> = {
-      ...values,
-      change: "New limit",
-      effective_from: isBlank(values.effective_from)
-        ? startOfToday()
-        : values.effective_from,
-      entity_type:
-        LIMIT_ENTITIES.find((entity) => entity.entity_id === entity_id)
-          ?.entity_type ?? "",
-      limit_key: key,
-      changed_by: LIMITS_USER,
-      metric_family: LIMIT_METRICS[String(metric)].family,
-      active: false,
-      vuuCreatedTimestamp: now,
-      vuuMsg: "",
-      vuuUpdatedTimestamp: now,
-    };
-    this.#limits.insert(
-      this.#limits.schema.columns.map(({ name }) => row[name] ?? ""),
-    );
-  }
-
-  /**
-   * Save the changes in a session table, as Pending changes. Nothing is
-   * saved unless every row is valid. A row that is not has its vuuMsg set,
-   * and is named in the error, by its line for an import.
-   */
-  #saveSession(): ServiceHandler {
-    return async (rpcRequest) => {
-      const { viewPortId } = rpcRequest.context as { viewPortId: string };
-      if ((rpcRequest.params as { save?: boolean }).save !== true) {
-        return { type: "SUCCESS_RESULT", data: undefined };
-      }
-      const sessionTable = this.getSessionTable(viewPortId);
-      const { map } = sessionTable;
-      const columns = sessionTable.schema.columns
-        .map(({ name }) => name)
-        .filter((name) => LIMIT_DEFINITION_COLUMNS.includes(name));
-
-      const changes = sessionTable.data.reduce<SessionChange[]>(
-        (changes, sessionRow) => {
-          const action = sessionRow[map.vuuAction];
-          if (
-            action !== "addRow" &&
-            action !== "editCell" &&
-            action !== "deleteRow"
-          ) {
-            return changes;
-          }
-          const key = String(sessionRow[map.limit_key]);
-          const values: LimitValues = {};
-          for (const name of columns) {
-            values[name] = sessionRow[map[name]] as VuuRowDataItemType;
-          }
-          const editChange = String(sessionRow[map.editChange] ?? "");
-          const current = this.#rowValues(key);
-          const error =
-            action === "deleteRow"
-              ? undefined
-              : validateLimitDefinition({ ...current, ...values });
-          // vuuRowNum numbers the data rows of a CSV from 1, after the header
-          const rowName =
-            map.vuuRowNum === undefined
-              ? key
-              : `line ${Number(sessionRow[map.vuuRowNum]) + 1}`;
-          changes.push({
-            action,
-            current,
-            editChange,
-            error,
-            key,
-            rowName,
-            values,
-          });
-          return changes;
-        },
-        [],
-      );
-
-      const errors = changes.filter(({ error }) => error !== undefined);
-      if (errors.length > 0) {
-        for (const { error, key } of errors) {
-          sessionTable.update(key, "vuuMsg", error as string);
-        }
-        const count =
-          errors.length === 1 ? "1 limit" : `${errors.length} limits`;
-        return {
-          type: "ERROR_RESULT",
-          errorMessage: `${count} could not be saved. ${errors
-            .map(({ error, rowName }) => `${rowName}: ${error}`)
-            .join(", ")}`,
-        };
-      }
-
-      for (const { action, current, editChange, key, values } of changes) {
-        if (action === "deleteRow") {
-          this.#deleteLimit(key);
-        } else if (current === undefined) {
-          this.#insert(key, values);
-        } else {
-          this.#amendLimit(key, current, values, editChange);
-        }
-      }
-      return { type: "SUCCESS_RESULT", data: undefined };
-    };
-  }
-
-  /**
-   * The values of an Active limit once its held changes and the changes in
-   * a session row are applied, where they differ from the Active values.
-   */
-  #amendedValues(key: string, current: LimitValues, values: LimitValues) {
-    const held = this.#pendingChanges.get(key);
-    return changedValues(current, {
-      ...(held?.type === "amend" ? held.values : {}),
-      ...changedValues(current, values),
-    });
-  }
-
-  /**
-   * Describes the change a session row will make, with the changes already
-   * held: "New limit", "Set to delete", or each changed value.
-   */
-  #describeEdit(key: string, action: VuuRowDataItemType, values: LimitValues) {
-    const current = this.#rowValues(key);
-    if (action === "addRow" || current === undefined) {
-      return "New limit";
-    } else if (action === "deleteRow") {
-      return "Set to delete";
-    } else if (!this.#activeKeys.has(key)) {
-      return "New limit";
-    }
-    const amended = this.#amendedValues(
-      key,
-      current,
-      action === "editCell" ? values : {},
-    );
-    if (
-      Object.keys(amended).length === 0 &&
-      this.#pendingChanges.get(key)?.type === "delete"
-    ) {
-      return "Set to delete";
-    }
-    return describeChanges(amended);
-  }
-
   /** editChange describes, for each row, the change saving will make. */
   protected sessionTableChanged(
     _tableName: LimitsTableName,
     sessionTable: Table,
   ) {
-    const { map } = sessionTable;
-    if (map.editChange === undefined) return;
-    for (const row of sessionTable.data) {
-      const key = String(row[map.limit_key]);
-      const values: LimitValues = {};
-      for (const name of LIMIT_DEFINITION_COLUMNS) {
-        values[name] = row[map[name]] as VuuRowDataItemType;
-      }
-      const editChange = this.#describeEdit(
-        key,
-        row[map.vuuAction] as VuuRowDataItemType,
-        values,
-      );
-      if (row[map.editChange] !== editChange) {
-        sessionTable.update(key, "editChange", editChange);
-      }
-    }
-  }
-
-  #amendLimit(
-    key: string,
-    current: LimitValues,
-    values: LimitValues,
-    editChange: string,
-  ) {
-    if (this.#activeKeys.has(key)) {
-      const amended = this.#amendedValues(key, current, values);
-      if (Object.keys(amended).length === 0) {
-        this.#pendingChanges.delete(key);
-        this.#update(key, { change: "", changed_by: "" });
-      } else {
-        this.#pendingChanges.set(key, { type: "amend", values: amended });
-        this.#update(key, {
-          change: editChange,
-          changed_by: LIMITS_USER,
-        });
-      }
-    } else {
-      // never Active, so the new limit itself is changed
-      this.#update(key, {
-        ...values,
-        change: "New limit",
-        changed_by: LIMITS_USER,
-      });
-    }
-  }
-
-  #deleteLimit(key: string) {
-    if (this.#activeKeys.has(key)) {
-      this.#pendingChanges.set(key, { type: "delete" });
-      this.#update(key, {
-        change: "Set to delete",
-        changed_by: LIMITS_USER,
-      });
-    } else {
-      this.#limits.delete(key);
-    }
+    this.#limits.describeEdits(sessionTable);
   }
 
   /**
@@ -624,25 +355,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
    * deletes remove their limit.
    */
   activatePendingLimits() {
-    const { map } = this.#limits;
-    const pendingKeys = this.#limits.data
-      .filter((row) => row[map.change] !== "")
-      .map((row) => String(row[map.limit_key]));
-    for (const key of pendingKeys) {
-      const pending = this.#pendingChanges.get(key);
-      this.#pendingChanges.delete(key);
-      if (pending?.type === "delete") {
-        this.#activeKeys.delete(key);
-        this.#limits.delete(key);
-      } else {
-        this.#activeKeys.add(key);
-        this.#update(key, {
-          ...(pending?.type === "amend" ? pending.values : {}),
-          active: true,
-          change: "",
-        });
-      }
-    }
+    this.#limits.activatePending();
   }
 
   get menus() {
