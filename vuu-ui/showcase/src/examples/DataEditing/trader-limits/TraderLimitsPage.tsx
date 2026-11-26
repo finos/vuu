@@ -3,6 +3,7 @@ import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
   ColumnPickerAction,
   DataSourceStats,
+  type ConfirmSubmitOptions,
   EditableTableContainer,
   EditableTableFooter,
   type EditableTableMode,
@@ -32,7 +33,15 @@ import { useSaveError } from "./useSaveError";
 
 import "./TraderLimits.css";
 
+/** The Submit changes Prompt, which shows the changed limits. */
+const CONFIRM_SUBMIT: ConfirmSubmitOptions = { entityName: "limit" };
+
 export interface TraderLimitsPageProps {
+  /**
+   * Ask before saving, in a Prompt that shows the changed limits, and before
+   * discarding unsaved changes. Without it, Save saves and Cancel discards.
+   */
+  confirmPrompts?: boolean;
   /**
    * The metric of every new limit, for a release that supports one metric.
    * The Metric column shows it, but it cannot be entered. When the metric
@@ -62,6 +71,7 @@ export interface TraderLimitsPageProps {
  * editing.
  */
 export const TraderLimitsPage = ({
+  confirmPrompts = false,
   fixedMetric,
   showNextBusinessDay = false,
 }: TraderLimitsPageProps) => {
@@ -139,6 +149,8 @@ export const TraderLimitsPage = ({
           {saveError.banner}
           <EditableTableContainer
             allowDelete
+            confirmDiscard={confirmPrompts}
+            confirmSubmit={confirmPrompts ? CONFIRM_SUBMIT : false}
             dataSource={dataSource}
             {...saveError.handlers}
             mode={mode}

@@ -55,3 +55,8 @@
   height: 12px;
   width: 12px;
 }
+
+/* The Submit changes Prompt is wide enough for the edited columns. */
+.vuuConfirmSubmit {
+  --vuuConfirmSubmit-minWidth: min(1100px, 90vw);
+}

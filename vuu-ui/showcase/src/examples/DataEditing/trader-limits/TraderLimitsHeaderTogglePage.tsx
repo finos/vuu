@@ -8,6 +8,7 @@ import { ContextPanel, type ContextPanelProps } from "@vuu-ui/vuu-shell";
 import {
   ColumnPickerAction,
   DataSourceStats,
+  type ConfirmSubmitOptions,
   EditableTableContainer,
   EditableTableFooter,
   exportCsvTemplate,
@@ -34,7 +35,15 @@ import { useSaveError } from "./useSaveError";
 
 import "./TraderLimits.css";
 
+/** The Submit changes Prompt, which shows the changed limits. */
+const CONFIRM_SUBMIT: ConfirmSubmitOptions = { entityName: "limit" };
+
 export interface TraderLimitsHeaderTogglePageProps {
+  /**
+   * Ask before saving, in a Prompt that shows the changed limits, and before
+   * discarding unsaved changes. Without it, Save saves and Cancel discards.
+   */
+  confirmPrompts?: boolean;
   /**
    * Show a button that simulates the start of the next business day, when
    * Pending limits become Active.
@@ -59,10 +68,12 @@ export interface TraderLimitsHeaderTogglePageProps {
  * reads it with `useDataEditing` to disable buttons while editing.
  */
 export const TraderLimitsHeaderTogglePage = ({
+  confirmPrompts = false,
   showNextBusinessDay = false,
 }: TraderLimitsHeaderTogglePageProps) => (
   <DataEditingModeProvider>
     <TraderLimitsHeaderToggleContent
+      confirmPrompts={confirmPrompts}
       showNextBusinessDay={showNextBusinessDay}
     />
   </DataEditingModeProvider>
@@ -70,6 +81,7 @@ export const TraderLimitsHeaderTogglePage = ({
 
 /** Within the DataEditingModeProvider, so it can read the mode. */
 const TraderLimitsHeaderToggleContent = ({
+  confirmPrompts,
   showNextBusinessDay,
 }: Required<TraderLimitsHeaderTogglePageProps>) => {
   const { VuuDataSource } = useData();
@@ -143,6 +155,8 @@ const TraderLimitsHeaderToggleContent = ({
           {saveError.banner}
           <EditableTableContainer
             allowDelete
+            confirmDiscard={confirmPrompts}
+            confirmSubmit={confirmPrompts ? CONFIRM_SUBMIT : false}
             dataSource={dataSource}
             {...saveError.handlers}
           >

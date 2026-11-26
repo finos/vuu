@@ -37,3 +37,21 @@ export const TraderLimitsHeaderToggle = () => (
 export const TraderLimitsOneMetric = () => (
   <TraderLimitsPage fixedMetric="Max order quantity" showNextBusinessDay />
 );
+
+/**
+ * As Trader limits, asking before Save submits changes, in a Prompt that shows
+ * the changed limits, read only, and before Cancel discards unsaved changes.
+ * @tags data-consumer @title Trader limits, confirm save and cancel
+ */
+export const TraderLimitsConfirmPrompts = () => (
+  <TraderLimitsPage confirmPrompts showNextBusinessDay />
+);
+
+/**
+ * As Trader limits, toggle in page header, asking before Save submits changes
+ * and before Cancel discards them. @tags data-consumer @title Trader limits,
+ * toggle in page header, confirm save and cancel
+ */
+export const TraderLimitsHeaderToggleConfirmPrompts = () => (
+  <TraderLimitsHeaderTogglePage confirmPrompts showNextBusinessDay />
+);
