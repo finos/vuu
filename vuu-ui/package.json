@@ -80,7 +80,7 @@
     "@salt-ds/core": "1.74.0",
     "@testing-library/dom": "^10.0.0",
     "@types/serve-handler": "^6.1.4",
-    "@vitest/coverage-v8": "5.1.1",
+    "@vitest/coverage-v8": "5.1.2",
     "babel-plugin-istanbul": "^8.0.0",
     "chalk": "^6.0.0",
     "happy-dom": "^21.0.4",
@@ -92,7 +92,7 @@
     "tsx": "^4.19.1",
     "typescript": "7.0.2",
     "vite": "6.4.5",
-    "vitest": "5.1.1"
+    "vitest": "5.1.2"
   },
   "engines": {
     "node": ">=22.12.0"
