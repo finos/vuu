@@ -4,10 +4,10 @@ import com.clickhouse.client.api.query.GenericRecord
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{DataType, RowWithData}
-import org.finos.vuu.plugin.clickhouse.provider.data.ClickHouseRowDataMapper.{EPOCH_NANO_NAN_SENTINEL, EPOCH_NAN_SENTINEL}
-import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
+import org.finos.vuu.plugin.clickhouse.provider.data.ClickHouseRowDataMapper.EPOCH_SENTINEL
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 
-import java.time.ZonedDateTime
+import java.time.Instant
 import scala.collection.mutable
 
 object ClickHouseRowDataMapper {
@@ -15,8 +15,7 @@ object ClickHouseRowDataMapper {
   val INT_NAN_SENTINEL: Int = Int.MinValue
   val LONG_NAN_SENTINEL: Long = Long.MinValue
   val DOUBLE_NAN_SENTINEL: Double = java.lang.Double.NaN
-  val EPOCH_NAN_SENTINEL: EpochTimestamp = EpochTimestamp(0)
-  val EPOCH_NANO_NAN_SENTINEL: EpochTimestampNano = EpochTimestampNano(0)
+  val EPOCH_SENTINEL: Instant = Instant.EPOCH
 
 }
 
@@ -72,21 +71,15 @@ class ClickHouseRowDataMapper(tableDef: VirtualizedSessionTableDef) extends Stri
             }
 
           case DataType.EpochTimestampType =>
-            val ts: ZonedDateTime = v1.getZonedDateTime(remoteName)
-            if (ts != null) {
-              val epochTimestamp = EpochTimestamp(ts)
-              if (epochTimestamp != EPOCH_NAN_SENTINEL) {
-                builder.put(name, epochTimestamp)
-              }
+            val ts = v1.getInstant(remoteName)
+            if (ts != null && !ts.equals(EPOCH_SENTINEL)) {
+              builder.put(name, EpochTimestamp(ts))
             }
 
           case DataType.EpochTimestampNanoType =>
-            val ts: ZonedDateTime = v1.getZonedDateTime(remoteName)
-            if (ts != null) {
-              val epochTimestampNano = EpochTimestampNano(ts)
-              if (epochTimestampNano != EPOCH_NANO_NAN_SENTINEL) {
-                builder.put(name, epochTimestampNano)
-              }
+            val ts = v1.getInstant(remoteName)
+            if (ts != null && !ts.equals(EPOCH_SENTINEL)) {
+              builder.put(name, EpochTimestampNano(ts))
             }
 
           case DataType.ScaledDecimal2Type =>
