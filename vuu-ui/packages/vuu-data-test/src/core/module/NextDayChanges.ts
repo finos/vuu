@@ -17,8 +17,11 @@ export interface NextDayChangesProps {
   entityName: string;
   /** The user who makes every change, written to changed_by. Default "". */
   user?: string;
-  /** Rules for a whole entity, checked on save. Returns the first error. */
-  validate: (values: EntityValues) => string | undefined;
+  /**
+   * Rules for a whole entity, checked on save. Returns the first error.
+   * Default: every column marked `required` has a value.
+   */
+  validate?: (values: EntityValues) => string | undefined;
   /** Values a new entity derives from the entered ones, e.g. defaults. */
   newValues?: (values: EntityValues) => EntityValues;
 }
@@ -44,6 +47,18 @@ const SUCCESS: RpcResult = {
 };
 
 /** The values that differ from the current values. */
+const isBlank = (value: unknown) =>
+  value === undefined || value === null || value === "";
+
+/** The first required column without a value, as an error. */
+const requiredValues =
+  (columns: readonly SchemaColumn[]) => (values: EntityValues) => {
+    const missing = columns.find(
+      ({ name, required }) => required && isBlank(values[name]),
+    );
+    return missing === undefined ? undefined : `${missing.name} is required`;
+  };
+
 const changedValues = (current: EntityValues, values: EntityValues) =>
   Object.fromEntries(
     Object.entries(values).filter(
@@ -94,7 +109,7 @@ export class NextDayChanges {
     this.#newValues = newValues;
     this.#table = table;
     this.#user = user;
-    this.#validate = validate;
+    this.#validate = validate ?? requiredValues(columns);
   }
 
   get #keyColumn() {

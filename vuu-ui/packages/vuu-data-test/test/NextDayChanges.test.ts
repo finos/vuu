@@ -38,15 +38,21 @@ const sessionSchema: TableSchema = {
 const columnMap = (schema: TableSchema) =>
   Object.fromEntries(schema.columns.map(({ name }, i) => [name, i]));
 
-const setup = () => {
+const thresholdAboveZero = ({ threshold }: Record<string, unknown>) =>
+  Number(threshold) > 0 ? undefined : "threshold must be above zero";
+
+const setup = (
+  props: Partial<ConstructorParameters<typeof NextDayChanges>[0]> = {
+    validate: thresholdAboveZero,
+  },
+) => {
   const rules = new Table(rulesSchema, [], columnMap(rulesSchema));
   const changes = new NextDayChanges({
     columns: ruleColumns,
     entityName: "rule",
     table: rules,
     user: "ops",
-    validate: ({ threshold }) =>
-      Number(threshold) > 0 ? undefined : "threshold must be above zero",
+    ...props,
   });
 
   /** A session table holding these rows, as an edit session would. */
@@ -152,5 +158,23 @@ describe("NextDayChanges", () => {
       change: "threshold changed to 20",
       threshold: 10,
     });
+  });
+
+  it("by default requires a value in every required column", () => {
+    const { changes, rule, session } = setup({
+      columns: [{ ...ruleColumns[0], required: true }, ruleColumns[1]],
+    });
+    expect(
+      changes.save(
+        session(
+          { name: "", rule_id: "R1", threshold: 10, vuuAction: "addRow" },
+          { name: "B", rule_id: "R2", vuuAction: "addRow" },
+        ),
+      ),
+    ).toEqual({
+      type: "ERROR_RESULT",
+      errorMessage: "1 rule could not be saved. R1: name is required",
+    });
+    expect(rule("R2")).toBeUndefined();
   });
 });
