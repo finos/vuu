@@ -27,8 +27,13 @@ export const TableEditorButtons = ({
   hideCancel,
   saveLabel,
 }: TableEditorButtonsProps) => {
-  const { allowDelete, confirmCancel, editStrategy, editableTable } =
-    useTableEditorContext("TableEditorButtons");
+  const {
+    allowDelete,
+    confirmCancel,
+    confirmSave,
+    editStrategy,
+    editableTable,
+  } = useTableEditorContext("TableEditorButtons");
   const form = useEditFormContext();
 
   if (form || editStrategy === "form") {
@@ -54,6 +59,7 @@ export const TableEditorButtons = ({
         canCancel={canCancel}
         canSave={canSave}
         confirmCancel={confirmCancel}
+        confirmSave={confirmSave}
         editSession={editSession}
         hasSelection={allowDelete ? hasSelection : undefined}
         onCancel={hideCancel ? undefined : onCancel}

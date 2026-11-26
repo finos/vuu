@@ -13,6 +13,14 @@ import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import {
+  type ConfirmDiscardOptions,
+  useConfirmDiscardPrompt,
+} from "../editable-table/useConfirmDiscard";
+import {
+  type ConfirmSubmitOptions,
+  useConfirmSubmit,
+} from "../editable-table/useConfirmSubmit";
+import {
   TableEditorContext,
   type TableEditorContextValue,
   type TableEditorCreateStrategy,
@@ -34,8 +42,23 @@ export interface TableEditorProviderProps
    */
   allowDelete?: boolean;
   children: ReactNode;
-  /** Asked before changes are discarded. See `useConfirmDiscard`. */
+  /**
+   * Asked before unsaved changes are discarded, instead of the
+   * `confirmDiscard` Prompt.
+   */
   confirmCancel?: () => boolean | Promise<boolean>;
+  /**
+   * Before unsaved changes are discarded, ask the user to confirm, in a
+   * Prompt. Pass options to change its text or icon, false to discard
+   * without asking. @default true
+   */
+  confirmDiscard?: boolean | ConfirmDiscardOptions;
+  /**
+   * Inline session editing: on Save, ask the user to confirm, in a Prompt
+   * that shows the changed rows. Pass options to change its text or the
+   * columns of its table.
+   */
+  confirmSubmit?: boolean | ConfirmSubmitOptions;
   /** Inline session editing: rows copied into the edit session. @default "All" */
   copyOption?: EditableTableHookProps["copyOption"];
   /**
@@ -148,6 +171,7 @@ const InlineSessionProvider = ({
   allowDelete = false,
   children,
   confirmCancel,
+  confirmSubmit,
   copyOption,
   createStrategy = "inline",
   dataSource,
@@ -185,6 +209,11 @@ const InlineSessionProvider = ({
     rowDefaults,
   });
   const { editSession, onCancel: cancelEdit } = editableTable;
+  const { confirmSave, prompt: confirmSubmitPrompt } = useConfirmSubmit(
+    confirmSubmit,
+    editableTable,
+    columns,
+  );
 
   // the new row joins the session, which is then saved or cancelled as a whole
   const { canCreate, createKey, endCreate, panelOpen, startCreate } =
@@ -228,6 +257,7 @@ const InlineSessionProvider = ({
       cancel,
       columns,
       confirmCancel,
+      confirmSave,
       createKey,
       createStrategy,
       dataSource,
@@ -255,6 +285,7 @@ const InlineSessionProvider = ({
       cancel,
       columns,
       confirmCancel,
+      confirmSave,
       createKey,
       createStrategy,
       dataSource,
@@ -275,6 +306,7 @@ const InlineSessionProvider = ({
     <Providers value={value}>
       <DataEditingProvider editSession={editSession}>
         {children}
+        {confirmSubmitPrompt}
       </DataEditingProvider>
     </Providers>
   );
@@ -601,15 +633,40 @@ const FormProvider = ({
  * opens and closes with the form.
  */
 export const TableEditorProvider = ({
+  confirmCancel: confirmCancelProp,
+  confirmDiscard,
+  confirmSubmit,
   createStrategy,
   editModel = "session",
   editStrategy = "inline",
   ...props
-}: TableEditorProviderProps) =>
-  editStrategy === "form" ? (
-    <FormProvider {...props} editModel={editModel} />
-  ) : editModel === "direct" ? (
-    <InlineDirectProvider {...props} createStrategy={createStrategy} />
-  ) : (
-    <InlineSessionProvider {...props} createStrategy={createStrategy} />
+}: TableEditorProviderProps) => {
+  const { confirmCancel: confirmDiscardCancel, prompt } =
+    useConfirmDiscardPrompt(confirmCancelProp ? false : confirmDiscard);
+  const confirmCancel = confirmCancelProp ?? confirmDiscardCancel;
+  return (
+    <>
+      {editStrategy === "form" ? (
+        <FormProvider
+          {...props}
+          confirmCancel={confirmCancel}
+          editModel={editModel}
+        />
+      ) : editModel === "direct" ? (
+        <InlineDirectProvider
+          {...props}
+          confirmCancel={confirmCancel}
+          createStrategy={createStrategy}
+        />
+      ) : (
+        <InlineSessionProvider
+          {...props}
+          confirmCancel={confirmCancel}
+          confirmSubmit={confirmSubmit}
+          createStrategy={createStrategy}
+        />
+      )}
+      {prompt}
+    </>
   );
+};

@@ -29,6 +29,8 @@ import {
 } from "../table-editor";
 import { TableEditorProvider } from "../table-editor/TableEditorProvider";
 import { EditableTable } from "./EditableTable";
+import type { ConfirmDiscardOptions } from "./useConfirmDiscard";
+import type { ConfirmSubmitOptions } from "./useConfirmSubmit";
 
 import editableTableContainerCss from "./EditableTableContainer.css";
 import {
@@ -80,8 +82,17 @@ export interface EditableTableContainerBaseProps extends Pick<
   "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
 > {
   className?: string;
-  /** Asked before unsaved changes are discarded. See `useConfirmDiscard`. */
+  /**
+   * Asked before unsaved changes are discarded, instead of the
+   * `confirmDiscard` Prompt.
+   */
   confirmCancel?: () => boolean | Promise<boolean>;
+  /**
+   * Before unsaved changes are discarded, ask the user to confirm, in a
+   * Prompt: "Discard changes". Pass options to change its text or icon,
+   * false to discard without asking. @default true
+   */
+  confirmDiscard?: boolean | ConfirmDiscardOptions;
   /** The source (view) dataSource. */
   dataSource: DataSource;
   /**
@@ -111,6 +122,12 @@ export interface EditableTableContainerSessionOnlyProps {
    * rows can be deleted. Rows already marked for deletion cannot be selected.
    */
   allowDelete?: boolean;
+  /**
+   * On Save, ask the user to confirm, in a Prompt: "Submit changes", which
+   * shows the changed rows, read only. Pass options to change its text or
+   * icon, or the columns of its table, which default to those of the table.
+   */
+  confirmSubmit?: boolean | ConfirmSubmitOptions;
   /** Rows copied into the edit session. @default "All" */
   copyOption?: EditableTableHookProps["copyOption"];
 }
@@ -430,6 +447,8 @@ export const EditableTableContainer = (props: EditableTableContainerProps) => {
     children,
     className,
     confirmCancel,
+    confirmDiscard,
+    confirmSubmit,
     copyOption,
     createStrategy,
     dataSource,
@@ -473,6 +492,8 @@ export const EditableTableContainer = (props: EditableTableContainerProps) => {
     <TableEditorProvider
       allowDelete={allowDelete}
       confirmCancel={confirmCancel}
+      confirmDiscard={confirmDiscard}
+      confirmSubmit={confirmSubmit}
       copyOption={copyOption}
       createStrategy={createStrategy}
       dataSource={dataSource}

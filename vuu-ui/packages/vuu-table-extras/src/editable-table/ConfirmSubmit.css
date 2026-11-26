@@ -1,0 +1,10 @@
+.vuuConfirmSubmit {
+  --vuuPrompt-minWidth: var(--vuuConfirmSubmit-minWidth, 600px);
+}
+
+.vuuConfirmSubmit-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+  width: 100%;
+}

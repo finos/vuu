@@ -93,4 +93,7 @@ export {
   type EditableTablePanelHeaderProps,
   type EditableTablePanelProps,
 } from "./editable-table/EditableTableLayout";
+export { type ConfirmPromptOptions } from "./editable-table/ConfirmPrompt";
+export { type ConfirmDiscardOptions } from "./editable-table/useConfirmDiscard";
+export { type ConfirmSubmitOptions } from "./editable-table/useConfirmSubmit";
 export * from "./table-editor";

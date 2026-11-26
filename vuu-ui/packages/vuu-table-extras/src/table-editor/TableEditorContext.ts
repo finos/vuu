@@ -96,6 +96,8 @@ export interface TableEditorContextValue extends TableEditorState {
    */
   columns?: readonly DataValueDescriptor[];
   confirmCancel?: () => boolean | Promise<boolean>;
+  /** Inline session editing: asked before changes are saved. */
+  confirmSave?: () => Promise<boolean>;
   // forms
   createKey: number;
   formHandleRef: { current: TableEditorFormHandle | undefined };

@@ -143,22 +143,65 @@ are tracked by key, so undoing an added row removes it again.
 
 #### Asking before discarding changes
 
-`useConfirmDiscard` returns a `confirmCancel` function that shows a
-confirmation dialog, only when there are changes to lose. It needs a
-`ModalProvider` above it.
+By default, Cancel (or switching to View) with unsaved changes asks the user
+to confirm in a Vuu `Prompt`: "Discard changes", with Cancel and Confirm
+buttons. It is not shown when there is nothing to lose. Change its text or
+icon with `confirmDiscard`, or pass `false` to discard without asking.
 
 ```tsx
-const confirmDiscard = useConfirmDiscard({
-  message: "You have unsaved changes. Discard them?",
-});
-
 <EditableTableContainer
-  confirmCancel={confirmDiscard}
   config={config}
+  confirmDiscard={{
+    cancelButtonLabel: "Keep editing",
+    confirmButtonLabel: "Discard",
+    icon: "error",
+    message: "Your edits to these instruments have not been saved.",
+    title: "Unsaved instruments",
+  }}
   dataSource={dataSource}
-  onSaved={() => notify("Instruments saved")}
-/>;
+/>
 ```
+
+To ask in some other way, pass your own `confirmCancel`, which is used instead
+of the Prompt. `useConfirmDiscard` returns one that shows a dialog through a
+`ModalProvider`.
+
+#### Asking before saving changes
+
+With `confirmSubmit`, Save asks the user to confirm in a Vuu `Prompt`:
+"Submit changes", which shows the changed rows, read only, with Cancel and
+Confirm buttons. Rows get the same row class names as in the edit session
+(`vuuTableRow-inserted`, `vuuTableRow-deleted`). The table has the columns of the `EditableTable` unless you give
+it a `config` of its own.
+
+```tsx
+<EditableTableContainer
+  config={config}
+  confirmSubmit={{
+    // "Are you sure you want to change the following instruments"
+    entityName: "instrument",
+  }}
+  dataSource={dataSource}
+/>
+```
+
+`confirmSubmit` options, all optional:
+
+| Option | Default |
+| ------ | ------- |
+| `title` | `"Submit changes"` |
+| `message` | `"Are you sure you want to change the following <entityName>s"` |
+| `entityName` | `"row"` |
+| `icon` | `"info-circle"`. A Vuu icon name; `""` for none. |
+| `cancelButtonLabel` | `"Cancel"` |
+| `confirmButtonLabel` | `"Confirm"` |
+| `config` | The `EditableTable`'s columns. Every column is read only. |
+
+`confirmDiscard` takes the same text and icon options, with defaults
+`"Discard changes"`, `"All your changes will be lost. Do you want to discard
+changes and exit Edit mode ?"` and `"warn-triangle"`. Set
+`--vuuConfirmSubmit-tableHeight` (default `240px`) or
+`--vuuConfirmSubmit-minWidth` (default `600px`) to size the Submit prompt.
 
 ### Direct editing
 
@@ -420,7 +463,9 @@ Other `Table` props are passed through.
 
 | Prop | Description |
 | ---- | ----------- |
-| `confirmCancel` | `() => Promise<boolean>`, called before discarding unsaved changes. See `useConfirmDiscard`. |
+| `confirmCancel` | `() => Promise<boolean>`, called before discarding unsaved changes, instead of the `confirmDiscard` Prompt. |
+| `confirmDiscard` | Ask before discarding unsaved changes, in a Prompt. Default `true`; options change its text and icon. See [Asking before discarding changes](#asking-before-discarding-changes). |
+| `confirmSubmit` | Ask before saving, in a Prompt that shows the changed rows. Inline editing. See [Asking before saving changes](#asking-before-saving-changes). |
 | `deleteMode` | `soft` (default) or `hard`. See [Concepts](./02-Concepts.mdx#deleting-rows). |
 | `editSessionApi` | `createSessionDataSource` (default) or `beginEditSession`. |
 | `rowDefaults` | Values for columns the user doesn't fill in when adding a row. Pass a stable reference. |
@@ -432,7 +477,7 @@ renders its container and owns all the editing state: mode, selected row, side
 panel and edit session; you decide where things go. With `children`,
 `EditableTableContainer` takes only the editing props (`editStrategy`,
 `createStrategy`, `editModel`, `mode`, `allowDelete`, `confirmCancel`,
-`panelVisibility`, `rowDefaults`, `onSaved`, ...) and `className`/`style`.
+`confirmDiscard`, `confirmSubmit`, `panelVisibility`, `rowDefaults`, `onSaved`, ...) and `className`/`style`.
 Table props, plus `undoColumn` and `showInlineAddRow`, go on
 `EditableTable`; per-column edit options stay in its `config`. All the
 pieces are in `@vuu-ui/vuu-table-extras`.
@@ -663,7 +708,7 @@ import {
   <PageHeader>
     <EditModeToggle />
   </PageHeader>
-  <EditableTableContainer confirmCancel={confirmDiscard} dataSource={dataSource}>
+  <EditableTableContainer dataSource={dataSource}>
     <EditableTable config={config} />
     <EditableTableFooter />
   </EditableTableContainer>
@@ -671,7 +716,7 @@ import {
 ```
 
 The toggle behaves as the table's own toggle does: switching to View asks
-`confirmCancel` before discarding changes, and the toggle is disabled while a
+before discarding changes, and the toggle is disabled while a
 row is being created and, with form editing, until a row is selected. It
 works through portals too, so it can be rendered into a shell toolbar.
 

@@ -182,8 +182,8 @@ See [Choosing an editing model](./03-ChoosingAModel.mdx).
 
 ## Next steps
 
-- Ask before throwing away unsaved changes: pass
-  `confirmCancel={useConfirmDiscard()}` (needs a `ModalProvider`). See
+- Ask before saving changes, showing the changed rows: pass `confirmSubmit`.
+  Asking before discarding them is on by default. See
   [Editable tables](./04-EditableTables.mdx).
 - Lay out your own form with `EditForm` and `EditField`. See
   [Edit forms](./05-EditForms.mdx).

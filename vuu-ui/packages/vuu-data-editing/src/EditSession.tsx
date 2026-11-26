@@ -569,6 +569,20 @@ export class EditSession
   }
 
   /**
+   * The keys of the rows added, deleted or edited in this edit session, as
+   * known by the client.
+   */
+  get changedRowKeys(): string[] {
+    const keys = new Set([...this.#addedRowKeys, ...this.#deletedRowKeys]);
+    for (const key of this.#rowEdits.keys()) {
+      if (this.getRowAction(key) !== undefined) {
+        keys.add(key);
+      }
+    }
+    return [...keys];
+  }
+
+  /**
    * The edited values for a row, keyed by column name. Includes invalid
    * edits. Returns an empty object when the row has no edits.
    */

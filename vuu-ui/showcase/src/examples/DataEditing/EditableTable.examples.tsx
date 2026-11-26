@@ -8,6 +8,7 @@ import {
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   EditableTableContainer,
+  type EditableTableContainerProps,
   type EditableTableEditStrategy,
   EditableTableFooter,
   type EditableTableMode,
@@ -441,5 +442,80 @@ const SessionBlueprintTemplate = () => {
 export const SessionBlueprint = () => (
   <LocalDataSourceProvider>
     <SessionBlueprintTemplate />
+  </LocalDataSourceProvider>
+);
+
+const confirmSubmitConfig: TableConfig = {
+  columns: instrumentColumns.filter(({ name }) =>
+    ["ric", "description", "currency", "lotSize"].includes(name),
+  ),
+  rowSeparators: true,
+};
+
+const ConfirmPromptsTemplate = ({
+  confirmDiscard,
+  confirmSubmit = true,
+}: Pick<
+  EditableTableContainerProps,
+  "confirmDiscard" | "confirmSubmit"
+>) => {
+  const dataSource = useInstrumentsDataSource();
+  return (
+    <div style={{ height: 400, width: 1000 }}>
+      <EditableTableContainer
+        allowDelete
+        config={keyColumnConfig}
+        confirmDiscard={confirmDiscard}
+        confirmSubmit={confirmSubmit}
+        dataSource={dataSource}
+      />
+    </div>
+  );
+};
+
+/**
+ * Pattern 12. Save asks the user to confirm, in a Prompt that shows the
+ * changed rows, read only, in the columns of the editable table. Cancel,
+ * with unsaved changes, asks before discarding them. That Prompt is shown
+ * by default.
+ */
+export const ConfirmPrompts = () => (
+  <LocalDataSourceProvider>
+    <ConfirmPromptsTemplate confirmSubmit={{ entityName: "instrument" }} />
+  </LocalDataSourceProvider>
+);
+
+/**
+ * Pattern 12, with the text and icons of both Prompts changed, and fewer
+ * columns in the table of changed rows.
+ */
+export const ConfirmPromptsCustomised = () => (
+  <LocalDataSourceProvider>
+    <ConfirmPromptsTemplate
+      confirmDiscard={{
+        cancelButtonLabel: "Keep editing",
+        confirmButtonLabel: "Discard",
+        icon: "error",
+        message: "Your edits to these instruments have not been saved.",
+        title: "Unsaved instruments",
+      }}
+      confirmSubmit={{
+        cancelButtonLabel: "Back",
+        config: confirmSubmitConfig,
+        confirmButtonLabel: "Submit",
+        icon: "tick",
+        message: "These instruments will be updated:",
+        title: "Update instruments",
+      }}
+    />
+  </LocalDataSourceProvider>
+);
+
+/**
+ * Pattern 12, without the Prompts: Save saves, Cancel discards.
+ */
+export const NoConfirmPrompts = () => (
+  <LocalDataSourceProvider>
+    <ConfirmPromptsTemplate confirmDiscard={false} confirmSubmit={false} />
   </LocalDataSourceProvider>
 );
