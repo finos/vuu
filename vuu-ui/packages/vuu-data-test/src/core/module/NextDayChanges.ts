@@ -64,13 +64,14 @@ const pad = (n: number) => String(n).padStart(2, "0");
  *   effect: new ones become `active`, held changes are applied and pending
  *   deletes are removed, see {@link activatePending}.
  *
+ * An entity is Active when its `active` column is true, so the table can be
+ * loaded with Active entities.
+ *
  * A module creates one for each such table, gives its edit and import
  * blueprints the {@link endEditSession} service and calls
  * {@link describeEdits} from sessionTableChanged.
  */
 export class NextDayChanges {
-  /** Keys of the entities that have been Active, whose changes are held. */
-  #activeKeys = new Set<string>();
   #pendingChanges = new Map<string, PendingChange>();
   #columns: readonly SchemaColumn[];
   #columnNames: readonly string[];
@@ -234,10 +235,8 @@ export class NextDayChanges {
       const pending = this.#pendingChanges.get(key);
       this.#pendingChanges.delete(key);
       if (pending?.type === "delete") {
-        this.#activeKeys.delete(key);
         this.#table.delete(key);
       } else {
-        this.#activeKeys.add(key);
         this.#update(key, {
           ...(pending?.type === "amend" ? pending.values : {}),
           active: true,
@@ -245,6 +244,12 @@ export class NextDayChanges {
         });
       }
     }
+  }
+
+  /** An Active entity's changes are held until the next business day. */
+  #isActive(key: string) {
+    const row = this.#table.findByKey(key);
+    return row?.[this.#table.map.active] === true;
   }
 
   #rowValues(key: string) {
@@ -289,7 +294,7 @@ export class NextDayChanges {
     values: EntityValues,
     editChange: string,
   ) {
-    if (this.#activeKeys.has(key)) {
+    if (this.#isActive(key)) {
       const amended = this.#amendedValues(key, current, values);
       if (Object.keys(amended).length === 0) {
         this.#pendingChanges.delete(key);
@@ -309,7 +314,7 @@ export class NextDayChanges {
   }
 
   #delete(key: string) {
-    if (this.#activeKeys.has(key)) {
+    if (this.#isActive(key)) {
       this.#pendingChanges.set(key, { type: "delete" });
       this.#update(key, { change: "Set to delete", changed_by: this.#user });
     } else {
@@ -339,7 +344,7 @@ export class NextDayChanges {
       return this.#newChange;
     } else if (action === "deleteRow") {
       return "Set to delete";
-    } else if (!this.#activeKeys.has(key)) {
+    } else if (!this.#isActive(key)) {
       return this.#newChange;
     }
     const amended = this.#amendedValues(

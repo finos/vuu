@@ -73,7 +73,7 @@ const setup = () => {
           ),
         );
   };
-  return { changes, rule, session };
+  return { changes, rule, rules, session };
 };
 
 describe("NextDayChanges", () => {
@@ -126,5 +126,31 @@ describe("NextDayChanges", () => {
         "1 rule could not be saved. R2: threshold must be above zero",
     });
     expect(rule("R1")).toBeUndefined();
+  });
+
+  it("treats rows loaded with active true as Active", () => {
+    const { changes, rule, rules, session } = setup();
+    rules.insert(
+      rules.schema.columns.map(
+        ({ name }) =>
+          ({ rule_id: "R1", active: true, name: "Fat finger", threshold: 10 })[
+            name
+          ] ?? "",
+      ),
+    );
+    const edit = session({
+      name: "Fat finger",
+      rule_id: "R1",
+      threshold: 20,
+      vuuAction: "editCell",
+    });
+    changes.describeEdits(edit);
+    expect(edit.data[0][edit.map.editChange]).toBe("threshold changes to 20");
+    changes.save(edit);
+    expect(rule("R1")).toMatchObject({
+      active: true,
+      change: "threshold changes to 20",
+      threshold: 10,
+    });
   });
 });
