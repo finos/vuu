@@ -10,7 +10,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.Instant
 
 class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockitoSugar with GivenWhenThen {
   behavior of "ClickHouseRowDataMapper (per-type tests)"
@@ -205,7 +205,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     row2.data.contains("charCol") shouldBe false
   }
 
-  it should "map EpochTimestamp only when non 0 zoned datetime provided" in {
+  it should "map EpochTimestamp only when non 0 epoch instant provided" in {
     Given("a GenericRecord with zoned date time column")
     val v1 = mock[GenericRecord]
 
@@ -218,7 +218,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     )
 
     when(v1.hasValue("epochCol")).thenReturn(true)
-    when(v1.getZonedDateTime("epochCol")).thenReturn(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
+    when(v1.getInstant("epochCol")).thenReturn(Instant.ofEpochMilli(1))
     when(v1.getString("pk")).thenReturn("key-6")
 
     When("we map the record")
@@ -232,7 +232,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     Given("the GenericRecord returns null")
     val v2 = mock[GenericRecord]
     when(v2.hasValue("epochCol")).thenReturn(true)
-    when(v2.getZonedDateTime("epochCol")).thenReturn(null)
+    when(v2.getInstant("epochCol")).thenReturn(null)
     when(v2.getString("pk")).thenReturn("key-7")
 
     When("we map the record again")
@@ -245,7 +245,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     Given("the GenericRecord returns Unix Epoch 0")
     val v3 = mock[GenericRecord]
     when(v3.hasValue("epochCol")).thenReturn(true)
-    when(v3.getZonedDateTime("epochCol")).thenReturn(ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC")))
+    when(v3.getInstant("epochCol")).thenReturn(Instant.EPOCH)
     when(v3.getString("pk")).thenReturn("key-8")
 
     When("we map the record again")
@@ -256,7 +256,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     row3.data.contains("epochCol") shouldBe false
   }
 
-  it should "map EpochTimestampNano only when non 0 zoned datetime provided" in {
+  it should "map EpochTimestampNano only when non epoch instant provided" in {
     Given("a GenericRecord with epoch column")
     val v1 = mock[GenericRecord]
 
@@ -269,7 +269,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     )
 
     when(v1.hasValue("epochNanoCol")).thenReturn(true)
-    when(v1.getZonedDateTime("epochNanoCol")).thenReturn(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
+    when(v1.getInstant("epochNanoCol")).thenReturn(Instant.ofEpochMilli(1))
     when(v1.getString("pk")).thenReturn("key-6")
 
     When("we map the record with a valid zoned date time")
@@ -283,7 +283,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     Given("the GenericRecord returns null")
     val v2 = mock[GenericRecord]
     when(v2.hasValue("epochNanoCol")).thenReturn(true)
-    when(v2.getZonedDateTime("epochNanoCol")).thenReturn(null)
+    when(v2.getInstant("epochNanoCol")).thenReturn(null)
     when(v2.getString("pk")).thenReturn("key-7")
 
     When("we map the record again")
@@ -296,7 +296,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with Mockito
     Given("the GenericRecord returns Unix Epoch 0")
     val v3 = mock[GenericRecord]
     when(v3.hasValue("epochNanoCol")).thenReturn(true)
-    when(v3.getZonedDateTime("epochNanoCol")).thenReturn(ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC")))
+    when(v3.getInstant("epochNanoCol")).thenReturn(Instant.EPOCH)
     when(v3.getString("pk")).thenReturn("key-8")
 
     When("we map the record again")
