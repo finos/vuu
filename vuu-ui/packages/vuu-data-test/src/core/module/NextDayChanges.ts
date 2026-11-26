@@ -15,8 +15,8 @@ export interface NextDayChangesProps {
   columns: readonly SchemaColumn[];
   /** The entity's name, e.g. "limit": "New limit", "2 limits could not be saved". */
   entityName: string;
-  /** The user who makes every change. */
-  user: string;
+  /** The user who makes every change, written to changed_by. Default "". */
+  user?: string;
   /** Rules for a whole entity, checked on save. Returns the first error. */
   validate: (values: EntityValues) => string | undefined;
   /** Values a new entity derives from the entered ones, e.g. defaults. */
@@ -85,7 +85,7 @@ export class NextDayChanges {
     entityName,
     newValues = () => ({}),
     table,
-    user,
+    user = "",
     validate,
   }: NextDayChangesProps) {
     this.#columns = columns;
