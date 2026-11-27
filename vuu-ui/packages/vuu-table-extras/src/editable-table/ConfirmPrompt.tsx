@@ -1,10 +1,12 @@
 import { Prompt } from "@vuu-ui/vuu-ui-controls";
 import { type ReactNode, useCallback, useRef, useState } from "react";
 
-/** The text and icon of a confirmation Prompt. */
-export interface ConfirmPromptOptions {
+/** The text, icon and className of a confirmation Prompt. */
+export interface ConfirmPromptProps {
   /** @default "Cancel" */
   cancelButtonLabel?: string;
+  /** Added to the Prompt's className. */
+  className?: string;
   /** @default "Confirm" */
   confirmButtonLabel?: string;
   /** Name of a Vuu icon, shown in the header. An empty string shows none. */
@@ -51,8 +53,8 @@ export const usePromptRequest = <T,>(onSettled?: (value: T) => void) => {
   return { ask, request, settle };
 };
 
-export interface ConfirmPromptProps
-  extends Required<Omit<ConfirmPromptOptions, "icon" | "message">> {
+interface ConfirmPromptComponentProps
+  extends Required<Omit<ConfirmPromptProps, "className" | "icon" | "message">> {
   children?: ReactNode;
   className?: string;
   icon?: string;
@@ -70,7 +72,7 @@ export const ConfirmPrompt = ({
   onSettle,
   testId,
   title,
-}: ConfirmPromptProps) => (
+}: ConfirmPromptComponentProps) => (
   <Prompt
     cancelButtonLabel={cancelButtonLabel}
     className={className}

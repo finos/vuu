@@ -1,18 +1,18 @@
 import { useCallback } from "react";
 import {
   ConfirmPrompt,
-  type ConfirmPromptOptions,
+  type ConfirmPromptProps,
   usePromptRequest,
 } from "./ConfirmPrompt";
 
 /** The Prompt shown before unsaved changes are discarded. */
-export interface ConfirmDiscardOptions extends ConfirmPromptOptions {
+export interface ConfirmDiscardOptions extends ConfirmPromptProps {
   /** @default "warn-triangle" */
   icon?: string;
   /**
    * @default "All your changes will be lost. Do you want to discard changes and exit Edit mode ?"
    */
-  message?: ConfirmPromptOptions["message"];
+  message?: ConfirmPromptProps["message"];
   /** @default "Discard changes" */
   title?: string;
 }
@@ -27,6 +27,7 @@ export const useConfirmDiscardPrompt = (
   const { ask, request, settle } = usePromptRequest<undefined>();
   const {
     cancelButtonLabel = "Cancel",
+    className,
     confirmButtonLabel = "Confirm",
     icon = "warn-triangle",
     message = "All your changes will be lost. Do you want to discard changes and exit Edit mode ?",
@@ -39,6 +40,7 @@ export const useConfirmDiscardPrompt = (
     options && request ? (
       <ConfirmPrompt
         cancelButtonLabel={cancelButtonLabel}
+        className={className}
         confirmButtonLabel={confirmButtonLabel}
         icon={icon}
         onSettle={settle}

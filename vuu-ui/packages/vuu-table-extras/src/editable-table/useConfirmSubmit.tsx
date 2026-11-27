@@ -1,4 +1,5 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
+import cx from "clsx";
 import { useWindow } from "@salt-ds/window";
 import {
   getEditableColumns,
@@ -11,14 +12,14 @@ import { isTextColumnInSchema, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import {
   ConfirmPrompt,
-  type ConfirmPromptOptions,
+  type ConfirmPromptProps,
   usePromptRequest,
 } from "./ConfirmPrompt";
 
 import confirmSubmitCss from "./ConfirmSubmit.css";
 
 /** The Prompt shown when the user saves the changes of an edit session. */
-export interface ConfirmSubmitOptions extends ConfirmPromptOptions {
+export interface ConfirmSubmitOptions extends ConfirmPromptProps {
   /**
    * The table of changed rows. Defaults to the columns of the
    * `EditableTable`. Every column is shown read only.
@@ -29,7 +30,7 @@ export interface ConfirmSubmitOptions extends ConfirmPromptOptions {
   /** @default "info-circle" */
   icon?: string;
   /** @default "Are you sure you want to change the following <entityName>s" */
-  message?: ConfirmPromptOptions["message"];
+  message?: ConfirmPromptProps["message"];
   /** @default "Submit changes" */
   title?: string;
 }
@@ -72,6 +73,7 @@ export const useConfirmSubmit = (
 
   const {
     cancelButtonLabel = "Cancel",
+    className,
     config,
     confirmButtonLabel = "Confirm",
     entityName = "row",
@@ -131,6 +133,7 @@ export const useConfirmSubmit = (
     options && request ? (
       <ConfirmSubmitPrompt
         cancelButtonLabel={cancelButtonLabel}
+        className={className}
         confirmButtonLabel={confirmButtonLabel}
         config={tableConfig}
         dataSource={request.value}
@@ -145,13 +148,17 @@ export const useConfirmSubmit = (
 };
 
 interface ConfirmSubmitPromptProps
-  extends Required<Omit<ConfirmSubmitOptions, "config" | "entityName">> {
+  extends Required<
+    Omit<ConfirmSubmitOptions, "className" | "config" | "entityName">
+  > {
+  className?: string;
   config: TableConfig;
   dataSource: DataSource;
   onSettle: (confirmed: boolean) => void;
 }
 
 const ConfirmSubmitPrompt = ({
+  className,
   config,
   dataSource,
   message,
@@ -166,7 +173,7 @@ const ConfirmSubmitPrompt = ({
   return (
     <ConfirmPrompt
       {...promptProps}
-      className={classBase}
+      className={cx(classBase, className)}
       testId="confirm-submit"
     >
       <div className={`${classBase}-content`}>
