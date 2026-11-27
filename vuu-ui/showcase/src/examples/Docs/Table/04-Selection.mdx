@@ -275,7 +275,7 @@ Press **⌘**+**C** to copy the block to the clipboard as tab-separated text, re
 
 Cell block selection is separate from row selection. In this example, row selection is turned off with `selectionModel="none"`, so a click doesn't select the row.
 
-In a table that is being edited (inside a `DataEditingProvider`), a block can also be edited. Type a value and press **Enter** to set every editable cell of the block to it; cells that can't be edited are left as they are. In an `EditSession`, the edit is one change: **Ctrl**+**Z** (**⌘**+**Z** on a Mac) undoes it, and `useCanUndo` tells you when there is a change to undo. See Table/Editing/EditableInstrumentsCellBlockEditing.
+In a table that is being edited (inside a `DataEditingProvider`), a block can also be edited. Type a value and press **Enter** to set every editable cell of the block to it; cells that can't be edited are left as they are. So are cells of a column whose values must differ from row to row: mark such a column `unique: true` in its `ColumnDescriptor`. The data source's key column is always treated as unique. In an `EditSession`, the edit is one change: **Ctrl**+**Z** (**⌘**+**Z** on a Mac) undoes it, and `useCanUndo` tells you when there is a change to undo. See Table/Editing/EditableInstrumentsCellBlockEditing.
 
 <LivePreview stacked>
   <CellBlockSelection />

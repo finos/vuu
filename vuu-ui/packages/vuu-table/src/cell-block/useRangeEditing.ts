@@ -37,8 +37,8 @@ const typedValue = (
 
 /**
  * Edits every editable cell of a cell block as one change, setting each to
- * the same value. Cells of the key column are left as they are, as keys are
- * unique.
+ * the same value. Cells of unique columns, the key column among them, are
+ * left as they are.
  */
 export const useRangeEditing = ({
   columns,
@@ -54,6 +54,7 @@ export const useRangeEditing = ({
         ({ ariaColIndex, ...column }) =>
           ariaColIndex >= columnRange.from &&
           ariaColIndex <= columnRange.to &&
+          !column.unique &&
           column.name !== keyColumn &&
           isDataValueEditable(column, "update"),
       ),

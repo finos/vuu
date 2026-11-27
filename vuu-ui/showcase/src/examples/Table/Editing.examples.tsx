@@ -78,11 +78,11 @@ const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");
 
 const InstrumentColumns: ColumnDescriptor[] = [
-  { name: "bbg", serverDataType: "string", width: 90 },
+  { name: "bbg", serverDataType: "string", unique: true, width: 90 },
   { name: "currency", serverDataType: "string", width: 80 },
   { name: "description", serverDataType: "string", width: 150 },
   { name: "exchange", serverDataType: "string", width: 120 },
-  { name: "isin", serverDataType: "string", width: 100 },
+  { name: "isin", serverDataType: "string", unique: true, width: 100 },
   { name: "lotSize", serverDataType: "int", width: 80 },
   { name: "ric", serverDataType: "string", width: 75 },
   { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp", width: 160 },

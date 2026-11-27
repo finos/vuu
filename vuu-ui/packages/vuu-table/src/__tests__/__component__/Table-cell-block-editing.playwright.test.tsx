@@ -212,4 +212,21 @@ test.describe("Table cell block editing", () => {
       page.getByRole("textbox", { name: "Value for the selected cells" }),
     ).toHaveCount(0);
   });
+
+  test("a unique column is left as it is", async ({ mount, page }) => {
+    await mount(EXAMPLE);
+    await editMode(page);
+    const bbgs = await Promise.all(
+      [1, 2].map((row) => cellInput(page, row, "bbg").inputValue()),
+    );
+
+    await selectCells(page, [1, "bbg"], [2, "currency"]);
+    await page.keyboard.type("XYZ");
+    await page.keyboard.press("Enter");
+    await expect(cellInput(page, 1, "currency")).toHaveValue("XYZ");
+    await expect(cellInput(page, 2, "currency")).toHaveValue("XYZ");
+    for (const [i, row] of [1, 2].entries()) {
+      await expect(cellInput(page, row, "bbg")).toHaveValue(bbgs[i]);
+    }
+  });
 });
