@@ -1,4 +1,4 @@
-import { Button, Link, ToggleButton } from "@salt-ds/core";
+import { Button, Link, ToggleButton, Tooltip } from "@salt-ds/core";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { Fragment, useCallback, useMemo, useState } from "react";
@@ -30,35 +30,29 @@ const fileName = (file: string) => file.split("/").pop() ?? file;
 
 const FixtureNotice = ({ testFiles }: { testFiles: string[] }) => (
   <div className={`${classBase}-fixtures`}>
-    <ChromeIcon name="flask" size={14} />
-    <div>
-      <p className={`${classBase}-fixturesText`}>
-        This example is a fixture for{" "}
-        {testFiles.length === 1
-          ? "a Playwright test"
-          : `${testFiles.length} Playwright test files`}
-        . Changes to it may break these tests.
-      </p>
-      <ul className={`${classBase}-fixturesList`}>
-        {testFiles.map((file) => {
-          const { github, vscode } = getTestFileLinks(
-            file,
-            SHOWCASE_SOURCE_ROOT,
-          );
-          return (
-            <li key={file}>
-              <Link
-                href={vscode ?? github}
-                target={vscode ? undefined : "_blank"}
-                title={file}
-              >
-                {fileName(file)}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <p className={`${classBase}-fixturesText`}>
+      This example is a fixture for{" "}
+      {testFiles.length === 1
+        ? "a Playwright test"
+        : `${testFiles.length} Playwright test files`}
+      . Changes to it may break these tests.
+    </p>
+    <ul className={`${classBase}-fixturesList`}>
+      {testFiles.map((file) => {
+        const { github, vscode } = getTestFileLinks(file, SHOWCASE_SOURCE_ROOT);
+        return (
+          <li key={file}>
+            <Link
+              href={vscode ?? github}
+              target={vscode ? undefined : "_blank"}
+              title={file}
+            >
+              {fileName(file)}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   </div>
 );
 
@@ -125,19 +119,26 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
             </span>
           ) : null}
           {nodeData.fixtureFor?.length ? (
-            <span
-              className={cx(`${classBase}-pill`, `${classBase}-pill-fixture`)}
+            <Tooltip
+              content={<FixtureNotice testFiles={nodeData.fixtureFor} />}
+              placement="bottom"
             >
-              <ChromeIcon name="flask" size={12} />
-              Test fixture
-            </span>
+              <span
+                className={cx(
+                  `${classBase}-pill`,
+                  `${classBase}-pill-fixture`,
+                )}
+                // focusable, so keyboard users can open the notice
+                tabIndex={0}
+              >
+                <ChromeIcon name="flask" size={12} />
+                Test fixture
+              </span>
+            </Tooltip>
           ) : null}
         </div>
         {nodeData.description && !compact ? (
           <p className={`${classBase}-description`}>{nodeData.description}</p>
-        ) : null}
-        {nodeData.fixtureFor?.length && !compact ? (
-          <FixtureNotice testFiles={nodeData.fixtureFor} />
         ) : null}
       </div>
       <div className={`${classBase}-actions`}>
