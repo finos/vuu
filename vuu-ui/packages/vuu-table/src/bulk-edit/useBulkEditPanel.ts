@@ -38,6 +38,7 @@ export const useBulkEditPanel = ({
   const [rowState, setRowState] = useState(true);
 
   const tableConfig: TableConfig = useMemo(() => {
+    const keyColumn = dataSource.tableSchema?.key;
     return {
       columns: columns
         ? columns.map((col) => {
@@ -59,6 +60,7 @@ export const useBulkEditPanel = ({
               clientSideEditValidationCheck: hasValidationRules(col.type)
                 ? buildValidationChecker(col.type.rules)
                 : undefined,
+              unique: col.unique || col.name === keyColumn,
               width: 120,
             };
           })
@@ -66,13 +68,19 @@ export const useBulkEditPanel = ({
             editable: true,
             name,
             serverDataType: "string",
+            unique: name === keyColumn,
           })),
       columnLayout: "fit",
       columnDefaultWidth: 100,
       rowSeparators: true,
       rowClassNameGenerators,
     };
-  }, [columns, dataSource.columns, rowClassNameGenerators]);
+  }, [
+    columns,
+    dataSource.columns,
+    dataSource.tableSchema,
+    rowClassNameGenerators,
+  ]);
 
   const handleRowChange = useCallback(
     (isValid: boolean) => {

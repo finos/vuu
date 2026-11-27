@@ -191,8 +191,8 @@ export interface DataValueDescriptor {
   required?: boolean;
   /**
    * Each row has its own value, so a value is never set on several rows at
-   * once, as a cell block edit would. A data source's key column is always
-   * treated as unique.
+   * once, as a cell block edit or a bulk edit would. A data source's key
+   * column is always treated as unique.
    */
   unique?: boolean;
   /** The type defined on server for this data value */

@@ -1313,6 +1313,7 @@ const BulkEditTableTemplate = ({
             parentDs={sourceDataSource}
             rowClassNameGenerators={rowClassNameGenerators}
             sessionDs={sessionDataSource}
+            showColumnCascadingUpdateEditor
           />
         </DataEditingProvider>,
         "Edit rows",

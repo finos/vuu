@@ -76,7 +76,8 @@ export const ColumnCascadingUpdateEditor = ({
             role="cell"
             style={{ width: column.width }}
           >
-            {isDataValueEditable(column, "update")
+            {/* a value set for every row would break a unique column */}
+            {isDataValueEditable(column, "update") && !column.unique
               ? getDataItemEditControl({
                   InputProps,
                   dataDescriptor: column,
