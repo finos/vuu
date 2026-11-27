@@ -8,6 +8,11 @@
   right: anchor(--cellblock-start right);
   top: anchor(--cellblock-start top);
 
+  /* inside the edge, so the sticky header can't cover it */
+  &:focus-visible {
+    outline-offset: calc(-1 * var(--salt-focused-outlineWidth, 2px));
+  }
+
   &.cellblock-direction-n {
     bottom: anchor(--cellblock-start bottom);
     left: anchor(--cellblock-start left);
