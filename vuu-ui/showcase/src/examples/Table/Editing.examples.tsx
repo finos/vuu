@@ -441,7 +441,10 @@ const EditableInstrumentsTemplate = ({
                 col.name === "vuuUpdatedTimestamp" ||
                 col.name === "vuuMsg"
                 ? col
-                : { ...col, editable: true },
+                : col.name === "ric"
+                  ? // the key: entered for a new row, never changed
+                    { ...col, editable: { insert: true, update: false } }
+                  : { ...col, editable: true },
             ).concat(
               {
                 name: "vuuAction",

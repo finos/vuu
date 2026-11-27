@@ -187,11 +187,11 @@ test.describe("Table cell block editing", () => {
     expect(await page.locator(".vuuCellBlock").boundingBox()).toEqual(block);
   });
 
-  test("a block of the key column can't be edited", async ({ mount, page }) => {
+  test("ric, the key, is left as it is", async ({ mount, page }) => {
     await mount(EXAMPLE);
     await editMode(page);
     const rics = await Promise.all(
-      [1, 2].map((row) => cellInput(page, row, "ric").inputValue()),
+      [1, 2].map((row) => cell(page, row, "ric").textContent()),
     );
 
     await selectCells(page, [1, "lotSize"], [2, "ric"]);
@@ -200,7 +200,7 @@ test.describe("Table cell block editing", () => {
     await expect(cellInput(page, 1, "lotSize")).toHaveValue("8");
     await expect(cellInput(page, 2, "lotSize")).toHaveValue("8");
     for (const [i, row] of [1, 2].entries()) {
-      await expect(cellInput(page, row, "ric")).toHaveValue(rics[i]);
+      await expect(cell(page, row, "ric")).toHaveText(rics[i] ?? "");
     }
 
     await page.keyboard.press("ArrowRight");
