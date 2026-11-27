@@ -379,9 +379,10 @@ export const useCellBlockSelection = ({
         `[useCellBlockSelection] handleKeyDown (only interested in Shift key)`,
       );
       if (evt.key === "Shift") {
-        initializeStateRef();
+        // Shift pressed on the block itself is for typing in it
         const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
         if (cell) {
+          initializeStateRef();
           const startPos = getAriaCellPos(cell);
           stateRef.current.startPos = startPos;
           stateRef.current.endPos = clone(startPos);

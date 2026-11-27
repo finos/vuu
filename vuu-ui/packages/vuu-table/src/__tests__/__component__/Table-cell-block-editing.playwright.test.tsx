@@ -166,4 +166,24 @@ test.describe("Table cell block editing", () => {
     }
     await expect(cellInput(page, 4, "lotSize")).not.toHaveValue("30");
   });
+
+  test("Shift for an uppercase letter keeps the block", async ({
+    mount,
+    page,
+  }) => {
+    await mount(EXAMPLE);
+    await editMode(page);
+
+    await cellInput(page, 1, "lotSize").click();
+    await page.keyboard.down("Shift");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.up("Shift");
+    const block = await page.locator(".vuuCellBlock").boundingBox();
+
+    await page.keyboard.press("Shift+A");
+    await expect(
+      page.getByRole("textbox", { name: "Value for the selected cells" }),
+    ).toHaveValue("A");
+    expect(await page.locator(".vuuCellBlock").boundingBox()).toEqual(block);
+  });
 });
