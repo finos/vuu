@@ -40,6 +40,7 @@ import {
   BaseDataSource,
   combineFilters,
   constrainRange,
+  createSessionTableParams,
   debounce,
   getDataSourceFilterColumnNames,
   isConfigChanged,
@@ -559,6 +560,10 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     return this.#selectedRowsCount;
   }
 
+  get session() {
+    return this.#session;
+  }
+
   private rawRangeRequest: RangeRequest = (range) => {
     if (this.viewport && this.server) {
       this.server.send({
@@ -736,16 +741,20 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     sessionType: SessionType = "edit",
     overrides?: SessionDataSourceOverrides,
   ): Promise<VuuDataSource | undefined> {
+    // A call-time override always wins; otherwise fall back to the session
+    // config this datasource was constructed with.
+    const effectiveOverrides = overrides ?? this.#session;
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "createSessionTable",
-      params: { copyOption, sessionType },
+      params: createSessionTableParams(
+        copyOption,
+        sessionType,
+        effectiveOverrides,
+      ),
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      // A call-time override always wins; otherwise fall back to the session
-      // config this datasource was constructed with.
-      const effectiveOverrides = overrides ?? this.#session;
       assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       const sessionDataSource = new VuuDataSource({
         ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
@@ -840,7 +849,17 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     }
   }
 
+  /**
+   * The server only knows the viewport once it has acknowledged the
+   * subscription, so a request made before then, e.g. before the Table has
+   * subscribed, waits until the DataSource is subscribed.
+   */
   async rpcRequest(rpcRequest: Omit<VuuRpcServiceRequest, "context">) {
+    if (this.#status === "initialising" || this.#status === "subscribing") {
+      await new Promise<void>((resolve) =>
+        this.once("subscribed", () => resolve()),
+      );
+    }
     if (this.viewport && this.server) {
       return this.server?.rpcCall<RpcResultSuccess | RpcResultError>({
         ...rpcRequest,

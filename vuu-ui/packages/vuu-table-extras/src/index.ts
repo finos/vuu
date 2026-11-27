@@ -57,3 +57,43 @@ export {
   TableSettingsPanel,
   type TableDisplayAttributeChangeHandler,
 } from "./table-settings-panel/TableSettingsPanel";
+export {
+  type BulkEditDialogHookProps,
+  useBulkEditDialog,
+} from "./bulk-edit-dialog/useBulkEditDialog";
+export {
+  EditableTable,
+  type EditableTableProps,
+} from "./editable-table/EditableTable";
+export {
+  EditableTableContainer,
+  type EditableTableContainerBaseProps,
+  type EditableTableContainerComposedProps,
+  type EditableTableContainerCreateLayoutProps,
+  type EditableTableContainerDefaultLayoutProps,
+  type EditableTableContainerFormLayoutProps,
+  type EditableTableContainerInlineLayoutProps,
+  type EditableTableContainerProps,
+  type EditableTableContainerSessionLayoutProps,
+  type EditableTableContainerSessionOnlyProps,
+  type EditableTableCreateStrategy,
+  type EditableTableEditModel,
+  type EditableTableEditStrategy,
+  type EditableTableField,
+  type EditableTableMode,
+  type EditableTablePanelVisibility,
+} from "./editable-table/EditableTableContainer";
+export {
+  EditableTableFooter,
+  type EditableTableFooterProps,
+  EditableTableMain,
+  type EditableTableMainProps,
+  EditableTablePanel,
+  EditableTablePanelHeader,
+  type EditableTablePanelHeaderProps,
+  type EditableTablePanelProps,
+} from "./editable-table/EditableTableLayout";
+export { type ConfirmPromptProps } from "./editable-table/ConfirmPrompt";
+export { type ConfirmDiscardOptions } from "./editable-table/useConfirmDiscard";
+export { type ConfirmSubmitOptions } from "./editable-table/useConfirmSubmit";
+export * from "./table-editor";

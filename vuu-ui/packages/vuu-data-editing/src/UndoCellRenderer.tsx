@@ -7,7 +7,7 @@ import type {
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useEditSession } from "./DataEditingProvider";
-import type { EditActionType } from "./EditSession";
+import { useRowAction } from "./useRowAction";
 
 export const UNDO_CELL_RENDERER = "vuu.undo-cell";
 
@@ -45,21 +45,18 @@ export const UndoCellRenderer = ({
   const { icon, text } = getUndoButtonContent(
     renderer?.componentProps as UndoCellRendererComponentProps | undefined,
   );
-  const tooltipContent = getUndoTooltipContent(dataRow.vuuAction);
+  // The client tracks each row's change, a session table need not have vuuAction
+  const action = useRowAction(editSession, dataRow.key);
+  const tooltipContent = getUndoTooltipContent(action);
 
-  if (tooltipContent === undefined) return null;
+  if (action === undefined || tooltipContent === undefined) return null;
 
   return (
     <Tooltip content={tooltipContent}>
       <Button
         appearance="transparent"
         aria-label={tooltipContent}
-        onClick={() =>
-          editSession?.undoRowChange(
-            dataRow.key,
-            dataRow.vuuAction as EditActionType,
-          )
-        }
+        onClick={() => editSession?.undoRowChange(dataRow.key, action)}
         style={{ height: "100%", width: "100%" }}
       >
         {icon ? <Icon name={icon} /> : null}

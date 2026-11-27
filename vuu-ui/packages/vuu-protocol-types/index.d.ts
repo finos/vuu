@@ -629,6 +629,19 @@ export declare type DeleteSelectedRowsRpcServiceRequest = {
 export declare type CreateSessionTableParams = {
   copyOption: "All" | "Empty" | "Selected";
   sessionType?: "edit" | "import" | "export";
+  /**
+   * Name of the session table blueprint, registered by the server module,
+   * from which the session table is created. When omitted, the server uses
+   * `<sessionType>-<sourceTable>`, e.g. `edit-instruments`.
+   */
+  sessionTableName?: string;
+  /**
+   * Source columns to copy into the session table: a comma-separated list of
+   * column names, or `"*"` for all columns. When omitted, the server copies
+   * all source columns except vuuCreatedTimestamp, vuuUpdatedTimestamp and
+   * vuuMsg.
+   */
+  columnsToCopy?: string;
 };
 export declare type CreateSessionTableRpcServiceRequest = {
   context: ViewportRpcContext;

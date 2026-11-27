@@ -1,3 +1,4 @@
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { formatDate } from "@vuu-ui/vuu-utils";
 
@@ -8,6 +9,33 @@ const dataRowEditErrors = Symbol("vuuDataRowEditErrors");
 
 export const isEditRowReadOnly = (dataRow: DataRow) =>
   dataRow.hasColumn("vuuAction") && dataRow.vuuAction === "deleteRow";
+
+/**
+ * A row added during the edit session, not yet saved. Like the new row, its
+ * insert-only columns can still be edited.
+ */
+export const isEditRowAdded = (dataRow: DataRow) =>
+  dataRow.hasColumn("vuuAction") && dataRow.vuuAction === "addRow";
+
+/**
+ * A table schema limited to the given columns, in schema order. A session
+ * table's schema has every column of its blueprint, a session may ask for
+ * fewer.
+ */
+export const withColumns = (
+  schema: TableSchema | undefined,
+  columnNames?: readonly string[],
+): TableSchema | undefined => {
+  if (schema === undefined || columnNames === undefined) {
+    return schema;
+  }
+  const columns = schema.columns.filter(({ name }) =>
+    columnNames.includes(name),
+  );
+  return columns.length === schema.columns.length
+    ? schema
+    : { ...schema, columns };
+};
 
 type DataRowWithEditErrors = DataRow & {
   [dataRowEditErrors]?: Record<string, string>;

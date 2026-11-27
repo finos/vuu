@@ -9,7 +9,7 @@ import {
   isRpcSuccess,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
-import { isEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
+import { useEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
 import cx from "clsx";
 import { Dropdown, Option } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -54,7 +54,7 @@ export const DropdownCell = memo(
 
     const [open, setOpen] = useState(false);
     const dataValue = dataRow[column.name] as string | number;
-    const readOnly = isEditRowReadOnly(dataRow);
+    const readOnly = useEditRowReadOnly(dataRow);
     const { values } = useLookupValues(column, dataValue);
     const valueRef = useRef<ListOption>(undefined);
     const buttonRef = useRef<HTMLButtonElement>(null);

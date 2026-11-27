@@ -1,7 +1,7 @@
 import { MouseEvent, KeyboardEventHandler, memo, useCallback } from "react";
 import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Checkbox } from "@salt-ds/core";
-import { isEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
+import { useEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
@@ -26,7 +26,7 @@ export const CheckboxCell = memo(
     });
 
     const isChecked = !!dataRow[column.name];
-    const readOnly = isEditRowReadOnly(dataRow);
+    const readOnly = useEditRowReadOnly(dataRow);
 
     const handleCommit = useCallback(
       (value: boolean) => async (evt: MouseEvent) => {

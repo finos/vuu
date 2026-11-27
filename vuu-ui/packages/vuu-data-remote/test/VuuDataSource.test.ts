@@ -342,6 +342,44 @@ describe("VuuDataSource", () => {
     });
   });
 
+  describe("rpcRequest before subscribed", () => {
+    it.each(["before subscribe", "while subscribing"])(
+      "made %s, is sent once subscribed",
+      async (when) => {
+        const dataSource = new VuuDataSource({ table, viewport: "vp-1" });
+        const response = { type: "SUCCESS_RESULT", data: undefined };
+        const serverAPI = await ConnectionManager.serverAPI;
+        vi.mocked(serverAPI.rpcCall).mockResolvedValue(response);
+
+        const subscribe = () => dataSource.subscribe({}, vi.fn());
+        const subscribing =
+          when === "while subscribing" ? subscribe() : undefined;
+        const request = dataSource.rpcRequest({
+          params: {},
+          rpcName: "createSessionTable",
+          type: "RPC_REQUEST",
+        });
+        await (subscribing ?? subscribe());
+        expect(serverAPI.rpcCall).not.toHaveBeenCalled();
+
+        dataSource.handleMessageFromServer({
+          type: "subscribed",
+          tableSchema: { columns: [], key: "id", table },
+        } as unknown as Parameters<
+          VuuDataSource["handleMessageFromServer"]
+        >[0]);
+
+        expect(await request).toEqual(response);
+        expect(serverAPI.rpcCall).toHaveBeenCalledWith({
+          context: { type: "VIEWPORT_CONTEXT", viewPortId: "vp-1" },
+          params: {},
+          rpcName: "createSessionTable",
+          type: "RPC_REQUEST",
+        });
+      },
+    );
+  });
+
   describe("prop setters", () => {
     const callback = () => undefined;
     it("calls server when range set", async () => {
@@ -981,6 +1019,10 @@ describe("VuuDataSource createSessionDataSource session config", () => {
   ) => {
     const dataSource = new VuuDataSource(props);
     await dataSource.subscribe({}, () => undefined);
+    dataSource.handleMessageFromServer({
+      type: "subscribed",
+      tableSchema: { columns: [], key: "id", table: props.table },
+    } as unknown as Parameters<VuuDataSource["handleMessageFromServer"]>[0]);
     return dataSource;
   };
 
@@ -1026,6 +1068,80 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     const session = await dataSource.createSessionDataSource("All", "export");
 
     expect(session?.columns).toEqual(["bbg", "currency", "description", "ric"]);
+  });
+
+  describe("createSessionTable rpc params", () => {
+    const lastRpcParams = async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      return (vi.mocked(rpcCall).mock.lastCall?.[0] as any)?.params;
+    };
+
+    it("sends only copyOption and sessionType when no blueprint params are set", async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({
+        table,
+        session: { columns: ["ric"] },
+      });
+
+      await dataSource.createSessionDataSource("All", "export");
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "All",
+        sessionType: "export",
+      });
+    });
+
+    it("sends sessionTableName and columnsToCopy (joined) from a call-time override", async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({ table });
+
+      await dataSource.createSessionDataSource("Empty", "import", {
+        sessionTableName: "import-instruments-basic",
+        columnsToCopy: ["ric", "isin", "currency"],
+      });
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "Empty",
+        sessionType: "import",
+        sessionTableName: "import-instruments-basic",
+        columnsToCopy: "ric,isin,currency",
+      });
+    });
+
+    it('sends columnsToCopy "*" unchanged', async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({ table });
+
+      await dataSource.createSessionDataSource("All", "edit", {
+        columnsToCopy: "*",
+      });
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "All",
+        sessionType: "edit",
+        columnsToCopy: "*",
+      });
+    });
+
+    it("falls back to the datasource's session config for blueprint params", async () => {
+      const { rpcCall } = await ConnectionManager.serverAPI;
+      vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+      const dataSource = await subscribedDataSource({
+        table,
+        session: { sessionTableName: "edit-instruments-lite" },
+      });
+
+      await dataSource.createSessionDataSource("Selected");
+
+      expect(await lastRpcParams()).toEqual({
+        copyOption: "Selected",
+        sessionType: "edit",
+        sessionTableName: "edit-instruments-lite",
+      });
+    });
   });
 
   it("stores the source datasource on created session datasources", async () => {

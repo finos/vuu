@@ -62,6 +62,12 @@ export type NewRowState = {
   errors: Readonly<Record<string, string>>;
   submitting: boolean;
   values: Readonly<Record<string, VuuRowDataItemType>>;
+  /**
+   * Set when the server rejected the row. The message is reported against
+   * this column (the final column, where an inline add row shows it) and is
+   * cleared by the next change to the draft.
+   */
+  rowErrorColumn?: string;
 };
 
 export type EditLifecycle =
@@ -94,6 +100,8 @@ type RowEditDetails = {
 
 type EditSessionEvents = {
   cellEditChanged: (key: string, columnName: string) => void;
+  /** A row has been added, deleted, or had that change undone. */
+  rowActionChanged: (key: string) => void;
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
   newRow: (newRowState: NewRowState) => void;
@@ -109,6 +117,7 @@ export class EditSession
    */
   #rowEdits = new Map<string, RowEditDetails>();
   #addedRowKeys = new Set<string>();
+  #deletedRowKeys = new Set<string>();
   #editCount = 0;
   #deleteCount = 0;
   #addCount = 0;
@@ -148,6 +157,11 @@ export class EditSession
 
   get editCount() {
     return this.#editCount;
+  }
+
+  /** The column values every added row is given, unless the row sets them. */
+  get rowDefaults(): Readonly<RowDefaultDataItemValues> {
+    return this.#rowDefaults;
   }
 
   get invalidCount() {
@@ -251,7 +265,9 @@ export class EditSession
   }
 
   isNewRowComplete() {
-    if (Object.keys(this.#newRowState.errors).length > 0) {
+    const { errors, rowErrorColumn } = this.#newRowState;
+    // a server rejection of the previous submit does not block a retry
+    if (Object.keys(errors).some((column) => column !== rowErrorColumn)) {
       return false;
     }
     const requiredColumns =
@@ -300,9 +316,14 @@ export class EditSession
   }
 
   setNewRowValue(column: string, value: VuuRowDataItemType | undefined) {
-    const errors = { ...this.#newRowState.errors };
+    const { rowErrorColumn, ...newRowState } = this.#newRowState;
+    const errors = { ...newRowState.errors };
     delete errors[column];
-    const values = { ...this.#newRowState.values };
+    if (rowErrorColumn !== undefined) {
+      // the server rejection applied to the previous draft
+      delete errors[rowErrorColumn];
+    }
+    const values = { ...newRowState.values };
     if (
       value === undefined ||
       (typeof value === "string" && value.trim() === "")
@@ -312,18 +333,24 @@ export class EditSession
       values[column] = value;
     }
     this.#setNewRowState({
-      ...this.#newRowState,
+      ...newRowState,
       errors,
       values,
     });
   }
 
   setNewRowError(column: string, errorMessage = "Invalid value") {
-    const values = { ...this.#newRowState.values };
+    const { rowErrorColumn, ...newRowState } = this.#newRowState;
+    const errors = { ...newRowState.errors };
+    if (rowErrorColumn !== undefined) {
+      // the server rejection applied to the previous draft
+      delete errors[rowErrorColumn];
+    }
+    const values = { ...newRowState.values };
     delete values[column];
     this.#setNewRowState({
-      ...this.#newRowState,
-      errors: { ...this.#newRowState.errors, [column]: errorMessage },
+      ...newRowState,
+      errors: { ...errors, [column]: errorMessage },
       values,
     });
   }
@@ -337,6 +364,18 @@ export class EditSession
     this.#setNewRowState({
       ...this.#newRowState,
       errors,
+    });
+  }
+
+  /** Discards the new-row draft, leaving the rest of the session untouched. */
+  clearNewRow() {
+    this.#setNewRowState({
+      columns: this.#newRowState.columns,
+      draftRevision: this.#newRowState.draftRevision + 1,
+      errors: {},
+      requiredColumns: this.#newRowState.requiredColumns,
+      submitting: false,
+      values: {},
     });
   }
 
@@ -354,7 +393,14 @@ export class EditSession
         })
         .map((column) => [column, "Value required"]),
     );
-    const errors = { ...this.#newRowState.errors, ...missingErrors };
+    const { rowErrorColumn, ...newRowState } = this.#newRowState;
+    // a previous server rejection must not block a retry
+    const { [rowErrorColumn ?? ""]: _serverError, ...fieldErrors } =
+      newRowState.errors;
+    const errors =
+      rowErrorColumn === undefined
+        ? { ...newRowState.errors, ...missingErrors }
+        : { ...fieldErrors, ...missingErrors };
 
     if (Object.keys(errors).length > 0) {
       this.#setNewRowState({ ...this.#newRowState, errors });
@@ -365,7 +411,7 @@ export class EditSession
       return { data: undefined, type: "SUCCESS_RESULT" };
     }
 
-    this.#setNewRowState({ ...this.#newRowState, submitting: true });
+    this.#setNewRowState({ ...newRowState, errors, submitting: true });
     try {
       const response = await this.addRow({ ...this.#newRowState.values });
       if (isRpcError(response)) {
@@ -375,6 +421,7 @@ export class EditSession
           errors: finalColumn
             ? { [finalColumn]: response.errorMessage }
             : this.#newRowState.errors,
+          rowErrorColumn: finalColumn,
           submitting: false,
         });
         return response;
@@ -398,6 +445,7 @@ export class EditSession
         errors: finalColumn
           ? { [finalColumn]: errorMessage }
           : this.#newRowState.errors,
+        rowErrorColumn: finalColumn,
         submitting: false,
       });
       return { errorMessage, type: "ERROR_RESULT" };
@@ -444,6 +492,8 @@ export class EditSession
           this.#addedRowKeys.delete(key);
           this.#discardRowEdits(key, deleteRevision);
           addedRowsDeleted++;
+        } else {
+          this.#deletedRowKeys.add(key);
         }
       }
       const sourceRowsDeleted = deletedKeys.length - addedRowsDeleted;
@@ -454,6 +504,9 @@ export class EditSession
         this.#addCount = Math.max(0, this.#addCount - addedRowsDeleted);
       }
       this.#emitEditStateChange(oldState);
+      for (const key of deletedKeys) {
+        this.emit("rowActionChanged", key);
+      }
     } else if (selectedRowsCount > 0) {
       this.#setDeleteCount(this.#deleteCount + selectedRowsCount);
     }
@@ -480,16 +533,70 @@ export class EditSession
     }
     if (!isRpcError(response)) {
       const key = (response.data as AddRowResultData | undefined)?.key;
+      this.#setAddCount(this.#addCount + 1);
       if (key !== undefined && key !== null) {
         this.#addedRowKeys.add(String(key));
+        this.emit("rowActionChanged", String(key));
       }
-      this.#setAddCount(this.#addCount + 1);
     }
     return response;
   }
 
   hasRowChanges(key: string): boolean {
     return this.#rowEdits.has(key);
+  }
+
+  /**
+   * The change made to a row in this edit session, as known by the client,
+   * or undefined if the row is unchanged.
+   */
+  getRowAction(key: string): EditActionType | undefined {
+    if (this.#addedRowKeys.has(key)) {
+      return "addRow";
+    } else if (this.#deletedRowKeys.has(key)) {
+      return "deleteRow";
+    }
+    const cellEdits = this.#rowEdits.get(key)?.cellEdits;
+    if (
+      cellEdits &&
+      [...cellEdits.keys()].some((columnName) =>
+        this.isCellEdited(key, columnName),
+      )
+    ) {
+      return "editCell";
+    }
+    return undefined;
+  }
+
+  /**
+   * The keys of the rows added, deleted or edited in this edit session, as
+   * known by the client.
+   */
+  get changedRowKeys(): string[] {
+    const keys = new Set([...this.#addedRowKeys, ...this.#deletedRowKeys]);
+    for (const key of this.#rowEdits.keys()) {
+      if (this.getRowAction(key) !== undefined) {
+        keys.add(key);
+      }
+    }
+    return [...keys];
+  }
+
+  /**
+   * The edited values for a row, keyed by column name. Includes invalid
+   * edits. Returns an empty object when the row has no edits.
+   */
+  getEditedValues(key: string): Record<string, EditSessionValue> {
+    const cellEdits = this.#rowEdits.get(key)?.cellEdits;
+    if (!cellEdits) {
+      return {};
+    }
+    return Object.fromEntries(
+      Array.from(cellEdits, ([column, { editedValue }]) => [
+        column,
+        editedValue,
+      ]),
+    );
   }
 
   isCellEdited(key: string, columnName: string): boolean {
@@ -567,7 +674,8 @@ export class EditSession
 
     this.#discardRowEdits(key, undoRevision, columnsAtRequest);
 
-    if (action === "deleteRow") {
+    if (action === "deleteRow" || this.#deletedRowKeys.has(key)) {
+      this.#deletedRowKeys.delete(key);
       this.#deleteCount = Math.max(0, this.#deleteCount - 1);
     }
 
@@ -586,6 +694,7 @@ export class EditSession
     }
 
     this.#emitEditStateChange(oldState);
+    this.emit("rowActionChanged", key);
 
     return response;
   }
@@ -597,8 +706,10 @@ export class EditSession
         .filter((columnName) => this.isCellEdited(key, columnName))
         .map((columnName) => [key, columnName] as const),
     );
+    const changedRows = [...this.#addedRowKeys, ...this.#deletedRowKeys];
     this.#rowEdits.clear();
     this.#addedRowKeys.clear();
+    this.#deletedRowKeys.clear();
     this.#cellCommitRevisions.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
@@ -614,6 +725,9 @@ export class EditSession
     });
     for (const [key, columnName] of editedCells) {
       this.emit("cellEditChanged", key, columnName);
+    }
+    for (const key of changedRows) {
+      this.emit("rowActionChanged", key);
     }
     this.#emitEditStateChange(oldState);
   }
@@ -739,6 +853,11 @@ export class EditSession
     return this.#sessionDataSource ?? this.#sourceTableDataSource;
   }
 
+  /** The dataSource of the table being edited. */
+  get sourceDataSource() {
+    return this.#sourceTableDataSource;
+  }
+
   get sessionDataSource() {
     return this.#sessionDataSource;
   }
@@ -764,7 +883,13 @@ export class EditSession
 
       try {
         if (sessionDataSource.status !== "unsubscribed" || saveChanges) {
-          await this.dataSource?.endEditSession?.(saveChanges, force);
+          const response = await this.dataSource?.endEditSession?.(
+            saveChanges,
+            force,
+          );
+          if (isRpcError(response)) {
+            throw new Error(response.errorMessage);
+          }
         }
         sessionDataSource.removeListener?.(
           "unsubscribed",

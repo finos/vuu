@@ -28,6 +28,7 @@ jobs:
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run build:worker
       - run: cd ./vuu-ui && npm run lint
+      - run: cd ./vuu-ui && npm run check:cycles
       - run: cd ./vuu-ui && npm run typecheck
 
   vitest:

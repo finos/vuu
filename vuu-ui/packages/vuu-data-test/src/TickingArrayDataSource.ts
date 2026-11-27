@@ -31,6 +31,7 @@ import type {
 } from "@vuu-ui/vuu-protocol-types";
 import {
   assertExpectedSessionTable,
+  createSessionTableParams,
   isRpcSuccess,
   isTypeaheadRequest,
   sessionDataSourceConfig,
@@ -180,16 +181,20 @@ export class TickingArrayDataSource extends ArrayDataSource {
     sessionType: SessionType = "edit",
     overrides?: SessionDataSourceOverrides,
   ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
+    // A call-time override always wins; otherwise fall back to the session
+    // config this datasource was constructed with.
+    const effectiveOverrides = overrides ?? this.#session;
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "createSessionTable",
-      params: { copyOption, sessionType },
+      params: createSessionTableParams(
+        copyOption,
+        sessionType,
+        effectiveOverrides,
+      ),
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      // A call-time override always wins; otherwise fall back to the session
-      // config this datasource was constructed with.
-      const effectiveOverrides = overrides ?? this.#session;
       assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       const sessionConfig = sessionDataSourceConfig(
         this.config,
@@ -332,6 +337,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   get columns() {
     return super.columns;
+  }
+
+  get session() {
+    return this.#session;
   }
 
   async endEditSession(saveChanges = false, force = false) {

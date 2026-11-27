@@ -6,9 +6,22 @@
 features. It coordinates edit-session state with editable data sources and
 provides React integrations for edit-mode controls.
 
-The initial implementation is copied from `@vuu-ui/vuu-utils`. The originals
-remain in place so existing consumers continue to work while applications
-migrate to this package.
+The package is organised in layers. Applications should start at the highest
+layer that fits and drop down only when they need more control:
+
+1. **Pattern components** – `EditForm`, `CreateRowForm` (this package) and
+   `EditableTableContainer`, `BulkEditDialog`
+   (`@vuu-ui/vuu-table-extras`).
+2. **Composable hooks** – `useEditableTable`, `useEditForm`,
+   `useEditableColumns`, `useEditSessionState`, `useLookupOptions`,
+   `useConfirmDiscard`, `useCustomEditField`.
+3. **Primitives** – `EditSession`, `DirectEditSession`, `DataEditingProvider`,
+   `EditModeProvider`, `EditField`, `EditButtons`, cell renderers.
+
+Errors raised by asynchronous edit operations are routed to an optional
+`onError(error, operation)` callback (`EditErrorHandler`). When no handler is
+supplied they are logged with `console.error`, so failures are never silently
+swallowed.
 
 ## Architecture
 
@@ -158,11 +171,18 @@ keyed by row key and cannot cross a key-column change. The hook invokes it on
 `subscribed`, since a remote session table has no schema at the point `begin()`
 resolves.
 
-The hook returns `editSchema` and `columnsDiverge` for consumers rendering a
-single `Table` across both modes: the returned `dataSource` swaps column sets on
-entering edit mode, so column descriptors must be rebuilt rather than reused.
-This matters for cell editing in particular: `editCell` sends a column name to
-the session table, so it must come from the edit schema. `rowDefaults` naming
+The hook returns `editSchema` for consumers rendering a single `Table` across
+both modes: the returned `dataSource` swaps column sets on entering edit mode,
+so column descriptors must be rebuilt rather than reused. `editSchema` is the
+session table's schema, limited to the columns the source DataSource's
+`session.columns` asks for, if any. `useEditableColumns` shows the table
+config's columns that the data shown has, with their config settings, and adds
+no others: those in `schema` in view mode, in `editSchema` in edit mode. Client
+and calculated columns are always shown. The session blueprint decides which
+columns can be edited, the table config decides which are shown, so one config
+serves both modes. This matters for cell editing in
+particular: `editCell` sends a column name to the session table, so it must be
+in the edit schema. `rowDefaults` naming
 view-only columns are dropped by `reconcileWithSessionSchema` rather than sent.
 
 ## Row operations lifecycle (add, delete, undo)
@@ -204,8 +224,23 @@ This decouples the client from requiring the remote server to return an extra re
 | `src/DataEditingProvider.tsx` | Provides the active `TableEditSession` through React context (`useTableEditSession`, `useEditSession`).                             |
 | `src/EditModeProvider.tsx`    | Provides shared view/edit mode state for editing controls.                                                                         |
 | `src/EditButtons.tsx`         | Renders save, cancel, delete, and add-row controls based on edit-session state.                                                    |
-| `src/edit-utils.tsx`          | Supplies user-facing stale-update messages.                                                                                        |
+| `src/edit-utils.tsx`          | Supplies user-facing stale-update messages and per-row edit errors (`withDataRowEditErrors`).                                       |
+| `src/edit-errors.ts`          | Defines `EditOperation` and `EditErrorHandler`; reports errors to `onError` or the console.                                        |
+| `src/useEditableColumns.ts`   | Builds edit-mode column descriptors from column `editable`/`editor` metadata and the schema, including divergent edit schemas.    |
+| `src/useEditSessionState.ts`  | Subscribes to an `EditSession` and returns its edit state, counters and lifecycle.                                                 |
+| `src/useConfirmDiscard.ts`    | Returns a `confirmCancel` callback that asks before discarding unsaved edits.                                                      |
+| `src/useEditForm.ts`          | Form state for editing or creating one row in its own edit session.                                                                |
+| `src/edit-form/`              | `EditForm`, `CreateRowForm` and `EditFormContext` (`useEditFormContext`).                                                          |
+| `src/edit-field/`             | `EditField`: a form field bound to the form's edit session; given a `column`, its control comes from `getDataItemEditControl`.     |
+| `src/edit-control/`           | `getDataItemEditControl`, the single place that picks an edit control for a `DataValueDescriptor` (forms, filters, bulk edit).     |
+| `src/form-fields.ts`          | `getFormFields`: generates form field descriptors from the schema and table columns, for edit or create.                           |
+| `src/useCustomEditField.ts`   | Connects a custom field control to the enclosing edit form.                                                                        |
+| `src/lookup-values/`          | `useLookupValues` and `useLookupOptions`, which load options from lookup tables.                                                   |
 | `src/index.ts`                | Defines the package's public API.                                                                                                  |
+
+The pattern components built on this package live in `@vuu-ui/vuu-table-extras`:
+`EditableTableContainer` (`src/editable-table/`, inline or form editing, built from the
+`src/table-editor/` pieces) and `useBulkEditDialog` (`src/bulk-edit-dialog/`).
 
 ## Dependencies
 

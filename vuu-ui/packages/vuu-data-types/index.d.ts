@@ -45,7 +45,10 @@ import type {
 } from "@vuu-ui/vuu-utils";
 import type {
   ColumnDescriptor,
+  ColumnTypeRendering,
   DataValueTypeDescriptor,
+  LookupRenderer,
+  ValueListRenderer,
 } from "@vuu-ui/vuu-table-types";
 import type { PostMessageToClientCallback } from "@vuu-ui/vuu-data-remote";
 
@@ -174,8 +177,40 @@ export declare type DataEditable =
       update: boolean;
     };
 
+/**
+ * Requests a typeahead editor, which suggests values already present in the
+ * table. Suits codes (currency, exchange), not free text.
+ */
+export interface TypeaheadEditor {
+  name: "typeahead";
+  /**
+   * 0 shows suggestions on focus, like a dropdown. Use 1 or more for columns
+   * with many distinct values, so the user must type first.
+   * @default 1
+   */
+  minCharacterCountToTriggerSuggestions?: 0 | 1 | 2 | 3;
+}
+
+/**
+ * How a value is edited, in a table cell or a form field. Names a registered
+ * cell editor (e.g. "input-cell", "checkbox-cell", "dropdown-cell") with any
+ * options it needs, or requests a typeahead.
+ */
+export declare type DataValueEditor =
+  | ColumnTypeRendering
+  | LookupRenderer
+  | ValueListRenderer
+  | TypeaheadEditor;
+
 export interface DataValueDescriptor {
+  /**
+   * Whether the value can be edited. On a server schema column, what the
+   * server allows. On a client descriptor (e.g. a table column) it can only
+   * narrow what the server allows.
+   */
   editable?: DataEditable;
+  /** How the value is edited, in a table cell or a form field. */
+  editor?: DataValueEditor;
   /**
    There are three values for editableBulk. 
     - false user will not see these values when applying a bulk edit. 
@@ -652,10 +687,26 @@ export declare type EditSessionMode =
  * Describes an edit (session) table whose schema differs from the source (view) table.
  * When supplied, the session datasource is built from these values instead of inheriting
  * the source datasource config, which would otherwise reference view-only columns.
+ *
+ * `sessionTableName` and `columnsToCopy` are sent to the server with the
+ * `createSessionTable` RPC; `beginEditSession` does not use them.
  */
 export declare type SessionDataSourceOverrides = {
   /** Columns to subscribe to on the session table. */
   columns?: VuuColumns;
+  /**
+   * Source columns the server copies into the session table, or `"*"` for all
+   * columns. Sent to the server as a comma-separated string. When omitted, the
+   * server copies all source columns except vuuCreatedTimestamp,
+   * vuuUpdatedTimestamp and vuuMsg.
+   */
+  columnsToCopy?: string[] | "*";
+  /**
+   * Name of the session table blueprint, registered by the server module,
+   * that the server creates the session table from. When omitted, the server
+   * uses `<sessionType>-<sourceTable>`, e.g. `edit-instruments`.
+   */
+  sessionTableName?: string;
   /** Expected session table. Used to validate the table returned by the server. */
   table?: VuuTable;
 };
@@ -677,6 +728,11 @@ export interface DataSourceBase<
   /**
    * Create a session datasource by requesting the server to create a session table
    * via the `createSessionTable` RPC and wrapping the returned table.
+   *
+   * `overrides` (or, when not supplied, the datasource's `session` config) may
+   * name the server-side session table blueprint (`sessionTableName`) and the
+   * source columns to copy (`columnsToCopy`); each is sent to the server only
+   * when present.
    */
   createSessionDataSource?: (
     copyOption: CopyOption,
@@ -811,6 +867,11 @@ export interface DataSourceBase<
   range: Range;
   readonly selectedRowsCount: number;
   sendBroadcastMessage?: (message: DataSourceBroadcastMessage) => void;
+  /**
+   * The session table, when it differs from `table`, as passed to the
+   * constructor. Edit sessions are created from it.
+   */
+  readonly session?: SessionDataSourceOverrides;
   readonly size: number;
   sort: VuuSort;
   subscribe: (

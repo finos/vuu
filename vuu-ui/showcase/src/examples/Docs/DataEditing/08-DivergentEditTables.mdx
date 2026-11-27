@@ -1,0 +1,70 @@
+# Divergent Edit Tables
+
+By default the session table has the same columns as the table being viewed.
+Sometimes they differ: the view table might join in descriptive columns that
+can't be edited, while edits go to a narrower table on the server. We call
+this a divergent edit table.
+
+## Configuring the data source
+
+Describe the edit table where you create the view data source, with the
+`session` property:
+
+```ts
+const dataSource = new VuuDataSource({
+  table: VIEW_TABLE,
+  columns: VIEW_COLUMNS,
+  session: {
+    table: EDIT_TABLE, // a stable VuuTable
+    columns: EDIT_COLUMNS, // a stable string[]
+  },
+});
+```
+
+The editing hooks don't need to know about this. When an edit session begins,
+the session data source is built from `session.columns` instead of copying the
+view's columns, filter, sort and grouping, which may name columns the edit
+table doesn't have.
+
+## Rendering columns
+
+The data source switches column sets when you enter edit mode, so column
+descriptors built for the view don't fit the edit table. `EditableTableContainer`
+handles this for you.
+
+In edit mode the table shows the columns of its config that the edit table
+has, in config order with their labels, widths and editors. A column the
+edit table doesn't have, or that `session.columns` leaves out, is not shown,
+and no column outside the config is added. View mode works the same way with
+the view table. So one config serves both modes: a column such as a server
+generated key can be shown in the view but not in edit mode, by leaving it
+out of `session.columns`, and a column only the edit table has is shown only
+in edit mode.
+
+If you build your own table, pass `editSchema` from `useEditableTable` to
+`useEditableColumns`:
+
+```tsx
+const { dataSource, editSchema, ...rest } = useEditableTable({
+  dataSource: viewDataSource,
+  isEditMode,
+});
+
+const columns = useEditableColumns({
+  columns: viewColumns,
+  editSchema,
+  isEditing: rest.isEditSessionReady,
+});
+```
+
+Cell edits send the column name to the session table, so edit-mode columns
+must be in the edit schema.
+
+## Things to know
+
+- `rowDefaults` entries for columns the edit table doesn't have are dropped.
+- If the edit table has a different key column, pending edits are discarded
+  when the session table's schema arrives, because edits are tracked by row
+  key.
+
+See `DESIGN.md` in `@vuu-ui/vuu-data-editing` for the details.
