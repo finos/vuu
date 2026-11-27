@@ -5,7 +5,7 @@ import type { ServiceHandler } from "./VuuModule";
 
 export type EntityValues = Record<string, VuuRowDataItemType>;
 
-export interface NextDayChangesProps {
+export interface EditHandlerProps {
   /**
    * The entity table. Besides its key and the entered columns it has
    * `active`, `change`, `changed_by` and the Vuu default columns.
@@ -85,7 +85,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * blueprints the {@link endEditSession} service and calls
  * {@link describeEdits} from sessionTableChanged.
  */
-export class NextDayChanges {
+export class EditHandler {
   #pendingChanges = new Map<string, PendingChange>();
   #columns: readonly SchemaColumn[];
   #columnNames: readonly string[];
@@ -102,7 +102,7 @@ export class NextDayChanges {
     table,
     user = "",
     validate,
-  }: NextDayChangesProps) {
+  }: EditHandlerProps) {
     this.#columns = columns;
     this.#columnNames = columns.map(({ name }) => name);
     this.#entityName = entityName;

@@ -1,5 +1,5 @@
 export * from "./ArrayProxy";
-export * from "./core/module/NextDayChanges";
+export * from "./core/module/EditHandler";
 export * from "./core/module/VuuModule";
 export { default as tableContainer } from "./core/table/TableContainer";
 export * from "./local-datasource-provider/LocalDatasourceProvider";

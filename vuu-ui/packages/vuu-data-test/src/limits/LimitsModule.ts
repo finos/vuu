@@ -6,7 +6,7 @@ import {
   type SessionTableDef,
   VuuModule,
 } from "../core/module/VuuModule";
-import { NextDayChanges } from "../core/module/NextDayChanges";
+import { EditHandler } from "../core/module/EditHandler";
 import tableContainer from "../core/table/TableContainer";
 import { VUU_DEFAULT_COLUMNS } from "../default-column-definitions";
 import { buildDataColumnMap, type Table } from "../Table";
@@ -273,7 +273,7 @@ const startOfToday = () => {
 /**
  * Limit definitions, one row per limit. Changes are made in a session table,
  * created from a blueprint, and take effect on the next business day, see
- * {@link NextDayChanges}.
+ * {@link EditHandler}.
  *
  * Blueprints: `edit-limitDefinitions` holds the columns a user enters, with
  * their edit rules; `import-limitDefinitions` adds the CSV row number;
@@ -291,7 +291,7 @@ export class LimitsModule extends VuuModule<LimitsTableName> {
     ),
   };
 
-  #limits = new NextDayChanges({
+  #limits = new EditHandler({
     columns: definitionColumns,
     entityName: "limit",
     newValues: ({ effective_from, entity_id, metric }) => ({

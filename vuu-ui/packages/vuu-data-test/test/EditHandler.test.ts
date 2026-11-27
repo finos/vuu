@@ -1,7 +1,7 @@
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { describe, expect, it } from "vitest";
-import { NextDayChanges } from "../src/core/module/NextDayChanges";
+import { EditHandler } from "../src/core/module/EditHandler";
 import { VUU_DEFAULT_COLUMNS } from "../src/default-column-definitions";
 import { Table } from "../src/Table";
 
@@ -42,12 +42,12 @@ const thresholdAboveZero = ({ threshold }: Record<string, unknown>) =>
   Number(threshold) > 0 ? undefined : "threshold must be above zero";
 
 const setup = (
-  props: Partial<ConstructorParameters<typeof NextDayChanges>[0]> = {
+  props: Partial<ConstructorParameters<typeof EditHandler>[0]> = {
     validate: thresholdAboveZero,
   },
 ) => {
   const rules = new Table(rulesSchema, [], columnMap(rulesSchema));
-  const changes = new NextDayChanges({
+  const changes = new EditHandler({
     columns: ruleColumns,
     entityName: "rule",
     table: rules,
@@ -82,7 +82,7 @@ const setup = (
   return { changes, rule, rules, session };
 };
 
-describe("NextDayChanges", () => {
+describe("EditHandler", () => {
   it("adds a rule that is not active until the next business day", () => {
     const { changes, rule, session } = setup();
     const add = { name: "Fat finger", rule_id: "R1", threshold: 10 };
