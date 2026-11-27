@@ -28,6 +28,7 @@ import {
   EditButtons,
   type EditMode,
   UNDO_CELL_RENDERER,
+  useCanUndo,
   useEditableTable,
 } from "@vuu-ui/vuu-data-editing";
 import {
@@ -367,9 +368,11 @@ export const EditableInstrumentsWithInlineAddRow = () => (
 );
 
 const EditableInstrumentsTemplate = ({
+  allowCellBlockSelection,
   copyOption,
   showInlineAddRow = false,
 }: {
+  allowCellBlockSelection?: boolean;
   copyOption?: CopyOption;
   showInlineAddRow?: boolean;
 }) => {
@@ -410,6 +413,8 @@ const EditableInstrumentsTemplate = ({
     onCancel: exitEditMode,
     onSave: exitEditMode,
   });
+
+  const canUndo = useCanUndo(editSession);
 
   const onToggleEditMode = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
@@ -462,10 +467,19 @@ const EditableInstrumentsTemplate = ({
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
+        {allowCellBlockSelection && isEditSessionReady ? (
+          <Button
+            disabled={!canUndo}
+            onClick={() => editSession.undoLastChange()}
+          >
+            Undo
+          </Button>
+        ) : null}
       </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
+            allowCellBlockSelection={allowCellBlockSelection}
             config={config}
             data-viewport={dataSource.viewport}
             dataSource={dataSource}
@@ -505,6 +519,22 @@ export const EditableInstrumentsInlineEdit = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableInstrumentsTemplate copyOption="All" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/**
+ * Select a block of cells by dragging, or with Shift and the arrow keys. In
+ * Edit mode, type a value and press Enter to set every editable cell of the
+ * block, as one change. Undo, or Ctrl+Z (Cmd+Z on a Mac), reverts the latest
+ * change.
+ *
+ * tags=data-consumer
+ */
+export const EditableInstrumentsCellBlockEditing = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate allowCellBlockSelection copyOption="All" />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );

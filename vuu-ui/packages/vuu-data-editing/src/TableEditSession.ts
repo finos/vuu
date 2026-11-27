@@ -1,5 +1,18 @@
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 
+/** The edit of one cell, as part of a change. */
+export type CellChange = {
+  key: string;
+  column: string;
+  /** The value of the cell before the edit. */
+  previous: VuuRowDataItemType;
+  value: VuuRowDataItemType;
+};
+export type CommitChangeOptions = {
+  /** Add the edits to the latest change, so they are undone with it. */
+  extendLastChange?: boolean;
+};
+
 export type TableEditSessionEvents = {
   cellEditChanged: (key: string, columnName: string) => void;
 };
@@ -34,6 +47,19 @@ export interface TableEditSession {
     columnName: string,
     restoredValue: VuuRowDataItemType,
   ): Promise<RpcResult>;
+  /**
+   * Commits the edits of several cells as one change. Resolves to the first
+   * error, if any; the other edits are still made.
+   */
+  commitChange(
+    edits: readonly CellChange[],
+    options?: CommitChangeOptions,
+  ): Promise<RpcResult>;
+  /**
+   * Reverts the latest change. Only a staged edit session keeps a history
+   * of changes.
+   */
+  undoLastChange?(): Promise<RpcResult>;
   isCellEdited(key: string, columnName: string): boolean;
   on<E extends keyof TableEditSessionEvents>(
     event: E,

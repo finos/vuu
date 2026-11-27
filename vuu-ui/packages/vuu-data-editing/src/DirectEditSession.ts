@@ -1,7 +1,8 @@
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { EventEmitter } from "@vuu-ui/vuu-utils";
+import { EventEmitter, isRpcError } from "@vuu-ui/vuu-utils";
 import type {
+  CellChange,
   TableEditSession,
   TableEditSessionEvents,
 } from "./TableEditSession";
@@ -45,6 +46,17 @@ export class DirectEditSession
     _restoredValue: VuuRowDataItemType,
   ): Promise<RpcResult> {
     return { data: undefined, type: "SUCCESS_RESULT" };
+  }
+
+  async commitChange(edits: readonly CellChange[]): Promise<RpcResult> {
+    let error: RpcResult | undefined;
+    for (const { key, column, previous, value } of edits) {
+      const response = await this.commit(key, column, previous, value, true);
+      if (isRpcError(response)) {
+        error ??= response;
+      }
+    }
+    return error ?? { data: undefined, type: "SUCCESS_RESULT" };
   }
 
   async commit(
