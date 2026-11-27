@@ -144,4 +144,26 @@ test.describe("Table cell block editing", () => {
     await cell(page, 5, "currency").click();
     await expect(page.locator(".vuuCellBlock")).toHaveCount(0);
   });
+
+  test("Shift and the arrow keys select a block to edit", async ({
+    mount,
+    page,
+  }) => {
+    await mount(EXAMPLE);
+    await editMode(page);
+
+    await cellInput(page, 1, "lotSize").click();
+    await page.keyboard.down("Shift");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.up("Shift");
+    await expect(page.locator(".vuuCellBlock")).toBeFocused();
+
+    await page.keyboard.type("30");
+    await page.keyboard.press("Enter");
+    for (const row of [1, 2, 3]) {
+      await expect(cellInput(page, row, "lotSize")).toHaveValue("30");
+    }
+    await expect(cellInput(page, 4, "lotSize")).not.toHaveValue("30");
+  });
 });

@@ -129,7 +129,12 @@ export const useCellBlockSelection = ({
   }, []);
 
   const cellBlockRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
-    stateRef.current.cellBlock = el;
+    const { current: state } = stateRef;
+    state.cellBlock = el;
+    // the selection may have grown before the block was rendered
+    if (el && state.cellBlockClassName) {
+      el.classList.add(state.cellBlockClassName);
+    }
   }, []);
 
   const initializeStateRef = useCallback(() => {
