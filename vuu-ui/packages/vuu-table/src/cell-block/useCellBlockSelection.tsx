@@ -132,29 +132,6 @@ export const useCellBlockSelection = ({
     stateRef.current.cellBlock = el;
   }, []);
 
-  const createCellBlock = useCallback(
-    (method: "mouse" | "keyboard" = "mouse") => {
-      const { startBox, startCell } = stateRef.current;
-      if (startCell) {
-        const table = queryClosest<HTMLDivElement>(startCell, ".vuuTable");
-        if (table) {
-          table.classList.add(`vuu-cellblock-select-in-progress-${method}`);
-        }
-        setElementBox(startCell, startBox);
-        startCell.classList.add("vuu-cellblock-start");
-        setCellBlock(
-          <CellBlock
-            canEdit={canEdit}
-            onCopy={handleCopy}
-            onEdit={handleEdit}
-            ref={cellBlockRef}
-          />,
-        );
-      }
-    },
-    [canEdit, cellBlockRef, handleCopy, handleEdit],
-  );
-
   const initializeStateRef = useCallback(() => {
     const { cellBlock, cellBlockClassName, startCell, endCell } =
       stateRef.current;
@@ -179,6 +156,35 @@ export const useCellBlockSelection = ({
       startPos: [-1, -1],
     };
   }, []);
+
+  const clearCellBlock = useCallback(() => {
+    initializeStateRef();
+    setCellBlock(null);
+  }, [initializeStateRef]);
+
+  const createCellBlock = useCallback(
+    (method: "mouse" | "keyboard" = "mouse") => {
+      const { startBox, startCell } = stateRef.current;
+      if (startCell) {
+        const table = queryClosest<HTMLDivElement>(startCell, ".vuuTable");
+        if (table) {
+          table.classList.add(`vuu-cellblock-select-in-progress-${method}`);
+        }
+        setElementBox(startCell, startBox);
+        startCell.classList.add("vuu-cellblock-start");
+        setCellBlock(
+          <CellBlock
+            canEdit={canEdit}
+            onCopy={handleCopy}
+            onDismiss={clearCellBlock}
+            onEdit={handleEdit}
+            ref={cellBlockRef}
+          />,
+        );
+      }
+    },
+    [canEdit, cellBlockRef, clearCellBlock, handleCopy, handleEdit],
+  );
 
   const addMouseListener = useCallback(
     (mouseOperation: MouseOperation, handler: NativeMouseHandler) => {
@@ -283,8 +289,9 @@ export const useCellBlockSelection = ({
 
   const handleMouseDown = useCallback<MouseEventHandler>(
     (evt) => {
-      if (evt.button === 0) {
-        initializeStateRef();
+      // a press on the block is for the block
+      if (evt.button === 0 && !queryClosest(evt.target, ".vuuCellBlock")) {
+        clearCellBlock();
         const { current: state } = stateRef;
         const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
         if (cell) {
@@ -303,9 +310,9 @@ export const useCellBlockSelection = ({
     },
     [
       addMouseListener,
+      clearCellBlock,
       handleNativeMouseOver,
       handleNativeMouseUp,
-      initializeStateRef,
     ],
   );
 

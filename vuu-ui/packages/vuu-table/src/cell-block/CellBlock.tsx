@@ -2,7 +2,7 @@ import { Input } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
-import { isCharacterKey, isRpcError } from "@vuu-ui/vuu-utils";
+import { isArrowKey, isCharacterKey, isRpcError } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   type HTMLAttributes,
@@ -24,6 +24,8 @@ export interface CellBlockProps
   canEdit?: () => boolean;
   debugName?: string;
   onCopy?: () => void;
+  /** Called when an arrow key moves away from the block. */
+  onDismiss?: () => void;
   /** Sets every editable cell of the block to value. */
   onEdit?: (value: string) => Promise<RpcResult>;
 }
@@ -37,7 +39,7 @@ type EditorState = { error?: string; value: string };
  */
 export const CellBlock = forwardRef<HTMLDivElement, CellBlockProps>(
   function CellBlock(
-    { canEdit, className, onCopy, onEdit, ...htmlAttributes },
+    { canEdit, className, onCopy, onDismiss, onEdit, ...htmlAttributes },
     forwardedRef,
   ) {
     const targetWindow = useWindow();
@@ -66,6 +68,9 @@ export const CellBlock = forwardRef<HTMLDivElement, CellBlockProps>(
       async (evt) => {
         if (evt.metaKey && evt.key === "c") {
           onCopy?.();
+        } else if (editor === undefined && isArrowKey(evt.key)) {
+          // the table moves the focused cell; the block goes
+          if (!evt.shiftKey) onDismiss?.();
         } else if (editor === undefined && canEdit?.()) {
           // a key that opens the editor is not for the table's focused cell
           if (
@@ -80,7 +85,7 @@ export const CellBlock = forwardRef<HTMLDivElement, CellBlockProps>(
           }
         }
       },
-      [canEdit, editor, onCopy],
+      [canEdit, editor, onCopy, onDismiss],
     );
 
     const handleEditorKeyDown = useCallback(

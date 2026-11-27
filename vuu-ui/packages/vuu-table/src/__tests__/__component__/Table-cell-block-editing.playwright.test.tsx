@@ -119,4 +119,29 @@ test.describe("Table cell block editing", () => {
     await expect(input).toHaveValue(before);
     await expect(undoButton(page)).toBeDisabled();
   });
+
+  test("an arrow key moves away from the block and clears it", async ({
+    mount,
+    page,
+  }) => {
+    await mount(EXAMPLE);
+    await editMode(page);
+
+    await selectCells(page, [1, "lotSize"], [3, "lotSize"]);
+    await page.keyboard.type("25");
+    await page.keyboard.press("Enter");
+    await expect(page.locator(".vuuCellBlock")).toBeFocused();
+
+    await page.keyboard.press("ArrowDown");
+    await expect(page.locator(".vuuCellBlock")).toHaveCount(0);
+    await expect(page.locator(".vuuTableCell:focus")).toHaveCount(1);
+  });
+
+  test("a click on a cell clears the block", async ({ mount, page }) => {
+    await mount(EXAMPLE);
+
+    await selectCells(page, [1, "lotSize"], [3, "lotSize"]);
+    await cell(page, 5, "currency").click();
+    await expect(page.locator(".vuuCellBlock")).toHaveCount(0);
+  });
 });
