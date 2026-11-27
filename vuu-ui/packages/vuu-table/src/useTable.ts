@@ -850,6 +850,7 @@ export const useTable = ({
     columns,
     dataRowsRef,
     headerCount: headerState.count,
+    keyColumn: tableSchemaForPinnedRows?.key,
   });
 
   const {

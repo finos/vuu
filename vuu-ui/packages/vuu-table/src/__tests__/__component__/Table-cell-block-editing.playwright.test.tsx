@@ -186,4 +186,30 @@ test.describe("Table cell block editing", () => {
     ).toHaveValue("A");
     expect(await page.locator(".vuuCellBlock").boundingBox()).toEqual(block);
   });
+
+  test("a block of the key column can't be edited", async ({ mount, page }) => {
+    await mount(EXAMPLE);
+    await editMode(page);
+    const rics = await Promise.all(
+      [1, 2].map((row) => cellInput(page, row, "ric").inputValue()),
+    );
+
+    await selectCells(page, [1, "lotSize"], [2, "ric"]);
+    await page.keyboard.type("8");
+    await page.keyboard.press("Enter");
+    await expect(cellInput(page, 1, "lotSize")).toHaveValue("8");
+    await expect(cellInput(page, 2, "lotSize")).toHaveValue("8");
+    for (const [i, row] of [1, 2].entries()) {
+      await expect(cellInput(page, row, "ric")).toHaveValue(rics[i]);
+    }
+
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.down("Shift");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.up("Shift");
+    await page.keyboard.type("X");
+    await expect(
+      page.getByRole("textbox", { name: "Value for the selected cells" }),
+    ).toHaveCount(0);
+  });
 });

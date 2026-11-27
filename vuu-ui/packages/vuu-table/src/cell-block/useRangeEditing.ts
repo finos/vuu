@@ -13,6 +13,8 @@ export interface RangeEditingHookProps {
   columns: readonly RuntimeColumnDescriptor[];
   dataRowsRef: RefObject<readonly DataRow[]>;
   headerCount: number;
+  /** The key column of the data source, which a block edit never sets. */
+  keyColumn?: string;
 }
 
 /** The value to set, typed for the column. Throws when it isn't valid. */
@@ -35,12 +37,14 @@ const typedValue = (
 
 /**
  * Edits every editable cell of a cell block as one change, setting each to
- * the same value.
+ * the same value. Cells of the key column are left as they are, as keys are
+ * unique.
  */
 export const useRangeEditing = ({
   columns,
   dataRowsRef,
   headerCount,
+  keyColumn,
 }: RangeEditingHookProps) => {
   const editSession = useTableEditSession();
 
@@ -50,9 +54,10 @@ export const useRangeEditing = ({
         ({ ariaColIndex, ...column }) =>
           ariaColIndex >= columnRange.from &&
           ariaColIndex <= columnRange.to &&
+          column.name !== keyColumn &&
           isDataValueEditable(column, "update"),
       ),
-    [columns],
+    [columns, keyColumn],
   );
 
   /** True when the block has a cell that can be edited. */
