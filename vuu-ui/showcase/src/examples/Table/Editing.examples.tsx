@@ -28,6 +28,7 @@ import {
   EditButtons,
   type EditMode,
   UNDO_CELL_RENDERER,
+  useCanUndo,
   useEditableTable,
 } from "@vuu-ui/vuu-data-editing";
 import {
@@ -77,11 +78,11 @@ const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");
 
 const InstrumentColumns: ColumnDescriptor[] = [
-  { name: "bbg", serverDataType: "string", width: 90 },
+  { name: "bbg", serverDataType: "string", unique: true, width: 90 },
   { name: "currency", serverDataType: "string", width: 80 },
   { name: "description", serverDataType: "string", width: 150 },
   { name: "exchange", serverDataType: "string", width: 120 },
-  { name: "isin", serverDataType: "string", width: 100 },
+  { name: "isin", serverDataType: "string", unique: true, width: 100 },
   { name: "lotSize", serverDataType: "int", width: 80 },
   { name: "ric", serverDataType: "string", width: 75 },
   { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp", width: 160 },
@@ -367,9 +368,13 @@ export const EditableInstrumentsWithInlineAddRow = () => (
 );
 
 const EditableInstrumentsTemplate = ({
+  allowCellBlockEditing,
+  allowCellBlockSelection,
   copyOption,
   showInlineAddRow = false,
 }: {
+  allowCellBlockEditing?: boolean;
+  allowCellBlockSelection?: boolean;
   copyOption?: CopyOption;
   showInlineAddRow?: boolean;
 }) => {
@@ -411,6 +416,8 @@ const EditableInstrumentsTemplate = ({
     onSave: exitEditMode,
   });
 
+  const canUndo = useCanUndo(editSession);
+
   const onToggleEditMode = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
       setEditMode((e.target as HTMLButtonElement).value as EditMode);
@@ -436,7 +443,10 @@ const EditableInstrumentsTemplate = ({
                 col.name === "vuuUpdatedTimestamp" ||
                 col.name === "vuuMsg"
                 ? col
-                : { ...col, editable: true },
+                : col.name === "ric"
+                  ? // the key: entered for a new row, never changed
+                    { ...col, editable: { insert: true, update: false } }
+                  : { ...col, editable: true },
             ).concat(
               {
                 name: "vuuAction",
@@ -462,10 +472,20 @@ const EditableInstrumentsTemplate = ({
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
+        {allowCellBlockEditing && isEditSessionReady ? (
+          <Button
+            disabled={!canUndo}
+            onClick={() => editSession.undoLastChange()}
+          >
+            Undo
+          </Button>
+        ) : null}
       </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
+            allowCellBlockEditing={allowCellBlockEditing}
+            allowCellBlockSelection={allowCellBlockSelection}
             config={config}
             data-viewport={dataSource.viewport}
             dataSource={dataSource}
@@ -505,6 +525,34 @@ export const EditableInstrumentsInlineEdit = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableInstrumentsTemplate copyOption="All" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/**
+ * Select a block of cells by dragging, or with Shift and the arrow keys. In
+ * Edit mode, type a value and press Enter to set every editable cell of the
+ * block, as one change. Undo, or Ctrl+Z (Cmd+Z on a Mac), reverts the latest
+ * change.
+ *
+ * tags=data-consumer
+ */
+export const EditableInstrumentsCellBlockEditing = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate allowCellBlockEditing copyOption="All" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/**
+ * Cells can be selected as a block, to be copied, but not edited as a block.
+ * tags=data-consumer
+ */
+export const EditableInstrumentsCellBlockSelection = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate allowCellBlockSelection copyOption="All" />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );
@@ -1280,6 +1328,7 @@ const BulkEditTableTemplate = ({
             parentDs={sourceDataSource}
             rowClassNameGenerators={rowClassNameGenerators}
             sessionDs={sessionDataSource}
+            showColumnCascadingUpdateEditor
           />
         </DataEditingProvider>,
         "Edit rows",

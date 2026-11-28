@@ -12,13 +12,24 @@ import type {
   VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
-import type { TableEditSession } from "./TableEditSession";
+import type {
+  CellChange,
+  CommitChangeOptions,
+  TableEditSession,
+} from "./TableEditSession";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 export type EditActionType = "deleteRow" | "addRow" | "editCell";
 export type EditSessionValue = VuuRowDataItemType | object;
+const isEditObject = (value: EditSessionValue): value is object =>
+  typeof value === "object" && value !== null;
 export type EditCommitOptions = {
   dataSourceValue?: VuuRowDataItemType;
+  /**
+   * Record the commit as a change, that undoLastChange can revert.
+   * @default true
+   */
+  recordChange?: boolean;
   syncToDataSource?: boolean;
 };
 /** Column name to default value mapping applied to every addRow call when a column is absent from the row data. */
@@ -97,6 +108,8 @@ type EditSessionEvents = {
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
   newRow: (newRowState: NewRowState) => void;
+  /** A change has been recorded or undone. */
+  historyChanged: (canUndo: boolean) => void;
 };
 
 export class EditSession
@@ -116,6 +129,8 @@ export class EditSession
   #isStale = false;
   #commitRevision = 0;
   #cellCommitRevisions = new Map<string, Map<string, number>>();
+  /** Committed changes, latest last. Each is the cell edits made together. */
+  #changes: CellChange[][] = [];
   #deleteMode: DeleteRowMode;
   #editSessionApi: EditSessionApi;
   #rowDefaults: RowDefaultDataItemValues;
@@ -566,6 +581,11 @@ export class EditSession
     const oldState = this.editState;
 
     this.#discardRowEdits(key, undoRevision, columnsAtRequest);
+    this.#setChanges(
+      this.#changes
+        .map((change) => change.filter((cell) => cell.key !== key))
+        .filter((change) => change.length > 0),
+    );
 
     if (action === "deleteRow") {
       this.#deleteCount = Math.max(0, this.#deleteCount - 1);
@@ -600,6 +620,7 @@ export class EditSession
     this.#rowEdits.clear();
     this.#addedRowKeys.clear();
     this.#cellCommitRevisions.clear();
+    this.#setChanges([]);
     this.#editCount = 0;
     this.#deleteCount = 0;
     this.#addCount = 0;
@@ -891,6 +912,78 @@ export class EditSession
     return this.#cellCommitRevisions.get(key)?.get(columnName) === revision;
   }
 
+  /** True when there is a change undoLastChange can revert. */
+  get canUndo() {
+    return this.#changes.length > 0;
+  }
+
+  #setChanges(changes: CellChange[][]) {
+    const couldUndo = this.canUndo;
+    this.#changes = changes;
+    if (couldUndo || this.canUndo) {
+      this.emit("historyChanged", this.canUndo);
+    }
+  }
+
+  /**
+   * Commits the edits of several cells as one change, undone together by
+   * undoLastChange. Edits are made in order; one that fails is reported, the
+   * others are still made. Resolves to the first error, if any.
+   */
+  async commitChange(
+    edits: readonly CellChange[],
+    { extendLastChange = false }: CommitChangeOptions = {},
+  ): Promise<RpcResult> {
+    const committed: CellChange[] = [];
+    let error: RpcResult | undefined;
+    for (const edit of edits) {
+      const response = await this.commit(
+        edit.key,
+        edit.column,
+        edit.previous,
+        edit.value,
+        true,
+        { recordChange: false },
+      );
+      if (isRpcError(response)) {
+        error ??= response;
+      } else {
+        committed.push(edit);
+      }
+    }
+    if (committed.length > 0) {
+      const lastChange = this.#changes.at(-1);
+      this.#setChanges(
+        extendLastChange && lastChange
+          ? this.#changes.slice(0, -1).concat([lastChange.concat(committed)])
+          : this.#changes.concat([committed]),
+      );
+    }
+    return error ?? { data: undefined, type: "SUCCESS_RESULT" };
+  }
+
+  /**
+   * Reverts the latest change: each of its cells is set back to the value it
+   * had before, latest edit first.
+   */
+  async undoLastChange(): Promise<RpcResult> {
+    const change = this.#changes.at(-1);
+    if (change === undefined || !this.inEditMode) {
+      return { data: undefined, type: "SUCCESS_RESULT" };
+    }
+    this.#setChanges(this.#changes.slice(0, -1));
+    let error: RpcResult | undefined;
+    for (const { key, column, previous, value } of [...change].reverse()) {
+      const response = await this.commit(key, column, value, previous, true, {
+        recordChange: false,
+      });
+      if (isRpcError(response)) {
+        error ??= response;
+      }
+    }
+    return error ?? { data: undefined, type: "SUCCESS_RESULT" };
+  }
+
   async cancel(
     key: string,
     columnName: string,
@@ -919,7 +1012,11 @@ export class EditSession
     originalValue: EditSessionValue,
     typedValue: EditSessionValue,
     isValid: boolean,
-    { dataSourceValue, syncToDataSource = true }: EditCommitOptions = {},
+    {
+      dataSourceValue,
+      recordChange = true,
+      syncToDataSource = true,
+    }: EditCommitOptions = {},
   ): Promise<RpcResult> {
     if (
       this.#lifecycle.status !== "active" &&
@@ -978,8 +1075,24 @@ export class EditSession
             typedValue,
             false,
           );
-        } else if (currentCellEdits.size === 0) {
-          this.#rowEdits.delete(key);
+        } else {
+          if (currentCellEdits.size === 0) {
+            this.#rowEdits.delete(key);
+          }
+          if (recordChange && !isEditObject(originalValue)) {
+            this.#setChanges(
+              this.#changes.concat([
+                [
+                  {
+                    key,
+                    column: columnName,
+                    previous: originalValue,
+                    value: valueForDataSource as VuuRowDataItemType,
+                  },
+                ],
+              ]),
+            );
+          }
         }
 
         return response;

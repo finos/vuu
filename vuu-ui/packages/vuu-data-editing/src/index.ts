@@ -8,10 +8,13 @@ export {
   type DirectEditSessionConstructorProps,
 } from "./DirectEditSession";
 export type {
+  CellChange,
+  CommitChangeOptions,
   TableEditSession,
   TableEditSessionEvents,
 } from "./TableEditSession";
 export { useCellEdited } from "./useCellEdited";
+export { useCanUndo } from "./useCanUndo";
 export { useEditState } from "./useEditState";
 export {
   getVuuEditMessage,

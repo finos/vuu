@@ -1,4 +1,4 @@
-import { useEditSession } from '@vuu-ui/vuu-data-editing';
+import { useEditSession, useTableEditSession } from '@vuu-ui/vuu-data-editing';
 import type {
   DataSourceConfigChangeHandler,
   DataSourceSubscribedMessage,
@@ -59,6 +59,7 @@ import {
 } from "react";
 import type { TableCellBlock } from "./cell-block/cellblock-utils";
 import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
+import { useRangeEditing } from "./cell-block/useRangeEditing";
 import { isSelectOperation, usePinnedRows } from "./pinned-rows/usePinnedRows";
 import { CellFocusState } from "./CellFocusState";
 import type { TableProps } from "./Table";
@@ -106,6 +107,7 @@ export interface TableHookProps
   extends MeasuredProps,
   Pick<
     TableProps,
+    | "allowCellBlockEditing"
     | "allowCellBlockSelection"
     | "allowDragDrop"
     | "allowSelectCheckboxRow"
@@ -152,7 +154,8 @@ const isWithinPinnedRows = (target: EventTarget | null) =>
   target instanceof Element && target.closest(".vuuTable-pinnedRows") !== null;
 
 export const useTable = ({
-  allowCellBlockSelection,
+  allowCellBlockEditing = false,
+  allowCellBlockSelection = allowCellBlockEditing,
   allowSelectCheckboxRow,
   allowDragDrop = false,
   autoSelectFirstRow,
@@ -845,17 +848,55 @@ export const useTable = ({
     [handleSelectionChange, onSelectCellBlock],
   );
 
+  const { editRange, isRangeEditable } = useRangeEditing({
+    columns,
+    dataRowsRef,
+    headerCount: headerState.count,
+    keyColumn: tableSchemaForPinnedRows?.key,
+  });
+
   const {
     onMouseDown: cellBlockHookMouseDown,
     cellBlock,
     onKeyDown: cellBlockSelectionKeyDown,
   } = useCellBlockSelection({
     allowCellBlockSelection,
+    canEditCellBlock: allowCellBlockEditing ? isRangeEditable : undefined,
     columnCount,
     containerRef,
+    onEditCellBlock: editRange,
     onSelectCellBlock: handleSelectCellBlock,
     rowCount,
   });
+
+  const tableEditSession = useTableEditSession();
+
+  /**
+   * Ctrl+Z (Cmd+Z on a Mac) undoes the latest change, unless an input has
+   * focus that is being edited, or isn't a table cell's.
+   */
+  const editingShortcutKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLElement>) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.matches("input");
+      // the inline add row is a draft, not a row of data
+      const isIdleInputCell =
+        isInput &&
+        target.closest(".vuuTableInputCell:not(.vuuEditing)") !== null &&
+        target.closest(".vuuInlineAddRow") === null;
+      if (
+        e.key.toLowerCase() === "z" &&
+        (e.ctrlKey || e.metaKey) &&
+        !e.shiftKey &&
+        (!isInput || isIdleInputCell) &&
+        tableEditSession?.undoLastChange
+      ) {
+        e.preventDefault();
+        tableEditSession.undoLastChange();
+      }
+    },
+    [tableEditSession],
+  );
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (evt, dataRow, rangeSelect, keepExistingSelection) => {
@@ -879,6 +920,9 @@ export const useTable = ({
         navigationKeyDown(e);
       }
       if (!e.defaultPrevented) {
+        editingShortcutKeyDown(e);
+      }
+      if (!e.defaultPrevented) {
         editingKeyDown(e);
       }
       if (!e.defaultPrevented) {
@@ -889,6 +933,7 @@ export const useTable = ({
       cellBlockSelectionKeyDown,
       navigationKeyDown,
       editingKeyDown,
+      editingShortcutKeyDown,
       selectionHookKeyDown,
     ],
   );

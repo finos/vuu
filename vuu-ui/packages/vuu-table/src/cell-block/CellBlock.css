@@ -1,13 +1,17 @@
 .vuuCellBlock {
-  background-color: #00bdff;
-  opacity: 0.3;
-  border: solid blue 1px;
+  background-color: rgb(0 189 255 / 30%);
+  border: solid rgb(0 0 255 / 30%) 1px;
   position: absolute;
 
   bottom: anchor(--cellblock-start bottom);
   left: anchor(--cellblock-start left);
   right: anchor(--cellblock-start right);
   top: anchor(--cellblock-start top);
+
+  /* inside the edge, so the sticky header can't cover it */
+  &:focus-visible {
+    outline-offset: calc(-1 * var(--salt-focused-outlineWidth, 2px));
+  }
 
   &.cellblock-direction-n {
     bottom: anchor(--cellblock-start bottom);
@@ -85,4 +89,18 @@
 }
 .vuu-cellblock-end {
   anchor-name: --cellblock-end;
+}
+
+.vuuCellBlock-editor.saltInput {
+  --saltInput-height: var(--vuu-table-embedded-control-height, 100%);
+  --saltInput-minHeight: var(--saltInput-height);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--row-height, 100%);
+  max-height: 100%;
+  .saltInput-input {
+    text-align: right;
+  }
 }

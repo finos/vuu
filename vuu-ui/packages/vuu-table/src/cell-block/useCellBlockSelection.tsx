@@ -1,3 +1,4 @@
+import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { isArrowKey, queryClosest } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEventHandler,
@@ -54,24 +55,74 @@ const mouseType = (name: string) =>
 
 const DRAG_THRESHOLD = 5;
 
+/**
+ * The element under the pointer. While a drag that began in an input goes
+ * on, Firefox gives that input as the target of every mouse event.
+ */
+const pointerTarget = ({ clientX, clientY }: MouseEvent) =>
+  document.elementFromPoint(clientX, clientY);
+
 export interface CellblockSelectionHookProps {
   allowCellBlockSelection?: boolean;
+  /** True when the cell block has a cell that can be edited. */
+  canEditCellBlock?: (cellBlock: TableCellBlock) => boolean;
   columnCount?: number;
   containerRef: RefObject<HTMLElement | null>;
+  /** Sets every editable cell of the block to value. */
+  onEditCellBlock?: (
+    cellBlock: TableCellBlock,
+    value: string,
+  ) => Promise<RpcResult>;
   onSelectCellBlock?: (cellBlock: TableCellBlock) => void;
   rowCount?: number;
 }
 
 export const useCellBlockSelection = ({
   allowCellBlockSelection,
+  canEditCellBlock,
   columnCount = 0,
   containerRef,
+  onEditCellBlock,
   onSelectCellBlock,
   rowCount = 0,
 }: CellblockSelectionHookProps) => {
   const [cellBlock, setCellBlock] = useState<ReactElement | null>(null);
   const stateRef = useRef<RefState>(refState);
   const handlersRef = useRef<MouseHandlers>(mouseHandlers);
+  // The CellBlock element is created once per selection, so it calls the
+  // latest editing callbacks through a ref.
+  const editingRef = useRef({
+    canEditCellBlock,
+    onEditCellBlock,
+    onSelectCellBlock,
+  });
+  editingRef.current = { canEditCellBlock, onEditCellBlock, onSelectCellBlock };
+
+  const selectedCellBlock = useCallback(() => {
+    const { endCell, startCell } = stateRef.current;
+    return startCell && endCell
+      ? getTableCellBlock(startCell, endCell)
+      : undefined;
+  }, []);
+
+  const canEdit = useCallback(() => {
+    const cellBlock = selectedCellBlock();
+    return (
+      cellBlock !== undefined &&
+      editingRef.current.canEditCellBlock?.(cellBlock) === true
+    );
+  }, [selectedCellBlock]);
+
+  const handleEdit = useCallback(
+    async (value: string): Promise<RpcResult> => {
+      const cellBlock = selectedCellBlock();
+      const { onEditCellBlock } = editingRef.current;
+      return cellBlock && onEditCellBlock
+        ? onEditCellBlock(cellBlock, value)
+        : { errorMessage: "No cells to edit", type: "ERROR_RESULT" };
+    },
+    [selectedCellBlock],
+  );
 
   const handleCopy = useCallback(async () => {
     const { startCell, endCell } = stateRef.current;
@@ -85,24 +136,13 @@ export const useCellBlockSelection = ({
   }, []);
 
   const cellBlockRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
-    stateRef.current.cellBlock = el;
+    const { current: state } = stateRef;
+    state.cellBlock = el;
+    // the selection may have grown before the block was rendered
+    if (el && state.cellBlockClassName) {
+      el.classList.add(state.cellBlockClassName);
+    }
   }, []);
-
-  const createCellBlock = useCallback(
-    (method: "mouse" | "keyboard" = "mouse") => {
-      const { startBox, startCell } = stateRef.current;
-      if (startCell) {
-        const table = queryClosest<HTMLDivElement>(startCell, ".vuuTable");
-        if (table) {
-          table.classList.add(`vuu-cellblock-select-in-progress-${method}`);
-        }
-        setElementBox(startCell, startBox);
-        startCell.classList.add("vuu-cellblock-start");
-        setCellBlock(<CellBlock onCopy={handleCopy} ref={cellBlockRef} />);
-      }
-    },
-    [cellBlockRef, handleCopy],
-  );
 
   const initializeStateRef = useCallback(() => {
     const { cellBlock, cellBlockClassName, startCell, endCell } =
@@ -129,6 +169,35 @@ export const useCellBlockSelection = ({
     };
   }, []);
 
+  const clearCellBlock = useCallback(() => {
+    initializeStateRef();
+    setCellBlock(null);
+  }, [initializeStateRef]);
+
+  const createCellBlock = useCallback(
+    (method: "mouse" | "keyboard" = "mouse") => {
+      const { startBox, startCell } = stateRef.current;
+      if (startCell) {
+        const table = queryClosest<HTMLDivElement>(startCell, ".vuuTable");
+        if (table) {
+          table.classList.add(`vuu-cellblock-select-in-progress-${method}`);
+        }
+        setElementBox(startCell, startBox);
+        startCell.classList.add("vuu-cellblock-start");
+        setCellBlock(
+          <CellBlock
+            canEdit={canEdit}
+            onCopy={handleCopy}
+            onDismiss={clearCellBlock}
+            onEdit={handleEdit}
+            ref={cellBlockRef}
+          />,
+        );
+      }
+    },
+    [canEdit, cellBlockRef, clearCellBlock, handleCopy, handleEdit],
+  );
+
   const addMouseListener = useCallback(
     (mouseOperation: MouseOperation, handler: NativeMouseHandler) => {
       window.addEventListener(mouseType(mouseOperation), handler);
@@ -146,7 +215,7 @@ export const useCellBlockSelection = ({
     const { endBox, startBox } = stateRef.current;
     if (outsideBox(startBox, x, y) && outsideBox(endBox, x, y)) {
       const cell = queryClosest<HTMLDivElement>(
-        evt.target,
+        pointerTarget(evt),
         ".vuuTableCell, .vuuCellBlock",
       );
       if (cell?.classList.contains("vuuTableCell")) {
@@ -214,7 +283,10 @@ export const useCellBlockSelection = ({
   }, [removeMouseListener]);
 
   const handleNativeMouseOver = useCallback((evt: MouseEvent) => {
-    const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
+    const cell = queryClosest<HTMLDivElement>(
+      pointerTarget(evt),
+      ".vuuTableCell",
+    );
     if (cell) {
       stateRef.current.endPos = getAriaCellPos(cell);
       stateRef.current.endCell?.classList.remove("vuu-cellblock-end");
@@ -232,8 +304,9 @@ export const useCellBlockSelection = ({
 
   const handleMouseDown = useCallback<MouseEventHandler>(
     (evt) => {
-      if (evt.button === 0) {
-        initializeStateRef();
+      // a press on the block is for the block
+      if (evt.button === 0 && !queryClosest(evt.target, ".vuuCellBlock")) {
+        clearCellBlock();
         const { current: state } = stateRef;
         const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
         if (cell) {
@@ -252,31 +325,46 @@ export const useCellBlockSelection = ({
     },
     [
       addMouseListener,
+      clearCellBlock,
       handleNativeMouseOver,
       handleNativeMouseUp,
-      initializeStateRef,
     ],
   );
 
   const nativeKeyDownHandlerRef = useRef<NativeKeyboardHandler>(NullHandler);
 
-  const handleNativeKeyUp = useCallback((evt: KeyboardEvent) => {
-    if (evt.key === "Shift") {
-      const { endCell } = stateRef.current;
-      const table = queryClosest<HTMLDivElement>(evt.target, ".vuuTable");
-      endCell?.classList.add("vuu-cellblock-end");
-      if (table) {
-        table.classList.remove("vuu-cellblock-select-in-progress-keyboard");
-      }
+  const handleNativeKeyUp = useCallback(
+    (evt: KeyboardEvent) => {
+      if (evt.key === "Shift") {
+        const { cellBlock, endCell, startCell } = stateRef.current;
+        const table = queryClosest<HTMLDivElement>(evt.target, ".vuuTable");
+        endCell?.classList.add("vuu-cellblock-end");
+        if (table) {
+          table.classList.remove("vuu-cellblock-select-in-progress-keyboard");
+        }
 
-      window.removeEventListener("keydown", nativeKeyDownHandlerRef.current, {
-        capture: true,
-      });
-      window.removeEventListener("keyup", handleNativeKeyUp, {
-        capture: true,
-      });
-    }
-  }, []);
+        window.removeEventListener(
+          "keydown",
+          nativeKeyDownHandlerRef.current,
+          {
+            capture: true,
+          },
+        );
+        window.removeEventListener("keyup", handleNativeKeyUp, {
+          capture: true,
+        });
+
+        // a block of more than one cell was selected
+        if (startCell && endCell && startCell !== endCell) {
+          editingRef.current.onSelectCellBlock?.(
+            getTableCellBlock(startCell, endCell),
+          );
+          cellBlock?.focus();
+        }
+      }
+    },
+    [],
+  );
 
   const handleNativeKeyDown = (nativeKeyDownHandlerRef.current = useCallback(
     ({ key }: KeyboardEvent) => {
@@ -301,9 +389,10 @@ export const useCellBlockSelection = ({
         `[useCellBlockSelection] handleKeyDown (only interested in Shift key)`,
       );
       if (evt.key === "Shift") {
-        initializeStateRef();
+        // Shift pressed on the block itself is for typing in it
         const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
         if (cell) {
+          initializeStateRef();
           const startPos = getAriaCellPos(cell);
           stateRef.current.startPos = startPos;
           stateRef.current.endPos = clone(startPos);
