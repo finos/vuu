@@ -69,6 +69,7 @@ See [Selection](./04-Selection.mdx).
 | `autoSelectRowKey`        | `string`                            |              | Selects the row with this key when the Table loads.                                                           |
 | `revealSelected`          | `boolean`                           |              | With grouped data, expands the groups that contain selected rows.                                             |
 | `rowSelectionBorder`      | `boolean`                           |              | Draws a border around each block of adjacent selected rows.                                                   |
+| `allowCellBlockEditing`   | `boolean`                           | `false`      | In a table being edited, lets users type a value and set it on every editable cell of a selected block. Turns on `allowCellBlockSelection`. |
 | `allowCellBlockSelection` | `boolean`                           |              | Lets users select a rectangular block of cells with the mouse or **Shift+Arrow** keys.                        |
 | `onSelect`                | `TableRowSelectHandler`             |              | Called when the user selects a row, or with `null` when they deselect it.                                     |
 | `onSelectionChange`       | `SelectionChangeHandler`            |              | Called with the select request sent to the data source.                                                       |

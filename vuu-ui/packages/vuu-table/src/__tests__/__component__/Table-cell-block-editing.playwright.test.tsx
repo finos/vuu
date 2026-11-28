@@ -229,4 +229,20 @@ test.describe("Table cell block editing", () => {
       await expect(cellInput(page, row, "bbg")).toHaveValue(bbgs[i]);
     }
   });
+
+  test("without allowCellBlockEditing, a block is selected but not edited", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstrumentsCellBlockSelection");
+    await editMode(page);
+    const before = await lotSizes(page, [1, 2]);
+
+    await selectCells(page, [1, "lotSize"], [2, "lotSize"]);
+    await page.keyboard.type("5");
+    await expect(
+      page.getByRole("textbox", { name: "Value for the selected cells" }),
+    ).toHaveCount(0);
+    expect(await lotSizes(page, [1, 2])).toEqual(before);
+  });
 });

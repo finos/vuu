@@ -368,10 +368,12 @@ export const EditableInstrumentsWithInlineAddRow = () => (
 );
 
 const EditableInstrumentsTemplate = ({
+  allowCellBlockEditing,
   allowCellBlockSelection,
   copyOption,
   showInlineAddRow = false,
 }: {
+  allowCellBlockEditing?: boolean;
   allowCellBlockSelection?: boolean;
   copyOption?: CopyOption;
   showInlineAddRow?: boolean;
@@ -470,7 +472,7 @@ const EditableInstrumentsTemplate = ({
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-        {allowCellBlockSelection && isEditSessionReady ? (
+        {allowCellBlockEditing && isEditSessionReady ? (
           <Button
             disabled={!canUndo}
             onClick={() => editSession.undoLastChange()}
@@ -482,6 +484,7 @@ const EditableInstrumentsTemplate = ({
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
+            allowCellBlockEditing={allowCellBlockEditing}
             allowCellBlockSelection={allowCellBlockSelection}
             config={config}
             data-viewport={dataSource.viewport}
@@ -535,6 +538,18 @@ export const EditableInstrumentsInlineEdit = () => (
  * tags=data-consumer
  */
 export const EditableInstrumentsCellBlockEditing = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate allowCellBlockEditing copyOption="All" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/**
+ * Cells can be selected as a block, to be copied, but not edited as a block.
+ * tags=data-consumer
+ */
+export const EditableInstrumentsCellBlockSelection = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableInstrumentsTemplate allowCellBlockSelection copyOption="All" />

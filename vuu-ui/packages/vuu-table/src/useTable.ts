@@ -107,6 +107,7 @@ export interface TableHookProps
   extends MeasuredProps,
   Pick<
     TableProps,
+    | "allowCellBlockEditing"
     | "allowCellBlockSelection"
     | "allowDragDrop"
     | "allowSelectCheckboxRow"
@@ -153,7 +154,8 @@ const isWithinPinnedRows = (target: EventTarget | null) =>
   target instanceof Element && target.closest(".vuuTable-pinnedRows") !== null;
 
 export const useTable = ({
-  allowCellBlockSelection,
+  allowCellBlockEditing = false,
+  allowCellBlockSelection = allowCellBlockEditing,
   allowSelectCheckboxRow,
   allowDragDrop = false,
   autoSelectFirstRow,
@@ -859,7 +861,7 @@ export const useTable = ({
     onKeyDown: cellBlockSelectionKeyDown,
   } = useCellBlockSelection({
     allowCellBlockSelection,
-    canEditCellBlock: isRangeEditable,
+    canEditCellBlock: allowCellBlockEditing ? isRangeEditable : undefined,
     columnCount,
     containerRef,
     onEditCellBlock: editRange,

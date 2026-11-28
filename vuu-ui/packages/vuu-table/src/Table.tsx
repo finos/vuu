@@ -106,6 +106,12 @@ export interface TableProps extends Omit<
    */
   allowCellBlockSelection?: boolean;
   /**
+   * In a table that is being edited, allow a value to be typed into a block
+   * of cells and set on every cell of the block. Implies
+   * allowCellBlockSelection. Default is false.
+   */
+  allowCellBlockEditing?: boolean;
+  /**
    * Allow columns to be manually resized by user. Default is true. This can also be
    * set on individual ColumnDescriptors for more fine grained control.
    */
@@ -343,6 +349,7 @@ const TableCore = ({
   EmptyDisplay,
   HeaderCell,
   Row = DefaultRow,
+  allowCellBlockEditing,
   allowCellBlockSelection,
   allowDragColumnHeader = true,
   allowDragDrop,
@@ -439,6 +446,7 @@ const TableCore = ({
     viewportMeasurements,
     ...tableProps
   } = useTable({
+    allowCellBlockEditing,
     allowCellBlockSelection,
     allowDragDrop,
     allowSelectCheckboxRow,
@@ -711,6 +719,7 @@ export const Table = forwardRef(function Table(
     EmptyDisplay,
     HeaderCell,
     Row,
+    allowCellBlockEditing,
     allowCellBlockSelection,
     allowDragColumnHeader,
     allowDragDrop,
@@ -878,6 +887,7 @@ export const Table = forwardRef(function Table(
           EmptyDisplay={EmptyDisplay}
           HeaderCell={HeaderCell}
           Row={Row}
+          allowCellBlockEditing={allowCellBlockEditing}
           allowCellBlockSelection={allowCellBlockSelection}
           allowDragColumnHeader={allowDragColumnHeader}
           allowDragDrop={allowDragDrop}
