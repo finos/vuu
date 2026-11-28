@@ -55,6 +55,13 @@ const mouseType = (name: string) =>
 
 const DRAG_THRESHOLD = 5;
 
+/**
+ * The element under the pointer. While a drag that began in an input goes
+ * on, Firefox gives that input as the target of every mouse event.
+ */
+const pointerTarget = ({ clientX, clientY }: MouseEvent) =>
+  document.elementFromPoint(clientX, clientY);
+
 export interface CellblockSelectionHookProps {
   allowCellBlockSelection?: boolean;
   /** True when the cell block has a cell that can be edited. */
@@ -208,7 +215,7 @@ export const useCellBlockSelection = ({
     const { endBox, startBox } = stateRef.current;
     if (outsideBox(startBox, x, y) && outsideBox(endBox, x, y)) {
       const cell = queryClosest<HTMLDivElement>(
-        evt.target,
+        pointerTarget(evt),
         ".vuuTableCell, .vuuCellBlock",
       );
       if (cell?.classList.contains("vuuTableCell")) {
@@ -276,7 +283,10 @@ export const useCellBlockSelection = ({
   }, [removeMouseListener]);
 
   const handleNativeMouseOver = useCallback((evt: MouseEvent) => {
-    const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
+    const cell = queryClosest<HTMLDivElement>(
+      pointerTarget(evt),
+      ".vuuTableCell",
+    );
     if (cell) {
       stateRef.current.endPos = getAriaCellPos(cell);
       stateRef.current.endCell?.classList.remove("vuu-cellblock-end");
